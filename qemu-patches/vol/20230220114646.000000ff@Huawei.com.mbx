@@ -1,0 +1,3195 @@
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 509D5C636CC
+	for <linux-cxl@archiver.kernel.org>; Mon, 20 Feb 2023 11:46:55 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231844AbjBTLqy (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 20 Feb 2023 06:46:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39108 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231873AbjBTLqw (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 20 Feb 2023 06:46:52 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA8CA1B336
+        for <linux-cxl@vger.kernel.org>; Mon, 20 Feb 2023 03:46:49 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PL0rb1t2Gz6J68P;
+        Mon, 20 Feb 2023 19:42:07 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.17; Mon, 20 Feb
+ 2023 11:46:47 +0000
+Date: Mon, 20 Feb 2023 11:46:46 +0000
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Gregory Price <gregory.price@memverge.com>
+CC: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        Philippe =?ISO-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230220114646.000000ff@Huawei.com>
+In-Reply-To: <Y+9gSWadbRfdqJGS@memverge.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+        <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+        <20230217161617.000064d1@huawei.com>
+        <Y+9gSWadbRfdqJGS@memverge.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500002.china.huawei.com (7.191.160.78) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, 17 Feb 2023 06:08:57 -0500
+Gregory Price <gregory.price@memverge.com> wrote:
+
+> On Fri, Feb 17, 2023 at 04:16:17PM +0000, Jonathan Cameron via wrote:
+> > On Tue, 31 Jan 2023 16:38:47 +0000
+> > Jonathan Cameron via <qemu-devel@nongnu.org> wrote:
+> >   
+> > > From: Gregory Price <gourry.memverge@gmail.com>
+> > > 
+> > > This commit enables each CXL Type-3 device to contain one volatile
+> > > memory region and one persistent region.
+> > > 
+> > > Two new properties have been added to cxl-type3 device initialization:
+> > >     [volatile-memdev] and [persistent-memdev]
+> > > 
+> > > The existing [memdev] property has been deprecated and will default the
+> > > memory region to a persistent memory region (although a user may assign
+> > > the region to a ram or file backed region). It cannot be used in
+> > > combination with the new [persistent-memdev] property.
+> > > 
+> > > Partitioning volatile memory from persistent memory is not yet supported.
+> > > 
+> > > Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+> > > at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+> > > 
+> > > Signed-off-by: Gregory Price <gregory.price@memverge.com>
+> > > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > >   
+> > Hi Gregory,
+> > 
+> > I've added support for multiple HDM decoders and hence can now
+> > test both volatile and non volatile on same device.
+> > It very nearly all works. With one exception which is I couldn't
+> > poke the first byte of the non volatile region.
+> > 
+> > I think we have an off by one in a single check.
+> > 
+> > Interestingly it makes no difference when creating an FS on top
+> > (which was my standard test) so I only noticed when poking memory
+> > addresses directly to sanity check the HDM decoder setup.
+> > 
+> > I'll roll a v2 if no one shouts out that I'm wrong.
+> > 
+> > Note that adding multiple HDM decoders massively increases
+> > the number of test cases over what we had before to poke all the
+> > corners so I may well be missing stuff.  Hopefully can send an RFC
+> > of that support out next week.
+> > 
+> > Jonathan
+> >   
+> 
+> Very cool! Thanks for pushing this over the finishing line.
+> 
+> All my testing so far has been really smooth since getting the TCG issue
+> worked out.
+> 
+> > > -MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *data,
+> > > -                           unsigned size, MemTxAttrs attrs)  
+> [...]
+> > > +    if (vmr) {
+> > > +        if (*dpa_offset <= int128_get64(vmr->size)) {  
+> > 
+> > Off by one I think.  < 
+> >   
+> 
+> Yes that makes sense, should be <.  Derp derp.
+> 
+> Though I think this may alludes to more off-by-one issues?  This says
+> 
+> if (dpa_offset < vmr->size)
+> 
+> but dpa_offset should be (hpa - memory_region_base),
+> 
+> The HPA is used by memory access routing for the whole system to determine
+> what device it should access.
+> 
+> If that corner case is being hit, doesn't it imply the higher level code
+> is also susceptible to this, and is routing accesses to the wrong device?
+
+I don't think so though I may be missing something. 
+
+Say vmr->size = 8
+
+hpa  dpa_offset
+0       0
+1       1
+2       2
+3       3
+4       4
+5       5
+6       6
+7       7
+8       0
+
+etc
+
+Also the writes are turning up where I expect them to.
+
+Also just noticed that the code is setting Memory_base in the CXL dvsec.
+Given we are emulating a device as if it has been freshly powered up
+those should not be set - it's the OS or firmware's job to set them up.
+Harmless though, so can be a cleanup to follow the main series.
+
+We don't currently handle dvsec range based routing anyway and
+I'm not sure we ever will as it is a pain to test without some firmware
+or OS code to program them for us.
+
+Note that if you update your kernel to cxl/next it will currently fail
+as the Range register emulation is (I think) rather over enthusiastic
+and currently decides to emulate the HDM decoders for the QEMU emulated
+type 3 devices.
+
+https://lore.kernel.org/linux-cxl/167640366272.935665.1056268838301725481.stgit@dwillia2-xfh.jf.intel.com/T/#m6c025d5c9b27d8360a64079593f6c5adaa408772
+
+Jonathan
+
+
+> 
+> ~Gregory
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47B70C38142
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:40:04 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230427AbjAaQkD (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 11:40:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49984 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231228AbjAaQjv (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:39:51 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D0FC1448C
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:39:48 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P5rJM5PGXz67JVF;
+        Wed,  1 Feb 2023 00:35:31 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.34; Tue, 31 Jan 2023 16:39:45 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile and Persistent)
+Date: Tue, 31 Jan 2023 16:38:47 +0000
+Message-ID: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+From: Gregory Price <gourry.memverge@gmail.com>
+
+This commit enables each CXL Type-3 device to contain one volatile
+memory region and one persistent region.
+
+Two new properties have been added to cxl-type3 device initialization:
+    [volatile-memdev] and [persistent-memdev]
+
+The existing [memdev] property has been deprecated and will default the
+memory region to a persistent memory region (although a user may assign
+the region to a ram or file backed region). It cannot be used in
+combination with the new [persistent-memdev] property.
+
+Partitioning volatile memory from persistent memory is not yet supported.
+
+Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+
+Signed-off-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+Chances since RFC V4:
+- Fixed up issue reported by Gregory of volatile regions being reported
+  as non volatile in CDAT.  Fix as suggested by Gregory.
+- Report volatile memory as EFI_MEMORY_SP.
+- Fixed some naming issues in tests including sticking to existing
+  naming for memory device of cxl-memX throughout.
+- Update the bios-tables-test.c test to use the new non deprecated
+  parameter name. Note this has no impact on generated tables.
+- Flipped logic of get_lsa_size() callback to slightly simplify change.
+- cxl_setup_memory() reduce scope of local variables and name them
+  to make it clear which are volatile and which are persistent related.
+
+ docs/system/devices/cxl.rst    |  49 ++++--
+ hw/cxl/cxl-mailbox-utils.c     |  26 +--
+ hw/mem/cxl_type3.c             | 300 +++++++++++++++++++++++++--------
+ include/hw/cxl/cxl_device.h    |  11 +-
+ tests/qtest/bios-tables-test.c |   8 +-
+ tests/qtest/cxl-test.c         |  76 +++++++--
+ 6 files changed, 359 insertions(+), 111 deletions(-)
+
+diff --git a/docs/system/devices/cxl.rst b/docs/system/devices/cxl.rst
+index f25783a4ec..89a41cff73 100644
+--- a/docs/system/devices/cxl.rst
++++ b/docs/system/devices/cxl.rst
+@@ -300,7 +300,7 @@ Example topology involving a switch::
+ 
+ Example command lines
+ ---------------------
+-A very simple setup with just one directly attached CXL Type 3 device::
++A very simple setup with just one directly attached CXL Type 3 Persistent Memory device::
+ 
+   qemu-system-aarch64 -M virt,gic-version=3,cxl=on -m 4g,maxmem=8G,slots=8 -cpu max \
+   ...
+@@ -308,7 +308,28 @@ A very simple setup with just one directly attached CXL Type 3 device::
+   -object memory-backend-file,id=cxl-lsa1,share=on,mem-path=/tmp/lsa.raw,size=256M \
+   -device pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1 \
+   -device cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2 \
+-  -device cxl-type3,bus=root_port13,memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-pmem0 \
++  -device cxl-type3,bus=root_port13,persistent-memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-pmem0 \
++  -M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G
++
++A very simple setup with just one directly attached CXL Type 3 Volatile Memory device::
++
++  qemu-system-aarch64 -M virt,gic-version=3,cxl=on -m 4g,maxmem=8G,slots=8 -cpu max \
++  ...
++  -object memory-backend-ram,id=vmem0,share=on,size=256M \
++  -device pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1 \
++  -device cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2 \
++  -device cxl-type3,bus=root_port13,volatile-memdev=vmem0,id=cxl-vmem0 \
++  -M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G
++
++The same volatile setup may optionally include an LSA region::
++
++  qemu-system-aarch64 -M virt,gic-version=3,cxl=on -m 4g,maxmem=8G,slots=8 -cpu max \
++  ...
++  -object memory-backend-ram,id=vmem0,share=on,size=256M \
++  -object memory-backend-file,id=cxl-lsa0,share=on,mem-path=/tmp/lsa.raw,size=256M \
++  -device pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1 \
++  -device cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2 \
++  -device cxl-type3,bus=root_port13,volatile-memdev=vmem0,lsa=cxl-lsa0,id=cxl-vmem0 \
+   -M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G
+ 
+ A setup suitable for 4 way interleave. Only one fixed window provided, to enable 2 way
+@@ -328,13 +349,13 @@ the CXL Type3 device directly attached (no switches).::
+   -device pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1 \
+   -device pxb-cxl,bus_nr=222,bus=pcie.0,id=cxl.2 \
+   -device cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2 \
+-  -device cxl-type3,bus=root_port13,memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-pmem0 \
++  -device cxl-type3,bus=root_port13,persistent-memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-pmem0 \
+   -device cxl-rp,port=1,bus=cxl.1,id=root_port14,chassis=0,slot=3 \
+-  -device cxl-type3,bus=root_port14,memdev=cxl-mem2,lsa=cxl-lsa2,id=cxl-pmem1 \
++  -device cxl-type3,bus=root_port14,persistent-memdev=cxl-mem2,lsa=cxl-lsa2,id=cxl-pmem1 \
+   -device cxl-rp,port=0,bus=cxl.2,id=root_port15,chassis=0,slot=5 \
+-  -device cxl-type3,bus=root_port15,memdev=cxl-mem3,lsa=cxl-lsa3,id=cxl-pmem2 \
++  -device cxl-type3,bus=root_port15,persistent-memdev=cxl-mem3,lsa=cxl-lsa3,id=cxl-pmem2 \
+   -device cxl-rp,port=1,bus=cxl.2,id=root_port16,chassis=0,slot=6 \
+-  -device cxl-type3,bus=root_port16,memdev=cxl-mem4,lsa=cxl-lsa4,id=cxl-pmem3 \
++  -device cxl-type3,bus=root_port16,persistent-memdev=cxl-mem4,lsa=cxl-lsa4,id=cxl-pmem3 \
+   -M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.targets.1=cxl.2,cxl-fmw.0.size=4G,cxl-fmw.0.interleave-granularity=8k
+ 
+ An example of 4 devices below a switch suitable for 1, 2 or 4 way interleave::
+@@ -354,15 +375,23 @@ An example of 4 devices below a switch suitable for 1, 2 or 4 way interleave::
+   -device cxl-rp,port=1,bus=cxl.1,id=root_port1,chassis=0,slot=1 \
+   -device cxl-upstream,bus=root_port0,id=us0 \
+   -device cxl-downstream,port=0,bus=us0,id=swport0,chassis=0,slot=4 \
+-  -device cxl-type3,bus=swport0,memdev=cxl-mem0,lsa=cxl-lsa0,id=cxl-pmem0,size=256M \
++  -device cxl-type3,bus=swport0,persistent-memdev=cxl-mem0,lsa=cxl-lsa0,id=cxl-pmem0,size=256M \
+   -device cxl-downstream,port=1,bus=us0,id=swport1,chassis=0,slot=5 \
+-  -device cxl-type3,bus=swport1,memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-pmem1,size=256M \
++  -device cxl-type3,bus=swport1,persistent-memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-pmem1,size=256M \
+   -device cxl-downstream,port=2,bus=us0,id=swport2,chassis=0,slot=6 \
+-  -device cxl-type3,bus=swport2,memdev=cxl-mem2,lsa=cxl-lsa2,id=cxl-pmem2,size=256M \
++  -device cxl-type3,bus=swport2,persistent-memdev=cxl-mem2,lsa=cxl-lsa2,id=cxl-pmem2,size=256M \
+   -device cxl-downstream,port=3,bus=us0,id=swport3,chassis=0,slot=7 \
+-  -device cxl-type3,bus=swport3,memdev=cxl-mem3,lsa=cxl-lsa3,id=cxl-pmem3,size=256M \
++  -device cxl-type3,bus=swport3,persistent-memdev=cxl-mem3,lsa=cxl-lsa3,id=cxl-pmem3,size=256M \
+   -M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G,cxl-fmw.0.interleave-granularity=4k
+ 
++Deprecations
++------------
++
++The Type 3 device [memdev] attribute has been deprecated in favor of the
++[persistent-memdev] attributes. [memdev] will default to a persistent memory
++device for backward compatibility and is incapable of being used in combination
++with [persistent-memdev].
++
+ Kernel Configuration Options
+ ----------------------------
+ 
+diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+index 206e04a4b8..cc9c8b7380 100644
+--- a/hw/cxl/cxl-mailbox-utils.c
++++ b/hw/cxl/cxl-mailbox-utils.c
+@@ -141,7 +141,8 @@ static ret_code cmd_firmware_update_get_info(struct cxl_cmd *cmd,
+     } QEMU_PACKED *fw_info;
+     QEMU_BUILD_BUG_ON(sizeof(*fw_info) != 0x50);
+ 
+-    if (cxl_dstate->pmem_size < CXL_CAPACITY_MULTIPLIER) {
++    if ((cxl_dstate->vmem_size < CXL_CAPACITY_MULTIPLIER) ||
++        (cxl_dstate->pmem_size < CXL_CAPACITY_MULTIPLIER)) {
+         return CXL_MBOX_INTERNAL_ERROR;
+     }
+ 
+@@ -288,20 +289,20 @@ static ret_code cmd_identify_memory_device(struct cxl_cmd *cmd,
+ 
+     CXLType3Dev *ct3d = container_of(cxl_dstate, CXLType3Dev, cxl_dstate);
+     CXLType3Class *cvc = CXL_TYPE3_GET_CLASS(ct3d);
+-    uint64_t size = cxl_dstate->pmem_size;
+ 
+-    if (!QEMU_IS_ALIGNED(size, CXL_CAPACITY_MULTIPLIER)) {
++    if ((!QEMU_IS_ALIGNED(cxl_dstate->vmem_size, CXL_CAPACITY_MULTIPLIER)) ||
++        (!QEMU_IS_ALIGNED(cxl_dstate->pmem_size, CXL_CAPACITY_MULTIPLIER))) {
+         return CXL_MBOX_INTERNAL_ERROR;
+     }
+ 
+     id = (void *)cmd->payload;
+     memset(id, 0, sizeof(*id));
+ 
+-    /* PMEM only */
+     snprintf(id->fw_revision, 0x10, "BWFW VERSION %02d", 0);
+ 
+-    id->total_capacity = size / CXL_CAPACITY_MULTIPLIER;
+-    id->persistent_capacity = size / CXL_CAPACITY_MULTIPLIER;
++    id->total_capacity = cxl_dstate->mem_size / CXL_CAPACITY_MULTIPLIER;
++    id->persistent_capacity = cxl_dstate->pmem_size / CXL_CAPACITY_MULTIPLIER;
++    id->volatile_capacity = cxl_dstate->vmem_size / CXL_CAPACITY_MULTIPLIER;
+     id->lsa_size = cvc->get_lsa_size(ct3d);
+ 
+     *len = sizeof(*id);
+@@ -319,16 +320,19 @@ static ret_code cmd_ccls_get_partition_info(struct cxl_cmd *cmd,
+         uint64_t next_pmem;
+     } QEMU_PACKED *part_info = (void *)cmd->payload;
+     QEMU_BUILD_BUG_ON(sizeof(*part_info) != 0x20);
+-    uint64_t size = cxl_dstate->pmem_size;
+ 
+-    if (!QEMU_IS_ALIGNED(size, CXL_CAPACITY_MULTIPLIER)) {
++    if ((!QEMU_IS_ALIGNED(cxl_dstate->vmem_size, CXL_CAPACITY_MULTIPLIER)) ||
++        (!QEMU_IS_ALIGNED(cxl_dstate->pmem_size, CXL_CAPACITY_MULTIPLIER))) {
+         return CXL_MBOX_INTERNAL_ERROR;
+     }
+ 
+-    /* PMEM only */
+-    part_info->active_vmem = 0;
++    part_info->active_vmem = cxl_dstate->vmem_size / CXL_CAPACITY_MULTIPLIER;
++    /*
++     * When both next_vmem and next_pmem are 0, there is no pending change to
++     * partitioning.
++     */
+     part_info->next_vmem = 0;
+-    part_info->active_pmem = size / CXL_CAPACITY_MULTIPLIER;
++    part_info->active_pmem = cxl_dstate->pmem_size / CXL_CAPACITY_MULTIPLIER;
+     part_info->next_pmem = 0;
+ 
+     *len = sizeof(*part_info);
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index e32bbac966..beb931d59a 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -31,7 +31,8 @@ enum {
+ };
+ 
+ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+-                                         int dsmad_handle, MemoryRegion *mr)
++                                         int dsmad_handle, MemoryRegion *mr,
++                                         bool is_pmem, uint64_t dpa_base)
+ {
+     g_autofree CDATDsmas *dsmas = NULL;
+     g_autofree CDATDslbis *dslbis0 = NULL;
+@@ -50,8 +51,8 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+             .length = sizeof(*dsmas),
+         },
+         .DSMADhandle = dsmad_handle,
+-        .flags = CDAT_DSMAS_FLAG_NV,
+-        .DPA_base = 0,
++        .flags = is_pmem ? CDAT_DSMAS_FLAG_NV : 0,
++        .DPA_base = dpa_base,
+         .DPA_length = int128_get64(mr->size),
+     };
+ 
+@@ -130,8 +131,11 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+             .length = sizeof(*dsemts),
+         },
+         .DSMAS_handle = dsmad_handle,
+-        /* Reserved - the non volatile from DSMAS matters */
+-        .EFI_memory_type_attr = 2,
++        /*
++         * NV: Reserved - the non volatile from DSMAS matters
++         * V: EFI_MEMORY_SP
++         */
++        .EFI_memory_type_attr = is_pmem ? 2 : 1,
+         .DPA_offset = 0,
+         .DPA_length = int128_get64(mr->size),
+     };
+@@ -150,33 +154,66 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+ {
+     g_autofree CDATSubHeader **table = NULL;
+-    MemoryRegion *nonvolatile_mr;
+     CXLType3Dev *ct3d = priv;
++    MemoryRegion *volatile_mr = NULL, *nonvolatile_mr = NULL;
+     int dsmad_handle = 0;
+-    int rc;
++    int cur_ent = 0;
++    int len = 0;
++    int rc, i;
+ 
+-    if (!ct3d->hostmem) {
++    if (!ct3d->hostpmem && !ct3d->hostvmem) {
+         return 0;
+     }
+ 
+-    nonvolatile_mr = host_memory_backend_get_memory(ct3d->hostmem);
+-    if (!nonvolatile_mr) {
+-        return -EINVAL;
++    if (ct3d->hostvmem) {
++        volatile_mr = host_memory_backend_get_memory(ct3d->hostvmem);
++        if (!volatile_mr) {
++            return -EINVAL;
++        }
++        len += CT3_CDAT_NUM_ENTRIES;
++    }
++
++    if (ct3d->hostpmem) {
++        nonvolatile_mr = host_memory_backend_get_memory(ct3d->hostpmem);
++        if (!nonvolatile_mr) {
++            return -EINVAL;
++        }
++        len += CT3_CDAT_NUM_ENTRIES;
+     }
+ 
+-    table = g_malloc0(CT3_CDAT_NUM_ENTRIES * sizeof(*table));
++    table = g_malloc0(len * sizeof(*table));
+     if (!table) {
+         return -ENOMEM;
+     }
+ 
+-    rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, nonvolatile_mr);
+-    if (rc < 0) {
+-        return rc;
++    /* Now fill them in */
++    if (volatile_mr) {
++        rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
++                                           false, 0);
++        if (rc < 0) {
++            return rc;
++        }
++        cur_ent = CT3_CDAT_NUM_ENTRIES;
+     }
+ 
++    if (nonvolatile_mr) {
++        rc = ct3_build_cdat_entries_for_mr(&(table[cur_ent]), dsmad_handle++,
++                nonvolatile_mr, true, (volatile_mr ? volatile_mr->size : 0));
++        if (rc < 0) {
++            goto error_cleanup;
++        }
++        cur_ent += CT3_CDAT_NUM_ENTRIES;
++    }
++    assert(len == cur_ent);
++
+     *cdat_table = g_steal_pointer(&table);
+ 
+-    return CT3_CDAT_NUM_ENTRIES;
++    return len;
++error_cleanup:
++    for (i = 0; i < cur_ent; i++) {
++        g_free(table[i]);
++    }
++    return rc;
+ }
+ 
+ static void ct3_free_cdat_table(CDATSubHeader **cdat_table, int num, void *priv)
+@@ -264,16 +301,48 @@ static void build_dvsecs(CXLType3Dev *ct3d)
+ {
+     CXLComponentState *cxl_cstate = &ct3d->cxl_cstate;
+     uint8_t *dvsec;
++    uint32_t range1_size_hi, range1_size_lo,
++             range1_base_hi, range1_base_lo,
++             range2_size_hi = 0, range2_size_lo = 0,
++             range2_base_hi = 0, range2_base_lo = 0;
++
++    /*
++     * Volatile memory is mapped as (0x0)
++     * Persistent memory is mapped at (volatile->size)
++     */
++    if (ct3d->hostvmem) {
++        range1_size_hi = ct3d->hostvmem->size >> 32;
++        range1_size_lo = (2 << 5) | (2 << 2) | 0x3 |
++                         (ct3d->hostvmem->size & 0xF0000000);
++        range1_base_hi = 0;
++        range1_base_lo = 0;
++        if (ct3d->hostpmem) {
++            range2_size_hi = ct3d->hostpmem->size >> 32;
++            range2_size_lo = (2 << 5) | (2 << 2) | 0x3 |
++                             (ct3d->hostpmem->size & 0xF0000000);
++            range2_base_hi = ct3d->hostvmem->size >> 32;
++            range2_base_lo = ct3d->hostvmem->size & 0xF0000000;
++        }
++    } else {
++        range1_size_hi = ct3d->hostpmem->size >> 32;
++        range1_size_lo = (2 << 5) | (2 << 2) | 0x3 |
++                         (ct3d->hostpmem->size & 0xF0000000);
++        range1_base_hi = 0;
++        range1_base_lo = 0;
++    }
+ 
+     dvsec = (uint8_t *)&(CXLDVSECDevice){
+         .cap = 0x1e,
+         .ctrl = 0x2,
+         .status2 = 0x2,
+-        .range1_size_hi = ct3d->hostmem->size >> 32,
+-        .range1_size_lo = (2 << 5) | (2 << 2) | 0x3 |
+-        (ct3d->hostmem->size & 0xF0000000),
+-        .range1_base_hi = 0,
+-        .range1_base_lo = 0,
++        .range1_size_hi = range1_size_hi,
++        .range1_size_lo = range1_size_lo,
++        .range1_base_hi = range1_base_hi,
++        .range1_base_lo = range1_base_lo,
++        .range2_size_hi = range2_size_hi,
++        .range2_size_lo = range2_size_lo,
++        .range2_base_hi = range2_base_hi,
++        .range2_base_lo = range2_base_lo,
+     };
+     cxl_component_create_dvsec(cxl_cstate, CXL2_TYPE3_DEVICE,
+                                PCIE_CXL_DEVICE_DVSEC_LENGTH,
+@@ -492,36 +561,69 @@ static void ct3d_reg_write(void *opaque, hwaddr offset, uint64_t value,
+ static bool cxl_setup_memory(CXLType3Dev *ct3d, Error **errp)
+ {
+     DeviceState *ds = DEVICE(ct3d);
+-    MemoryRegion *mr;
+-    char *name;
+ 
+-    if (!ct3d->hostmem) {
+-        error_setg(errp, "memdev property must be set");
++    if (!ct3d->hostmem && !ct3d->hostvmem && !ct3d->hostpmem) {
++        error_setg(errp, "at least one memdev property must be set");
+         return false;
++    } else if (ct3d->hostmem && ct3d->hostpmem) {
++        error_setg(errp, "[memdev] cannot be used with new "
++                         "[persistent-memdev] property");
++        return false;
++    } else if (ct3d->hostmem) {
++        /* Use of hostmem property implies pmem */
++        ct3d->hostpmem = ct3d->hostmem;
++        ct3d->hostmem = NULL;
+     }
+ 
+-    mr = host_memory_backend_get_memory(ct3d->hostmem);
+-    if (!mr) {
+-        error_setg(errp, "memdev property must be set");
++    if (ct3d->hostpmem && !ct3d->lsa) {
++        error_setg(errp, "lsa property must be set for persistent devices");
+         return false;
+     }
+-    memory_region_set_nonvolatile(mr, true);
+-    memory_region_set_enabled(mr, true);
+-    host_memory_backend_set_mapped(ct3d->hostmem, true);
+ 
+-    if (ds->id) {
+-        name = g_strdup_printf("cxl-type3-dpa-space:%s", ds->id);
+-    } else {
+-        name = g_strdup("cxl-type3-dpa-space");
++    if (ct3d->hostvmem) {
++        MemoryRegion *vmr;
++        char *v_name;
++
++        vmr = host_memory_backend_get_memory(ct3d->hostvmem);
++        if (!vmr) {
++            error_setg(errp, "volatile memdev must have backing device");
++            return false;
++        }
++        memory_region_set_nonvolatile(vmr, false);
++        memory_region_set_enabled(vmr, true);
++        host_memory_backend_set_mapped(ct3d->hostvmem, true);
++        if (ds->id) {
++            v_name = g_strdup_printf("cxl-type3-dpa-vmem-space:%s", ds->id);
++        } else {
++            v_name = g_strdup("cxl-type3-dpa-vmem-space");
++        }
++        address_space_init(&ct3d->hostvmem_as, vmr, v_name);
++        ct3d->cxl_dstate.vmem_size = vmr->size;
++        ct3d->cxl_dstate.mem_size += vmr->size;
++        g_free(v_name);
+     }
+-    address_space_init(&ct3d->hostmem_as, mr, name);
+-    g_free(name);
+ 
+-    ct3d->cxl_dstate.pmem_size = ct3d->hostmem->size;
++    if (ct3d->hostpmem) {
++        MemoryRegion *pmr;
++        char *p_name;
+ 
+-    if (!ct3d->lsa) {
+-        error_setg(errp, "lsa property must be set");
+-        return false;
++        pmr = host_memory_backend_get_memory(ct3d->hostpmem);
++        if (!pmr) {
++            error_setg(errp, "persistent memdev must have backing device");
++            return false;
++        }
++        memory_region_set_nonvolatile(pmr, true);
++        memory_region_set_enabled(pmr, true);
++        host_memory_backend_set_mapped(ct3d->hostpmem, true);
++        if (ds->id) {
++            p_name = g_strdup_printf("cxl-type3-dpa-pmem-space:%s", ds->id);
++        } else {
++            p_name = g_strdup("cxl-type3-dpa-pmem-space");
++        }
++        address_space_init(&ct3d->hostpmem_as, pmr, p_name);
++        ct3d->cxl_dstate.pmem_size = pmr->size;
++        ct3d->cxl_dstate.mem_size += pmr->size;
++        g_free(p_name);
+     }
+ 
+     return true;
+@@ -607,7 +709,12 @@ err_release_cdat:
+     cxl_doe_cdat_release(cxl_cstate);
+     g_free(regs->special_ops);
+ err_address_space_free:
+-    address_space_destroy(&ct3d->hostmem_as);
++    if (ct3d->hostpmem) {
++        address_space_destroy(&ct3d->hostpmem_as);
++    }
++    if (ct3d->hostvmem) {
++        address_space_destroy(&ct3d->hostvmem_as);
++    }
+     return;
+ }
+ 
+@@ -620,7 +727,12 @@ static void ct3_exit(PCIDevice *pci_dev)
+     pcie_aer_exit(pci_dev);
+     cxl_doe_cdat_release(cxl_cstate);
+     g_free(regs->special_ops);
+-    address_space_destroy(&ct3d->hostmem_as);
++    if (ct3d->hostpmem) {
++        address_space_destroy(&ct3d->hostpmem_as);
++    }
++    if (ct3d->hostvmem) {
++        address_space_destroy(&ct3d->hostvmem_as);
++    }
+ }
+ 
+ /* TODO: Support multiple HDM decoders and DPA skip */
+@@ -655,51 +767,77 @@ static bool cxl_type3_dpa(CXLType3Dev *ct3d, hwaddr host_addr, uint64_t *dpa)
+     return true;
+ }
+ 
+-MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *data,
+-                           unsigned size, MemTxAttrs attrs)
++static int cxl_type3_hpa_to_as_and_dpa(CXLType3Dev *ct3d,
++                                       hwaddr host_addr,
++                                       unsigned int size,
++                                       AddressSpace **as,
++                                       uint64_t *dpa_offset)
+ {
+-    CXLType3Dev *ct3d = CXL_TYPE3(d);
+-    uint64_t dpa_offset;
+-    MemoryRegion *mr;
++    MemoryRegion *vmr = NULL, *pmr = NULL;
+ 
+-    /* TODO support volatile region */
+-    mr = host_memory_backend_get_memory(ct3d->hostmem);
+-    if (!mr) {
+-        return MEMTX_ERROR;
++    if (ct3d->hostvmem) {
++        vmr = host_memory_backend_get_memory(ct3d->hostvmem);
++    }
++    if (ct3d->hostpmem) {
++        pmr = host_memory_backend_get_memory(ct3d->hostpmem);
+     }
+ 
+-    if (!cxl_type3_dpa(ct3d, host_addr, &dpa_offset)) {
+-        return MEMTX_ERROR;
++    if (!vmr && !pmr) {
++        return -ENODEV;
++    }
++
++    if (!cxl_type3_dpa(ct3d, host_addr, dpa_offset)) {
++        return -EINVAL;
++    }
++
++    if (*dpa_offset > int128_get64(ct3d->cxl_dstate.mem_size)) {
++        return -EINVAL;
++    }
++
++    if (vmr) {
++        if (*dpa_offset <= int128_get64(vmr->size)) {
++            *as = &ct3d->hostvmem_as;
++        } else {
++            *as = &ct3d->hostpmem_as;
++            *dpa_offset -= vmr->size;
++        }
++    } else {
++        *as = &ct3d->hostpmem_as;
+     }
+ 
+-    if (dpa_offset > int128_get64(mr->size)) {
++    return 0;
++}
++
++MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *data,
++                           unsigned size, MemTxAttrs attrs)
++{
++    uint64_t dpa_offset = 0;
++    AddressSpace *as = NULL;
++    int res;
++
++    res = cxl_type3_hpa_to_as_and_dpa(CXL_TYPE3(d), host_addr, size,
++                                      &as, &dpa_offset);
++    if (res) {
+         return MEMTX_ERROR;
+     }
+ 
+-    return address_space_read(&ct3d->hostmem_as, dpa_offset, attrs, data, size);
++    return address_space_read(as, dpa_offset, attrs, data, size);
+ }
+ 
+ MemTxResult cxl_type3_write(PCIDevice *d, hwaddr host_addr, uint64_t data,
+                             unsigned size, MemTxAttrs attrs)
+ {
+-    CXLType3Dev *ct3d = CXL_TYPE3(d);
+-    uint64_t dpa_offset;
+-    MemoryRegion *mr;
+-
+-    mr = host_memory_backend_get_memory(ct3d->hostmem);
+-    if (!mr) {
+-        return MEMTX_OK;
+-    }
++    uint64_t dpa_offset = 0;
++    AddressSpace *as = NULL;
++    int res;
+ 
+-    if (!cxl_type3_dpa(ct3d, host_addr, &dpa_offset)) {
+-        return MEMTX_OK;
++    res = cxl_type3_hpa_to_as_and_dpa(CXL_TYPE3(d), host_addr, size,
++                                      &as, &dpa_offset);
++    if (res) {
++        return MEMTX_ERROR;
+     }
+ 
+-    if (dpa_offset > int128_get64(mr->size)) {
+-        return MEMTX_OK;
+-    }
+-    return address_space_write(&ct3d->hostmem_as, dpa_offset, attrs,
+-                               &data, size);
++    return address_space_write(as, dpa_offset, attrs, &data, size);
+ }
+ 
+ static void ct3d_reset(DeviceState *dev)
+@@ -714,7 +852,11 @@ static void ct3d_reset(DeviceState *dev)
+ 
+ static Property ct3_props[] = {
+     DEFINE_PROP_LINK("memdev", CXLType3Dev, hostmem, TYPE_MEMORY_BACKEND,
+-                     HostMemoryBackend *),
++                     HostMemoryBackend *), /* for backward compatibility */
++    DEFINE_PROP_LINK("persistent-memdev", CXLType3Dev, hostpmem,
++                     TYPE_MEMORY_BACKEND, HostMemoryBackend *),
++    DEFINE_PROP_LINK("volatile-memdev", CXLType3Dev, hostvmem,
++                     TYPE_MEMORY_BACKEND, HostMemoryBackend *),
+     DEFINE_PROP_LINK("lsa", CXLType3Dev, lsa, TYPE_MEMORY_BACKEND,
+                      HostMemoryBackend *),
+     DEFINE_PROP_UINT64("sn", CXLType3Dev, sn, UI64_NULL),
+@@ -726,6 +868,10 @@ static uint64_t get_lsa_size(CXLType3Dev *ct3d)
+ {
+     MemoryRegion *mr;
+ 
++    if (!ct3d->lsa) {
++        return 0;
++    }
++
+     mr = host_memory_backend_get_memory(ct3d->lsa);
+     return memory_region_size(mr);
+ }
+@@ -743,6 +889,10 @@ static uint64_t get_lsa(CXLType3Dev *ct3d, void *buf, uint64_t size,
+     MemoryRegion *mr;
+     void *lsa;
+ 
++    if (!ct3d->lsa) {
++        return 0;
++    }
++
+     mr = host_memory_backend_get_memory(ct3d->lsa);
+     validate_lsa_access(mr, size, offset);
+ 
+@@ -758,6 +908,10 @@ static void set_lsa(CXLType3Dev *ct3d, const void *buf, uint64_t size,
+     MemoryRegion *mr;
+     void *lsa;
+ 
++    if (!ct3d->lsa) {
++        return;
++    }
++
+     mr = host_memory_backend_get_memory(ct3d->lsa);
+     validate_lsa_access(mr, size, offset);
+ 
+@@ -929,7 +1083,7 @@ static void ct3_class_init(ObjectClass *oc, void *data)
+     pc->config_read = ct3d_config_read;
+ 
+     set_bit(DEVICE_CATEGORY_STORAGE, dc->categories);
+-    dc->desc = "CXL PMEM Device (Type 3)";
++    dc->desc = "CXL Memory Device (Type 3)";
+     dc->reset = ct3d_reset;
+     device_class_set_props(dc, ct3_props);
+ 
+diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+index d589f78202..edb9791bab 100644
+--- a/include/hw/cxl/cxl_device.h
++++ b/include/hw/cxl/cxl_device.h
+@@ -119,8 +119,10 @@ typedef struct cxl_device_state {
+         uint64_t host_set;
+     } timestamp;
+ 
+-    /* memory region for persistent memory, HDM */
++    /* memory region size, HDM */
++    uint64_t mem_size;
+     uint64_t pmem_size;
++    uint64_t vmem_size;
+ } CXLDeviceState;
+ 
+ /* Initialize the register block for a device */
+@@ -245,12 +247,15 @@ struct CXLType3Dev {
+     PCIDevice parent_obj;
+ 
+     /* Properties */
+-    HostMemoryBackend *hostmem;
++    HostMemoryBackend *hostmem; /* deprecated */
++    HostMemoryBackend *hostvmem;
++    HostMemoryBackend *hostpmem;
+     HostMemoryBackend *lsa;
+     uint64_t sn;
+ 
+     /* State */
+-    AddressSpace hostmem_as;
++    AddressSpace hostvmem_as;
++    AddressSpace hostpmem_as;
+     CXLComponentState cxl_cstate;
+     CXLDeviceState cxl_dstate;
+ 
+diff --git a/tests/qtest/bios-tables-test.c b/tests/qtest/bios-tables-test.c
+index 8608408213..b005c03a92 100644
+--- a/tests/qtest/bios-tables-test.c
++++ b/tests/qtest/bios-tables-test.c
+@@ -1789,13 +1789,13 @@ static void test_acpi_q35_cxl(void)
+                              " -device pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1"
+                              " -device pxb-cxl,bus_nr=222,bus=pcie.0,id=cxl.2"
+                              " -device cxl-rp,port=0,bus=cxl.1,id=rp1,chassis=0,slot=2"
+-                             " -device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1"
++                             " -device cxl-type3,bus=rp1,persistent-memdev=cxl-mem1,lsa=lsa1"
+                              " -device cxl-rp,port=1,bus=cxl.1,id=rp2,chassis=0,slot=3"
+-                             " -device cxl-type3,bus=rp2,memdev=cxl-mem2,lsa=lsa2"
++                             " -device cxl-type3,bus=rp2,persistent-memdev=cxl-mem2,lsa=lsa2"
+                              " -device cxl-rp,port=0,bus=cxl.2,id=rp3,chassis=0,slot=5"
+-                             " -device cxl-type3,bus=rp3,memdev=cxl-mem3,lsa=lsa3"
++                             " -device cxl-type3,bus=rp3,persistent-memdev=cxl-mem3,lsa=lsa3"
+                              " -device cxl-rp,port=1,bus=cxl.2,id=rp4,chassis=0,slot=6"
+-                             " -device cxl-type3,bus=rp4,memdev=cxl-mem4,lsa=lsa4"
++                             " -device cxl-type3,bus=rp4,persistent-memdev=cxl-mem4,lsa=lsa4"
+                              " -M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G,cxl-fmw.0.interleave-granularity=8k,"
+                              "cxl-fmw.1.targets.0=cxl.1,cxl-fmw.1.targets.1=cxl.2,cxl-fmw.1.size=4G,cxl-fmw.1.interleave-granularity=8k",
+                              tmp_path, tmp_path, tmp_path, tmp_path,
+diff --git a/tests/qtest/cxl-test.c b/tests/qtest/cxl-test.c
+index eda2bbbbe6..edcad4a0ce 100644
+--- a/tests/qtest/cxl-test.c
++++ b/tests/qtest/cxl-test.c
+@@ -34,32 +34,46 @@
+     "-device cxl-rp,id=rp2,bus=cxl.1,chassis=0,slot=2 " \
+     "-device cxl-rp,id=rp3,bus=cxl.1,chassis=0,slot=3 "
+ 
+-#define QEMU_T3D \
++#define QEMU_T3D_DEPRECATED \
+     "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
+     "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
+     "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 "
+ 
++#define QEMU_T3D_PMEM \
++    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp0,persistent-memdev=cxl-mem0,lsa=lsa0,id=pmem0 "
++
++#define QEMU_T3D_VMEM \
++    "-object memory-backend-ram,id=cxl-mem0,size=256M " \
++    "-device cxl-type3,bus=rp0,volatile-memdev=cxl-mem0,id=mem0 "
++
++#define QEMU_T3D_VMEM_LSA \
++    "-object memory-backend-ram,id=cxl-mem0,size=256M " \
++    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp0,volatile-memdev=cxl-mem0,lsa=lsa0,id=mem0 "
++
+ #define QEMU_2T3D \
+     "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
+     "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
+-    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
++    "-device cxl-type3,bus=rp0,persistent-memdev=cxl-mem0,lsa=lsa0,id=pmem0 " \
+     "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M " \
+     "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M " \
+-    "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 "
++    "-device cxl-type3,bus=rp1,persistent-memdev=cxl-mem1,lsa=lsa1,id=pmem1 "
+ 
+ #define QEMU_4T3D \
+     "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
+     "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
+-    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
++    "-device cxl-type3,bus=rp0,persistent-memdev=cxl-mem0,lsa=lsa0,id=pmem0 " \
+     "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M " \
+     "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M " \
+-    "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 " \
++    "-device cxl-type3,bus=rp1,persistent-memdev=cxl-mem1,lsa=lsa1,id=pmem1 " \
+     "-object memory-backend-file,id=cxl-mem2,mem-path=%s,size=256M " \
+     "-object memory-backend-file,id=lsa2,mem-path=%s,size=256M " \
+-    "-device cxl-type3,bus=rp2,memdev=cxl-mem2,lsa=lsa2,id=cxl-pmem2 " \
++    "-device cxl-type3,bus=rp2,persistent-memdev=cxl-mem2,lsa=lsa2,id=pmem2 " \
+     "-object memory-backend-file,id=cxl-mem3,mem-path=%s,size=256M " \
+     "-object memory-backend-file,id=lsa3,mem-path=%s,size=256M " \
+-    "-device cxl-type3,bus=rp3,memdev=cxl-mem3,lsa=lsa3,id=cxl-pmem3 "
++    "-device cxl-type3,bus=rp3,persistent-memdev=cxl-mem3,lsa=lsa3,id=pmem3 "
+ 
+ static void cxl_basic_hb(void)
+ {
+@@ -98,14 +112,53 @@ static void cxl_2root_port(void)
+ }
+ 
+ #ifdef CONFIG_POSIX
+-static void cxl_t3d(void)
++static void cxl_t3d_deprecated(void)
++{
++    g_autoptr(GString) cmdline = g_string_new(NULL);
++    g_autofree const char *tmpfs = NULL;
++
++    tmpfs = g_dir_make_tmp("cxl-test-XXXXXX", NULL);
++
++    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D_DEPRECATED,
++                    tmpfs, tmpfs);
++
++    qtest_start(cmdline->str);
++    qtest_end();
++}
++
++static void cxl_t3d_persistent(void)
++{
++    g_autoptr(GString) cmdline = g_string_new(NULL);
++    g_autofree const char *tmpfs = NULL;
++
++    tmpfs = g_dir_make_tmp("cxl-test-XXXXXX", NULL);
++
++    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D_PMEM,
++                    tmpfs, tmpfs);
++
++    qtest_start(cmdline->str);
++    qtest_end();
++}
++
++static void cxl_t3d_volatile(void)
++{
++    g_autoptr(GString) cmdline = g_string_new(NULL);
++
++    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D_VMEM);
++
++    qtest_start(cmdline->str);
++    qtest_end();
++}
++
++static void cxl_t3d_volatile_lsa(void)
+ {
+     g_autoptr(GString) cmdline = g_string_new(NULL);
+     g_autofree const char *tmpfs = NULL;
+ 
+     tmpfs = g_dir_make_tmp("cxl-test-XXXXXX", NULL);
+ 
+-    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D, tmpfs, tmpfs);
++    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D_VMEM_LSA,
++                    tmpfs);
+ 
+     qtest_start(cmdline->str);
+     qtest_end();
+@@ -155,7 +208,10 @@ int main(int argc, char **argv)
+     qtest_add_func("/pci/cxl/rp", cxl_root_port);
+     qtest_add_func("/pci/cxl/rp_x2", cxl_2root_port);
+ #ifdef CONFIG_POSIX
+-    qtest_add_func("/pci/cxl/type3_device", cxl_t3d);
++    qtest_add_func("/pci/cxl/type3_device", cxl_t3d_deprecated);
++    qtest_add_func("/pci/cxl/type3_device_pmem", cxl_t3d_persistent);
++    qtest_add_func("/pci/cxl/type3_device_vmem", cxl_t3d_volatile);
++    qtest_add_func("/pci/cxl/type3_device_vmem_lsa", cxl_t3d_volatile_lsa);
+     qtest_add_func("/pci/cxl/rp_x2_type3_x2", cxl_1pxb_2rp_2t3d);
+     qtest_add_func("/pci/cxl/pxb_x2_root_port_x4_type3_x4", cxl_2pxb_4rp_4t3d);
+ #endif
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 169C5C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 17 Feb 2023 16:38:14 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229999AbjBQQiN (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 17 Feb 2023 11:38:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50516 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229744AbjBQQiM (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 17 Feb 2023 11:38:12 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1F8410D2
+        for <linux-cxl@vger.kernel.org>; Fri, 17 Feb 2023 08:38:04 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PJGyz6g9fz6J7R6;
+        Sat, 18 Feb 2023 00:11:39 +0800 (CST)
+Received: from localhost (10.122.247.231) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.17; Fri, 17 Feb
+ 2023 16:16:18 +0000
+Date: Fri, 17 Feb 2023 16:16:17 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: Jonathan Cameron via <qemu-devel@nongnu.org>
+CC: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        Philippe =?ISO-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230217161617.000064d1@huawei.com>
+In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+        <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+Organization: Huawei Technologies R&D (UK) Ltd.
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, 31 Jan 2023 16:38:47 +0000
+Jonathan Cameron via <qemu-devel@nongnu.org> wrote:
+
+> From: Gregory Price <gourry.memverge@gmail.com>
+> 
+> This commit enables each CXL Type-3 device to contain one volatile
+> memory region and one persistent region.
+> 
+> Two new properties have been added to cxl-type3 device initialization:
+>     [volatile-memdev] and [persistent-memdev]
+> 
+> The existing [memdev] property has been deprecated and will default the
+> memory region to a persistent memory region (although a user may assign
+> the region to a ram or file backed region). It cannot be used in
+> combination with the new [persistent-memdev] property.
+> 
+> Partitioning volatile memory from persistent memory is not yet supported.
+> 
+> Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+> at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+> 
+> Signed-off-by: Gregory Price <gregory.price@memverge.com>
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> 
+Hi Gregory,
+
+I've added support for multiple HDM decoders and hence can now
+test both volatile and non volatile on same device.
+It very nearly all works. With one exception which is I couldn't
+poke the first byte of the non volatile region.
+
+I think we have an off by one in a single check.
+
+Interestingly it makes no difference when creating an FS on top
+(which was my standard test) so I only noticed when poking memory
+addresses directly to sanity check the HDM decoder setup.
+
+I'll roll a v2 if no one shouts out that I'm wrong.
+
+Note that adding multiple HDM decoders massively increases
+the number of test cases over what we had before to poke all the
+corners so I may well be missing stuff.  Hopefully can send an RFC
+of that support out next week.
+
+Jonathan
+
+> -MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *data,
+> -                           unsigned size, MemTxAttrs attrs)
+> +static int cxl_type3_hpa_to_as_and_dpa(CXLType3Dev *ct3d,
+> +                                       hwaddr host_addr,
+> +                                       unsigned int size,
+> +                                       AddressSpace **as,
+> +                                       uint64_t *dpa_offset)
+>  {
+> -    CXLType3Dev *ct3d = CXL_TYPE3(d);
+> -    uint64_t dpa_offset;
+> -    MemoryRegion *mr;
+> +    MemoryRegion *vmr = NULL, *pmr = NULL;
+>  
+> -    /* TODO support volatile region */
+> -    mr = host_memory_backend_get_memory(ct3d->hostmem);
+> -    if (!mr) {
+> -        return MEMTX_ERROR;
+> +    if (ct3d->hostvmem) {
+> +        vmr = host_memory_backend_get_memory(ct3d->hostvmem);
+> +    }
+> +    if (ct3d->hostpmem) {
+> +        pmr = host_memory_backend_get_memory(ct3d->hostpmem);
+>      }
+>  
+> -    if (!cxl_type3_dpa(ct3d, host_addr, &dpa_offset)) {
+> -        return MEMTX_ERROR;
+> +    if (!vmr && !pmr) {
+> +        return -ENODEV;
+> +    }
+> +
+> +    if (!cxl_type3_dpa(ct3d, host_addr, dpa_offset)) {
+> +        return -EINVAL;
+> +    }
+> +
+> +    if (*dpa_offset > int128_get64(ct3d->cxl_dstate.mem_size)) {
+> +        return -EINVAL;
+> +    }
+> +
+> +    if (vmr) {
+> +        if (*dpa_offset <= int128_get64(vmr->size)) {
+
+Off by one I think.  < 
+
+> +            *as = &ct3d->hostvmem_as;
+> +        } else {
+> +            *as = &ct3d->hostpmem_as;
+> +            *dpa_offset -= vmr->size;
+> +        }
+> +    } else {
+> +        *as = &ct3d->hostpmem_as;
+>      }
+>  
+> -    if (dpa_offset > int128_get64(mr->size)) {
+> +    return 0;
+> +}
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D4A9C636CC
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:38:52 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229480AbjAaQiv (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 11:38:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49378 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230215AbjAaQiu (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:38:50 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F09F166FB
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:38:47 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P5rLv6vgvz6J9Pc;
+        Wed,  1 Feb 2023 00:37:43 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.34; Tue, 31 Jan 2023 16:38:44 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: [PATCH 0/2] hw/mem: CXL Type-3 Volatile Memory Support
+Date: Tue, 31 Jan 2023 16:38:45 +0000
+Message-ID: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Now we have some kernel code to test this against (and it looks good)
+I'd like to propose this series for upstream following 3 other series
+already proposed for inclusion:
+
+a) https://lore.kernel.org/linux-cxl/20230130143705.11758-1-Jonathan.Cameron@huawei.com/
+   [PATCH v3 00/10] hw/cxl: CXL emulation cleanups and minor fixes for upstream
+b) https://lore.kernel.org/linux-cxl/20230130155251.3430-1-Jonathan.Cameron@huawei.com/
+   [PATCH v3 0/8] hw/cxl: RAS error emulation and injection
+c) https://lore.kernel.org/linux-cxl/20230125152703.9928-1-Jonathan.Cameron@huawei.com/
+   [PATCH 0/2] hw/cxl: Passthrough HDM decoder emulation
+
+Changes since RFC V4 called out in individual patches.
+ - Some minor fixes.
+ - Refactors to simplify patch / resulting code as relevant.
+ - Update the bios-tables-test for CXL to use non deprecated interfaces.
+
+Whilst the more significant changes have been discussed on list
+Gregory, please take a look at these and check your are happy with
+my tweaks.
+
+Kernel support used to test this:
+https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=for-6.3/cxl-ram-region
+
+Previous cover letter updated to reflect pulling one patch out
+as a precursor cleanup in set (a) above.
+
+This patches provides 2 features to the CXL Type-3 Device:
+    1) Volatile Memory Region Support
+    2) Multi-Region support (1 Volatile, 1 Persistent)
+
+Summary of Changes per-commit:
+1) Whitespace updates to docs and tests
+2) Refactor CDAT DSMAS Initialization for multi-region initialization
+   Multi-Region and Volatile Memory support for CXL Type-3 Devices
+   Test and Documentation updates
+
+The final patch in this series makes 6 major changes to the type-3
+device in order to implement multi-region and volatile region support
+    1) The HostMemoryBackend [hostmem] has been replaced by two
+       [hostvmem] and [hostpmem] to store volatile and persistent memory
+       respectively
+    2) The single AddressSpace has been replaced by two AddressSpaces
+       [hostvmem_as] and [hostpmem_as] to map respective memdevs.
+    3) Each memory region size and total region are stored separately
+    4) The CDAT and DVSEC memory map entries have been updated:
+       a) if vmem is present, vmem is mapped at DPA(0)
+       b) if pmem is present
+          i)  and vmem is present, pmem is mapped at DPA(vmem->size)
+          ii) else, pmem is mapped at DPA(0)
+       c) partitioning of pmem is not supported in this patch set but
+          has been discussed and this design should suffice.
+    5) Read/Write functions have been updated to access AddressSpaces
+       according to the mapping described in #4.  Access to the
+       persistent address space is calculated by (dpa-vmem_len)
+    6) cxl-mailbox has been updated to report the respective size of
+       volatile and persistent memory regions
+
+Gregory Price (2):
+  tests/qtest/cxl-test: whitespace, line ending cleanup
+  hw/cxl: Multi-Region CXL Type-3 Devices (Volatile and Persistent)
+
+ docs/system/devices/cxl.rst    |  49 ++++--
+ hw/cxl/cxl-mailbox-utils.c     |  26 +--
+ hw/mem/cxl_type3.c             | 300 +++++++++++++++++++++++++--------
+ include/hw/cxl/cxl_device.h    |  11 +-
+ tests/qtest/bios-tables-test.c |   8 +-
+ tests/qtest/cxl-test.c         | 146 +++++++++++-----
+ 6 files changed, 398 insertions(+), 142 deletions(-)
+
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01432C636CC
+	for <linux-cxl@archiver.kernel.org>; Thu, 16 Feb 2023 18:42:42 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229777AbjBPSml (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 16 Feb 2023 13:42:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47704 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229746AbjBPSml (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 16 Feb 2023 13:42:41 -0500
+Received: from mailout1.w2.samsung.com (mailout1.w2.samsung.com [211.189.100.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9276250345
+        for <linux-cxl@vger.kernel.org>; Thu, 16 Feb 2023 10:42:28 -0800 (PST)
+Received: from uscas1p1.samsung.com (unknown [182.198.245.206])
+        by mailout1.w2.samsung.com (KnoxPortal) with ESMTP id 20230216184226usoutp0182e1b861ab0ab24282650b59e9d3b32b~EYjYyYt4i1561715617usoutp01G;
+        Thu, 16 Feb 2023 18:42:26 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w2.samsung.com 20230216184226usoutp0182e1b861ab0ab24282650b59e9d3b32b~EYjYyYt4i1561715617usoutp01G
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1676572946;
+        bh=eprGYAk4QnCVNt4CAGGMJnUKYp18nsz/5bi2Mn3J9qo=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
+        b=T+C5n0NHhZ6ySrfd28mvZVYUPrTQDWTGBoUMdIjCXOcp706CLPsMhmKcGHdG814Zr
+         MYC3m5iHuwvB5bbgObUF+HTMAQRxTXW0+H71n3XsvLzdWO8n+Dk2KnR3zcNUCTMJ4O
+         1Jshl+xUeSq8a5oGwGmL0wcXsOSa6+XPr5/38WBw=
+Received: from ussmges1new.samsung.com (u109.gpu85.samsung.co.kr
+        [203.254.195.109]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230216184226uscas1p24143581c90b0ee4cd1b66bf1b01023bc~EYjYovFLC0071500715uscas1p2q;
+        Thu, 16 Feb 2023 18:42:26 +0000 (GMT)
+Received: from uscas1p2.samsung.com ( [182.198.245.207]) by
+        ussmges1new.samsung.com (USCPEMTA) with SMTP id 49.2C.06976.1197EE36; Thu,
+        16 Feb 2023 13:42:25 -0500 (EST)
+Received: from ussmgxs3new.samsung.com (u92.gpu85.samsung.co.kr
+        [203.254.195.92]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230216184225uscas1p2bb2f60fe3d6f0d1f8d9ffe2ff377e190~EYjYOOerU3227332273uscas1p2q;
+        Thu, 16 Feb 2023 18:42:25 +0000 (GMT)
+X-AuditID: cbfec36d-afdff70000011b40-a6-63ee791142a8
+Received: from SSI-EX4.ssi.samsung.com ( [105.128.2.146]) by
+        ussmgxs3new.samsung.com (USCPEXMTA) with SMTP id 30.F7.11346.1197EE36; Thu,
+        16 Feb 2023 13:42:25 -0500 (EST)
+Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
+        SSI-EX4.ssi.samsung.com (105.128.2.229) with Microsoft SMTP Server
+        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+        15.1.2375.24; Thu, 16 Feb 2023 10:42:24 -0800
+Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
+        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Thu,
+        16 Feb 2023 10:42:24 -0800
+From: Fan Ni <fan.ni@samsung.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+CC: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "linuxarm@huawei.com" <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?iso-8859-1?Q?Philippe_Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Thread-Topic: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+        and Persistent)
+Thread-Index: AQHZQjZpWt0anxAoHU61497Cp1Ks6w==
+Date: Thu, 16 Feb 2023 18:42:24 +0000
+Message-ID: <20230216184215.GA1083338@bgt-140510-bm03>
+In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [105.128.2.176]
+Content-Type: text/plain; charset="iso-8859-1"
+Content-ID: <4568609578EC874C9DDD31E891AE6461@ssi.samsung.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-CFilter-Loop: Reflected
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrKKsWRmVeSWpSXmKPExsWy7djX87qCle+SDTb8NrNonryY0WL1zTWM
+        Fi/+PGey2P/0OYvFqoXX2CzOzzrFYnF44xkmi99rHzNZ/P/1itVizQphi+O9O1gcuD12zrrL
+        7tFy5C2rx+I9L5k8Nq3qZPO4c20Pm8eTa5uZPN7vu8rmMXV2vcfnTXIBnFFcNimpOZllqUX6
+        dglcGcdPvGUvOLWEqWLG1ONsDYxP7jJ2MXJySAiYSPzf8IWti5GLQ0hgJaPElX1TmSGcViaJ
+        65M6mGGqjjV+ZodIrGWUWL1gCZTziVFi8rTtLBDOMkaJmYtWsoG0sAkoSuzr2g5miwgYSby7
+        MYkRpIhZ4AezxP6zT9hBEsICMRI7/+5mhCiKldi7tx2qQU/izY5pLCA2i4CqxPJFG8FqeAXM
+        JB7sOA5WwyngKLHm3glWEJtRQEzi+6k1TCA2s4C4xK0n85kg7haUWDR7D9QPYhL/dj1kg7AV
+        Je5/f8kOUa8ncWPqFDYI207i1trvjBC2tsSyha+ZIfYKSpyc+YQFoldS4uCKG2AfSwhM55R4
+        0fwbKuEiMePeVShbWmL6mstANgeQnSyx6iMXRDhHYv6SLVAl1hIL/6xnmsCoMgvJ2bOQnDQL
+        yUmzkJw0C8lJCxhZVzGKlxYX56anFhvmpZbrFSfmFpfmpesl5+duYgSmvNP/DufuYNxx66Pe
+        IUYmDsZDjBIczEoivJtuvkkW4k1JrKxKLcqPLyrNSS0+xCjNwaIkzmtoezJZSCA9sSQ1OzW1
+        ILUIJsvEwSnVwDSrfJYK57pCi10JAbOOtL3Ka5JgLjqSE9ecHOr4tHuvCnfxG5PTdYa+G89H
+        qXsm3Z50eGPr3kynt/feR5+Svi/ldq3Aj+nxdO/HOXfmaAmpPLBeuvDBT90FvQqZgitmVzJY
+        JymsiHITs9//XyVOzY3Za/PJ7arWtckMLhWrDwg1KmUpzw5+9H2aY/ZLKaHcxkWBj1xtZ91a
+        e/yCnc5uK3nbls9CCz3Djh071PpJqEI54+Hho9xVTtu5hSIeeDQ2hTAnXRMr3bfs/TT+eHme
+        DjnTu8uWLFsrEehWtNJVeOonnwqpJrX9LhxXfE8uCFydcOP/wxbxSSFuNj+/tDVIidy1jRT8
+        x5Ugf3uOoO51JZbijERDLeai4kQAz7XySugDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrIIsWRmVeSWpSXmKPExsWS2cA0SVew8l2ywZlVMhbNkxczWqy+uYbR
+        4sWf50wW+58+Z7FYtfAam8X5WadYLA5vPMNk8XvtYyaL/79esVqsWSFscbx3B4sDt8fOWXfZ
+        PVqOvGX1WLznJZPHplWdbB53ru1h83hybTOTx/t9V9k8ps6u9/i8SS6AM4rLJiU1J7MstUjf
+        LoEr4/iJt+wFp5YwVcyYepytgfHJXcYuRk4OCQETiWONn9m7GLk4hARWM0qcnb2dGcL5xCjx
+        aUULVGYZo8S06Q/YQVrYBBQl9nVtZwOxRQSMJN7dmAQ2ilngB7NE0y0ZEFtYIEbiR/djpi5G
+        DqCaWInXx9QgyvUk3uyYxgJiswioSixftBGslVfATOLBjuNgI4UEyiVW31sKZnMKOEqsuXeC
+        FcRmFBCT+H5qDRPEKnGJW0/mM0F8ICCxZM95ZghbVOLl43+sELaixP3vL9kh6vUkbkydwgZh
+        20ncWvsd6mRtiWULXzND3CAocXLmExaIXkmJgytusExglJiFZN0sJKNmIRk1C8moWUhGLWBk
+        XcUoXlpcnJteUWycl1quV5yYW1yal66XnJ+7iRGYKk7/Oxyzg/HerY96hxiZOBgPMUpwMCuJ
+        8G66+SZZiDclsbIqtSg/vqg0J7X4EKM0B4uSOK9H7MR4IYH0xJLU7NTUgtQimCwTB6dUA1Ps
+        54n5pyZ/cNSds8tkTmDi1INz2U7kbtAX9a79f3Wt7CVfUSnB4N+tzDL1EjPmfDTN2vFS7mGb
+        ZbNV/eY9yn4r3vlKxX5+viBYe8r26+22ToLdbgktdavbfvntilv9il3lygrnYnbzBy//ftPl
+        zH/udv94Z/GWufsDcrp/rlSQuvbhZjLTvbJI5h1/+BMub2y1Wl948MHtLad7X/W3aR521164
+        aMrP/gPWnF/O7jpcXL96Nb9GWWhHqTVHzPJ+Pa87LxzfPYw/ckW//7FU9/73jueLDk+patd2
+        fJL4z6JmhuvtyylJD68y/7yzaTl7VudT394ZG9PXetw6Ize3YOWxdRuVoycvC+1yaZh9xFxZ
+        iaU4I9FQi7moOBEAV+IJ9IQDAAA=
+X-CMS-MailID: 20230216184225uscas1p2bb2f60fe3d6f0d1f8d9ffe2ff377e190
+CMS-TYPE: 301P
+X-CMS-RootMailID: 20230216184225uscas1p2bb2f60fe3d6f0d1f8d9ffe2ff377e190
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+        <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+        <CGME20230216184225uscas1p2bb2f60fe3d6f0d1f8d9ffe2ff377e190@uscas1p2.samsung.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, Jan 31, 2023 at 04:38:47PM +0000, Jonathan Cameron wrote:
+
+> From: Gregory Price <gourry.memverge@gmail.com>
+>=20
+> This commit enables each CXL Type-3 device to contain one volatile
+> memory region and one persistent region.
+>=20
+> Two new properties have been added to cxl-type3 device initialization:
+>     [volatile-memdev] and [persistent-memdev]
+>=20
+> The existing [memdev] property has been deprecated and will default the
+> memory region to a persistent memory region (although a user may assign
+> the region to a ram or file backed region). It cannot be used in
+> combination with the new [persistent-memdev] property.
+>=20
+> Partitioning volatile memory from persistent memory is not yet supported.
+>=20
+> Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+> at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+>=20
+> Signed-off-by: Gregory Price <gregory.price@memverge.com>
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+>=20
+
+Reviewed-by: Fan Ni <fan.ni@samsung.com>
+Tested-by: Fan Ni <fan.ni@samsung.com>
+
+Tested a single HB, single RP, single volatile memdev setup (with
+kernel volatile patch from Dan), it passed the following ops,
+1. cxl list
+2. cxl create-region
+3. daxctl online-memory dax0.0
+4. simple apps to use cxl memory with "numactl --membind=3D1"
+
+> ---
+> Chances since RFC V4:
+> - Fixed up issue reported by Gregory of volatile regions being reported
+>   as non volatile in CDAT.  Fix as suggested by Gregory.
+> - Report volatile memory as EFI_MEMORY_SP.
+> - Fixed some naming issues in tests including sticking to existing
+>   naming for memory device of cxl-memX throughout.
+> - Update the bios-tables-test.c test to use the new non deprecated
+>   parameter name. Note this has no impact on generated tables.
+> - Flipped logic of get_lsa_size() callback to slightly simplify change.
+> - cxl_setup_memory() reduce scope of local variables and name them
+>   to make it clear which are volatile and which are persistent related.
+>=20
+>  docs/system/devices/cxl.rst    |  49 ++++--
+>  hw/cxl/cxl-mailbox-utils.c     |  26 +--
+>  hw/mem/cxl_type3.c             | 300 +++++++++++++++++++++++++--------
+>  include/hw/cxl/cxl_device.h    |  11 +-
+>  tests/qtest/bios-tables-test.c |   8 +-
+>  tests/qtest/cxl-test.c         |  76 +++++++--
+>  6 files changed, 359 insertions(+), 111 deletions(-)
+>=20
+> diff --git a/docs/system/devices/cxl.rst b/docs/system/devices/cxl.rst
+> index f25783a4ec..89a41cff73 100644
+> --- a/docs/system/devices/cxl.rst
+> +++ b/docs/system/devices/cxl.rst
+> @@ -300,7 +300,7 @@ Example topology involving a switch::
+> =20
+>  Example command lines
+>  ---------------------
+> -A very simple setup with just one directly attached CXL Type 3 device::
+> +A very simple setup with just one directly attached CXL Type 3 Persisten=
+t Memory device::
+> =20
+>    qemu-system-aarch64 -M virt,gic-version=3D3,cxl=3Don -m 4g,maxmem=3D8G=
+,slots=3D8 -cpu max \
+>    ...
+> @@ -308,7 +308,28 @@ A very simple setup with just one directly attached =
+CXL Type 3 device::
+>    -object memory-backend-file,id=3Dcxl-lsa1,share=3Don,mem-path=3D/tmp/l=
+sa.raw,size=3D256M \
+>    -device pxb-cxl,bus_nr=3D12,bus=3Dpcie.0,id=3Dcxl.1 \
+>    -device cxl-rp,port=3D0,bus=3Dcxl.1,id=3Droot_port13,chassis=3D0,slot=
+=3D2 \
+> -  -device cxl-type3,bus=3Droot_port13,memdev=3Dcxl-mem1,lsa=3Dcxl-lsa1,i=
+d=3Dcxl-pmem0 \
+> +  -device cxl-type3,bus=3Droot_port13,persistent-memdev=3Dcxl-mem1,lsa=
+=3Dcxl-lsa1,id=3Dcxl-pmem0 \
+> +  -M cxl-fmw.0.targets.0=3Dcxl.1,cxl-fmw.0.size=3D4G
+> +
+> +A very simple setup with just one directly attached CXL Type 3 Volatile =
+Memory device::
+> +
+> +  qemu-system-aarch64 -M virt,gic-version=3D3,cxl=3Don -m 4g,maxmem=3D8G=
+,slots=3D8 -cpu max \
+> +  ...
+> +  -object memory-backend-ram,id=3Dvmem0,share=3Don,size=3D256M \
+> +  -device pxb-cxl,bus_nr=3D12,bus=3Dpcie.0,id=3Dcxl.1 \
+> +  -device cxl-rp,port=3D0,bus=3Dcxl.1,id=3Droot_port13,chassis=3D0,slot=
+=3D2 \
+> +  -device cxl-type3,bus=3Droot_port13,volatile-memdev=3Dvmem0,id=3Dcxl-v=
+mem0 \
+> +  -M cxl-fmw.0.targets.0=3Dcxl.1,cxl-fmw.0.size=3D4G
+> +
+> +The same volatile setup may optionally include an LSA region::
+> +
+> +  qemu-system-aarch64 -M virt,gic-version=3D3,cxl=3Don -m 4g,maxmem=3D8G=
+,slots=3D8 -cpu max \
+> +  ...
+> +  -object memory-backend-ram,id=3Dvmem0,share=3Don,size=3D256M \
+> +  -object memory-backend-file,id=3Dcxl-lsa0,share=3Don,mem-path=3D/tmp/l=
+sa.raw,size=3D256M \
+> +  -device pxb-cxl,bus_nr=3D12,bus=3Dpcie.0,id=3Dcxl.1 \
+> +  -device cxl-rp,port=3D0,bus=3Dcxl.1,id=3Droot_port13,chassis=3D0,slot=
+=3D2 \
+> +  -device cxl-type3,bus=3Droot_port13,volatile-memdev=3Dvmem0,lsa=3Dcxl-=
+lsa0,id=3Dcxl-vmem0 \
+>    -M cxl-fmw.0.targets.0=3Dcxl.1,cxl-fmw.0.size=3D4G
+> =20
+>  A setup suitable for 4 way interleave. Only one fixed window provided, t=
+o enable 2 way
+> @@ -328,13 +349,13 @@ the CXL Type3 device directly attached (no switches=
+).::
+>    -device pxb-cxl,bus_nr=3D12,bus=3Dpcie.0,id=3Dcxl.1 \
+>    -device pxb-cxl,bus_nr=3D222,bus=3Dpcie.0,id=3Dcxl.2 \
+>    -device cxl-rp,port=3D0,bus=3Dcxl.1,id=3Droot_port13,chassis=3D0,slot=
+=3D2 \
+> -  -device cxl-type3,bus=3Droot_port13,memdev=3Dcxl-mem1,lsa=3Dcxl-lsa1,i=
+d=3Dcxl-pmem0 \
+> +  -device cxl-type3,bus=3Droot_port13,persistent-memdev=3Dcxl-mem1,lsa=
+=3Dcxl-lsa1,id=3Dcxl-pmem0 \
+>    -device cxl-rp,port=3D1,bus=3Dcxl.1,id=3Droot_port14,chassis=3D0,slot=
+=3D3 \
+> -  -device cxl-type3,bus=3Droot_port14,memdev=3Dcxl-mem2,lsa=3Dcxl-lsa2,i=
+d=3Dcxl-pmem1 \
+> +  -device cxl-type3,bus=3Droot_port14,persistent-memdev=3Dcxl-mem2,lsa=
+=3Dcxl-lsa2,id=3Dcxl-pmem1 \
+>    -device cxl-rp,port=3D0,bus=3Dcxl.2,id=3Droot_port15,chassis=3D0,slot=
+=3D5 \
+> -  -device cxl-type3,bus=3Droot_port15,memdev=3Dcxl-mem3,lsa=3Dcxl-lsa3,i=
+d=3Dcxl-pmem2 \
+> +  -device cxl-type3,bus=3Droot_port15,persistent-memdev=3Dcxl-mem3,lsa=
+=3Dcxl-lsa3,id=3Dcxl-pmem2 \
+>    -device cxl-rp,port=3D1,bus=3Dcxl.2,id=3Droot_port16,chassis=3D0,slot=
+=3D6 \
+> -  -device cxl-type3,bus=3Droot_port16,memdev=3Dcxl-mem4,lsa=3Dcxl-lsa4,i=
+d=3Dcxl-pmem3 \
+> +  -device cxl-type3,bus=3Droot_port16,persistent-memdev=3Dcxl-mem4,lsa=
+=3Dcxl-lsa4,id=3Dcxl-pmem3 \
+>    -M cxl-fmw.0.targets.0=3Dcxl.1,cxl-fmw.0.targets.1=3Dcxl.2,cxl-fmw.0.s=
+ize=3D4G,cxl-fmw.0.interleave-granularity=3D8k
+> =20
+>  An example of 4 devices below a switch suitable for 1, 2 or 4 way interl=
+eave::
+> @@ -354,15 +375,23 @@ An example of 4 devices below a switch suitable for=
+ 1, 2 or 4 way interleave::
+>    -device cxl-rp,port=3D1,bus=3Dcxl.1,id=3Droot_port1,chassis=3D0,slot=
+=3D1 \
+>    -device cxl-upstream,bus=3Droot_port0,id=3Dus0 \
+>    -device cxl-downstream,port=3D0,bus=3Dus0,id=3Dswport0,chassis=3D0,slo=
+t=3D4 \
+> -  -device cxl-type3,bus=3Dswport0,memdev=3Dcxl-mem0,lsa=3Dcxl-lsa0,id=3D=
+cxl-pmem0,size=3D256M \
+> +  -device cxl-type3,bus=3Dswport0,persistent-memdev=3Dcxl-mem0,lsa=3Dcxl=
+-lsa0,id=3Dcxl-pmem0,size=3D256M \
+>    -device cxl-downstream,port=3D1,bus=3Dus0,id=3Dswport1,chassis=3D0,slo=
+t=3D5 \
+> -  -device cxl-type3,bus=3Dswport1,memdev=3Dcxl-mem1,lsa=3Dcxl-lsa1,id=3D=
+cxl-pmem1,size=3D256M \
+> +  -device cxl-type3,bus=3Dswport1,persistent-memdev=3Dcxl-mem1,lsa=3Dcxl=
+-lsa1,id=3Dcxl-pmem1,size=3D256M \
+>    -device cxl-downstream,port=3D2,bus=3Dus0,id=3Dswport2,chassis=3D0,slo=
+t=3D6 \
+> -  -device cxl-type3,bus=3Dswport2,memdev=3Dcxl-mem2,lsa=3Dcxl-lsa2,id=3D=
+cxl-pmem2,size=3D256M \
+> +  -device cxl-type3,bus=3Dswport2,persistent-memdev=3Dcxl-mem2,lsa=3Dcxl=
+-lsa2,id=3Dcxl-pmem2,size=3D256M \
+>    -device cxl-downstream,port=3D3,bus=3Dus0,id=3Dswport3,chassis=3D0,slo=
+t=3D7 \
+> -  -device cxl-type3,bus=3Dswport3,memdev=3Dcxl-mem3,lsa=3Dcxl-lsa3,id=3D=
+cxl-pmem3,size=3D256M \
+> +  -device cxl-type3,bus=3Dswport3,persistent-memdev=3Dcxl-mem3,lsa=3Dcxl=
+-lsa3,id=3Dcxl-pmem3,size=3D256M \
+>    -M cxl-fmw.0.targets.0=3Dcxl.1,cxl-fmw.0.size=3D4G,cxl-fmw.0.interleav=
+e-granularity=3D4k
+> =20
+> +Deprecations
+> +------------
+> +
+> +The Type 3 device [memdev] attribute has been deprecated in favor of the
+> +[persistent-memdev] attributes. [memdev] will default to a persistent me=
+mory
+> +device for backward compatibility and is incapable of being used in comb=
+ination
+> +with [persistent-memdev].
+> +
+>  Kernel Configuration Options
+>  ----------------------------
+> =20
+> diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+> index 206e04a4b8..cc9c8b7380 100644
+> --- a/hw/cxl/cxl-mailbox-utils.c
+> +++ b/hw/cxl/cxl-mailbox-utils.c
+> @@ -141,7 +141,8 @@ static ret_code cmd_firmware_update_get_info(struct c=
+xl_cmd *cmd,
+>      } QEMU_PACKED *fw_info;
+>      QEMU_BUILD_BUG_ON(sizeof(*fw_info) !=3D 0x50);
+> =20
+> -    if (cxl_dstate->pmem_size < CXL_CAPACITY_MULTIPLIER) {
+> +    if ((cxl_dstate->vmem_size < CXL_CAPACITY_MULTIPLIER) ||
+> +        (cxl_dstate->pmem_size < CXL_CAPACITY_MULTIPLIER)) {
+>          return CXL_MBOX_INTERNAL_ERROR;
+>      }
+> =20
+> @@ -288,20 +289,20 @@ static ret_code cmd_identify_memory_device(struct c=
+xl_cmd *cmd,
+> =20
+>      CXLType3Dev *ct3d =3D container_of(cxl_dstate, CXLType3Dev, cxl_dsta=
+te);
+>      CXLType3Class *cvc =3D CXL_TYPE3_GET_CLASS(ct3d);
+> -    uint64_t size =3D cxl_dstate->pmem_size;
+> =20
+> -    if (!QEMU_IS_ALIGNED(size, CXL_CAPACITY_MULTIPLIER)) {
+> +    if ((!QEMU_IS_ALIGNED(cxl_dstate->vmem_size, CXL_CAPACITY_MULTIPLIER=
+)) ||
+> +        (!QEMU_IS_ALIGNED(cxl_dstate->pmem_size, CXL_CAPACITY_MULTIPLIER=
+))) {
+>          return CXL_MBOX_INTERNAL_ERROR;
+>      }
+> =20
+>      id =3D (void *)cmd->payload;
+>      memset(id, 0, sizeof(*id));
+> =20
+> -    /* PMEM only */
+>      snprintf(id->fw_revision, 0x10, "BWFW VERSION %02d", 0);
+> =20
+> -    id->total_capacity =3D size / CXL_CAPACITY_MULTIPLIER;
+> -    id->persistent_capacity =3D size / CXL_CAPACITY_MULTIPLIER;
+> +    id->total_capacity =3D cxl_dstate->mem_size / CXL_CAPACITY_MULTIPLIE=
+R;
+> +    id->persistent_capacity =3D cxl_dstate->pmem_size / CXL_CAPACITY_MUL=
+TIPLIER;
+> +    id->volatile_capacity =3D cxl_dstate->vmem_size / CXL_CAPACITY_MULTI=
+PLIER;
+>      id->lsa_size =3D cvc->get_lsa_size(ct3d);
+> =20
+>      *len =3D sizeof(*id);
+> @@ -319,16 +320,19 @@ static ret_code cmd_ccls_get_partition_info(struct =
+cxl_cmd *cmd,
+>          uint64_t next_pmem;
+>      } QEMU_PACKED *part_info =3D (void *)cmd->payload;
+>      QEMU_BUILD_BUG_ON(sizeof(*part_info) !=3D 0x20);
+> -    uint64_t size =3D cxl_dstate->pmem_size;
+> =20
+> -    if (!QEMU_IS_ALIGNED(size, CXL_CAPACITY_MULTIPLIER)) {
+> +    if ((!QEMU_IS_ALIGNED(cxl_dstate->vmem_size, CXL_CAPACITY_MULTIPLIER=
+)) ||
+> +        (!QEMU_IS_ALIGNED(cxl_dstate->pmem_size, CXL_CAPACITY_MULTIPLIER=
+))) {
+>          return CXL_MBOX_INTERNAL_ERROR;
+>      }
+> =20
+> -    /* PMEM only */
+> -    part_info->active_vmem =3D 0;
+> +    part_info->active_vmem =3D cxl_dstate->vmem_size / CXL_CAPACITY_MULT=
+IPLIER;
+> +    /*
+> +     * When both next_vmem and next_pmem are 0, there is no pending chan=
+ge to
+> +     * partitioning.
+> +     */
+>      part_info->next_vmem =3D 0;
+> -    part_info->active_pmem =3D size / CXL_CAPACITY_MULTIPLIER;
+> +    part_info->active_pmem =3D cxl_dstate->pmem_size / CXL_CAPACITY_MULT=
+IPLIER;
+>      part_info->next_pmem =3D 0;
+> =20
+>      *len =3D sizeof(*part_info);
+> diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+> index e32bbac966..beb931d59a 100644
+> --- a/hw/mem/cxl_type3.c
+> +++ b/hw/mem/cxl_type3.c
+> @@ -31,7 +31,8 @@ enum {
+>  };
+> =20
+>  static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+> -                                         int dsmad_handle, MemoryRegion =
+*mr)
+> +                                         int dsmad_handle, MemoryRegion =
+*mr,
+> +                                         bool is_pmem, uint64_t dpa_base=
+)
+>  {
+>      g_autofree CDATDsmas *dsmas =3D NULL;
+>      g_autofree CDATDslbis *dslbis0 =3D NULL;
+> @@ -50,8 +51,8 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader =
+**cdat_table,
+>              .length =3D sizeof(*dsmas),
+>          },
+>          .DSMADhandle =3D dsmad_handle,
+> -        .flags =3D CDAT_DSMAS_FLAG_NV,
+> -        .DPA_base =3D 0,
+> +        .flags =3D is_pmem ? CDAT_DSMAS_FLAG_NV : 0,
+> +        .DPA_base =3D dpa_base,
+>          .DPA_length =3D int128_get64(mr->size),
+>      };
+> =20
+> @@ -130,8 +131,11 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHead=
+er **cdat_table,
+>              .length =3D sizeof(*dsemts),
+>          },
+>          .DSMAS_handle =3D dsmad_handle,
+> -        /* Reserved - the non volatile from DSMAS matters */
+> -        .EFI_memory_type_attr =3D 2,
+> +        /*
+> +         * NV: Reserved - the non volatile from DSMAS matters
+> +         * V: EFI_MEMORY_SP
+> +         */
+> +        .EFI_memory_type_attr =3D is_pmem ? 2 : 1,
+>          .DPA_offset =3D 0,
+>          .DPA_length =3D int128_get64(mr->size),
+>      };
+> @@ -150,33 +154,66 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHea=
+der **cdat_table,
+>  static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+>  {
+>      g_autofree CDATSubHeader **table =3D NULL;
+> -    MemoryRegion *nonvolatile_mr;
+>      CXLType3Dev *ct3d =3D priv;
+> +    MemoryRegion *volatile_mr =3D NULL, *nonvolatile_mr =3D NULL;
+>      int dsmad_handle =3D 0;
+> -    int rc;
+> +    int cur_ent =3D 0;
+> +    int len =3D 0;
+> +    int rc, i;
+> =20
+> -    if (!ct3d->hostmem) {
+> +    if (!ct3d->hostpmem && !ct3d->hostvmem) {
+>          return 0;
+>      }
+> =20
+> -    nonvolatile_mr =3D host_memory_backend_get_memory(ct3d->hostmem);
+> -    if (!nonvolatile_mr) {
+> -        return -EINVAL;
+> +    if (ct3d->hostvmem) {
+> +        volatile_mr =3D host_memory_backend_get_memory(ct3d->hostvmem);
+> +        if (!volatile_mr) {
+> +            return -EINVAL;
+> +        }
+> +        len +=3D CT3_CDAT_NUM_ENTRIES;
+> +    }
+> +
+> +    if (ct3d->hostpmem) {
+> +        nonvolatile_mr =3D host_memory_backend_get_memory(ct3d->hostpmem=
+);
+> +        if (!nonvolatile_mr) {
+> +            return -EINVAL;
+> +        }
+> +        len +=3D CT3_CDAT_NUM_ENTRIES;
+>      }
+> =20
+> -    table =3D g_malloc0(CT3_CDAT_NUM_ENTRIES * sizeof(*table));
+> +    table =3D g_malloc0(len * sizeof(*table));
+>      if (!table) {
+>          return -ENOMEM;
+>      }
+> =20
+> -    rc =3D ct3_build_cdat_entries_for_mr(table, dsmad_handle++, nonvolat=
+ile_mr);
+> -    if (rc < 0) {
+> -        return rc;
+> +    /* Now fill them in */
+> +    if (volatile_mr) {
+> +        rc =3D ct3_build_cdat_entries_for_mr(table, dsmad_handle++, vola=
+tile_mr,
+> +                                           false, 0);
+> +        if (rc < 0) {
+> +            return rc;
+> +        }
+> +        cur_ent =3D CT3_CDAT_NUM_ENTRIES;
+>      }
+> =20
+> +    if (nonvolatile_mr) {
+> +        rc =3D ct3_build_cdat_entries_for_mr(&(table[cur_ent]), dsmad_ha=
+ndle++,
+> +                nonvolatile_mr, true, (volatile_mr ? volatile_mr->size :=
+ 0));
+> +        if (rc < 0) {
+> +            goto error_cleanup;
+> +        }
+> +        cur_ent +=3D CT3_CDAT_NUM_ENTRIES;
+> +    }
+> +    assert(len =3D=3D cur_ent);
+> +
+>      *cdat_table =3D g_steal_pointer(&table);
+> =20
+> -    return CT3_CDAT_NUM_ENTRIES;
+> +    return len;
+> +error_cleanup:
+> +    for (i =3D 0; i < cur_ent; i++) {
+> +        g_free(table[i]);
+> +    }
+> +    return rc;
+>  }
+> =20
+>  static void ct3_free_cdat_table(CDATSubHeader **cdat_table, int num, voi=
+d *priv)
+> @@ -264,16 +301,48 @@ static void build_dvsecs(CXLType3Dev *ct3d)
+>  {
+>      CXLComponentState *cxl_cstate =3D &ct3d->cxl_cstate;
+>      uint8_t *dvsec;
+> +    uint32_t range1_size_hi, range1_size_lo,
+> +             range1_base_hi, range1_base_lo,
+> +             range2_size_hi =3D 0, range2_size_lo =3D 0,
+> +             range2_base_hi =3D 0, range2_base_lo =3D 0;
+> +
+> +    /*
+> +     * Volatile memory is mapped as (0x0)
+> +     * Persistent memory is mapped at (volatile->size)
+> +     */
+> +    if (ct3d->hostvmem) {
+> +        range1_size_hi =3D ct3d->hostvmem->size >> 32;
+> +        range1_size_lo =3D (2 << 5) | (2 << 2) | 0x3 |
+> +                         (ct3d->hostvmem->size & 0xF0000000);
+> +        range1_base_hi =3D 0;
+> +        range1_base_lo =3D 0;
+> +        if (ct3d->hostpmem) {
+> +            range2_size_hi =3D ct3d->hostpmem->size >> 32;
+> +            range2_size_lo =3D (2 << 5) | (2 << 2) | 0x3 |
+> +                             (ct3d->hostpmem->size & 0xF0000000);
+> +            range2_base_hi =3D ct3d->hostvmem->size >> 32;
+> +            range2_base_lo =3D ct3d->hostvmem->size & 0xF0000000;
+> +        }
+> +    } else {
+> +        range1_size_hi =3D ct3d->hostpmem->size >> 32;
+> +        range1_size_lo =3D (2 << 5) | (2 << 2) | 0x3 |
+> +                         (ct3d->hostpmem->size & 0xF0000000);
+> +        range1_base_hi =3D 0;
+> +        range1_base_lo =3D 0;
+> +    }
+> =20
+>      dvsec =3D (uint8_t *)&(CXLDVSECDevice){
+>          .cap =3D 0x1e,
+>          .ctrl =3D 0x2,
+>          .status2 =3D 0x2,
+> -        .range1_size_hi =3D ct3d->hostmem->size >> 32,
+> -        .range1_size_lo =3D (2 << 5) | (2 << 2) | 0x3 |
+> -        (ct3d->hostmem->size & 0xF0000000),
+> -        .range1_base_hi =3D 0,
+> -        .range1_base_lo =3D 0,
+> +        .range1_size_hi =3D range1_size_hi,
+> +        .range1_size_lo =3D range1_size_lo,
+> +        .range1_base_hi =3D range1_base_hi,
+> +        .range1_base_lo =3D range1_base_lo,
+> +        .range2_size_hi =3D range2_size_hi,
+> +        .range2_size_lo =3D range2_size_lo,
+> +        .range2_base_hi =3D range2_base_hi,
+> +        .range2_base_lo =3D range2_base_lo,
+>      };
+>      cxl_component_create_dvsec(cxl_cstate, CXL2_TYPE3_DEVICE,
+>                                 PCIE_CXL_DEVICE_DVSEC_LENGTH,
+> @@ -492,36 +561,69 @@ static void ct3d_reg_write(void *opaque, hwaddr off=
+set, uint64_t value,
+>  static bool cxl_setup_memory(CXLType3Dev *ct3d, Error **errp)
+>  {
+>      DeviceState *ds =3D DEVICE(ct3d);
+> -    MemoryRegion *mr;
+> -    char *name;
+> =20
+> -    if (!ct3d->hostmem) {
+> -        error_setg(errp, "memdev property must be set");
+> +    if (!ct3d->hostmem && !ct3d->hostvmem && !ct3d->hostpmem) {
+> +        error_setg(errp, "at least one memdev property must be set");
+>          return false;
+> +    } else if (ct3d->hostmem && ct3d->hostpmem) {
+> +        error_setg(errp, "[memdev] cannot be used with new "
+> +                         "[persistent-memdev] property");
+> +        return false;
+> +    } else if (ct3d->hostmem) {
+> +        /* Use of hostmem property implies pmem */
+> +        ct3d->hostpmem =3D ct3d->hostmem;
+> +        ct3d->hostmem =3D NULL;
+>      }
+> =20
+> -    mr =3D host_memory_backend_get_memory(ct3d->hostmem);
+> -    if (!mr) {
+> -        error_setg(errp, "memdev property must be set");
+> +    if (ct3d->hostpmem && !ct3d->lsa) {
+> +        error_setg(errp, "lsa property must be set for persistent device=
+s");
+>          return false;
+>      }
+> -    memory_region_set_nonvolatile(mr, true);
+> -    memory_region_set_enabled(mr, true);
+> -    host_memory_backend_set_mapped(ct3d->hostmem, true);
+> =20
+> -    if (ds->id) {
+> -        name =3D g_strdup_printf("cxl-type3-dpa-space:%s", ds->id);
+> -    } else {
+> -        name =3D g_strdup("cxl-type3-dpa-space");
+> +    if (ct3d->hostvmem) {
+> +        MemoryRegion *vmr;
+> +        char *v_name;
+> +
+> +        vmr =3D host_memory_backend_get_memory(ct3d->hostvmem);
+> +        if (!vmr) {
+> +            error_setg(errp, "volatile memdev must have backing device")=
+;
+> +            return false;
+> +        }
+> +        memory_region_set_nonvolatile(vmr, false);
+> +        memory_region_set_enabled(vmr, true);
+> +        host_memory_backend_set_mapped(ct3d->hostvmem, true);
+> +        if (ds->id) {
+> +            v_name =3D g_strdup_printf("cxl-type3-dpa-vmem-space:%s", ds=
+->id);
+> +        } else {
+> +            v_name =3D g_strdup("cxl-type3-dpa-vmem-space");
+> +        }
+> +        address_space_init(&ct3d->hostvmem_as, vmr, v_name);
+> +        ct3d->cxl_dstate.vmem_size =3D vmr->size;
+> +        ct3d->cxl_dstate.mem_size +=3D vmr->size;
+> +        g_free(v_name);
+>      }
+> -    address_space_init(&ct3d->hostmem_as, mr, name);
+> -    g_free(name);
+> =20
+> -    ct3d->cxl_dstate.pmem_size =3D ct3d->hostmem->size;
+> +    if (ct3d->hostpmem) {
+> +        MemoryRegion *pmr;
+> +        char *p_name;
+> =20
+> -    if (!ct3d->lsa) {
+> -        error_setg(errp, "lsa property must be set");
+> -        return false;
+> +        pmr =3D host_memory_backend_get_memory(ct3d->hostpmem);
+> +        if (!pmr) {
+> +            error_setg(errp, "persistent memdev must have backing device=
+");
+> +            return false;
+> +        }
+> +        memory_region_set_nonvolatile(pmr, true);
+> +        memory_region_set_enabled(pmr, true);
+> +        host_memory_backend_set_mapped(ct3d->hostpmem, true);
+> +        if (ds->id) {
+> +            p_name =3D g_strdup_printf("cxl-type3-dpa-pmem-space:%s", ds=
+->id);
+> +        } else {
+> +            p_name =3D g_strdup("cxl-type3-dpa-pmem-space");
+> +        }
+> +        address_space_init(&ct3d->hostpmem_as, pmr, p_name);
+> +        ct3d->cxl_dstate.pmem_size =3D pmr->size;
+> +        ct3d->cxl_dstate.mem_size +=3D pmr->size;
+> +        g_free(p_name);
+>      }
+> =20
+>      return true;
+> @@ -607,7 +709,12 @@ err_release_cdat:
+>      cxl_doe_cdat_release(cxl_cstate);
+>      g_free(regs->special_ops);
+>  err_address_space_free:
+> -    address_space_destroy(&ct3d->hostmem_as);
+> +    if (ct3d->hostpmem) {
+> +        address_space_destroy(&ct3d->hostpmem_as);
+> +    }
+> +    if (ct3d->hostvmem) {
+> +        address_space_destroy(&ct3d->hostvmem_as);
+> +    }
+>      return;
+>  }
+> =20
+> @@ -620,7 +727,12 @@ static void ct3_exit(PCIDevice *pci_dev)
+>      pcie_aer_exit(pci_dev);
+>      cxl_doe_cdat_release(cxl_cstate);
+>      g_free(regs->special_ops);
+> -    address_space_destroy(&ct3d->hostmem_as);
+> +    if (ct3d->hostpmem) {
+> +        address_space_destroy(&ct3d->hostpmem_as);
+> +    }
+> +    if (ct3d->hostvmem) {
+> +        address_space_destroy(&ct3d->hostvmem_as);
+> +    }
+>  }
+> =20
+>  /* TODO: Support multiple HDM decoders and DPA skip */
+> @@ -655,51 +767,77 @@ static bool cxl_type3_dpa(CXLType3Dev *ct3d, hwaddr=
+ host_addr, uint64_t *dpa)
+>      return true;
+>  }
+> =20
+> -MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *dat=
+a,
+> -                           unsigned size, MemTxAttrs attrs)
+> +static int cxl_type3_hpa_to_as_and_dpa(CXLType3Dev *ct3d,
+> +                                       hwaddr host_addr,
+> +                                       unsigned int size,
+> +                                       AddressSpace **as,
+> +                                       uint64_t *dpa_offset)
+>  {
+> -    CXLType3Dev *ct3d =3D CXL_TYPE3(d);
+> -    uint64_t dpa_offset;
+> -    MemoryRegion *mr;
+> +    MemoryRegion *vmr =3D NULL, *pmr =3D NULL;
+> =20
+> -    /* TODO support volatile region */
+> -    mr =3D host_memory_backend_get_memory(ct3d->hostmem);
+> -    if (!mr) {
+> -        return MEMTX_ERROR;
+> +    if (ct3d->hostvmem) {
+> +        vmr =3D host_memory_backend_get_memory(ct3d->hostvmem);
+> +    }
+> +    if (ct3d->hostpmem) {
+> +        pmr =3D host_memory_backend_get_memory(ct3d->hostpmem);
+>      }
+> =20
+> -    if (!cxl_type3_dpa(ct3d, host_addr, &dpa_offset)) {
+> -        return MEMTX_ERROR;
+> +    if (!vmr && !pmr) {
+> +        return -ENODEV;
+> +    }
+> +
+> +    if (!cxl_type3_dpa(ct3d, host_addr, dpa_offset)) {
+> +        return -EINVAL;
+> +    }
+> +
+> +    if (*dpa_offset > int128_get64(ct3d->cxl_dstate.mem_size)) {
+> +        return -EINVAL;
+> +    }
+> +
+> +    if (vmr) {
+> +        if (*dpa_offset <=3D int128_get64(vmr->size)) {
+> +            *as =3D &ct3d->hostvmem_as;
+> +        } else {
+> +            *as =3D &ct3d->hostpmem_as;
+> +            *dpa_offset -=3D vmr->size;
+> +        }
+> +    } else {
+> +        *as =3D &ct3d->hostpmem_as;
+>      }
+> =20
+> -    if (dpa_offset > int128_get64(mr->size)) {
+> +    return 0;
+> +}
+> +
+> +MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *dat=
+a,
+> +                           unsigned size, MemTxAttrs attrs)
+> +{
+> +    uint64_t dpa_offset =3D 0;
+> +    AddressSpace *as =3D NULL;
+> +    int res;
+> +
+> +    res =3D cxl_type3_hpa_to_as_and_dpa(CXL_TYPE3(d), host_addr, size,
+> +                                      &as, &dpa_offset);
+> +    if (res) {
+>          return MEMTX_ERROR;
+>      }
+> =20
+> -    return address_space_read(&ct3d->hostmem_as, dpa_offset, attrs, data=
+, size);
+> +    return address_space_read(as, dpa_offset, attrs, data, size);
+>  }
+> =20
+>  MemTxResult cxl_type3_write(PCIDevice *d, hwaddr host_addr, uint64_t dat=
+a,
+>                              unsigned size, MemTxAttrs attrs)
+>  {
+> -    CXLType3Dev *ct3d =3D CXL_TYPE3(d);
+> -    uint64_t dpa_offset;
+> -    MemoryRegion *mr;
+> -
+> -    mr =3D host_memory_backend_get_memory(ct3d->hostmem);
+> -    if (!mr) {
+> -        return MEMTX_OK;
+> -    }
+> +    uint64_t dpa_offset =3D 0;
+> +    AddressSpace *as =3D NULL;
+> +    int res;
+> =20
+> -    if (!cxl_type3_dpa(ct3d, host_addr, &dpa_offset)) {
+> -        return MEMTX_OK;
+> +    res =3D cxl_type3_hpa_to_as_and_dpa(CXL_TYPE3(d), host_addr, size,
+> +                                      &as, &dpa_offset);
+> +    if (res) {
+> +        return MEMTX_ERROR;
+>      }
+> =20
+> -    if (dpa_offset > int128_get64(mr->size)) {
+> -        return MEMTX_OK;
+> -    }
+> -    return address_space_write(&ct3d->hostmem_as, dpa_offset, attrs,
+> -                               &data, size);
+> +    return address_space_write(as, dpa_offset, attrs, &data, size);
+>  }
+> =20
+>  static void ct3d_reset(DeviceState *dev)
+> @@ -714,7 +852,11 @@ static void ct3d_reset(DeviceState *dev)
+> =20
+>  static Property ct3_props[] =3D {
+>      DEFINE_PROP_LINK("memdev", CXLType3Dev, hostmem, TYPE_MEMORY_BACKEND=
+,
+> -                     HostMemoryBackend *),
+> +                     HostMemoryBackend *), /* for backward compatibility=
+ */
+> +    DEFINE_PROP_LINK("persistent-memdev", CXLType3Dev, hostpmem,
+> +                     TYPE_MEMORY_BACKEND, HostMemoryBackend *),
+> +    DEFINE_PROP_LINK("volatile-memdev", CXLType3Dev, hostvmem,
+> +                     TYPE_MEMORY_BACKEND, HostMemoryBackend *),
+>      DEFINE_PROP_LINK("lsa", CXLType3Dev, lsa, TYPE_MEMORY_BACKEND,
+>                       HostMemoryBackend *),
+>      DEFINE_PROP_UINT64("sn", CXLType3Dev, sn, UI64_NULL),
+> @@ -726,6 +868,10 @@ static uint64_t get_lsa_size(CXLType3Dev *ct3d)
+>  {
+>      MemoryRegion *mr;
+> =20
+> +    if (!ct3d->lsa) {
+> +        return 0;
+> +    }
+> +
+>      mr =3D host_memory_backend_get_memory(ct3d->lsa);
+>      return memory_region_size(mr);
+>  }
+> @@ -743,6 +889,10 @@ static uint64_t get_lsa(CXLType3Dev *ct3d, void *buf=
+, uint64_t size,
+>      MemoryRegion *mr;
+>      void *lsa;
+> =20
+> +    if (!ct3d->lsa) {
+> +        return 0;
+> +    }
+> +
+>      mr =3D host_memory_backend_get_memory(ct3d->lsa);
+>      validate_lsa_access(mr, size, offset);
+> =20
+> @@ -758,6 +908,10 @@ static void set_lsa(CXLType3Dev *ct3d, const void *b=
+uf, uint64_t size,
+>      MemoryRegion *mr;
+>      void *lsa;
+> =20
+> +    if (!ct3d->lsa) {
+> +        return;
+> +    }
+> +
+>      mr =3D host_memory_backend_get_memory(ct3d->lsa);
+>      validate_lsa_access(mr, size, offset);
+> =20
+> @@ -929,7 +1083,7 @@ static void ct3_class_init(ObjectClass *oc, void *da=
+ta)
+>      pc->config_read =3D ct3d_config_read;
+> =20
+>      set_bit(DEVICE_CATEGORY_STORAGE, dc->categories);
+> -    dc->desc =3D "CXL PMEM Device (Type 3)";
+> +    dc->desc =3D "CXL Memory Device (Type 3)";
+>      dc->reset =3D ct3d_reset;
+>      device_class_set_props(dc, ct3_props);
+> =20
+> diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+> index d589f78202..edb9791bab 100644
+> --- a/include/hw/cxl/cxl_device.h
+> +++ b/include/hw/cxl/cxl_device.h
+> @@ -119,8 +119,10 @@ typedef struct cxl_device_state {
+>          uint64_t host_set;
+>      } timestamp;
+> =20
+> -    /* memory region for persistent memory, HDM */
+> +    /* memory region size, HDM */
+> +    uint64_t mem_size;
+>      uint64_t pmem_size;
+> +    uint64_t vmem_size;
+>  } CXLDeviceState;
+> =20
+>  /* Initialize the register block for a device */
+> @@ -245,12 +247,15 @@ struct CXLType3Dev {
+>      PCIDevice parent_obj;
+> =20
+>      /* Properties */
+> -    HostMemoryBackend *hostmem;
+> +    HostMemoryBackend *hostmem; /* deprecated */
+> +    HostMemoryBackend *hostvmem;
+> +    HostMemoryBackend *hostpmem;
+>      HostMemoryBackend *lsa;
+>      uint64_t sn;
+> =20
+>      /* State */
+> -    AddressSpace hostmem_as;
+> +    AddressSpace hostvmem_as;
+> +    AddressSpace hostpmem_as;
+>      CXLComponentState cxl_cstate;
+>      CXLDeviceState cxl_dstate;
+> =20
+> diff --git a/tests/qtest/bios-tables-test.c b/tests/qtest/bios-tables-tes=
+t.c
+> index 8608408213..b005c03a92 100644
+> --- a/tests/qtest/bios-tables-test.c
+> +++ b/tests/qtest/bios-tables-test.c
+> @@ -1789,13 +1789,13 @@ static void test_acpi_q35_cxl(void)
+>                               " -device pxb-cxl,bus_nr=3D12,bus=3Dpcie.0,=
+id=3Dcxl.1"
+>                               " -device pxb-cxl,bus_nr=3D222,bus=3Dpcie.0=
+,id=3Dcxl.2"
+>                               " -device cxl-rp,port=3D0,bus=3Dcxl.1,id=3D=
+rp1,chassis=3D0,slot=3D2"
+> -                             " -device cxl-type3,bus=3Drp1,memdev=3Dcxl-=
+mem1,lsa=3Dlsa1"
+> +                             " -device cxl-type3,bus=3Drp1,persistent-me=
+mdev=3Dcxl-mem1,lsa=3Dlsa1"
+>                               " -device cxl-rp,port=3D1,bus=3Dcxl.1,id=3D=
+rp2,chassis=3D0,slot=3D3"
+> -                             " -device cxl-type3,bus=3Drp2,memdev=3Dcxl-=
+mem2,lsa=3Dlsa2"
+> +                             " -device cxl-type3,bus=3Drp2,persistent-me=
+mdev=3Dcxl-mem2,lsa=3Dlsa2"
+>                               " -device cxl-rp,port=3D0,bus=3Dcxl.2,id=3D=
+rp3,chassis=3D0,slot=3D5"
+> -                             " -device cxl-type3,bus=3Drp3,memdev=3Dcxl-=
+mem3,lsa=3Dlsa3"
+> +                             " -device cxl-type3,bus=3Drp3,persistent-me=
+mdev=3Dcxl-mem3,lsa=3Dlsa3"
+>                               " -device cxl-rp,port=3D1,bus=3Dcxl.2,id=3D=
+rp4,chassis=3D0,slot=3D6"
+> -                             " -device cxl-type3,bus=3Drp4,memdev=3Dcxl-=
+mem4,lsa=3Dlsa4"
+> +                             " -device cxl-type3,bus=3Drp4,persistent-me=
+mdev=3Dcxl-mem4,lsa=3Dlsa4"
+>                               " -M cxl-fmw.0.targets.0=3Dcxl.1,cxl-fmw.0.=
+size=3D4G,cxl-fmw.0.interleave-granularity=3D8k,"
+>                               "cxl-fmw.1.targets.0=3Dcxl.1,cxl-fmw.1.targ=
+ets.1=3Dcxl.2,cxl-fmw.1.size=3D4G,cxl-fmw.1.interleave-granularity=3D8k",
+>                               tmp_path, tmp_path, tmp_path, tmp_path,
+> diff --git a/tests/qtest/cxl-test.c b/tests/qtest/cxl-test.c
+> index eda2bbbbe6..edcad4a0ce 100644
+> --- a/tests/qtest/cxl-test.c
+> +++ b/tests/qtest/cxl-test.c
+> @@ -34,32 +34,46 @@
+>      "-device cxl-rp,id=3Drp2,bus=3Dcxl.1,chassis=3D0,slot=3D2 " \
+>      "-device cxl-rp,id=3Drp3,bus=3Dcxl.1,chassis=3D0,slot=3D3 "
+> =20
+> -#define QEMU_T3D \
+> +#define QEMU_T3D_DEPRECATED \
+>      "-object memory-backend-file,id=3Dcxl-mem0,mem-path=3D%s,size=3D256M=
+ " \
+>      "-object memory-backend-file,id=3Dlsa0,mem-path=3D%s,size=3D256M " \
+>      "-device cxl-type3,bus=3Drp0,memdev=3Dcxl-mem0,lsa=3Dlsa0,id=3Dcxl-p=
+mem0 "
+> =20
+> +#define QEMU_T3D_PMEM \
+> +    "-object memory-backend-file,id=3Dcxl-mem0,mem-path=3D%s,size=3D256M=
+ " \
+> +    "-object memory-backend-file,id=3Dlsa0,mem-path=3D%s,size=3D256M " \
+> +    "-device cxl-type3,bus=3Drp0,persistent-memdev=3Dcxl-mem0,lsa=3Dlsa0=
+,id=3Dpmem0 "
+> +
+> +#define QEMU_T3D_VMEM \
+> +    "-object memory-backend-ram,id=3Dcxl-mem0,size=3D256M " \
+> +    "-device cxl-type3,bus=3Drp0,volatile-memdev=3Dcxl-mem0,id=3Dmem0 "
+> +
+> +#define QEMU_T3D_VMEM_LSA \
+> +    "-object memory-backend-ram,id=3Dcxl-mem0,size=3D256M " \
+> +    "-object memory-backend-file,id=3Dlsa0,mem-path=3D%s,size=3D256M " \
+> +    "-device cxl-type3,bus=3Drp0,volatile-memdev=3Dcxl-mem0,lsa=3Dlsa0,i=
+d=3Dmem0 "
+> +
+>  #define QEMU_2T3D \
+>      "-object memory-backend-file,id=3Dcxl-mem0,mem-path=3D%s,size=3D256M=
+ " \
+>      "-object memory-backend-file,id=3Dlsa0,mem-path=3D%s,size=3D256M " \
+> -    "-device cxl-type3,bus=3Drp0,memdev=3Dcxl-mem0,lsa=3Dlsa0,id=3Dcxl-p=
+mem0 " \
+> +    "-device cxl-type3,bus=3Drp0,persistent-memdev=3Dcxl-mem0,lsa=3Dlsa0=
+,id=3Dpmem0 " \
+>      "-object memory-backend-file,id=3Dcxl-mem1,mem-path=3D%s,size=3D256M=
+ " \
+>      "-object memory-backend-file,id=3Dlsa1,mem-path=3D%s,size=3D256M " \
+> -    "-device cxl-type3,bus=3Drp1,memdev=3Dcxl-mem1,lsa=3Dlsa1,id=3Dcxl-p=
+mem1 "
+> +    "-device cxl-type3,bus=3Drp1,persistent-memdev=3Dcxl-mem1,lsa=3Dlsa1=
+,id=3Dpmem1 "
+> =20
+>  #define QEMU_4T3D \
+>      "-object memory-backend-file,id=3Dcxl-mem0,mem-path=3D%s,size=3D256M=
+ " \
+>      "-object memory-backend-file,id=3Dlsa0,mem-path=3D%s,size=3D256M " \
+> -    "-device cxl-type3,bus=3Drp0,memdev=3Dcxl-mem0,lsa=3Dlsa0,id=3Dcxl-p=
+mem0 " \
+> +    "-device cxl-type3,bus=3Drp0,persistent-memdev=3Dcxl-mem0,lsa=3Dlsa0=
+,id=3Dpmem0 " \
+>      "-object memory-backend-file,id=3Dcxl-mem1,mem-path=3D%s,size=3D256M=
+ " \
+>      "-object memory-backend-file,id=3Dlsa1,mem-path=3D%s,size=3D256M " \
+> -    "-device cxl-type3,bus=3Drp1,memdev=3Dcxl-mem1,lsa=3Dlsa1,id=3Dcxl-p=
+mem1 " \
+> +    "-device cxl-type3,bus=3Drp1,persistent-memdev=3Dcxl-mem1,lsa=3Dlsa1=
+,id=3Dpmem1 " \
+>      "-object memory-backend-file,id=3Dcxl-mem2,mem-path=3D%s,size=3D256M=
+ " \
+>      "-object memory-backend-file,id=3Dlsa2,mem-path=3D%s,size=3D256M " \
+> -    "-device cxl-type3,bus=3Drp2,memdev=3Dcxl-mem2,lsa=3Dlsa2,id=3Dcxl-p=
+mem2 " \
+> +    "-device cxl-type3,bus=3Drp2,persistent-memdev=3Dcxl-mem2,lsa=3Dlsa2=
+,id=3Dpmem2 " \
+>      "-object memory-backend-file,id=3Dcxl-mem3,mem-path=3D%s,size=3D256M=
+ " \
+>      "-object memory-backend-file,id=3Dlsa3,mem-path=3D%s,size=3D256M " \
+> -    "-device cxl-type3,bus=3Drp3,memdev=3Dcxl-mem3,lsa=3Dlsa3,id=3Dcxl-p=
+mem3 "
+> +    "-device cxl-type3,bus=3Drp3,persistent-memdev=3Dcxl-mem3,lsa=3Dlsa3=
+,id=3Dpmem3 "
+> =20
+>  static void cxl_basic_hb(void)
+>  {
+> @@ -98,14 +112,53 @@ static void cxl_2root_port(void)
+>  }
+> =20
+>  #ifdef CONFIG_POSIX
+> -static void cxl_t3d(void)
+> +static void cxl_t3d_deprecated(void)
+> +{
+> +    g_autoptr(GString) cmdline =3D g_string_new(NULL);
+> +    g_autofree const char *tmpfs =3D NULL;
+> +
+> +    tmpfs =3D g_dir_make_tmp("cxl-test-XXXXXX", NULL);
+> +
+> +    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D_DEPRECATED,
+> +                    tmpfs, tmpfs);
+> +
+> +    qtest_start(cmdline->str);
+> +    qtest_end();
+> +}
+> +
+> +static void cxl_t3d_persistent(void)
+> +{
+> +    g_autoptr(GString) cmdline =3D g_string_new(NULL);
+> +    g_autofree const char *tmpfs =3D NULL;
+> +
+> +    tmpfs =3D g_dir_make_tmp("cxl-test-XXXXXX", NULL);
+> +
+> +    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D_PMEM,
+> +                    tmpfs, tmpfs);
+> +
+> +    qtest_start(cmdline->str);
+> +    qtest_end();
+> +}
+> +
+> +static void cxl_t3d_volatile(void)
+> +{
+> +    g_autoptr(GString) cmdline =3D g_string_new(NULL);
+> +
+> +    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D_VMEM);
+> +
+> +    qtest_start(cmdline->str);
+> +    qtest_end();
+> +}
+> +
+> +static void cxl_t3d_volatile_lsa(void)
+>  {
+>      g_autoptr(GString) cmdline =3D g_string_new(NULL);
+>      g_autofree const char *tmpfs =3D NULL;
+> =20
+>      tmpfs =3D g_dir_make_tmp("cxl-test-XXXXXX", NULL);
+> =20
+> -    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D, tmpfs, tmpfs=
+);
+> +    g_string_printf(cmdline, QEMU_PXB_CMD QEMU_RP QEMU_T3D_VMEM_LSA,
+> +                    tmpfs);
+> =20
+>      qtest_start(cmdline->str);
+>      qtest_end();
+> @@ -155,7 +208,10 @@ int main(int argc, char **argv)
+>      qtest_add_func("/pci/cxl/rp", cxl_root_port);
+>      qtest_add_func("/pci/cxl/rp_x2", cxl_2root_port);
+>  #ifdef CONFIG_POSIX
+> -    qtest_add_func("/pci/cxl/type3_device", cxl_t3d);
+> +    qtest_add_func("/pci/cxl/type3_device", cxl_t3d_deprecated);
+> +    qtest_add_func("/pci/cxl/type3_device_pmem", cxl_t3d_persistent);
+> +    qtest_add_func("/pci/cxl/type3_device_vmem", cxl_t3d_volatile);
+> +    qtest_add_func("/pci/cxl/type3_device_vmem_lsa", cxl_t3d_volatile_ls=
+a);
+>      qtest_add_func("/pci/cxl/rp_x2_type3_x2", cxl_1pxb_2rp_2t3d);
+>      qtest_add_func("/pci/cxl/pxb_x2_root_port_x4_type3_x4", cxl_2pxb_4rp=
+_4t3d);
+>  #endif
+> --=20
+> 2.37.2
+>=20
+> =
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE277C38142
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:39:24 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230098AbjAaQjY (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 11:39:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49894 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229895AbjAaQjX (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:39:23 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4989811648
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:39:22 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P5rJX2NfQz6J65D;
+        Wed,  1 Feb 2023 00:35:40 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.34; Tue, 31 Jan 2023 16:39:15 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: [PATCH 1/2] tests/qtest/cxl-test: whitespace, line ending cleanup
+Date: Tue, 31 Jan 2023 16:38:46 +0000
+Message-ID: <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+From: Gregory Price <gourry.memverge@gmail.com>
+
+Defines are starting to exceed line length limits, align them for
+cleanliness before making modifications.
+
+Signed-off-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+Changes since RFC v4:
+  Naming consistency improvements.
+ 
+ tests/qtest/cxl-test.c | 84 +++++++++++++++++++++++-------------------
+ 1 file changed, 46 insertions(+), 38 deletions(-)
+
+diff --git a/tests/qtest/cxl-test.c b/tests/qtest/cxl-test.c
+index 61f25a72b6..eda2bbbbe6 100644
+--- a/tests/qtest/cxl-test.c
++++ b/tests/qtest/cxl-test.c
+@@ -8,50 +8,58 @@
+ #include "qemu/osdep.h"
+ #include "libqtest-single.h"
+ 
+-#define QEMU_PXB_CMD "-machine q35,cxl=on " \
+-                     "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 "  \
+-                     "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=4G "
++#define QEMU_PXB_CMD \
++    "-machine q35,cxl=on " \
++    "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 " \
++    "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=4G "
+ 
+-#define QEMU_2PXB_CMD "-machine q35,cxl=on "                            \
+-                      "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 "  \
+-                      "-device pxb-cxl,id=cxl.1,bus=pcie.0,bus_nr=53 " \
+-                      "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.targets.1=cxl.1,cxl-fmw.0.size=4G "
++#define QEMU_2PXB_CMD \
++    "-machine q35,cxl=on " \
++    "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 " \
++    "-device pxb-cxl,id=cxl.1,bus=pcie.0,bus_nr=53 " \
++    "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.targets.1=cxl.1,cxl-fmw.0.size=4G "
+ 
+-#define QEMU_RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 "
++#define QEMU_RP \
++    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 "
+ 
+ /* Dual ports on first pxb */
+-#define QEMU_2RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
+-                 "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 "
++#define QEMU_2RP \
++    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
++    "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 "
+ 
+ /* Dual ports on each of the pxb instances */
+-#define QEMU_4RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
+-                 "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 " \
+-                 "-device cxl-rp,id=rp2,bus=cxl.1,chassis=0,slot=2 " \
+-                 "-device cxl-rp,id=rp3,bus=cxl.1,chassis=0,slot=3 "
+-
+-#define QEMU_T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
+-                 "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
+-                 "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 "
+-
+-#define QEMU_2T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
+-                  "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 "
+-
+-#define QEMU_4T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
+-                  "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
+-                  "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 " \
+-                  "-object memory-backend-file,id=cxl-mem2,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa2,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp2,memdev=cxl-mem2,lsa=lsa2,id=cxl-pmem2 " \
+-                  "-object memory-backend-file,id=cxl-mem3,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa3,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp3,memdev=cxl-mem3,lsa=lsa3,id=cxl-pmem3 "
++#define QEMU_4RP \
++    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
++    "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 " \
++    "-device cxl-rp,id=rp2,bus=cxl.1,chassis=0,slot=2 " \
++    "-device cxl-rp,id=rp3,bus=cxl.1,chassis=0,slot=3 "
++
++#define QEMU_T3D \
++    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 "
++
++#define QEMU_2T3D \
++    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
++    "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 "
++
++#define QEMU_4T3D \
++    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
++    "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 " \
++    "-object memory-backend-file,id=cxl-mem2,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa2,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp2,memdev=cxl-mem2,lsa=lsa2,id=cxl-pmem2 " \
++    "-object memory-backend-file,id=cxl-mem3,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa3,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp3,memdev=cxl-mem3,lsa=lsa3,id=cxl-pmem3 "
+ 
+ static void cxl_basic_hb(void)
+ {
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E340C636CC
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:48:23 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229973AbjAaQsW (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 11:48:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57164 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230094AbjAaQsV (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:48:21 -0500
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2079.outbound.protection.outlook.com [40.107.244.79])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C89337683
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:48:20 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=k28iJmj0ejT30OMixRSwbvvIGQXQFXh4bxkul9Z/MJrMZ84rL4TqE0f5O7k4CU1f1WCNk/VCtxIsB3X2VFWmhiuKdwK897ShuYXlxG0Xli7k7OEDWlhE/G4/gqj9v8gxlwogl8XlX45j+g+N0JudIGaU1aB5lOuOY6HYbIVbsdHOQov9/hBuVvcUpRyh18VM7sSzhLilcVoIQ/e6GOCPHLKNpTGrCyYFHzKQ0KyJ2kbX0I2vPZPrUSZD3n240/eJ2VDAXw2LoqtSb5lku3WfibNhO8RXOrCXYMSk543BdO32Cr7wy5mAV9keXyQ8JIsxjeFaUvA+9yEe8l6rYe1H4g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=0dDhpAILtiplXQkjXVYHBWJhpT411w7kwr985u3k6Mc=;
+ b=Ly7d7lWnIBoD0pbPWxCk7F/WHPNy9YJVuZQNeafqUMQzZ8oXuAieotJapLJhotWyWngEuGiUO/Bx2xSujvhvM/Z/MbESlsQZLxzk3HvDFwUqwRYVLKp7wYulM+HewC16qHReEWjLO7CwwhZH9h43zGuxerxpMfiB59ddgSzrm7jTAZcAHQQRUuKQAelifebnPqTNGGUVAaJMq8msAO2mnB8na9OHVgx5Xlhx0G0iJTFhDKkanqtm4bhIMaApa0zl5eqBfwWPNgfOWS4lmbOueT7qhC4+GU/kykiTEjSvtpwpcRXE/cw3j3radzv7kWB7QmRrT92vI+lMU9KHQs8f/A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=0dDhpAILtiplXQkjXVYHBWJhpT411w7kwr985u3k6Mc=;
+ b=LITMXRY4TBqkIJSEi4goFd6POI8EMFLqnQB+/xTHuTXPjJxPbQJzUy9HeHF64+EGPMDeeEWvPUB33P0ZUSpyDgrv8r8mO9vK1tZnjsmCTxnOhXBk1iNij4cIy99KpWKUfeIjz30D3HTXdhJ/X6ZzIwvYbuWeeVHzV4OlogVnAU8=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by PH0PR17MB5567.namprd17.prod.outlook.com (2603:10b6:510:b8::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6043.38; Tue, 31 Jan
+ 2023 16:48:14 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.6043.028; Tue, 31 Jan 2023
+ 16:48:14 +0000
+Date: Tue, 31 Jan 2023 11:08:47 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
+        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 1/2] tests/qtest/cxl-test: whitespace, line ending cleanup
+Message-ID: <Y9k9D1y1gT4jZ0Zx@memverge.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+ <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
+X-ClientProxiedBy: YT4PR01CA0356.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:fc::21) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|PH0PR17MB5567:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6ff86ade-bec6-4bb8-90a0-08db03aaf20b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: KxuLrhXasLwsfphwDV3qJRFX1l9lxonDiZqhZFcQ25ajXS+DaWHKvquRLRlLoBUJVynNMVFys3+p+3eoKfhJDUmiMqffY5xoGnsqN4Q2yTtmCMx/+NMNGrEFQkhT7JaJhoCvimZbSe2S6Rt3Cw7cqmv2laovR5dhz8qilLXkPBV+mNOg3/vB258GG3LUoPXLCfJVOKrf9i3igQwpcU0mLGyaiznbEPF5xLgMGonqmyBPUOvliG2Qk9BByi0rBKUoJAKyppIRn/nS+/wUL4SMJZLVp4nl0q+b+ZYq6yUd+b16uM4qo9x48b4LHlX+C32UBb1lEnyPRKFL4BuAxsshKN5hTXTQIfOBplgZ7PkuDvsR6WvbDbvtaD3ahpN/X2qUTKATqdXrb5EZ+FjOwjLcugg2aGAG8Lbt6nEKwrvLQHJi0kyclccfSetpjOnSpbMC048XuhZzDSPowbu0FSS6Rk/8944YJW57nhjTRYLTf19JWEA8i0d23HGzDhX55SsIZeESis3xPdjbpcm1CuWPoZlYjw1WgpjmGFDUguLmkWf/vycFfwOHHc2XUgwObUNMDZ+Do8Ptted/HaH1l+4fMmFJcsJFhfnqDmsY8TZ1/8OxnFlF8IvW6RQ+RLXvzutKpUENXk75tYtCmxPINivxkA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(39840400004)(396003)(136003)(346002)(376002)(366004)(451199018)(8676002)(4326008)(66556008)(66476007)(66946007)(6916009)(54906003)(316002)(2906002)(8936002)(41300700001)(5660300002)(44832011)(7416002)(4744005)(38100700002)(6506007)(6666004)(83380400001)(36756003)(2616005)(186003)(6512007)(26005)(6486002)(478600001)(86362001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?lvUNGL8/Iki+l2hDNAgxpVYD0lyOwWmNcvw6fAj1NaFEBQ6IqsEovDThwJkj?=
+ =?us-ascii?Q?IqbgXOT1la3Mey1ilEun0Q14wHkMfEXnWsfMVwMxJylZS/D8yaq3BWEGCPC6?=
+ =?us-ascii?Q?vlVb1shm26PGnLHNkFe6uQpIn9uZraaD5HY+vXE6lzUqNdhitu1N9eynNzLV?=
+ =?us-ascii?Q?nPJiXiR39Ud7t3tMeS9wY37MgbeQ04pFeeVUdHgiMDmXPqGkNQbdPlouvUe6?=
+ =?us-ascii?Q?EDP/NvNSM0agyCHzAXxlGxZSRHu/cTYXU7HXFTAzfnorlykHSHfvLfKmnmYw?=
+ =?us-ascii?Q?BsV92raearQDIaRPCwa37aPuJh2KlUve4aD3KNcbdgCn5SqoCQVZSqwLGH3k?=
+ =?us-ascii?Q?ZULvWwFhJVqdZejmd3K88ab9vwrKHVJg64OjgMqF336rXpnemNI3HTBLXbUL?=
+ =?us-ascii?Q?MMU+xMFa9ZW54xV5vRRu6T5ZTWnW/dcZnJEOamO7hu3x2KM72Ja27g4qmonB?=
+ =?us-ascii?Q?7BBJz39qmqyM4RW4rcLCMtf1juO/qEY/vtlG3sA8Ss8OerJHQ/plTUw0FFa0?=
+ =?us-ascii?Q?/XLIWhWgar1xg2LEZVHY1/O4Vhd7FTyHAt1jo2XQQKkZvq3eg5aQoObDGtAD?=
+ =?us-ascii?Q?FO9wOlSgdtR9i6rdxncvvebQ8HI468xeKaTGLvZ/fUyBH1Z+wo7PzFBFg+OS?=
+ =?us-ascii?Q?RDddQ6+1A32DdK+TA3cj8+hnOmqveJEraqfKXiT7qxHkZETSkVl5/OKrLttS?=
+ =?us-ascii?Q?0EAIMm6vt72yEtBfctIrAIiChHlFk4NrpkZKdC4wgis/EizugHsY24ShIR9t?=
+ =?us-ascii?Q?pmSeKWG8kJLzw/Uw9PrPXhwC+/Vn6/KanT01iC3pzDysgbpAkSBvwFbonqyD?=
+ =?us-ascii?Q?INaUskEbKEAUr8GKh1WRmKWaPNpzQKsNKVOtJGea2JPj/uY5DeNR27h3bZOZ?=
+ =?us-ascii?Q?IsbC5e2PGiz2Y45KllJLfdaGRJWJxo0cMwL0H12hgaYp1f6HvGOcvTDSrP0F?=
+ =?us-ascii?Q?Mi+yAvhJflrD+ZQBG+eIhed23S2lQJ1Itdyj89CkpeIk0fnz8ZK9HVw+QKaT?=
+ =?us-ascii?Q?zh6tWOe3sILTPo3JIjhTHmmOQ2FdD8T1tiCGUv/2866bJCFnKL1OEdNAmnvV?=
+ =?us-ascii?Q?z25o/LyD/lRu+37dukGexGYLDOvSrvd3WR8fjz0Ep8I0TAtr6IkePHxG75lW?=
+ =?us-ascii?Q?HPo3Egw9NMLXqNg+VTHYPKd9Ebxkiex28OMqliM0g3GHzfyx2sl2c4ZkgZF5?=
+ =?us-ascii?Q?dcqXtNTZv1/t2EevVGU6lOTuQnPwXK5WQ7jl9IeBFwqX5aojtSq2ZeiFeJLS?=
+ =?us-ascii?Q?A6gm3kJ+l3zqDh6IRZpgZcFTGIfzR72lRF8ukYDggPLgbbeum+GE2fl8YFlD?=
+ =?us-ascii?Q?6dmc2c+lix05z1hBAKTCvCRPHRiYsa+KSRNL6vQAF+vMi241s7vqCEGz8Q8b?=
+ =?us-ascii?Q?/dftT4+0LVKJN1Sd5ed7ckMGAh+jOV/d4DsOUPP32sBqK9V9BigFX78DpdSJ?=
+ =?us-ascii?Q?HkYLeZv6nFa7OHEgIynK7f32vJz1M+iY5zBBUsqCkedMqFYwxFb5hvl9Dc/v?=
+ =?us-ascii?Q?9LVENI70Mg4agl23MDxg7vtvxy9IcYjGTBJ6rqbk7etxgewQpxbBJ5LsbKBO?=
+ =?us-ascii?Q?KF0EFyVeowEG2ooVTAK3uC/j4EBzRYuSgqERUBLWLkixwKL4biT5yBGnBWt9?=
+ =?us-ascii?Q?Yg=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6ff86ade-bec6-4bb8-90a0-08db03aaf20b
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Jan 2023 16:48:14.4318
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: EBiaWZz5WMDQadOVw0BRfpMmdPCCcf8G8oNPtXZfxvlYctlbwbQs6cdexrd8jixR3lWCrv9pww8wZS1lVjslEX8LBDYhF/60R1P9CjovcUA=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR17MB5567
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, Jan 31, 2023 at 04:38:46PM +0000, Jonathan Cameron wrote:
+> From: Gregory Price <gourry.memverge@gmail.com>
+> 
+> Defines are starting to exceed line length limits, align them for
+> cleanliness before making modifications.
+> 
+> Signed-off-by: Gregory Price <gregory.price@memverge.com>
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> ---
+> Changes since RFC v4:
+>   Naming consistency improvements.
+>  
+>  tests/qtest/cxl-test.c | 84 +++++++++++++++++++++++-------------------
+>  1 file changed, 46 insertions(+), 38 deletions(-)
+> 
+> // ... snip ...
+>
+
+changes lgtm
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A2AFC61DA4
+	for <linux-cxl@archiver.kernel.org>; Tue, 14 Feb 2023 18:49:59 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229808AbjBNSt6 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 14 Feb 2023 13:49:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44294 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233041AbjBNStg (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 14 Feb 2023 13:49:36 -0500
+Received: from bee.birch.relay.mailchannels.net (bee.birch.relay.mailchannels.net [23.83.209.14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFFF8BBBC
+        for <linux-cxl@vger.kernel.org>; Tue, 14 Feb 2023 10:49:33 -0800 (PST)
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+Received: from relay.mailchannels.net (localhost [127.0.0.1])
+        by relay.mailchannels.net (Postfix) with ESMTP id 164278821C1;
+        Tue, 14 Feb 2023 18:43:36 +0000 (UTC)
+Received: from pdx1-sub0-mail-a221.dreamhost.com (unknown [127.0.0.6])
+        (Authenticated sender: dreamhost)
+        by relay.mailchannels.net (Postfix) with ESMTPA id 7333D8821E9;
+        Tue, 14 Feb 2023 18:43:35 +0000 (UTC)
+ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1676400215; a=rsa-sha256;
+        cv=none;
+        b=Y3yLXv0lddZ6sMNH/xFgh3EzlHduM//JnfIreN4gV9MMIoQHcX7NEu5DffM//LU/7izm7z
+        2Zopn9V5zEXZONbzFlNfpoWF15mMTH50H6H+C1wzGKHjQW5EpH4rVB209ANFfaTXGJFat7
+        BIGd/qMOhG9FknV1ayWd+ABgIzYl06UykM4lUyhTnfhL2I8dVzW+h95mcT87W/G6Az4iVJ
+        Bm6zZPElcxl2AvfJmpITTOL+pbBvEpUmno1CHyy+GAhrZKbd96hSQb4xCczx/q4ISJnD/E
+        T/1ZN4DBQ5Epg9MWfpHtfYNoRYRuEvD2cvjw3D1d8O2H9A5kWRqrGCUjGsdFIw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mailchannels.net;
+        s=arc-2022; t=1676400215;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references:dkim-signature;
+        bh=iQjhFESGKASNO0O7sxGSRCOcjSv2sTTqAFVvYDWmzZw=;
+        b=I8cIeyCJG4Shd2KxBok4OAVY7/0tFtBR6CTf8WlQGz4ekyrjbtZLvme9B9sntcWHgxd7Aa
+        vMwJnYFZcNCfbaQjPGC/sVtrUPiGTn1h0fXrLE4vUkOG4Qg2IUI1U8yn79DZJmf8N2GYxo
+        ywFfCVYW2DUH3LmWwxclNx1QuSgVbrWTy2YnQ6R8XncNAyTcIw3hfHYqkQH/NXyDH9GfkD
+        nM5FNBpxQUAsxsrKgXZPWe57ItYMAe8n5Z5bmXPQU0JKuR7I1ZB7icWBKcKFgD1EWpICnj
+        g20qmLW0N+d11SDcEl08KfwlxAa7Tovx8nO7DvT1sSh5NYOFtDz4K9VKpLu20g==
+ARC-Authentication-Results: i=1;
+        rspamd-b9c55767f-626p9;
+        auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+X-MC-Relay: Neutral
+X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
+X-MailChannels-Auth-Id: dreamhost
+X-Industry-Trade: 62a9de3c7b2a63ab_1676400215832_514669986
+X-MC-Loop-Signature: 1676400215832:1443824501
+X-MC-Ingress-Time: 1676400215832
+Received: from pdx1-sub0-mail-a221.dreamhost.com (pop.dreamhost.com
+ [64.90.62.162])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
+        by 100.126.30.37 (trex/6.7.1);
+        Tue, 14 Feb 2023 18:43:35 +0000
+Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: dave@stgolabs.net)
+        by pdx1-sub0-mail-a221.dreamhost.com (Postfix) with ESMTPSA id 4PGVTf0vrqz9d;
+        Tue, 14 Feb 2023 10:43:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
+        s=dreamhost; t=1676400215;
+        bh=iQjhFESGKASNO0O7sxGSRCOcjSv2sTTqAFVvYDWmzZw=;
+        h=Date:From:To:Cc:Subject:Content-Type;
+        b=EDDH6di4kwthAfEiKhr9dLe5O/NqvfWnvufFlOeOISOtylMimQkevyq+z5m58w8BJ
+         z0dgfe8gmMKmbV9wuBn6p7LgVyL/9WUJaYgrcdwA7fGu6Qr93bzl5oeONncsuCGQ14
+         OZGXhSMvSZ/U5gIyEwWjUdOHhwalYgMZaAOvgw8YeEeK2e58fRPo/GBdEiEC7cPQJW
+         19YLDhWIFgzHqRFQgrJI55HjqbNUlOK470gN0JX6KoRiehfJEaMwYEsab/ofsGSOmJ
+         gNFvS6VKrfeZkiL2Ux9MbSEzLNMa4Q3w+ax+sx7WJNLkQl3SbvFzDr1sFV4SapqgBP
+         NHhF7iDjsBH2g==
+Date: Tue, 14 Feb 2023 10:15:40 -0800
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
+        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        Philippe =?utf-8?B?TWF0aGlldS1EYXVkw6/Cv8K9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230214181540.6yurhcasg3sezh3e@offworld>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+ <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+User-Agent: NeoMutt/20220429
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, 31 Jan 2023, Jonathan Cameron wrote:
+
+>From: Gregory Price <gourry.memverge@gmail.com>
+>
+>This commit enables each CXL Type-3 device to contain one volatile
+>memory region and one persistent region.
+>
+>Two new properties have been added to cxl-type3 device initialization:
+>    [volatile-memdev] and [persistent-memdev]
+>
+>The existing [memdev] property has been deprecated and will default the
+>memory region to a persistent memory region (although a user may assign
+>the region to a ram or file backed region). It cannot be used in
+>combination with the new [persistent-memdev] property.
+>
+>Partitioning volatile memory from persistent memory is not yet supported.
+>
+>Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+>at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+>
+>Signed-off-by: Gregory Price <gregory.price@memverge.com>
+>Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+Reviewed-by: Davidlohr Bueso <dave@stgolabs.net>
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2167C636D6
+	for <linux-cxl@archiver.kernel.org>; Fri, 17 Feb 2023 19:37:29 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229775AbjBQTh2 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 17 Feb 2023 14:37:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55702 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229540AbjBQTh1 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 17 Feb 2023 14:37:27 -0500
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2062.outbound.protection.outlook.com [40.107.243.62])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 761734496
+        for <linux-cxl@vger.kernel.org>; Fri, 17 Feb 2023 11:37:26 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=hyk5CfL5Av7j8DfE5LtlQYmZT3QaHN+Hz13PRhu064mHG/tVU8NwazeAg7h0yYIQGqjR9j4R3B6wuya9LZ0NZH4h7zmCkdIsTrsyW6FneMQ5HKISSTwzHzwQ1I9qB595rS1EdVV+VGV2iMXP0/yFcT7zMNdTIUsQLMpsZyy6JR0+0kNbfwH2/L6OoA0T+WTBd4m+tp4Yeynww1kiQfPoYggjdHLWG+4EuoX1TCYdjwDO0c+GgUmH3aC72+V7a0CMFwzr/PfJa+pv+5hZxssfuOosNTDXwKUd/Yjbq5KUYkSv/iWevohYD1QXx2GrXfMP6rscfJxJxQoOX7h7nqjn7Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Bq7CUWXPy6P/+XtewQR4n0C4cngfBANI2dYsnKnJj0s=;
+ b=jBwSiFzK42ySsmsLCP1AwssmeHzek32syhN8iQVxkaUqCMXgy5is01e30YcEPK2BHPvyCPciTPqTTHyFdjrhyX6wcYZoay5Ilf5SFPXSt8NUEmGmo6QH84VmHVbKICWIoJ9v14b+TLgWUzAo/WuHgs2GGtmwad97niWcWBtUwhkg9KRwNeis2gz/taHy0Mc6IM7ewQmHWFq+ICWk0qIQBt1kdkqAk+LYSBUTZM6ewfnyNphO2lmaajVapJuK0r7vWcNn7/MqlBAVh4dKuJ2VjVsjACYxn6LTezZQO1vzh3Pa3SbshQQa6fnvF1cVh7owIiAXXtG86QONLKSXmii1EA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Bq7CUWXPy6P/+XtewQR4n0C4cngfBANI2dYsnKnJj0s=;
+ b=uDTVDmFsZkONbzpu/E/T+N0R/sioT0X+6OveVH9kCz69ld/l6mQ9qVhP1rx13z9/SklrfxiLkIHSNxHGhoOvhdd9+ljiQNAsDNdi0HLL7WX7X2IWSgS6KXaYERF04bqNTp6BtE134BK/jQhIMymjjI6CLng3ypEqodMv19U+nWw=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by CY8PR17MB6211.namprd17.prod.outlook.com (2603:10b6:930:92::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6111.13; Fri, 17 Feb
+ 2023 19:37:23 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%3]) with mapi id 15.20.6086.026; Fri, 17 Feb 2023
+ 19:37:23 +0000
+Date: Fri, 17 Feb 2023 06:08:57 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
+        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <Y+9gSWadbRfdqJGS@memverge.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+ <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+ <20230217161617.000064d1@huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230217161617.000064d1@huawei.com>
+X-ClientProxiedBy: SJ0PR03CA0277.namprd03.prod.outlook.com
+ (2603:10b6:a03:39e::12) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|CY8PR17MB6211:EE_
+X-MS-Office365-Filtering-Correlation-Id: 15dee29d-bab6-4b7f-cd2a-08db111e6421
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: RcXMVtT429jfZsbdLqvZaFtACvm7HRdiHyd3h+D00gYeiI0XLZJPsUsfa8bEEkF1+w5uRHS5+5fPEQqz0ipBtq7Nzgkobib3XDaSXE9uJ9C/tMQTAPlXK20EmBTO62cJ7/qoTLYBNCGOdgUyvI2m+hFU/tgwxezoxnVNeuTR7AqZ4Oxwky6CxeC0iIX9qKdrWG9eA4dQjIXb5awZTweofSmI6kyOrUdqufN0G1pbZBDdn/EMn8G+ZvVlbkROqSXPcne9amC0qkDHw2AD2ECcE0VIJaBl/qRw4VTzMur0KJgbHSF54evsZVM8yqQ/ps1RjStUNoVfu6QpxDwPDUt25DXySEM2VywUTGvpBUZfHr+jKuq/LHyHBfJDEIOZAxnCgOsMCgL9eBsouG86mD7JhnqXHq2AnRQFcwqej0w2BdS7jzTFkybUrPfP72OZf5YxKAbuhgLRh5bpIwKlpflK1K/lwN4xf2L0aT5LPewu0Sxw3MDUt/dWac2aTa8qYiyNvzndrtyB0oX0a4de2v3NxHjic8CtizpHY73GAwrAIiauxUwA6bu9luiOs5qr8BNPFEWZ1CTrSVRhfyyMkTKGAJ2cjVKDlelU5w+dG/3iIoKaWWSkm+FqGI/3nceJR4sux0/Vzi/fh3klCI7yxI2/NfM0BAoPmPdrh4K+hWwFH1DM85Ryyij8uQcTpUUungoj
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(39840400004)(396003)(346002)(136003)(366004)(376002)(451199018)(83380400001)(38100700002)(86362001)(36756003)(8936002)(5660300002)(44832011)(2906002)(7416002)(6512007)(6506007)(186003)(6666004)(2616005)(26005)(316002)(8676002)(66476007)(4326008)(6916009)(66556008)(66946007)(6486002)(54906003)(478600001)(41300700001)(67856001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?PR2YnZkGMxZnuVs7IKAsRpFZt1jXk75NHcHB6aBeolOaEhijFUx51W/JC2e7?=
+ =?us-ascii?Q?DFON/aVy0uTew8Sd/gVFD1PhjVKQCy1FfN+xC+wLpXIwWWPa42FeftAmYVq1?=
+ =?us-ascii?Q?OoBQBSrIUSgymj3uYCoMYODyagm1I/6DVQBYH0S2sv1+MimVYf79OwCbHMhV?=
+ =?us-ascii?Q?/nTvmonrD3jSWIbZ8bo01dEOAVEej+8NMDkWRWsForBfeMnOXIn5Xy01OFeT?=
+ =?us-ascii?Q?C4s1HIK+37sYlUiG7Mz88DEeuxxkEyGvY4DRDKvq03UC/OOXRWzkv0a7XpBp?=
+ =?us-ascii?Q?QaV0gfddq06TP1clN7MB/leniiKccpR2Bkg0DJMoiVn9WHw23grgDCRci8Cu?=
+ =?us-ascii?Q?A5w8FFnIgBjSmI05ClDtswQCIHRg5K2ELGzkDgTQburet5XctARaY8B/7Qbi?=
+ =?us-ascii?Q?+RJYAkS/WcfH9+ZopLJWVN3Kz6xHI/KnVfRy/f/vt3XiVH4eVYUNFfChn3QZ?=
+ =?us-ascii?Q?ywX9/tbA7w9HDBE87dEIje66KWQdm8YmyWltg1xBvNaWliW/G9p/ZW/BUd8q?=
+ =?us-ascii?Q?N+pQ4RVUvf2Qlh7v1OP9wGB3x/bzP43CHeGoviUqCBIN8BpD+7yRxPUCIBtN?=
+ =?us-ascii?Q?mZ852p3wmOyon+Hd1jCdf5sN2zUjXKiO8spnMZEXF1QjA1b6JtMNMYn5m6xx?=
+ =?us-ascii?Q?pbt7GTWL+Nl8Nj7Sn9HxStaYrQlN8krJiqQboCye4kBCE5lcF6scB6Qdy/Sp?=
+ =?us-ascii?Q?sFXIIjJ8IudM+vDE2Df837WPo/O3gyKy0w2VE0Tw8t4PEO2+r6sQrUe1cy0j?=
+ =?us-ascii?Q?7eMsiKOw6SnF1vSjMqztXNhMEenU8Y5wEfNRaG4j6SjtzioLEbDCNSDyxM74?=
+ =?us-ascii?Q?EXXRI13I9QDNoYmZ7Zs+hvNoOFlduTpdHeXsWuZRsysWzmJrlpZY6e46pGxV?=
+ =?us-ascii?Q?iYryvmUG8Jf/0SrwANcWNuB4Jal8k0HW/Io2990up7h4s8Wdbj1CXonagWjB?=
+ =?us-ascii?Q?ElyXMWijWysFRxCMuqe29tOw9A2k+lErlrmM7eqzzFo2yCdLrv0+FR4PqKai?=
+ =?us-ascii?Q?tFy/PzVamfQtQ14bxgMKmeiR+9ivAlvjiyFJt6tqXmDZbGp0PBpfgfXPuTK/?=
+ =?us-ascii?Q?FoQRfFlJEf9AxuUjKgO8bgVHLbGKr7mBVsEjkAZf8fLwXVsfBYG4uJBFgzmY?=
+ =?us-ascii?Q?sGbf3D8k0ZfXRWAjScvqEoXA/+0caIBs1Jn4dOTfcqmxN9HiIu8xHyR5wsj/?=
+ =?us-ascii?Q?vrJxbXPq8Y2qB/+rQCRjcIqjFumksfu7ymLUpOzYr/aJPbAOdn9PB9sVfUHS?=
+ =?us-ascii?Q?2HR+C4V6w1WPMQsI0wAe9naFHowkvE7nNrsqHZLx7CL5l3Cwrq+A/P856i0J?=
+ =?us-ascii?Q?2Ijs0GUp+Z4xHA7jyVr1XLhwVou/r6TC8rjMjR2FUBSBArpzo9WYr9LzCl2H?=
+ =?us-ascii?Q?Az7VqH1Rr94QWaYJzDFfNv5wlB16CU/i8Z5/C6lkvplB4gD/DF22kUE7+zFP?=
+ =?us-ascii?Q?ROwmt0BQyFLf54TGG+1TU4zuXh62CRc6sqeKI76R835gW6mYFB759Qo9iH9x?=
+ =?us-ascii?Q?1nhHT2r6vMYpe0UroRWTXBYUaxwy3+iy6V1nDIB4eEfW+BQedatuhB7125IE?=
+ =?us-ascii?Q?DZL/75+PcTurfGAO76haLWTZ01564krC4C5ggfPF5HrzZ4Q3ah5HXAE0I5sk?=
+ =?us-ascii?Q?/Q=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 15dee29d-bab6-4b7f-cd2a-08db111e6421
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Feb 2023 19:37:23.2809
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: nwIHdb83ny2I7fbdrBzBctcuYLssyJ4i7RBhZWin0p8ibNYSgDJIcpQ1fen5yRC0W5t1C52uiDZa74ulw3Izmbd+OkZY7VHWY/3+m1sY35Q=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR17MB6211
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, Feb 17, 2023 at 04:16:17PM +0000, Jonathan Cameron via wrote:
+> On Tue, 31 Jan 2023 16:38:47 +0000
+> Jonathan Cameron via <qemu-devel@nongnu.org> wrote:
+> 
+> > From: Gregory Price <gourry.memverge@gmail.com>
+> > 
+> > This commit enables each CXL Type-3 device to contain one volatile
+> > memory region and one persistent region.
+> > 
+> > Two new properties have been added to cxl-type3 device initialization:
+> >     [volatile-memdev] and [persistent-memdev]
+> > 
+> > The existing [memdev] property has been deprecated and will default the
+> > memory region to a persistent memory region (although a user may assign
+> > the region to a ram or file backed region). It cannot be used in
+> > combination with the new [persistent-memdev] property.
+> > 
+> > Partitioning volatile memory from persistent memory is not yet supported.
+> > 
+> > Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+> > at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+> > 
+> > Signed-off-by: Gregory Price <gregory.price@memverge.com>
+> > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > 
+> Hi Gregory,
+> 
+> I've added support for multiple HDM decoders and hence can now
+> test both volatile and non volatile on same device.
+> It very nearly all works. With one exception which is I couldn't
+> poke the first byte of the non volatile region.
+> 
+> I think we have an off by one in a single check.
+> 
+> Interestingly it makes no difference when creating an FS on top
+> (which was my standard test) so I only noticed when poking memory
+> addresses directly to sanity check the HDM decoder setup.
+> 
+> I'll roll a v2 if no one shouts out that I'm wrong.
+> 
+> Note that adding multiple HDM decoders massively increases
+> the number of test cases over what we had before to poke all the
+> corners so I may well be missing stuff.  Hopefully can send an RFC
+> of that support out next week.
+> 
+> Jonathan
+> 
+
+Very cool! Thanks for pushing this over the finishing line.
+
+All my testing so far has been really smooth since getting the TCG issue
+worked out.
+
+> > -MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *data,
+> > -                           unsigned size, MemTxAttrs attrs)
+[...]
+> > +    if (vmr) {
+> > +        if (*dpa_offset <= int128_get64(vmr->size)) {
+> 
+> Off by one I think.  < 
+> 
+
+Yes that makes sense, should be <.  Derp derp.
+
+Though I think this may alludes to more off-by-one issues?  This says
+
+if (dpa_offset < vmr->size)
+
+but dpa_offset should be (hpa - memory_region_base),
+
+The HPA is used by memory access routing for the whole system to determine
+what device it should access.
+
+If that corner case is being hit, doesn't it imply the higher level code
+is also susceptible to this, and is routing accesses to the wrong device?
+
+~Gregory
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EC15C38142
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 17:04:12 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230007AbjAaREL (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 12:04:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40088 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230273AbjAaREK (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 12:04:10 -0500
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2047.outbound.protection.outlook.com [40.107.223.47])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0924916AE4
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 09:04:10 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=EYBYcTYGXb3JTRWAHIbilEqm9NsZQf8Ypju9fMIzClAQCYrQKqTHflMIyjKU863ahJR+fOy0/vvYZlnNkdZq8MVVLPHhmNG4WNgAfiQa5275BGzhOH27NoufyjAZc6nmbbVI263YMgLoNtuB6bUIj79XcN8iaA0RYB3V8OJwkS1R/h106yiVHQUS/sAfc8oGffr+zIIE3DBJrWLnyPcMaafKkP8PVck3ncGlfmz7i2vdnNp8mz2XKJrjJtugK/ruHy5Ae5UFApXCrmmaDQIe7vARZO3AJHYhadVUvb0hp2UthGyNbYjShKHdX3MteX748gIqIewMXTih7lfn7Bmjkw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=zGJ0zIF6e3SgC7hV323cZ3YeSXRu1fvM29xzppHE1TA=;
+ b=EnGWxzScN5TOcBju9FHn8v+jG30508Kuh2HBu+kElPgJUsvgsgW/IEyNtNZj/epMuoYGVltH3PMYYjKRrdnW5zU7W/72FaO6nVNC1UBQ+xzSWoNzsOeBH9XaXFvStIeA7LA2gCaUwgfsNBsF3ZUHs1+CyMiUBADp+zmHYN2oxvqPTlr1LsPM76fn91WwI0rd40sriWjt8DBCKciu6mup4gFcyocWBefJ0xNtNbmx42EZxaCnxBQCy0TF0Rzd4HXgwVMtWq6An/10WnB4SlW/Sa+Qaz6imLV1bLhWHp8/N343JG9eq99k9TCa9+9rTTPZCOxkG/vh9HfeRy9WHBWAlw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=zGJ0zIF6e3SgC7hV323cZ3YeSXRu1fvM29xzppHE1TA=;
+ b=Pom13VA7oeAWER9DWSK0rDibACUi/QKZncwaOwKFUzcAYaeELSW1IurIScIT8evBCYXvg/HVpExBhO9L7gDrmZ5GB6Wf2VDrrXGb8xT/YZugmFbMRh1CHaqRa/+LtFqKwbdTvCvGdl6h0LIqhemvXJ13PMiyUFfhi5ddPTsBwfA=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by SA1PR17MB5190.namprd17.prod.outlook.com (2603:10b6:806:1e1::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6043.38; Tue, 31 Jan
+ 2023 17:04:07 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.6043.028; Tue, 31 Jan 2023
+ 17:04:07 +0000
+Date: Tue, 31 Jan 2023 11:25:55 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
+        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <Y9lBE3dpmFGBeOxF@memverge.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+ <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+X-ClientProxiedBy: YT4P288CA0011.CANP288.PROD.OUTLOOK.COM
+ (2603:10b6:b01:d4::22) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|SA1PR17MB5190:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7fb10880-26c3-4d20-ba2b-08db03ad2a31
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: Bg3r3YhfkeLLhhMdkCix4HgRedYZ5fIvhN8JXfruo1nkuxWjfZw+v6u3U9obYb8cM5tajZO1IzMmorFF8y67U4mV3Ep8ZgeFkOgJOjidO/fDtyl0UpCj5SH66290ZkXHQm9/6IfYLNKyU4f9AO+dcjvBycX4YLi5v6QKifNTgHD7DoSqgOsimQ3PnxfAqXfcrucazduoNdQ9jmGJjvoQ12Grhk+LpG5iG7qP553RuMCu3++kUY3dOt23YS0WpdztQHY7etieA+LjEkGrO1qnjYV71/Uy8KJ2KGTL8qGdBVd3DZewVcWmqVjhHhb6If59Q+EehIzvTR0/2OnqsDSInZAbzO2RXelkKJs2XkONs3DfQtdMpA2w7xDpBRxOXprQhKTnC1WYq0zEU5tmGWDx+8Ysx6r8pdmgd+KBc54HSYJfzTvnjpMbojGPbickjMY2Vc1kmZ+DQ4XjwM58cLltkcHzJPwnl7UQkzNJ7GihHli7C8Y8KItVbUPAVh7VDMVGfCmDoLDemEP9Mnnj1Ux/TxvxiTHUBK3MwtLYZVcO1V05ONwq6McyrenozXlcz0sCfE1/eFnwZBHUPgq0GPM0gY1Z130eB/PLzZpkvBUzVTtvPso1vkIHCsYjIpLlwH6peD0D7n9Jj6ArUbYY1Mt5Dg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(366004)(346002)(396003)(376002)(39840400004)(136003)(451199018)(6666004)(6512007)(41300700001)(2616005)(6486002)(26005)(6506007)(478600001)(186003)(66476007)(54906003)(316002)(6916009)(8676002)(38100700002)(66946007)(4326008)(66556008)(8936002)(2906002)(36756003)(5660300002)(86362001)(44832011)(7416002)(4744005);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?atrlQZ/H6q+/x/VBG4fNr5aohWwwrFNIUFWomG2HRmRKV050+ASsJ+4j4Ytl?=
+ =?us-ascii?Q?4vbpmnNS/B1M+xP1Oit7hLdMLLg3a0jjzAGk93VoL1AxkKtc7DEiDHSmOiX9?=
+ =?us-ascii?Q?/rtP3sApZcyI1Vb3iRh7P+u1P1fsDpLY7JtaBwROnlMnJ03EBpX9u5JJalkI?=
+ =?us-ascii?Q?5u6kySSPESGuty5PVVqKrSTPNydkQFQEDtE9Bv0MmiQCWqi9cZQ/YCmnhPHZ?=
+ =?us-ascii?Q?XUzM7UFV1IIlIXRKc1IsVy/I3oC9F0H1tdfEbrfT2S1uMeSwsSjd7h8wmuS0?=
+ =?us-ascii?Q?LayZvui/0FSRx0XZFEq07+VBlQvyhncLAMMQQzpyB0IzFAKNR2ycTGqDJlgs?=
+ =?us-ascii?Q?hLc+qqmKqLjRtpoWXjF8cV2qdDPdea7IQZ9JqmnRAqy2I+wR5BePDH7Vprfq?=
+ =?us-ascii?Q?xBM3Y6XHyhkN27f7AhkQQ8zRZf+iqznJV9Iv/X/flQQzNls5vq0qa8Q40ZMo?=
+ =?us-ascii?Q?Lxti+QWafF+H3Q74FNPUc+an6O06+32VeMzJBnyR5pIfSsPOi2GYPicIF62O?=
+ =?us-ascii?Q?GuLzBkPUJGbKcgYzu/Ir8BY/eYLV/arQtBG2HlzF4Xb6qsP9rw+TCerzd61H?=
+ =?us-ascii?Q?qqeUp2gOIVmefLfXcK/+zmPgQCvM+Q8BtdXZYtZ8gNIkCZQxk9WMkebj9XYF?=
+ =?us-ascii?Q?a7o3UUZAVl5lablcYU7W9ljgwf+1psRVO9+ZJj9QlPq4XFLoQSoQyjjOJu73?=
+ =?us-ascii?Q?Y144KwDHS0xVqpBA5DBhjCOuThzh05oSwh6qA5IrBv1TBIwFvxdOEan95Dfy?=
+ =?us-ascii?Q?idZKj/OZcaOqRPlQXdY1swJsR0jDsSMnSXNQ0rW7YqwPMQExxOzkQHPTLSzt?=
+ =?us-ascii?Q?pXKFVj+FLCfuCvzFibSR4AwDS7w5Hiqg/8WC/tydxjOStUFtUwKWECHjOOxd?=
+ =?us-ascii?Q?rlJpWfcefYK2fTvTygVgK6ADamLn320KZac+ayP+gZsa5iAq3LPqhb2qXxMl?=
+ =?us-ascii?Q?7ejmR0j4bZK84QEZBq8xLIpQHYP460j4mL7PWiSWzjmuh4vJ2ib8CSSWKiIb?=
+ =?us-ascii?Q?XOrcUiZq384agy+UDTy9A4tmUl2NCYiKpHd8uyx2haZlX2DZcBll0sI3kYZ/?=
+ =?us-ascii?Q?0DRvpcAHoUOsx7HWnjqI1X0JCy8DeIelPM1+7HS8HMGZR4lczsZjNiMkp0JD?=
+ =?us-ascii?Q?o/tWh9iUDmvHWpT2b+DtoMBFaNeICAZv4cKYJJVZIh77mTBqadoMAKvJlR5o?=
+ =?us-ascii?Q?iqCHZLbUH+urFXY3eSJilNXbobP5hzZKpVR7bigMRX4rnfMSjQj/LEa3WpW2?=
+ =?us-ascii?Q?7xmwAe4mnTxNEu8NmnjCS1e9Z3fe2IGDP5RLIJBkfqFxuClWeMUz+/Kv659/?=
+ =?us-ascii?Q?/gsRZCCjw74mZNVA2G+TipPRT+aKJxBR4wpzpEj2t0+1i/ldMd/zwEZohvRK?=
+ =?us-ascii?Q?Hqd/afL45X+ShzPWi9lTooDUk29mLN4TLo5vKWunqceqWzDrGzMxL5QbGa3O?=
+ =?us-ascii?Q?H/x4oINVHVd6H5GfNGoW9HY86ydUPVMR6thU4d0+msQ0yLGQgAkQ+xUkiAIQ?=
+ =?us-ascii?Q?doOS0nidOoX4KAld80gmdy3h2LLw/Vslr5tY3AkUl5gxa4rwTG7UQTxNWoGE?=
+ =?us-ascii?Q?xxruPqAaleyDuJAH/4UuviPOU38Fti3XC9m4kOzoAzX/f1m828ig2242qSop?=
+ =?us-ascii?Q?lg=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7fb10880-26c3-4d20-ba2b-08db03ad2a31
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Jan 2023 17:04:07.6122
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: SR/j4m9ppmM/xwwtcFRZFGUCc9Q85a+YY5IWttktGwrutgU4sotbnEDXvfIU0DFk8fZoQ3xxPo+1CBUR26wNuB/scDiIwl2PJFVTKRYGjy0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR17MB5190
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, Jan 31, 2023 at 04:38:47PM +0000, Jonathan Cameron wrote:
+> From: Gregory Price <gourry.memverge@gmail.com>
+> 
+> This commit enables each CXL Type-3 device to contain one volatile
+> memory region and one persistent region.
+>
+> ... snip ...
+> 
+
+I have no objections to the changes made.  I'll test when I finish up a
+few other tasks.
+
+

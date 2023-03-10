@@ -1,0 +1,63 @@
+From 888fd413453e87b0102a1683d7280074564aca73 Mon Sep 17 00:00:00 2001
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Date: Thu, 17 Nov 2022 13:26:25 +0000
+Subject: [PATCH 06/10] HACK: Fix-up interrupt routing for CXL on q35.
+Status: RO
+Content-Length: 2469
+Lines: 54
+
+I need to do some more thinking to figure out correct approach
+to solve this problem.
+
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Signed-off-by: Jonathan Cameron <jonathan.cameron@huawei.com>
+---
+ hw/i386/acpi-build.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/hw/i386/acpi-build.c b/hw/i386/acpi-build.c
+index d9eaa5fc4d..285829802b 100644
+--- a/hw/i386/acpi-build.c
++++ b/hw/i386/acpi-build.c
+@@ -701,7 +701,7 @@ static Aml *build_prt(bool is_pci0_prt)
+                       lnk_idx));
+ 
+         /* route[2] = "LNK[D|A|B|C]", selection based on pin % 3  */
+-        aml_append(while_ctx, initialize_route(route, "LNKD", lnk_idx, 0));
++        aml_append(while_ctx, initialize_route(route, "GSIH", lnk_idx, 0));
+         if (is_pci0_prt) {
+             Aml *if_device_1, *if_pin_4, *else_pin_4;
+ 
+@@ -717,16 +717,16 @@ static Aml *build_prt(bool is_pci0_prt)
+                 else_pin_4 = aml_else();
+                 {
+                     aml_append(else_pin_4,
+-                        aml_store(build_prt_entry("LNKA"), route));
++                        aml_store(build_prt_entry("GSIE"), route));
+                 }
+                 aml_append(if_device_1, else_pin_4);
+             }
+             aml_append(while_ctx, if_device_1);
+         } else {
+-            aml_append(while_ctx, initialize_route(route, "LNKA", lnk_idx, 1));
++            aml_append(while_ctx, initialize_route(route, "GSIE", lnk_idx, 1));
+         }
+-        aml_append(while_ctx, initialize_route(route, "LNKB", lnk_idx, 2));
+-        aml_append(while_ctx, initialize_route(route, "LNKC", lnk_idx, 3));
++        aml_append(while_ctx, initialize_route(route, "GSIF", lnk_idx, 2));
++        aml_append(while_ctx, initialize_route(route, "GSIG", lnk_idx, 3));
+ 
+         /* route[0] = 0x[slot]FFFF */
+         aml_append(while_ctx,
+@@ -1483,7 +1483,7 @@ build_dsdt(GArray *table_data, BIOSLinker *linker,
+                 aml_append(pkg, aml_eisaid("PNP0A03"));
+                 aml_append(dev, aml_name_decl("_CID", pkg));
+                 aml_append(dev, aml_name_decl("_ADR", aml_int(0)));
+-                aml_append(dev, aml_name_decl("_UID", aml_int(bus_num)));
++//                aml_append(dev, aml_name_decl("_UID", aml_int(bus_num)));
+                 build_cxl_osc_method(dev);
+             } else if (pci_bus_is_express(bus)) {
+                 aml_append(dev, aml_name_decl("_HID", aml_eisaid("PNP0A08")));
+-- 
+2.25.1
+

@@ -1,0 +1,1082 @@
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 580C7C05027
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:32:51 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229865AbjBFRcu (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:32:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39488 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229686AbjBFRct (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:32:49 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABF2161BA
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:32:47 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9YC43RfYz6J6HQ;
+        Tue,  7 Feb 2023 01:28:48 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:32:45 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 09/10] qemu/uuid: Add UUID static initializer
+Date: Mon, 6 Feb 2023 17:28:15 +0000
+Message-ID: <20230206172816.8201-10-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1685
+Lines: 42
+
+From: Ira Weiny <ira.weiny@intel.com>
+
+UUID's are defined as network byte order fields.  No static initializer
+was available for UUID's in their standard big endian format.
+
+Define a big endian initializer for UUIDs.
+
+Reviewed-by: Gregory Price <gregory.price@memverge.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ include/qemu/uuid.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/include/qemu/uuid.h b/include/qemu/uuid.h
+index 9925febfa5..dc40ee1fc9 100644
+--- a/include/qemu/uuid.h
++++ b/include/qemu/uuid.h
+@@ -61,6 +61,18 @@ typedef struct {
+     (clock_seq_hi_and_reserved), (clock_seq_low), (node0), (node1), (node2),\
+     (node3), (node4), (node5) }
+ 
++/* Normal (network byte order) UUID */
++#define UUID(time_low, time_mid, time_hi_and_version,                    \
++  clock_seq_hi_and_reserved, clock_seq_low, node0, node1, node2,         \
++  node3, node4, node5)                                                   \
++  { ((time_low) >> 24) & 0xff, ((time_low) >> 16) & 0xff,                \
++    ((time_low) >> 8) & 0xff, (time_low) & 0xff,                         \
++    ((time_mid) >> 8) & 0xff, (time_mid) & 0xff,                         \
++    ((time_hi_and_version) >> 8) & 0xff, (time_hi_and_version) & 0xff,   \
++    (clock_seq_hi_and_reserved), (clock_seq_low),                        \
++    (node0), (node1), (node2), (node3), (node4), (node5)                 \
++  }
++
+ #define UUID_FMT "%02hhx%02hhx%02hhx%02hhx-" \
+                  "%02hhx%02hhx-%02hhx%02hhx-" \
+                  "%02hhx%02hhx-" \
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B579BC05027
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:31:31 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230198AbjBFRba (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:31:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38604 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230208AbjBFRbX (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:31:23 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70A27244A9
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:31:16 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9Y9K1sLnz6J65x;
+        Tue,  7 Feb 2023 01:27:17 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:31:14 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 06/10] hw/i386/acpi: Drop duplicate _UID entry for CXL root bridge
+Date: Mon, 6 Feb 2023 17:28:12 +0000
+Message-ID: <20230206172816.8201-7-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1012
+Lines: 26
+
+Noticed as this prevents iASL disasembling the DSDT table.
+
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Reviewed-by: Gregory Price <gregory.price@memverge.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/i386/acpi-build.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/hw/i386/acpi-build.c b/hw/i386/acpi-build.c
+index 145389aa58..4840d11799 100644
+--- a/hw/i386/acpi-build.c
++++ b/hw/i386/acpi-build.c
+@@ -1514,7 +1514,6 @@ build_dsdt(GArray *table_data, BIOSLinker *linker,
+                 aml_append(pkg, aml_eisaid("PNP0A03"));
+                 aml_append(dev, aml_name_decl("_CID", pkg));
+                 aml_append(dev, aml_name_decl("_ADR", aml_int(0)));
+-                aml_append(dev, aml_name_decl("_UID", aml_int(bus_num)));
+                 build_cxl_osc_method(dev);
+             } else if (pci_bus_is_express(bus)) {
+                 aml_append(dev, aml_name_decl("_HID", aml_eisaid("PNP0A08")));
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C992FC05027
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:29:15 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230235AbjBFR3O (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:29:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35766 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230316AbjBFR2v (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:28:51 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D489A27986
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:28:43 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9Y9S0Flcz67Mww;
+        Tue,  7 Feb 2023 01:27:24 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:28:41 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 01/10] hw/mem/cxl_type3: Improve error handling in realize()
+Date: Mon, 6 Feb 2023 17:28:07 +0000
+Message-ID: <20230206172816.8201-2-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1640
+Lines: 51
+
+msix_init_exclusive_bar() can fail, so if it does cleanup the address space.
+
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Reviewed-by: Gregory Price <gregory.price@memverge.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/mem/cxl_type3.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index dae4fd89ca..252822bd82 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -401,7 +401,7 @@ static void ct3_realize(PCIDevice *pci_dev, Error **errp)
+     MemoryRegion *mr = &regs->component_registers;
+     uint8_t *pci_conf = pci_dev->config;
+     unsigned short msix_num = 1;
+-    int i;
++    int i, rc;
+ 
+     if (!cxl_setup_memory(ct3d, errp)) {
+         return;
+@@ -438,7 +438,10 @@ static void ct3_realize(PCIDevice *pci_dev, Error **errp)
+                      &ct3d->cxl_dstate.device_registers);
+ 
+     /* MSI(-X) Initailization */
+-    msix_init_exclusive_bar(pci_dev, msix_num, 4, NULL);
++    rc = msix_init_exclusive_bar(pci_dev, msix_num, 4, NULL);
++    if (rc) {
++        goto err_address_space_free;
++    }
+     for (i = 0; i < msix_num; i++) {
+         msix_vector_use(pci_dev, i);
+     }
+@@ -450,6 +453,11 @@ static void ct3_realize(PCIDevice *pci_dev, Error **errp)
+     cxl_cstate->cdat.free_cdat_table = ct3_free_cdat_table;
+     cxl_cstate->cdat.private = ct3d;
+     cxl_doe_cdat_init(cxl_cstate, errp);
++    return;
++
++err_address_space_free:
++    address_space_destroy(&ct3d->hostmem_as);
++    return;
+ }
+ 
+ static void ct3_exit(PCIDevice *pci_dev)
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A195FC63797
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:30:27 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229975AbjBFRa0 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:30:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35766 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230504AbjBFRaQ (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:30:16 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59546270C
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:30:15 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9YCC3ct5z6J9yS;
+        Tue,  7 Feb 2023 01:28:55 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:30:13 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 04/10] hw/cxl: Add CXL_CAPACITY_MULTIPLIER definition
+Date: Mon, 6 Feb 2023 17:28:10 +0000
+Message-ID: <20230206172816.8201-5-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 2767
+Lines: 82
+
+From: Gregory Price <gourry.memverge@gmail.com>
+
+Remove usage of magic numbers when accessing capacity fields and replace
+with CXL_CAPACITY_MULTIPLIER, matching the kernel definition.
+
+Signed-off-by: Gregory Price <gregory.price@memverge.com>
+Reviewed-by: Davidlohr Bueso <dave@stgolabs.net>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+v2:
+Change to 256 * MiB and include qemu/units.h (Philippe Mathieu-Daudé)
+---
+ hw/cxl/cxl-mailbox-utils.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+index bc1bb18844..3f67b665f5 100644
+--- a/hw/cxl/cxl-mailbox-utils.c
++++ b/hw/cxl/cxl-mailbox-utils.c
+@@ -12,8 +12,11 @@
+ #include "hw/pci/pci.h"
+ #include "qemu/cutils.h"
+ #include "qemu/log.h"
++#include "qemu/units.h"
+ #include "qemu/uuid.h"
+ 
++#define CXL_CAPACITY_MULTIPLIER   (256 * MiB)
++
+ /*
+  * How to add a new command, example. The command set FOO, with cmd BAR.
+  *  1. Add the command set and cmd to the enum.
+@@ -138,7 +141,7 @@ static ret_code cmd_firmware_update_get_info(struct cxl_cmd *cmd,
+     } QEMU_PACKED *fw_info;
+     QEMU_BUILD_BUG_ON(sizeof(*fw_info) != 0x50);
+ 
+-    if (cxl_dstate->pmem_size < (256 << 20)) {
++    if (cxl_dstate->pmem_size < CXL_CAPACITY_MULTIPLIER) {
+         return CXL_MBOX_INTERNAL_ERROR;
+     }
+ 
+@@ -283,7 +286,7 @@ static ret_code cmd_identify_memory_device(struct cxl_cmd *cmd,
+     CXLType3Class *cvc = CXL_TYPE3_GET_CLASS(ct3d);
+     uint64_t size = cxl_dstate->pmem_size;
+ 
+-    if (!QEMU_IS_ALIGNED(size, 256 << 20)) {
++    if (!QEMU_IS_ALIGNED(size, CXL_CAPACITY_MULTIPLIER)) {
+         return CXL_MBOX_INTERNAL_ERROR;
+     }
+ 
+@@ -293,8 +296,8 @@ static ret_code cmd_identify_memory_device(struct cxl_cmd *cmd,
+     /* PMEM only */
+     snprintf(id->fw_revision, 0x10, "BWFW VERSION %02d", 0);
+ 
+-    id->total_capacity = size / (256 << 20);
+-    id->persistent_capacity = size / (256 << 20);
++    id->total_capacity = size / CXL_CAPACITY_MULTIPLIER;
++    id->persistent_capacity = size / CXL_CAPACITY_MULTIPLIER;
+     id->lsa_size = cvc->get_lsa_size(ct3d);
+ 
+     *len = sizeof(*id);
+@@ -314,14 +317,14 @@ static ret_code cmd_ccls_get_partition_info(struct cxl_cmd *cmd,
+     QEMU_BUILD_BUG_ON(sizeof(*part_info) != 0x20);
+     uint64_t size = cxl_dstate->pmem_size;
+ 
+-    if (!QEMU_IS_ALIGNED(size, 256 << 20)) {
++    if (!QEMU_IS_ALIGNED(size, CXL_CAPACITY_MULTIPLIER)) {
+         return CXL_MBOX_INTERNAL_ERROR;
+     }
+ 
+     /* PMEM only */
+     part_info->active_vmem = 0;
+     part_info->next_vmem = 0;
+-    part_info->active_pmem = size / (256 << 20);
++    part_info->active_pmem = size / CXL_CAPACITY_MULTIPLIER;
+     part_info->next_pmem = 0;
+ 
+     *len = sizeof(*part_info);
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 786C2C64EC6
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:30:28 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230148AbjBFRa1 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:30:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36996 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230284AbjBFR3y (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:29:54 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF0CB59D2
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:29:44 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9Y736RDKz6J7gS;
+        Tue,  7 Feb 2023 01:25:19 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:29:42 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 03/10] hw/cxl: set cxl-type3 device type to PCI_CLASS_MEMORY_CXL
+Date: Mon, 6 Feb 2023 17:28:09 +0000
+Message-ID: <20230206172816.8201-4-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1171
+Lines: 37
+
+From: Gregory Price <gourry.memverge@gmail.com>
+
+Current code sets to STORAGE_EXPRESS and then overrides it.
+
+Reviewed-by: Davidlohr Bueso <dave@stgolabs.net>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/mem/cxl_type3.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index 252822bd82..217a5e639b 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -408,7 +408,6 @@ static void ct3_realize(PCIDevice *pci_dev, Error **errp)
+     }
+ 
+     pci_config_set_prog_interface(pci_conf, 0x10);
+-    pci_config_set_class(pci_conf, PCI_CLASS_MEMORY_CXL);
+ 
+     pcie_endpoint_cap_init(pci_dev, 0x80);
+     if (ct3d->sn != UI64_NULL) {
+@@ -627,7 +626,7 @@ static void ct3_class_init(ObjectClass *oc, void *data)
+ 
+     pc->realize = ct3_realize;
+     pc->exit = ct3_exit;
+-    pc->class_id = PCI_CLASS_STORAGE_EXPRESS;
++    pc->class_id = PCI_CLASS_MEMORY_CXL;
+     pc->vendor_id = PCI_VENDOR_ID_INTEL;
+     pc->device_id = 0xd93; /* LVF for now */
+     pc->revision = 1;
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0323AC636D3
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:33:21 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229686AbjBFRdU (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:33:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39822 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229592AbjBFRdT (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:33:19 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 954FE13523
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:33:18 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9YCg2tTtz6J65x;
+        Tue,  7 Feb 2023 01:29:19 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:33:16 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 10/10] hw/cxl/mailbox: Use new UUID network order define for cel_uuid
+Date: Mon, 6 Feb 2023 17:28:16 +0000
+Message-ID: <20230206172816.8201-11-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 3162
+Lines: 90
+
+From: Ira Weiny <ira.weiny@intel.com>
+
+The cel_uuid was programatically generated previously because there was
+no static initializer for network order UUIDs.
+
+Use the new network order initializer for cel_uuid.  Adjust
+cxl_initialize_mailbox() because it can't fail now.
+
+Update specification reference.
+
+Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+Reviewed-by: Gregory Price <gregory.price@memverge.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+v2:
+Make it const (Philippe)
+---
+ hw/cxl/cxl-device-utils.c   |  2 +-
+ hw/cxl/cxl-mailbox-utils.c  | 13 ++++++-------
+ include/hw/cxl/cxl_device.h |  2 +-
+ 3 files changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/hw/cxl/cxl-device-utils.c b/hw/cxl/cxl-device-utils.c
+index 83ce7a8270..4c5e88aaf5 100644
+--- a/hw/cxl/cxl-device-utils.c
++++ b/hw/cxl/cxl-device-utils.c
+@@ -267,5 +267,5 @@ void cxl_device_register_init_common(CXLDeviceState *cxl_dstate)
+     cxl_device_cap_init(cxl_dstate, MEMORY_DEVICE, 0x4000);
+     memdev_reg_init_common(cxl_dstate);
+ 
+-    assert(cxl_initialize_mailbox(cxl_dstate) == 0);
++    cxl_initialize_mailbox(cxl_dstate);
+ }
+diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+index 3f67b665f5..206e04a4b8 100644
+--- a/hw/cxl/cxl-mailbox-utils.c
++++ b/hw/cxl/cxl-mailbox-utils.c
+@@ -193,7 +193,11 @@ static ret_code cmd_timestamp_set(struct cxl_cmd *cmd,
+     return CXL_MBOX_SUCCESS;
+ }
+ 
+-static QemuUUID cel_uuid;
++/* CXL 3.0 8.2.9.5.2.1 Command Effects Log (CEL) */
++static const QemuUUID cel_uuid = {
++    .data = UUID(0x0da9c0b5, 0xbf41, 0x4b78, 0x8f, 0x79,
++                 0x96, 0xb1, 0x62, 0x3b, 0x3f, 0x17)
++};
+ 
+ /* 8.2.9.4.1 */
+ static ret_code cmd_logs_get_supported(struct cxl_cmd *cmd,
+@@ -458,11 +462,8 @@ void cxl_process_mailbox(CXLDeviceState *cxl_dstate)
+                      DOORBELL, 0);
+ }
+ 
+-int cxl_initialize_mailbox(CXLDeviceState *cxl_dstate)
++void cxl_initialize_mailbox(CXLDeviceState *cxl_dstate)
+ {
+-    /* CXL 2.0: Table 169 Get Supported Logs Log Entry */
+-    const char *cel_uuidstr = "0da9c0b5-bf41-4b78-8f79-96b1623b3f17";
+-
+     for (int set = 0; set < 256; set++) {
+         for (int cmd = 0; cmd < 256; cmd++) {
+             if (cxl_cmd_set[set][cmd].handler) {
+@@ -476,6 +477,4 @@ int cxl_initialize_mailbox(CXLDeviceState *cxl_dstate)
+             }
+         }
+     }
+-
+-    return qemu_uuid_parse(cel_uuidstr, &cel_uuid);
+ }
+diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+index 250adf18b2..7e5ad65c1d 100644
+--- a/include/hw/cxl/cxl_device.h
++++ b/include/hw/cxl/cxl_device.h
+@@ -170,7 +170,7 @@ CXL_DEVICE_CAPABILITY_HEADER_REGISTER(MEMORY_DEVICE,
+                                       CXL_DEVICE_CAP_HDR1_OFFSET +
+                                           CXL_DEVICE_CAP_REG_SIZE * 2)
+ 
+-int cxl_initialize_mailbox(CXLDeviceState *cxl_dstate);
++void cxl_initialize_mailbox(CXLDeviceState *cxl_dstate);
+ void cxl_process_mailbox(CXLDeviceState *cxl_dstate);
+ 
+ #define cxl_device_cap_init(dstate, reg, cap_id)                           \
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A28FFC636D3
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:28:40 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230255AbjBFR2i (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:28:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35474 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230244AbjBFR20 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:28:26 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A36A893F8
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:28:13 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9Y8s1XdYz6J9yC;
+        Tue,  7 Feb 2023 01:26:53 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:28:11 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 00/10] hw/cxl: CXL emulation cleanups and minor fixes for upstream
+Date: Mon, 6 Feb 2023 17:28:06 +0000
+Message-ID: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 2278
+Lines: 57
+
+Since V3:
+- Rebased on upstream today.
+- Refreshed DSDT.cxl due to changes upstream.
+- Picked up tags from Gregory.
+
+A small collection of misc fixes and tidying up pulled out from various
+series. I've pulled this to the top of my queue of CXL related work
+as they stand fine on their own and it will reduce the noise in
+the larger patch sets if these go upstream first.
+
+Gregory's patches were posted as part of his work on adding volatile support.
+https://lore.kernel.org/linux-cxl/20221006233702.18532-1-gregory.price@memverge.com/
+https://lore.kernel.org/linux-cxl/20221128150157.97724-2-gregory.price@memverge.com/
+I might propose this for upstream inclusion this cycle, but testing is
+currently limited by lack of suitable kernel support.
+
+Ira's patches were part of his event injection series.
+https://lore.kernel.org/linux-cxl/20221221-ira-cxl-events-2022-11-17-v2-0-2ce2ecc06219@intel.com/
+Intent is to propose for upstream the rest of that series shortly after
+some minor changes from earlier review.
+
+My five patches have not previously been posted before this series.
+
+
+Baseline: 6661b8c7fe "Merge tag 'pull-ppc-20230205' of https://gitlab.com/danielhb/qemu into staging"
+
+Gregory Price (2):
+  hw/cxl: set cxl-type3 device type to PCI_CLASS_MEMORY_CXL
+  hw/cxl: Add CXL_CAPACITY_MULTIPLIER definition
+
+Ira Weiny (3):
+  qemu/bswap: Add const_le64()
+  qemu/uuid: Add UUID static initializer
+  hw/cxl/mailbox: Use new UUID network order define for cel_uuid
+
+Jonathan Cameron (5):
+  hw/mem/cxl_type3: Improve error handling in realize()
+  hw/pci-bridge/cxl_downstream: Fix type naming mismatch
+  tests/acpi: Allow update of q35/DSDT.cxl
+  hw/i386/acpi: Drop duplicate _UID entry for CXL root bridge
+  tests: acpi: Update q35/DSDT.cxl for removed duplicate UID
+
+ hw/cxl/cxl-device-utils.c      |   2 +-
+ hw/cxl/cxl-mailbox-utils.c     |  28 +++++++++++++++-------------
+ hw/i386/acpi-build.c           |   1 -
+ hw/mem/cxl_type3.c             |  15 +++++++++++----
+ hw/pci-bridge/cxl_downstream.c |   2 +-
+ include/hw/cxl/cxl_device.h    |   2 +-
+ include/qemu/bswap.h           |  12 +++++++++++-
+ include/qemu/uuid.h            |  12 ++++++++++++
+ tests/data/acpi/q35/DSDT.cxl   | Bin 9578 -> 9564 bytes
+ 9 files changed, 52 insertions(+), 22 deletions(-)
+
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CE08C636D3
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:31:06 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229942AbjBFRbF (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:31:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37464 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230324AbjBFRa4 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:30:56 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB93B11E98
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:30:45 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9Y8D6Hpnz6J7gf;
+        Tue,  7 Feb 2023 01:26:20 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:30:43 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 05/10] tests/acpi: Allow update of q35/DSDT.cxl
+Date: Mon, 6 Feb 2023 17:28:11 +0000
+Message-ID: <20230206172816.8201-6-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 678
+Lines: 20
+
+Next patch will drop duplicate _UID entry so allow update.
+
+Reviewed-by: Gregory Price <gregory.price@memverge.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ tests/qtest/bios-tables-test-allowed-diff.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tests/qtest/bios-tables-test-allowed-diff.h b/tests/qtest/bios-tables-test-allowed-diff.h
+index dfb8523c8b..9ce0f596cc 100644
+--- a/tests/qtest/bios-tables-test-allowed-diff.h
++++ b/tests/qtest/bios-tables-test-allowed-diff.h
+@@ -1 +1,2 @@
+ /* List of comma-separated changed AML files to ignore */
++"tests/data/acpi/q35/DSDT.cxl",
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92CADC636D3
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:31:55 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229548AbjBFRby (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:31:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38952 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229686AbjBFRbx (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:31:53 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B4626196
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:31:47 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9YDz0Tykz6J9yR;
+        Tue,  7 Feb 2023 01:30:27 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:31:44 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 07/10] tests: acpi: Update q35/DSDT.cxl for removed duplicate UID
+Date: Mon, 6 Feb 2023 17:28:13 +0000
+Message-ID: <20230206172816.8201-8-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1130
+Lines: 32
+
+Dropping the ID effects this table in trivial fashion.
+
+Reviewed-by: Gregory Price <gregory.price@memverge.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ tests/data/acpi/q35/DSDT.cxl                | Bin 9578 -> 9564 bytes
+ tests/qtest/bios-tables-test-allowed-diff.h |   1 -
+ 2 files changed, 1 deletion(-)
+
+diff --git a/tests/data/acpi/q35/DSDT.cxl b/tests/data/acpi/q35/DSDT.cxl
+index 3d18b9672d124a0cf11a79e92c396a1b883d0589..4586b9a18b24acd946cd32c7e3e3a70891a246d2 100644
+GIT binary patch
+delta 65
+zcmaFmb;pa#CD<h-MwNkqQEMaDUKwr|m6-Tor}*e5Z{^9CWUMyF%dcjfyiYC^MM6#<
+IB*D!F0I~xVRsaA1
+
+delta 79
+zcmccP^~#IOCD<h-OO=6vv2P>SUKwt0m6-Tor}*e5CzZ*UWUScYLp@!%?rjc`U&A<g
+SyId%Wytq76o(Cw;!v+8Y7Z@l2
+
+diff --git a/tests/qtest/bios-tables-test-allowed-diff.h b/tests/qtest/bios-tables-test-allowed-diff.h
+index 9ce0f596cc..dfb8523c8b 100644
+--- a/tests/qtest/bios-tables-test-allowed-diff.h
++++ b/tests/qtest/bios-tables-test-allowed-diff.h
+@@ -1,2 +1 @@
+ /* List of comma-separated changed AML files to ignore */
+-"tests/data/acpi/q35/DSDT.cxl",
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F656C05027
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:32:19 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229570AbjBFRcS (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:32:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39088 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229686AbjBFRcS (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:32:18 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69639270C
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:32:17 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9YB033cBz6J7dZ;
+        Tue,  7 Feb 2023 01:27:52 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:32:15 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 08/10] qemu/bswap: Add const_le64()
+Date: Mon, 6 Feb 2023 17:28:14 +0000
+Message-ID: <20230206172816.8201-9-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1961
+Lines: 57
+
+From: Ira Weiny <ira.weiny@intel.com>
+
+Gcc requires constant versions of cpu_to_le* calls.
+
+Add a 64 bit version.
+
+Reviewed-by: Peter Maydell <peter.maydell@linaro.org>
+Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+Reviewed-by: Gregory Price <gregory.price@memverge.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+v2: Update comment (Philippe)
+---
+ include/qemu/bswap.h | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/include/qemu/bswap.h b/include/qemu/bswap.h
+index 3cbe52246b..eb3bcf2520 100644
+--- a/include/qemu/bswap.h
++++ b/include/qemu/bswap.h
+@@ -129,11 +129,20 @@ CPU_CONVERT(le, 32, uint32_t)
+ CPU_CONVERT(le, 64, uint64_t)
+ 
+ /*
+- * Same as cpu_to_le{16,32}, except that gcc will figure the result is
++ * Same as cpu_to_le{16,32,64}, except that gcc will figure the result is
+  * a compile-time constant if you pass in a constant.  So this can be
+  * used to initialize static variables.
+  */
+ #if HOST_BIG_ENDIAN
++# define const_le64(_x)                          \
++    ((((_x) & 0x00000000000000ffU) << 56) |      \
++     (((_x) & 0x000000000000ff00U) << 40) |      \
++     (((_x) & 0x0000000000ff0000U) << 24) |      \
++     (((_x) & 0x00000000ff000000U) <<  8) |      \
++     (((_x) & 0x000000ff00000000U) >>  8) |      \
++     (((_x) & 0x0000ff0000000000U) >> 24) |      \
++     (((_x) & 0x00ff000000000000U) >> 40) |      \
++     (((_x) & 0xff00000000000000U) >> 56))
+ # define const_le32(_x)                          \
+     ((((_x) & 0x000000ffU) << 24) |              \
+      (((_x) & 0x0000ff00U) <<  8) |              \
+@@ -143,6 +152,7 @@ CPU_CONVERT(le, 64, uint64_t)
+     ((((_x) & 0x00ff) << 8) |                    \
+      (((_x) & 0xff00) >> 8))
+ #else
++# define const_le64(_x) (_x)
+ # define const_le32(_x) (_x)
+ # define const_le16(_x) (_x)
+ #endif
+-- 
+2.37.2
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D7B2C636D3
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Feb 2023 17:29:40 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230180AbjBFR3j (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:29:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36894 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229929AbjBFR3g (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Feb 2023 12:29:36 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7DE1828871
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Feb 2023 09:29:14 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P9YB23jQ5z6J9yB;
+        Tue,  7 Feb 2023 01:27:54 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.17; Mon, 6 Feb 2023 17:29:12 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: [PATCH v4 02/10] hw/pci-bridge/cxl_downstream: Fix type naming mismatch
+Date: Mon, 6 Feb 2023 17:28:08 +0000
+Message-ID: <20230206172816.8201-3-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+References: <20230206172816.8201-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 881
+Lines: 29
+
+Fix capitalization difference between struct name and typedef.
+
+Tested-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Reviewed-by: Gregory Price <gregory.price@memverge.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/pci-bridge/cxl_downstream.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/hw/pci-bridge/cxl_downstream.c b/hw/pci-bridge/cxl_downstream.c
+index 3d4e6b59cd..54f507318f 100644
+--- a/hw/pci-bridge/cxl_downstream.c
++++ b/hw/pci-bridge/cxl_downstream.c
+@@ -15,7 +15,7 @@
+ #include "hw/pci/pcie_port.h"
+ #include "qapi/error.h"
+ 
+-typedef struct CXLDownStreamPort {
++typedef struct CXLDownstreamPort {
+     /*< private >*/
+     PCIESlot parent_obj;
+ 
+-- 
+2.37.2
+
+
+
