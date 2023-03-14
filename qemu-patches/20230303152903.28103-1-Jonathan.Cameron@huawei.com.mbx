@@ -1,0 +1,2594 @@
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FACBC64EC4
+	for <linux-cxl@archiver.kernel.org>; Fri,  3 Mar 2023 15:29:31 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231382AbjCCP33 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 3 Mar 2023 10:29:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44962 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231272AbjCCP32 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 3 Mar 2023 10:29:28 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 950621A4A7
+        for <linux-cxl@vger.kernel.org>; Fri,  3 Mar 2023 07:29:06 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PSsJW3qsnz67PMg;
+        Fri,  3 Mar 2023 23:26:35 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 3 Mar 2023 15:29:03 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>,
+        Fan Ni <fan.ni@samsung.com>
+CC: <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?UTF-8?q?Daniel=20P=20=2E=20Berrang=C3=A9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: [PATCH v4 0/7] QEMU CXL Provide mock CXL events and irq support
+Date: Fri, 3 Mar 2023 15:28:56 +0000
+Message-ID: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Whilst I'm an optimist, I suspect this is now 8.1 material because we have
+5 CXL patch sets outstanding before it. Current bottleneck being QAPI review
+for the RAS error series.
+
+v4 changes: Thanks to Ira and to some feedback I received off list.
+- More endian fixes for a future big endian architecture using it.
+- Comment typo
+
+One challenge here is striking the right balance between lots of constraints
+in the injection code to enforce particular reserved bits etc by breaking
+out all the flags as individual parameters vs having a reasonably concise
+API.  I think this set strikes the right balance but others may well
+disagree :)   Note that Ira raised the question of whether we should be
+automatically establishing the volatile flag based on the Device Physical
+Address of the injected error. My proposal is to not do so for now, but
+to possibly revisit tightening the checking of injected errors in future.
+Whilst the volatile flag is straight forwards, some of the other flags that
+could be automatically set (or perhaps checked for validiaty) are much more
+complex. Adding verification at this stage would greatly increase the
+complexity of the patch + we are missing other elements that would interact
+with this.  I'm not concerned about potential breaking of backwards compatibility
+if it only related to the injection of errors that make no sense for a real
+device.
+
+Based on following series (in order)
+1. [PATCH v4 00/10] hw/cxl: CXL emulation cleanups and minor fixes for upstream
+(in staging currently so fingers crossed that one is fine)
+2. [PATCH v6 0/8] hw/cxl: RAS error emulation and injection
+3. [PATCH v2 0/2] hw/cxl: Passthrough HDM decoder emulation
+4. [PATCH v4 0/2] hw/mem: CXL Type-3 Volatile Memory Support
+5. [PATCH v4 0/6] hw/cxl: Poison get, inject, clear
+
+Based on: Message-Id: 20230206172816.8201-1-Jonathan.Cameron@huawei.com
+Based-on: Message-id: 20230227112751.6101-1-Jonathan.Cameron@huawei.com
+Based-on: Message-id: 20230227153128.8164-1-Jonathan.Cameron@huawei.com
+Based-on: Message-id: 20230227163157.6621-1-Jonathan.Cameron@huawei.com
+Based-on: Message-id: 20230303150908.27889-1-Jonathan.Cameron@huawei.com
+
+v2 cover letter.
+
+CXL Event records inform the OS of various CXL device events.  Thus far CXL
+memory devices are emulated and therefore don't naturally generate events.
+
+Add an event infrastructure and mock event injection.  Previous versions
+included a bulk insertion of lots of events.  However, this series focuses on
+providing the ability to inject individual events through QMP.  Only the
+General Media Event is included in this series as an example.  Other events can
+be added pretty easily once the infrastructure is acceptable.
+
+In addition, this version updates the code to be in line with the
+specification based on discussions around the kernel patches.
+
+Injection examples;
+
+{ "execute": "cxl-inject-gen-media-event",
+    "arguments": {
+        "path": "/machine/peripheral/cxl-mem0",
+        "log": "informational",
+        "flags": 1,
+        "physaddr": 1000,
+        "descriptor": 3,
+        "type": 3,
+        "transaction-type": 192,
+        "channel": 3,
+        "device": 5,
+        "component-id": "iras mem"
+    }}
+
+
+{ "execute": "cxl-inject-dram-event",
+    "arguments": {
+        "path": "/machine/peripheral/cxl-mem0",
+        "log": "informational",
+        "flags": 1,
+        "physaddr": 1000,
+        "descriptor": 3,
+        "type": 3,
+        "transaction-type": 192,
+        "channel": 3,
+        "rank": 17,
+        "nibble-mask": 37421234,
+        "bank-group": 7,
+        "bank": 11,
+        "row": 2,
+        "column": 77,
+        "correction-mask": [33, 44, 55, 66]
+    }}
+
+{ "execute": "cxl-inject-memory-module-event",
+  "arguments": {
+    "path": "/machine/peripheral/cxl-mem0",
+    "log": "informational",
+    "flags": 1,
+    "type": 3,
+    "health-status": 3,
+    "media-status": 7,
+    "additional-status": 33,
+    "life-used": 30,
+    "temperature": -15,
+    "dirty-shutdown-count": 4,
+    "corrected-volatile-error-count": 3233,
+    "corrected-persistent-error-count": 1300
+  }}
+
+
+Ira Weiny (4):
+  hw/cxl/events: Add event status register
+  hw/cxl/events: Wire up get/clear event mailbox commands
+  hw/cxl/events: Add event interrupt support
+  hw/cxl/events: Add injection of General Media Events
+
+Jonathan Cameron (3):
+  hw/cxl: Move CXLRetCode definition to cxl_device.h
+  hw/cxl/events: Add injection of DRAM events
+  hw/cxl/events: Add injection of Memory Module Events
+
+ hw/cxl/cxl-device-utils.c   |  43 +++++-
+ hw/cxl/cxl-events.c         | 248 ++++++++++++++++++++++++++++++
+ hw/cxl/cxl-mailbox-utils.c  | 166 ++++++++++++++------
+ hw/cxl/meson.build          |   1 +
+ hw/mem/cxl_type3.c          | 292 +++++++++++++++++++++++++++++++++++-
+ hw/mem/cxl_type3_stubs.c    |  35 +++++
+ include/hw/cxl/cxl_device.h |  80 +++++++++-
+ include/hw/cxl/cxl_events.h | 168 +++++++++++++++++++++
+ qapi/cxl.json               | 120 +++++++++++++++
+ 9 files changed, 1097 insertions(+), 56 deletions(-)
+ create mode 100644 hw/cxl/cxl-events.c
+ create mode 100644 include/hw/cxl/cxl_events.h
+
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D495C64EC4
+	for <linux-cxl@archiver.kernel.org>; Fri,  3 Mar 2023 15:29:57 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231207AbjCCP34 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 3 Mar 2023 10:29:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45376 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231312AbjCCP3t (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 3 Mar 2023 10:29:49 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AC671ACDE
+        for <linux-cxl@vger.kernel.org>; Fri,  3 Mar 2023 07:29:37 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PSsK62sjpz67wFS;
+        Fri,  3 Mar 2023 23:27:06 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 3 Mar 2023 15:29:34 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>,
+        Fan Ni <fan.ni@samsung.com>
+CC: <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?UTF-8?q?Daniel=20P=20=2E=20Berrang=C3=A9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: [PATCH v4 1/7] hw/cxl/events: Add event status register
+Date: Fri, 3 Mar 2023 15:28:57 +0000
+Message-ID: <20230303152903.28103-2-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+References: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+From: Ira Weiny <ira.weiny@intel.com>
+
+The device status register block was defined.  However, there were no
+individual registers nor any data wired up.
+
+Define the event status register [CXL 3.0; 8.2.8.3.1] as part of the
+device status register block.  Wire up the register and initialize the
+event status for each log.
+
+To support CXL 3.0 the version of the device status register block needs
+to be 2.  Change the macro to allow for setting the version.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Link: https://lore.kernel.org/r/20221221-ira-cxl-events-2022-11-17-v2-4-2ce2ecc06219@intel.com
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/cxl/cxl-device-utils.c   | 43 ++++++++++++++++++++++++++++++++-----
+ include/hw/cxl/cxl_device.h | 23 +++++++++++++++++---
+ include/hw/cxl/cxl_events.h | 28 ++++++++++++++++++++++++
+ 3 files changed, 86 insertions(+), 8 deletions(-)
+
+diff --git a/hw/cxl/cxl-device-utils.c b/hw/cxl/cxl-device-utils.c
+index 86e1cea8ce..517f06d869 100644
+--- a/hw/cxl/cxl-device-utils.c
++++ b/hw/cxl/cxl-device-utils.c
+@@ -41,7 +41,20 @@ static uint64_t caps_reg_read(void *opaque, hwaddr offset, unsigned size)
+ 
+ static uint64_t dev_reg_read(void *opaque, hwaddr offset, unsigned size)
+ {
+-    return 0;
++    CXLDeviceState *cxl_dstate = opaque;
++
++    switch (size) {
++    case 1:
++        return cxl_dstate->dev_reg_state[offset];
++    case 2:
++        return cxl_dstate->dev_reg_state16[offset / size];
++    case 4:
++        return cxl_dstate->dev_reg_state32[offset / size];
++    case 8:
++        return cxl_dstate->dev_reg_state64[offset / size];
++    default:
++        g_assert_not_reached();
++    }
+ }
+ 
+ static uint64_t mailbox_reg_read(void *opaque, hwaddr offset, unsigned size)
+@@ -236,7 +249,27 @@ void cxl_device_register_block_init(Object *obj, CXLDeviceState *cxl_dstate)
+                                 &cxl_dstate->memory_device);
+ }
+ 
+-static void device_reg_init_common(CXLDeviceState *cxl_dstate) { }
++void cxl_event_set_status(CXLDeviceState *cxl_dstate, CXLEventLogType log_type,
++                          bool available)
++{
++    if (available) {
++        cxl_dstate->event_status |= (1 << log_type);
++    } else {
++        cxl_dstate->event_status &= ~(1 << log_type);
++    }
++
++    ARRAY_FIELD_DP64(cxl_dstate->dev_reg_state64, CXL_DEV_EVENT_STATUS,
++                     EVENT_STATUS, cxl_dstate->event_status);
++}
++
++static void device_reg_init_common(CXLDeviceState *cxl_dstate)
++{
++    CXLEventLogType log;
++
++    for (log = 0; log < CXL_EVENT_TYPE_MAX; log++) {
++        cxl_event_set_status(cxl_dstate, log, false);
++    }
++}
+ 
+ static void mailbox_reg_init_common(CXLDeviceState *cxl_dstate)
+ {
+@@ -258,13 +291,13 @@ void cxl_device_register_init_common(CXLDeviceState *cxl_dstate)
+     ARRAY_FIELD_DP64(cap_hdrs, CXL_DEV_CAP_ARRAY, CAP_VERSION, 1);
+     ARRAY_FIELD_DP64(cap_hdrs, CXL_DEV_CAP_ARRAY, CAP_COUNT, cap_count);
+ 
+-    cxl_device_cap_init(cxl_dstate, DEVICE_STATUS, 1);
++    cxl_device_cap_init(cxl_dstate, DEVICE_STATUS, 1, 2);
+     device_reg_init_common(cxl_dstate);
+ 
+-    cxl_device_cap_init(cxl_dstate, MAILBOX, 2);
++    cxl_device_cap_init(cxl_dstate, MAILBOX, 2, 1);
+     mailbox_reg_init_common(cxl_dstate);
+ 
+-    cxl_device_cap_init(cxl_dstate, MEMORY_DEVICE, 0x4000);
++    cxl_device_cap_init(cxl_dstate, MEMORY_DEVICE, 0x4000, 1);
+     memdev_reg_init_common(cxl_dstate);
+ 
+     cxl_initialize_mailbox(cxl_dstate);
+diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+index 73328a52cf..16993f7098 100644
+--- a/include/hw/cxl/cxl_device.h
++++ b/include/hw/cxl/cxl_device.h
+@@ -13,6 +13,7 @@
+ #include "hw/cxl/cxl_component.h"
+ #include "hw/pci/pci_device.h"
+ #include "hw/register.h"
++#include "hw/cxl/cxl_events.h"
+ 
+ /*
+  * The following is how a CXL device's Memory Device registers are laid out.
+@@ -86,7 +87,16 @@ typedef struct cxl_device_state {
+     MemoryRegion device_registers;
+ 
+     /* mmio for device capabilities array - 8.2.8.2 */
+-    MemoryRegion device;
++    struct {
++        MemoryRegion device;
++        union {
++            uint8_t dev_reg_state[CXL_DEVICE_STATUS_REGISTERS_LENGTH];
++            uint16_t dev_reg_state16[CXL_DEVICE_STATUS_REGISTERS_LENGTH / 2];
++            uint32_t dev_reg_state32[CXL_DEVICE_STATUS_REGISTERS_LENGTH / 4];
++            uint64_t dev_reg_state64[CXL_DEVICE_STATUS_REGISTERS_LENGTH / 8];
++        };
++        uint64_t event_status;
++    };
+     MemoryRegion memory_device;
+     struct {
+         MemoryRegion caps;
+@@ -141,6 +151,9 @@ REG64(CXL_DEV_CAP_ARRAY, 0) /* Documented as 128 bit register but 64 byte access
+     FIELD(CXL_DEV_CAP_ARRAY, CAP_VERSION, 16, 8)
+     FIELD(CXL_DEV_CAP_ARRAY, CAP_COUNT, 32, 16)
+ 
++void cxl_event_set_status(CXLDeviceState *cxl_dstate, CXLEventLogType log_type,
++                          bool available);
++
+ /*
+  * Helper macro to initialize capability headers for CXL devices.
+  *
+@@ -175,7 +188,7 @@ CXL_DEVICE_CAPABILITY_HEADER_REGISTER(MEMORY_DEVICE,
+ void cxl_initialize_mailbox(CXLDeviceState *cxl_dstate);
+ void cxl_process_mailbox(CXLDeviceState *cxl_dstate);
+ 
+-#define cxl_device_cap_init(dstate, reg, cap_id)                           \
++#define cxl_device_cap_init(dstate, reg, cap_id, ver)                      \
+     do {                                                                   \
+         uint32_t *cap_hdrs = dstate->caps_reg_state32;                     \
+         int which = R_CXL_DEV_##reg##_CAP_HDR0;                            \
+@@ -183,7 +196,7 @@ void cxl_process_mailbox(CXLDeviceState *cxl_dstate);
+             FIELD_DP32(cap_hdrs[which], CXL_DEV_##reg##_CAP_HDR0,          \
+                        CAP_ID, cap_id);                                    \
+         cap_hdrs[which] = FIELD_DP32(                                      \
+-            cap_hdrs[which], CXL_DEV_##reg##_CAP_HDR0, CAP_VERSION, 1);    \
++            cap_hdrs[which], CXL_DEV_##reg##_CAP_HDR0, CAP_VERSION, ver);  \
+         cap_hdrs[which + 1] =                                              \
+             FIELD_DP32(cap_hdrs[which + 1], CXL_DEV_##reg##_CAP_HDR1,      \
+                        CAP_OFFSET, CXL_##reg##_REGISTERS_OFFSET);          \
+@@ -192,6 +205,10 @@ void cxl_process_mailbox(CXLDeviceState *cxl_dstate);
+                        CAP_LENGTH, CXL_##reg##_REGISTERS_LENGTH);          \
+     } while (0)
+ 
++/* CXL 3.0 8.2.8.3.1 Event Status Register */
++REG64(CXL_DEV_EVENT_STATUS, 0)
++    FIELD(CXL_DEV_EVENT_STATUS, EVENT_STATUS, 0, 32)
++
+ /* CXL 2.0 8.2.8.4.3 Mailbox Capabilities Register */
+ REG32(CXL_DEV_MAILBOX_CAP, 0)
+     FIELD(CXL_DEV_MAILBOX_CAP, PAYLOAD_SIZE, 0, 5)
+diff --git a/include/hw/cxl/cxl_events.h b/include/hw/cxl/cxl_events.h
+new file mode 100644
+index 0000000000..aeb3b0590e
+--- /dev/null
++++ b/include/hw/cxl/cxl_events.h
+@@ -0,0 +1,28 @@
++/*
++ * QEMU CXL Events
++ *
++ * Copyright (c) 2022 Intel
++ *
++ * This work is licensed under the terms of the GNU GPL, version 2. See the
++ * COPYING file in the top-level directory.
++ */
++
++#ifndef CXL_EVENTS_H
++#define CXL_EVENTS_H
++
++/*
++ * CXL rev 3.0 section 8.2.9.2.2; Table 8-49
++ *
++ * Define these as the bit position for the event status register for ease of
++ * setting the status.
++ */
++typedef enum CXLEventLogType {
++    CXL_EVENT_TYPE_INFO          = 0,
++    CXL_EVENT_TYPE_WARN          = 1,
++    CXL_EVENT_TYPE_FAIL          = 2,
++    CXL_EVENT_TYPE_FATAL         = 3,
++    CXL_EVENT_TYPE_DYNAMIC_CAP   = 4,
++    CXL_EVENT_TYPE_MAX
++} CXLEventLogType;
++
++#endif /* CXL_EVENTS_H */
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EEE4C7EE2D
+	for <linux-cxl@archiver.kernel.org>; Fri,  3 Mar 2023 15:30:11 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230396AbjCCPaK (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 3 Mar 2023 10:30:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45632 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230334AbjCCPaJ (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 3 Mar 2023 10:30:09 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA00C234F9
+        for <linux-cxl@vger.kernel.org>; Fri,  3 Mar 2023 07:30:07 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PSsKj1DPWz67kSQ;
+        Fri,  3 Mar 2023 23:27:37 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 3 Mar 2023 15:30:05 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>,
+        Fan Ni <fan.ni@samsung.com>
+CC: <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?UTF-8?q?Daniel=20P=20=2E=20Berrang=C3=A9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: [PATCH v4 2/7] hw/cxl: Move CXLRetCode definition to cxl_device.h
+Date: Fri, 3 Mar 2023 15:28:58 +0000
+Message-ID: <20230303152903.28103-3-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+References: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Following patches will need access to the mailbox return code
+type so move it to the header.
+
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/cxl/cxl-mailbox-utils.c  | 28 ----------------------------
+ include/hw/cxl/cxl_device.h | 28 ++++++++++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 28 deletions(-)
+
+diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+index 0b30307fa3..92ce22144a 100644
+--- a/hw/cxl/cxl-mailbox-utils.c
++++ b/hw/cxl/cxl-mailbox-utils.c
+@@ -68,34 +68,6 @@ enum {
+         #define CLEAR_POISON           0x2
+ };
+ 
+-/* 8.2.8.4.5.1 Command Return Codes */
+-typedef enum {
+-    CXL_MBOX_SUCCESS = 0x0,
+-    CXL_MBOX_BG_STARTED = 0x1,
+-    CXL_MBOX_INVALID_INPUT = 0x2,
+-    CXL_MBOX_UNSUPPORTED = 0x3,
+-    CXL_MBOX_INTERNAL_ERROR = 0x4,
+-    CXL_MBOX_RETRY_REQUIRED = 0x5,
+-    CXL_MBOX_BUSY = 0x6,
+-    CXL_MBOX_MEDIA_DISABLED = 0x7,
+-    CXL_MBOX_FW_XFER_IN_PROGRESS = 0x8,
+-    CXL_MBOX_FW_XFER_OUT_OF_ORDER = 0x9,
+-    CXL_MBOX_FW_AUTH_FAILED = 0xa,
+-    CXL_MBOX_FW_INVALID_SLOT = 0xb,
+-    CXL_MBOX_FW_ROLLEDBACK = 0xc,
+-    CXL_MBOX_FW_REST_REQD = 0xd,
+-    CXL_MBOX_INVALID_HANDLE = 0xe,
+-    CXL_MBOX_INVALID_PA = 0xf,
+-    CXL_MBOX_INJECT_POISON_LIMIT = 0x10,
+-    CXL_MBOX_PERMANENT_MEDIA_FAILURE = 0x11,
+-    CXL_MBOX_ABORTED = 0x12,
+-    CXL_MBOX_INVALID_SECURITY_STATE = 0x13,
+-    CXL_MBOX_INCORRECT_PASSPHRASE = 0x14,
+-    CXL_MBOX_UNSUPPORTED_MAILBOX = 0x15,
+-    CXL_MBOX_INVALID_PAYLOAD_LENGTH = 0x16,
+-    CXL_MBOX_MAX = 0x17
+-} CXLRetCode;
+-
+ struct cxl_cmd;
+ typedef CXLRetCode (*opcode_handler)(struct cxl_cmd *cmd,
+                                    CXLDeviceState *cxl_dstate, uint16_t *len);
+diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+index 16993f7098..9f8ee85f8a 100644
+--- a/include/hw/cxl/cxl_device.h
++++ b/include/hw/cxl/cxl_device.h
+@@ -83,6 +83,34 @@
+     (CXL_DEVICE_CAP_REG_SIZE + CXL_DEVICE_STATUS_REGISTERS_LENGTH +     \
+      CXL_MAILBOX_REGISTERS_LENGTH + CXL_MEMORY_DEVICE_REGISTERS_LENGTH)
+ 
++/* 8.2.8.4.5.1 Command Return Codes */
++typedef enum {
++    CXL_MBOX_SUCCESS = 0x0,
++    CXL_MBOX_BG_STARTED = 0x1,
++    CXL_MBOX_INVALID_INPUT = 0x2,
++    CXL_MBOX_UNSUPPORTED = 0x3,
++    CXL_MBOX_INTERNAL_ERROR = 0x4,
++    CXL_MBOX_RETRY_REQUIRED = 0x5,
++    CXL_MBOX_BUSY = 0x6,
++    CXL_MBOX_MEDIA_DISABLED = 0x7,
++    CXL_MBOX_FW_XFER_IN_PROGRESS = 0x8,
++    CXL_MBOX_FW_XFER_OUT_OF_ORDER = 0x9,
++    CXL_MBOX_FW_AUTH_FAILED = 0xa,
++    CXL_MBOX_FW_INVALID_SLOT = 0xb,
++    CXL_MBOX_FW_ROLLEDBACK = 0xc,
++    CXL_MBOX_FW_REST_REQD = 0xd,
++    CXL_MBOX_INVALID_HANDLE = 0xe,
++    CXL_MBOX_INVALID_PA = 0xf,
++    CXL_MBOX_INJECT_POISON_LIMIT = 0x10,
++    CXL_MBOX_PERMANENT_MEDIA_FAILURE = 0x11,
++    CXL_MBOX_ABORTED = 0x12,
++    CXL_MBOX_INVALID_SECURITY_STATE = 0x13,
++    CXL_MBOX_INCORRECT_PASSPHRASE = 0x14,
++    CXL_MBOX_UNSUPPORTED_MAILBOX = 0x15,
++    CXL_MBOX_INVALID_PAYLOAD_LENGTH = 0x16,
++    CXL_MBOX_MAX = 0x17
++} CXLRetCode;
++
+ typedef struct cxl_device_state {
+     MemoryRegion device_registers;
+ 
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63382C7EE2D
+	for <linux-cxl@archiver.kernel.org>; Fri,  3 Mar 2023 15:30:47 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230230AbjCCPaq (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 3 Mar 2023 10:30:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46296 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230140AbjCCPap (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 3 Mar 2023 10:30:45 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2A1B2DE59
+        for <linux-cxl@vger.kernel.org>; Fri,  3 Mar 2023 07:30:38 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PSsHP462Jz6H7Dd;
+        Fri,  3 Mar 2023 23:25:37 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 3 Mar 2023 15:30:36 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>,
+        Fan Ni <fan.ni@samsung.com>
+CC: <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?UTF-8?q?Daniel=20P=20=2E=20Berrang=C3=A9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: [PATCH v4 3/7] hw/cxl/events: Wire up get/clear event mailbox commands
+Date: Fri, 3 Mar 2023 15:28:59 +0000
+Message-ID: <20230303152903.28103-4-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+References: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+From: Ira Weiny <ira.weiny@intel.com>
+
+CXL testing is benefited from an artificial event log injection
+mechanism.
+
+Add an event log infrastructure to insert, get, and clear events from
+the various logs available on a device.
+
+Replace the stubbed out CXL Get/Clear Event mailbox commands with
+commands that operate on the new infrastructure.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/cxl/cxl-events.c         | 217 ++++++++++++++++++++++++++++++++++++
+ hw/cxl/cxl-mailbox-utils.c  |  40 ++++++-
+ hw/cxl/meson.build          |   1 +
+ hw/mem/cxl_type3.c          |   1 +
+ include/hw/cxl/cxl_device.h |  25 +++++
+ include/hw/cxl/cxl_events.h |  55 +++++++++
+ 6 files changed, 337 insertions(+), 2 deletions(-)
+
+diff --git a/hw/cxl/cxl-events.c b/hw/cxl/cxl-events.c
+new file mode 100644
+index 0000000000..5da1b76b97
+--- /dev/null
++++ b/hw/cxl/cxl-events.c
+@@ -0,0 +1,217 @@
++/*
++ * CXL Event processing
++ *
++ * Copyright(C) 2023 Intel Corporation.
++ *
++ * This work is licensed under the terms of the GNU GPL, version 2. See the
++ * COPYING file in the top-level directory.
++ */
++
++#include <stdint.h>
++
++#include "qemu/osdep.h"
++#include "qemu/bswap.h"
++#include "qemu/typedefs.h"
++#include "qemu/error-report.h"
++#include "hw/cxl/cxl.h"
++#include "hw/cxl/cxl_events.h"
++
++/* Artificial limit on the number of events a log can hold */
++#define CXL_TEST_EVENT_OVERFLOW 8
++
++static void reset_overflow(CXLEventLog *log)
++{
++    log->overflow_err_count = 0;
++    log->first_overflow_timestamp = 0;
++    log->last_overflow_timestamp = 0;
++}
++
++void cxl_event_init(CXLDeviceState *cxlds)
++{
++    CXLEventLog *log;
++    int i;
++
++    for (i = 0; i < CXL_EVENT_TYPE_MAX; i++) {
++        log = &cxlds->event_logs[i];
++        log->next_handle = 1;
++        log->overflow_err_count = 0;
++        log->first_overflow_timestamp = 0;
++        log->last_overflow_timestamp = 0;
++        qemu_mutex_init(&log->lock);
++        QSIMPLEQ_INIT(&log->events);
++    }
++}
++
++static CXLEvent *cxl_event_get_head(CXLEventLog *log)
++{
++    return QSIMPLEQ_FIRST(&log->events);
++}
++
++static CXLEvent *cxl_event_get_next(CXLEvent *entry)
++{
++    return QSIMPLEQ_NEXT(entry, node);
++}
++
++static int cxl_event_count(CXLEventLog *log)
++{
++    CXLEvent *event;
++    int rc = 0;
++
++    QSIMPLEQ_FOREACH(event, &log->events, node) {
++        rc++;
++    }
++
++    return rc;
++}
++
++static bool cxl_event_empty(CXLEventLog *log)
++{
++    return QSIMPLEQ_EMPTY(&log->events);
++}
++
++static void cxl_event_delete_head(CXLDeviceState *cxlds,
++                                  CXLEventLogType log_type,
++                                  CXLEventLog *log)
++{
++    CXLEvent *entry = cxl_event_get_head(log);
++
++    reset_overflow(log);
++    QSIMPLEQ_REMOVE_HEAD(&log->events, node);
++    if (cxl_event_empty(log)) {
++        cxl_event_set_status(cxlds, log_type, false);
++    }
++    g_free(entry);
++}
++
++/*
++ * return true if an interrupt should be generated as a result
++ * of inserting this event.
++ */
++bool cxl_event_insert(CXLDeviceState *cxlds, CXLEventLogType log_type,
++                      CXLEventRecordRaw *event)
++{
++    uint64_t time;
++    CXLEventLog *log;
++    CXLEvent *entry;
++
++    if (log_type >= CXL_EVENT_TYPE_MAX) {
++        return false;
++    }
++
++    time = cxl_device_get_timestamp(cxlds);
++
++    log = &cxlds->event_logs[log_type];
++
++    QEMU_LOCK_GUARD(&log->lock);
++
++    if (cxl_event_count(log) >= CXL_TEST_EVENT_OVERFLOW) {
++        if (log->overflow_err_count == 0) {
++            log->first_overflow_timestamp = time;
++        }
++        log->overflow_err_count++;
++        log->last_overflow_timestamp = time;
++        return false;
++    }
++
++    entry = g_new0(CXLEvent, 1);
++
++    memcpy(&entry->data, event, sizeof(*event));
++
++    entry->data.hdr.handle = cpu_to_le16(log->next_handle);
++    log->next_handle++;
++    /* 0 handle is never valid */
++    if (log->next_handle == 0) {
++        log->next_handle++;
++    }
++    entry->data.hdr.timestamp = cpu_to_le64(time);
++
++    QSIMPLEQ_INSERT_TAIL(&log->events, entry, node);
++    cxl_event_set_status(cxlds, log_type, true);
++
++    /* Count went from 0 to 1 */
++    return cxl_event_count(log) == 1;
++}
++
++CXLRetCode cxl_event_get_records(CXLDeviceState *cxlds, CXLGetEventPayload *pl,
++                                 uint8_t log_type, int max_recs,
++                                 uint16_t *len)
++{
++    CXLEventLog *log;
++    CXLEvent *entry;
++    uint16_t nr;
++
++    if (log_type >= CXL_EVENT_TYPE_MAX) {
++        return CXL_MBOX_INVALID_INPUT;
++    }
++
++    log = &cxlds->event_logs[log_type];
++
++    QEMU_LOCK_GUARD(&log->lock);
++
++    entry = cxl_event_get_head(log);
++    for (nr = 0; entry && nr < max_recs; nr++) {
++        memcpy(&pl->records[nr], &entry->data, CXL_EVENT_RECORD_SIZE);
++        entry = cxl_event_get_next(entry);
++    }
++
++    if (!cxl_event_empty(log)) {
++        pl->flags |= CXL_GET_EVENT_FLAG_MORE_RECORDS;
++    }
++
++    if (log->overflow_err_count) {
++        pl->flags |= CXL_GET_EVENT_FLAG_OVERFLOW;
++        pl->overflow_err_count = cpu_to_le16(log->overflow_err_count);
++        pl->first_overflow_timestamp = cpu_to_le64(log->first_overflow_timestamp);
++        pl->last_overflow_timestamp = cpu_to_le64(log->last_overflow_timestamp);
++    }
++
++    pl->record_count = cpu_to_le16(nr);
++    *len = CXL_EVENT_PAYLOAD_HDR_SIZE + (CXL_EVENT_RECORD_SIZE * nr);
++
++    return CXL_MBOX_SUCCESS;
++}
++
++CXLRetCode cxl_event_clear_records(CXLDeviceState *cxlds, CXLClearEventPayload *pl)
++{
++    CXLEventLog *log;
++    uint8_t log_type;
++    CXLEvent *entry;
++    int nr;
++
++    log_type = pl->event_log;
++
++    if (log_type >= CXL_EVENT_TYPE_MAX) {
++        return CXL_MBOX_INVALID_INPUT;
++    }
++
++    log = &cxlds->event_logs[log_type];
++
++    QEMU_LOCK_GUARD(&log->lock);
++    /*
++     * Must itterate the queue twice.
++     * "The device shall verify the event record handles specified in the input
++     * payload are in temporal order. If the device detects an older event
++     * record that will not be cleared when Clear Event Records is executed,
++     * the device shall return the Invalid Handle return code and shall not
++     * clear any of the specified event records."
++     *   -- CXL 3.0 8.2.9.2.3
++     */
++    entry = cxl_event_get_head(log);
++    for (nr = 0; entry && nr < pl->nr_recs; nr++) {
++        uint16_t handle = pl->handle[nr];
++
++        /* NOTE: Both handles are little endian. */
++        if (handle == 0 || entry->data.hdr.handle != handle) {
++            return CXL_MBOX_INVALID_INPUT;
++        }
++        entry = cxl_event_get_next(entry);
++    }
++
++    entry = cxl_event_get_head(log);
++    for (nr = 0; entry && nr < pl->nr_recs; nr++) {
++        cxl_event_delete_head(cxlds, log_type, log);
++        entry = cxl_event_get_head(log);
++    }
++
++    return CXL_MBOX_SUCCESS;
++}
+diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+index 92ce22144a..32a87df042 100644
+--- a/hw/cxl/cxl-mailbox-utils.c
++++ b/hw/cxl/cxl-mailbox-utils.c
+@@ -9,6 +9,7 @@
+ 
+ #include "qemu/osdep.h"
+ #include "hw/cxl/cxl.h"
++#include "hw/cxl/cxl_events.h"
+ #include "hw/pci/pci.h"
+ #include "qemu/cutils.h"
+ #include "qemu/log.h"
+@@ -95,11 +96,46 @@ struct cxl_cmd {
+         return CXL_MBOX_SUCCESS;                                          \
+     }
+ 
+-DEFINE_MAILBOX_HANDLER_ZEROED(events_get_records, 0x20);
+-DEFINE_MAILBOX_HANDLER_NOP(events_clear_records);
+ DEFINE_MAILBOX_HANDLER_ZEROED(events_get_interrupt_policy, 4);
+ DEFINE_MAILBOX_HANDLER_NOP(events_set_interrupt_policy);
+ 
++static CXLRetCode cmd_events_get_records(struct cxl_cmd *cmd,
++                                         CXLDeviceState *cxlds,
++                                         uint16_t *len)
++{
++    CXLGetEventPayload *pl;
++    uint8_t log_type;
++    int max_recs;
++
++    if (cmd->in < sizeof(log_type)) {
++        return CXL_MBOX_INVALID_INPUT;
++    }
++
++    log_type = *((uint8_t *)cmd->payload);
++
++    pl = (CXLGetEventPayload *)cmd->payload;
++    memset(pl, 0, sizeof(*pl));
++
++    max_recs = (cxlds->payload_size - CXL_EVENT_PAYLOAD_HDR_SIZE) /
++                CXL_EVENT_RECORD_SIZE;
++    if (max_recs > 0xFFFF) {
++        max_recs = 0xFFFF;
++    }
++
++    return cxl_event_get_records(cxlds, pl, log_type, max_recs, len);
++}
++
++static CXLRetCode cmd_events_clear_records(struct cxl_cmd *cmd,
++                                           CXLDeviceState *cxlds,
++                                           uint16_t *len)
++{
++    CXLClearEventPayload *pl;
++
++    pl = (CXLClearEventPayload *)cmd->payload;
++    *len = 0;
++    return cxl_event_clear_records(cxlds, pl);
++}
++
+ /* 8.2.9.2.1 */
+ static CXLRetCode cmd_firmware_update_get_info(struct cxl_cmd *cmd,
+                                                CXLDeviceState *cxl_dstate,
+diff --git a/hw/cxl/meson.build b/hw/cxl/meson.build
+index cfa95ffd40..71059972d4 100644
+--- a/hw/cxl/meson.build
++++ b/hw/cxl/meson.build
+@@ -5,6 +5,7 @@ softmmu_ss.add(when: 'CONFIG_CXL',
+                    'cxl-mailbox-utils.c',
+                    'cxl-host.c',
+                    'cxl-cdat.c',
++                   'cxl-events.c',
+                ),
+                if_false: files(
+                    'cxl-host-stubs.c',
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index 0d9de0ee03..439c30e06c 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -697,6 +697,7 @@ static void ct3_realize(PCIDevice *pci_dev, Error **errp)
+         goto err_release_cdat;
+     }
+ 
++    cxl_event_init(&ct3d->cxl_dstate);
+     return;
+ 
+ err_release_cdat:
+diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+index 9f8ee85f8a..d3aec1bc0e 100644
+--- a/include/hw/cxl/cxl_device.h
++++ b/include/hw/cxl/cxl_device.h
+@@ -111,6 +111,20 @@ typedef enum {
+     CXL_MBOX_MAX = 0x17
+ } CXLRetCode;
+ 
++typedef struct CXLEvent {
++    CXLEventRecordRaw data;
++    QSIMPLEQ_ENTRY(CXLEvent) node;
++} CXLEvent;
++
++typedef struct CXLEventLog {
++    uint16_t next_handle;
++    uint16_t overflow_err_count;
++    uint64_t first_overflow_timestamp;
++    uint64_t last_overflow_timestamp;
++    QemuMutex lock;
++    QSIMPLEQ_HEAD(, CXLEvent) events;
++} CXLEventLog;
++
+ typedef struct cxl_device_state {
+     MemoryRegion device_registers;
+ 
+@@ -161,6 +175,8 @@ typedef struct cxl_device_state {
+     uint64_t mem_size;
+     uint64_t pmem_size;
+     uint64_t vmem_size;
++
++    CXLEventLog event_logs[CXL_EVENT_TYPE_MAX];
+ } CXLDeviceState;
+ 
+ /* Initialize the register block for a device */
+@@ -353,6 +369,15 @@ MemTxResult cxl_type3_write(PCIDevice *d, hwaddr host_addr, uint64_t data,
+ 
+ uint64_t cxl_device_get_timestamp(CXLDeviceState *cxlds);
+ 
++void cxl_event_init(CXLDeviceState *cxlds);
++bool cxl_event_insert(CXLDeviceState *cxlds, CXLEventLogType log_type,
++                      CXLEventRecordRaw *event);
++CXLRetCode cxl_event_get_records(CXLDeviceState *cxlds, CXLGetEventPayload *pl,
++                                 uint8_t log_type, int max_recs,
++                                 uint16_t *len);
++CXLRetCode cxl_event_clear_records(CXLDeviceState *cxlds,
++                                   CXLClearEventPayload *pl);
++
+ void cxl_set_poison_list_overflowed(CXLType3Dev *ct3d);
+ 
+ #endif
+diff --git a/include/hw/cxl/cxl_events.h b/include/hw/cxl/cxl_events.h
+index aeb3b0590e..d4aaa894f1 100644
+--- a/include/hw/cxl/cxl_events.h
++++ b/include/hw/cxl/cxl_events.h
+@@ -10,6 +10,8 @@
+ #ifndef CXL_EVENTS_H
+ #define CXL_EVENTS_H
+ 
++#include "qemu/uuid.h"
++
+ /*
+  * CXL rev 3.0 section 8.2.9.2.2; Table 8-49
+  *
+@@ -25,4 +27,57 @@ typedef enum CXLEventLogType {
+     CXL_EVENT_TYPE_MAX
+ } CXLEventLogType;
+ 
++/*
++ * Common Event Record Format
++ * CXL rev 3.0 section 8.2.9.2.1; Table 8-42
++ */
++#define CXL_EVENT_REC_HDR_RES_LEN 0xf
++typedef struct CXLEventRecordHdr {
++    QemuUUID id;
++    uint8_t length;
++    uint8_t flags[3];
++    uint16_t handle;
++    uint16_t related_handle;
++    uint64_t timestamp;
++    uint8_t maint_op_class;
++    uint8_t reserved[CXL_EVENT_REC_HDR_RES_LEN];
++} QEMU_PACKED CXLEventRecordHdr;
++
++#define CXL_EVENT_RECORD_DATA_LENGTH 0x50
++typedef struct CXLEventRecordRaw {
++    CXLEventRecordHdr hdr;
++    uint8_t data[CXL_EVENT_RECORD_DATA_LENGTH];
++} QEMU_PACKED CXLEventRecordRaw;
++#define CXL_EVENT_RECORD_SIZE (sizeof(CXLEventRecordRaw))
++
++/*
++ * Get Event Records output payload
++ * CXL rev 3.0 section 8.2.9.2.2; Table 8-50
++ */
++#define CXL_GET_EVENT_FLAG_OVERFLOW     BIT(0)
++#define CXL_GET_EVENT_FLAG_MORE_RECORDS BIT(1)
++typedef struct CXLGetEventPayload {
++    uint8_t flags;
++    uint8_t reserved1;
++    uint16_t overflow_err_count;
++    uint64_t first_overflow_timestamp;
++    uint64_t last_overflow_timestamp;
++    uint16_t record_count;
++    uint8_t reserved2[0xa];
++    CXLEventRecordRaw records[];
++} QEMU_PACKED CXLGetEventPayload;
++#define CXL_EVENT_PAYLOAD_HDR_SIZE (sizeof(CXLGetEventPayload))
++
++/*
++ * Clear Event Records input payload
++ * CXL rev 3.0 section 8.2.9.2.3; Table 8-51
++ */
++typedef struct CXLClearEventPayload {
++    uint8_t event_log;      /* CXLEventLogType */
++    uint8_t clear_flags;
++    uint8_t nr_recs;
++    uint8_t reserved[3];
++    uint16_t handle[];
++} CXLClearEventPayload;
++
+ #endif /* CXL_EVENTS_H */
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51022C7EE2D
+	for <linux-cxl@archiver.kernel.org>; Fri,  3 Mar 2023 15:31:20 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231450AbjCCPbT (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 3 Mar 2023 10:31:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46778 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231487AbjCCPbR (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 3 Mar 2023 10:31:17 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53E4D3B21C
+        for <linux-cxl@vger.kernel.org>; Fri,  3 Mar 2023 07:31:09 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PSsPR05Wfz6J74Y;
+        Fri,  3 Mar 2023 23:30:50 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 3 Mar 2023 15:31:06 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>,
+        Fan Ni <fan.ni@samsung.com>
+CC: <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?UTF-8?q?Daniel=20P=20=2E=20Berrang=C3=A9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: [PATCH v4 4/7] hw/cxl/events: Add event interrupt support
+Date: Fri, 3 Mar 2023 15:29:00 +0000
+Message-ID: <20230303152903.28103-5-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+References: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+From: Ira Weiny <ira.weiny@intel.com>
+
+Replace the stubbed out CXL Get/Set Event interrupt policy mailbox
+commands.  Enable those commands to control interrupts for each of the
+event log types.
+
+Skip the standard input mailbox length on the Set command due to DCD
+being optional.  Perform the checks separately.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Link: https://lore.kernel.org/r/20221221-ira-cxl-events-2022-11-17-v2-6-2ce2ecc06219@intel.com
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/cxl/cxl-events.c         |  33 ++++++++++-
+ hw/cxl/cxl-mailbox-utils.c  | 106 +++++++++++++++++++++++++++++-------
+ hw/mem/cxl_type3.c          |   4 +-
+ include/hw/cxl/cxl_device.h |   6 +-
+ include/hw/cxl/cxl_events.h |  23 ++++++++
+ 5 files changed, 147 insertions(+), 25 deletions(-)
+
+diff --git a/hw/cxl/cxl-events.c b/hw/cxl/cxl-events.c
+index 5da1b76b97..d161d57456 100644
+--- a/hw/cxl/cxl-events.c
++++ b/hw/cxl/cxl-events.c
+@@ -13,6 +13,8 @@
+ #include "qemu/bswap.h"
+ #include "qemu/typedefs.h"
+ #include "qemu/error-report.h"
++#include "hw/pci/msi.h"
++#include "hw/pci/msix.h"
+ #include "hw/cxl/cxl.h"
+ #include "hw/cxl/cxl_events.h"
+ 
+@@ -26,7 +28,7 @@ static void reset_overflow(CXLEventLog *log)
+     log->last_overflow_timestamp = 0;
+ }
+ 
+-void cxl_event_init(CXLDeviceState *cxlds)
++void cxl_event_init(CXLDeviceState *cxlds, int start_msg_num)
+ {
+     CXLEventLog *log;
+     int i;
+@@ -37,9 +39,16 @@ void cxl_event_init(CXLDeviceState *cxlds)
+         log->overflow_err_count = 0;
+         log->first_overflow_timestamp = 0;
+         log->last_overflow_timestamp = 0;
++        log->irq_enabled = false;
++        log->irq_vec = start_msg_num++;
+         qemu_mutex_init(&log->lock);
+         QSIMPLEQ_INIT(&log->events);
+     }
++
++    /* Override -- Dynamic Capacity uses the same vector as info */
++    cxlds->event_logs[CXL_EVENT_TYPE_DYNAMIC_CAP].irq_vec =
++                      cxlds->event_logs[CXL_EVENT_TYPE_INFO].irq_vec;
++
+ }
+ 
+ static CXLEvent *cxl_event_get_head(CXLEventLog *log)
+@@ -215,3 +224,25 @@ CXLRetCode cxl_event_clear_records(CXLDeviceState *cxlds, CXLClearEventPayload *
+ 
+     return CXL_MBOX_SUCCESS;
+ }
++
++void cxl_event_irq_assert(CXLType3Dev *ct3d)
++{
++    CXLDeviceState *cxlds = &ct3d->cxl_dstate;
++    PCIDevice *pdev = &ct3d->parent_obj;
++    int i;
++
++    for (i = 0; i < CXL_EVENT_TYPE_MAX; i++) {
++        CXLEventLog *log = &cxlds->event_logs[i];
++
++        if (!log->irq_enabled || cxl_event_empty(log)) {
++            continue;
++        }
++
++        /*  Notifies interrupt, legacy IRQ is not supported */
++        if (msix_enabled(pdev)) {
++            msix_notify(pdev, log->irq_vec);
++        } else if (msi_enabled(pdev)) {
++            msi_notify(pdev, log->irq_vec);
++        }
++    }
++}
+diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+index 32a87df042..3ab200cd72 100644
+--- a/hw/cxl/cxl-mailbox-utils.c
++++ b/hw/cxl/cxl-mailbox-utils.c
+@@ -80,25 +80,6 @@ struct cxl_cmd {
+     uint8_t *payload;
+ };
+ 
+-#define DEFINE_MAILBOX_HANDLER_ZEROED(name, size)                         \
+-    uint16_t __zero##name = size;                                         \
+-    static CXLRetCode cmd_##name(struct cxl_cmd *cmd,                       \
+-                                 CXLDeviceState *cxl_dstate, uint16_t *len) \
+-    {                                                                     \
+-        *len = __zero##name;                                              \
+-        memset(cmd->payload, 0, *len);                                    \
+-        return CXL_MBOX_SUCCESS;                                          \
+-    }
+-#define DEFINE_MAILBOX_HANDLER_NOP(name)                                  \
+-    static CXLRetCode cmd_##name(struct cxl_cmd *cmd,                       \
+-                                 CXLDeviceState *cxl_dstate, uint16_t *len) \
+-    {                                                                     \
+-        return CXL_MBOX_SUCCESS;                                          \
+-    }
+-
+-DEFINE_MAILBOX_HANDLER_ZEROED(events_get_interrupt_policy, 4);
+-DEFINE_MAILBOX_HANDLER_NOP(events_set_interrupt_policy);
+-
+ static CXLRetCode cmd_events_get_records(struct cxl_cmd *cmd,
+                                          CXLDeviceState *cxlds,
+                                          uint16_t *len)
+@@ -136,6 +117,88 @@ static CXLRetCode cmd_events_clear_records(struct cxl_cmd *cmd,
+     return cxl_event_clear_records(cxlds, pl);
+ }
+ 
++static CXLRetCode cmd_events_get_interrupt_policy(struct cxl_cmd *cmd,
++                                                  CXLDeviceState *cxlds,
++                                                  uint16_t *len)
++{
++    CXLEventInterruptPolicy *policy;
++    CXLEventLog *log;
++
++    policy = (CXLEventInterruptPolicy *)cmd->payload;
++    memset(policy, 0, sizeof(*policy));
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_INFO];
++    if (log->irq_enabled) {
++        policy->info_settings = CXL_EVENT_INT_SETTING(log->irq_vec);
++    }
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_WARN];
++    if (log->irq_enabled) {
++        policy->warn_settings = CXL_EVENT_INT_SETTING(log->irq_vec);
++    }
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_FAIL];
++    if (log->irq_enabled) {
++        policy->failure_settings = CXL_EVENT_INT_SETTING(log->irq_vec);
++    }
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_FATAL];
++    if (log->irq_enabled) {
++        policy->fatal_settings = CXL_EVENT_INT_SETTING(log->irq_vec);
++    }
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_DYNAMIC_CAP];
++    if (log->irq_enabled) {
++        /* Dynamic Capacity borrows the same vector as info */
++        policy->dyn_cap_settings = CXL_INT_MSI_MSIX;
++    }
++
++    *len = sizeof(*policy);
++    return CXL_MBOX_SUCCESS;
++}
++
++static CXLRetCode cmd_events_set_interrupt_policy(struct cxl_cmd *cmd,
++                                                  CXLDeviceState *cxlds,
++                                                  uint16_t *len)
++{
++    CXLEventInterruptPolicy *policy;
++    CXLEventLog *log;
++
++    if (*len < CXL_EVENT_INT_SETTING_MIN_LEN) {
++        return CXL_MBOX_INVALID_PAYLOAD_LENGTH;
++    }
++
++    policy = (CXLEventInterruptPolicy *)cmd->payload;
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_INFO];
++    log->irq_enabled = (policy->info_settings & CXL_EVENT_INT_MODE_MASK) ==
++                        CXL_INT_MSI_MSIX;
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_WARN];
++    log->irq_enabled = (policy->warn_settings & CXL_EVENT_INT_MODE_MASK) ==
++                        CXL_INT_MSI_MSIX;
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_FAIL];
++    log->irq_enabled = (policy->failure_settings & CXL_EVENT_INT_MODE_MASK) ==
++                        CXL_INT_MSI_MSIX;
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_FATAL];
++    log->irq_enabled = (policy->fatal_settings & CXL_EVENT_INT_MODE_MASK) ==
++                        CXL_INT_MSI_MSIX;
++
++    /* DCD is optional */
++    if (*len < sizeof(*policy)) {
++        return CXL_MBOX_SUCCESS;
++    }
++
++    log = &cxlds->event_logs[CXL_EVENT_TYPE_DYNAMIC_CAP];
++    log->irq_enabled = (policy->dyn_cap_settings & CXL_EVENT_INT_MODE_MASK) ==
++                        CXL_INT_MSI_MSIX;
++
++    *len = sizeof(*policy);
++    return CXL_MBOX_SUCCESS;
++}
++
+ /* 8.2.9.2.1 */
+ static CXLRetCode cmd_firmware_update_get_info(struct cxl_cmd *cmd,
+                                                CXLDeviceState *cxl_dstate,
+@@ -605,9 +668,10 @@ static struct cxl_cmd cxl_cmd_set[256][256] = {
+     [EVENTS][CLEAR_RECORDS] = { "EVENTS_CLEAR_RECORDS",
+         cmd_events_clear_records, ~0, IMMEDIATE_LOG_CHANGE },
+     [EVENTS][GET_INTERRUPT_POLICY] = { "EVENTS_GET_INTERRUPT_POLICY",
+-        cmd_events_get_interrupt_policy, 0, 0 },
++                                      cmd_events_get_interrupt_policy, 0, 0 },
+     [EVENTS][SET_INTERRUPT_POLICY] = { "EVENTS_SET_INTERRUPT_POLICY",
+-        cmd_events_set_interrupt_policy, 4, IMMEDIATE_CONFIG_CHANGE },
++                                      cmd_events_set_interrupt_policy,
++                                      ~0, IMMEDIATE_CONFIG_CHANGE },
+     [FIRMWARE_UPDATE][GET_INFO] = { "FIRMWARE_UPDATE_GET_INFO",
+         cmd_firmware_update_get_info, 0, 0 },
+     [TIMESTAMP][GET] = { "TIMESTAMP_GET", cmd_timestamp_get, 0, 0 },
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index 439c30e06c..df1bb76172 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -635,7 +635,7 @@ static void ct3_realize(PCIDevice *pci_dev, Error **errp)
+     ComponentRegisters *regs = &cxl_cstate->crb;
+     MemoryRegion *mr = &regs->component_registers;
+     uint8_t *pci_conf = pci_dev->config;
+-    unsigned short msix_num = 1;
++    unsigned short msix_num = 6;
+     int i, rc;
+ 
+     QTAILQ_INIT(&ct3d->error_list);
+@@ -696,8 +696,8 @@ static void ct3_realize(PCIDevice *pci_dev, Error **errp)
+     if (rc) {
+         goto err_release_cdat;
+     }
++    cxl_event_init(&ct3d->cxl_dstate, 2);
+ 
+-    cxl_event_init(&ct3d->cxl_dstate);
+     return;
+ 
+ err_release_cdat:
+diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+index d3aec1bc0e..1978730fba 100644
+--- a/include/hw/cxl/cxl_device.h
++++ b/include/hw/cxl/cxl_device.h
+@@ -121,6 +121,8 @@ typedef struct CXLEventLog {
+     uint16_t overflow_err_count;
+     uint64_t first_overflow_timestamp;
+     uint64_t last_overflow_timestamp;
++    bool irq_enabled;
++    int irq_vec;
+     QemuMutex lock;
+     QSIMPLEQ_HEAD(, CXLEvent) events;
+ } CXLEventLog;
+@@ -369,7 +371,7 @@ MemTxResult cxl_type3_write(PCIDevice *d, hwaddr host_addr, uint64_t data,
+ 
+ uint64_t cxl_device_get_timestamp(CXLDeviceState *cxlds);
+ 
+-void cxl_event_init(CXLDeviceState *cxlds);
++void cxl_event_init(CXLDeviceState *cxlds, int start_msg_num);
+ bool cxl_event_insert(CXLDeviceState *cxlds, CXLEventLogType log_type,
+                       CXLEventRecordRaw *event);
+ CXLRetCode cxl_event_get_records(CXLDeviceState *cxlds, CXLGetEventPayload *pl,
+@@ -378,6 +380,8 @@ CXLRetCode cxl_event_get_records(CXLDeviceState *cxlds, CXLGetEventPayload *pl,
+ CXLRetCode cxl_event_clear_records(CXLDeviceState *cxlds,
+                                    CXLClearEventPayload *pl);
+ 
++void cxl_event_irq_assert(CXLType3Dev *ct3d);
++
+ void cxl_set_poison_list_overflowed(CXLType3Dev *ct3d);
+ 
+ #endif
+diff --git a/include/hw/cxl/cxl_events.h b/include/hw/cxl/cxl_events.h
+index d4aaa894f1..4bf8b7aa08 100644
+--- a/include/hw/cxl/cxl_events.h
++++ b/include/hw/cxl/cxl_events.h
+@@ -80,4 +80,27 @@ typedef struct CXLClearEventPayload {
+     uint16_t handle[];
+ } CXLClearEventPayload;
+ 
++/**
++ * Event Interrupt Policy
++ *
++ * CXL rev 3.0 section 8.2.9.2.4; Table 8-52
++ */
++typedef enum CXLEventIntMode {
++    CXL_INT_NONE     = 0x00,
++    CXL_INT_MSI_MSIX = 0x01,
++    CXL_INT_FW       = 0x02,
++    CXL_INT_RES      = 0x03,
++} CXLEventIntMode;
++#define CXL_EVENT_INT_MODE_MASK 0x3
++#define CXL_EVENT_INT_SETTING(vector) ((((uint8_t)vector & 0xf) << 4) | CXL_INT_MSI_MSIX)
++typedef struct CXLEventInterruptPolicy {
++    uint8_t info_settings;
++    uint8_t warn_settings;
++    uint8_t failure_settings;
++    uint8_t fatal_settings;
++    uint8_t dyn_cap_settings;
++} QEMU_PACKED CXLEventInterruptPolicy;
++/* DCD is optional but other fields are not */
++#define CXL_EVENT_INT_SETTING_MIN_LEN 4
++
+ #endif /* CXL_EVENTS_H */
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90E07C64EC4
+	for <linux-cxl@archiver.kernel.org>; Fri,  3 Mar 2023 15:31:43 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230140AbjCCPbm (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 3 Mar 2023 10:31:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47156 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231440AbjCCPbl (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 3 Mar 2023 10:31:41 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3D3729419
+        for <linux-cxl@vger.kernel.org>; Fri,  3 Mar 2023 07:31:39 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PSsMT1yqgz6J9Zd;
+        Fri,  3 Mar 2023 23:29:09 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 3 Mar 2023 15:31:37 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>,
+        Fan Ni <fan.ni@samsung.com>
+CC: <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?UTF-8?q?Daniel=20P=20=2E=20Berrang=C3=A9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: [PATCH v4 5/7] hw/cxl/events: Add injection of General Media Events
+Date: Fri, 3 Mar 2023 15:29:01 +0000
+Message-ID: <20230303152903.28103-6-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+References: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+From: Ira Weiny <ira.weiny@intel.com>
+
+To facilitate testing provide a QMP command to inject a general media
+event.  The event can be added to the log specified.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+v4:
+* Fix endian conversion on physaddr.
+---
+ hw/mem/cxl_type3.c          | 111 ++++++++++++++++++++++++++++++++++++
+ hw/mem/cxl_type3_stubs.c    |  10 ++++
+ include/hw/cxl/cxl_events.h |  20 +++++++
+ qapi/cxl.json               |  50 ++++++++++++++++
+ 4 files changed, 191 insertions(+)
+
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index df1bb76172..2900b236cd 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -1152,6 +1152,117 @@ void qmp_cxl_inject_correctable_error(const char *path, CxlCorErrorType type,
+     pcie_aer_inject_error(PCI_DEVICE(obj), &err);
+ }
+ 
++static void cxl_assign_event_header(CXLEventRecordHdr *hdr,
++                                    const QemuUUID *uuid, uint32_t flags,
++                                    uint8_t length, uint64_t timestamp)
++{
++    st24_le_p(&hdr->flags, flags);
++    hdr->length = length;
++    memcpy(&hdr->id, uuid, sizeof(hdr->id));
++    stq_le_p(&hdr->timestamp, timestamp);
++}
++
++static const QemuUUID gen_media_uuid = {
++    .data = UUID(0xfbcd0a77, 0xc260, 0x417f,
++                 0x85, 0xa9, 0x08, 0x8b, 0x16, 0x21, 0xeb, 0xa6),
++};
++
++#define CXL_GMER_VALID_CHANNEL                          BIT(0)
++#define CXL_GMER_VALID_RANK                             BIT(1)
++#define CXL_GMER_VALID_DEVICE                           BIT(2)
++#define CXL_GMER_VALID_COMPONENT                        BIT(3)
++
++static int ct3d_qmp_cxl_event_log_enc(CxlEventLog log)
++{
++    switch (log) {
++    case CXL_EVENT_LOG_INFORMATIONAL:
++        return CXL_EVENT_TYPE_INFO;
++    case CXL_EVENT_LOG_WARNING:
++        return CXL_EVENT_TYPE_WARN;
++    case CXL_EVENT_LOG_FAILURE:
++        return CXL_EVENT_TYPE_FAIL;
++    case CXL_EVENT_LOG_FATAL:
++        return CXL_EVENT_TYPE_FATAL;
++/* DCD not yet supported */
++    default:
++        return -EINVAL;
++    }
++}
++/* Component ID is device specific.  Define this as a string. */
++void qmp_cxl_inject_gen_media_event(const char *path, CxlEventLog log,
++                                    uint8_t flags, uint64_t physaddr,
++                                    uint8_t descriptor, uint8_t type,
++                                    uint8_t transaction_type,
++                                    bool has_channel, uint8_t channel,
++                                    bool has_rank, uint8_t rank,
++                                    bool has_device, uint32_t device,
++                                    const char *component_id,
++                                    Error **errp)
++{
++    Object *obj = object_resolve_path(path, NULL);
++    CXLEventGenMedia gem;
++    CXLEventRecordHdr *hdr = &gem.hdr;
++    CXLDeviceState *cxlds;
++    CXLType3Dev *ct3d;
++    uint16_t valid_flags = 0;
++    uint8_t enc_log;
++    int rc;
++
++    if (!obj) {
++        error_setg(errp, "Unable to resolve path");
++        return;
++    }
++    if (!object_dynamic_cast(obj, TYPE_CXL_TYPE3)) {
++        error_setg(errp, "Path does not point to a CXL type 3 device");
++        return;
++    }
++    ct3d = CXL_TYPE3(obj);
++    cxlds = &ct3d->cxl_dstate;
++
++    rc = ct3d_qmp_cxl_event_log_enc(log);
++    if (rc < 0) {
++        error_setg(errp, "Unhandled error log type");
++        return;
++    }
++    enc_log = rc;
++
++    memset(&gem, 0, sizeof(gem));
++    cxl_assign_event_header(hdr, &gen_media_uuid, flags, sizeof(gem),
++                            cxl_device_get_timestamp(&ct3d->cxl_dstate));
++
++    stq_le_p(&gem.phys_addr, physaddr);
++    gem.descriptor = descriptor;
++    gem.type = type;
++    gem.transaction_type = transaction_type;
++
++    if (has_channel) {
++        gem.channel = channel;
++        valid_flags |= CXL_GMER_VALID_CHANNEL;
++    }
++
++    if (has_rank) {
++        gem.rank = rank;
++        valid_flags |= CXL_GMER_VALID_RANK;
++    }
++
++    if (has_device) {
++        st24_le_p(gem.device, device);
++        valid_flags |= CXL_GMER_VALID_DEVICE;
++    }
++
++    if (component_id) {
++        strncpy((char *)gem.component_id, component_id,
++                sizeof(gem.component_id) - 1);
++        valid_flags |= CXL_GMER_VALID_COMPONENT;
++    }
++
++    stw_le_p(&gem.validity_flags, valid_flags);
++
++    if (cxl_event_insert(cxlds, enc_log, (CXLEventRecordRaw *)&gem)) {
++        cxl_event_irq_assert(ct3d);
++    }
++}
++
+ static void ct3_class_init(ObjectClass *oc, void *data)
+ {
+     DeviceClass *dc = DEVICE_CLASS(oc);
+diff --git a/hw/mem/cxl_type3_stubs.c b/hw/mem/cxl_type3_stubs.c
+index fd1166a610..55d19b0e03 100644
+--- a/hw/mem/cxl_type3_stubs.c
++++ b/hw/mem/cxl_type3_stubs.c
+@@ -3,6 +3,16 @@
+ #include "qapi/error.h"
+ #include "qapi/qapi-commands-cxl.h"
+ 
++void qmp_cxl_inject_gen_media_event(const char *path, CxlEventLog log,
++                                    uint8_t flags, uint64_t physaddr,
++                                    uint8_t descriptor, uint8_t type,
++                                    uint8_t transaction_type,
++                                    bool has_channel, uint8_t channel,
++                                    bool has_rank, uint8_t rank,
++                                    bool has_device, uint32_t device,
++                                    const char *component_id,
++                                    Error **errp) {}
++
+ void qmp_cxl_inject_poison(const char *path, uint64_t start, uint64_t length,
+                            Error **errp)
+ {
+diff --git a/include/hw/cxl/cxl_events.h b/include/hw/cxl/cxl_events.h
+index 4bf8b7aa08..b189193f4c 100644
+--- a/include/hw/cxl/cxl_events.h
++++ b/include/hw/cxl/cxl_events.h
+@@ -103,4 +103,24 @@ typedef struct CXLEventInterruptPolicy {
+ /* DCD is optional but other fields are not */
+ #define CXL_EVENT_INT_SETTING_MIN_LEN 4
+ 
++/*
++ * General Media Event Record
++ * CXL rev 3.0 Section 8.2.9.2.1.1; Table 8-43
++ */
++#define CXL_EVENT_GEN_MED_COMP_ID_SIZE  0x10
++#define CXL_EVENT_GEN_MED_RES_SIZE      0x2e
++typedef struct CXLEventGenMedia {
++    CXLEventRecordHdr hdr;
++    uint64_t phys_addr;
++    uint8_t descriptor;
++    uint8_t type;
++    uint8_t transaction_type;
++    uint16_t validity_flags;
++    uint8_t channel;
++    uint8_t rank;
++    uint8_t device[3];
++    uint8_t component_id[CXL_EVENT_GEN_MED_COMP_ID_SIZE];
++    uint8_t reserved[CXL_EVENT_GEN_MED_RES_SIZE];
++} QEMU_PACKED CXLEventGenMedia;
++
+ #endif /* CXL_EVENTS_H */
+diff --git a/qapi/cxl.json b/qapi/cxl.json
+index 9ebd680dfe..4ec06c0335 100644
+--- a/qapi/cxl.json
++++ b/qapi/cxl.json
+@@ -5,6 +5,56 @@
+ # = CXL devices
+ ##
+ 
++##
++# @CxlEventLog:
++#
++# CXL has a number of separate event logs for different types of event.
++# Each such event log is handled and signaled independently.
++#
++# @informational: Information Event Log
++# @warning: Warning Event Log
++# @failure: Failure Event Log
++# @fatal: Fatal Event Log
++#
++# Since: 8.0
++##
++{ 'enum': 'CxlEventLog',
++  'data': ['informational',
++           'warning',
++           'failure',
++           'fatal'
++           ]
++ }
++
++##
++# @cxl-inject-gen-media-event:
++#
++# Inject an event record for a General Media Event (CXL r3.0 8.2.9.2.1.1)
++# This event type is reported via one of the event logs specified via
++# the log parameter.
++#
++# @path: CXL type 3 device canonical QOM path
++# @log: Event Log to add the event to
++# @flags: header flags
++# @physaddr: Physical Address
++# @descriptor: Descriptor
++# @type: Type
++# @transaction-type: Transaction Type
++# @channel: Channel
++# @rank: Rank
++# @device: Device
++# @component-id: Device specific string
++#
++# Since: 8.0
++##
++{ 'command': 'cxl-inject-gen-media-event',
++  'data': { 'path': 'str', 'log': 'CxlEventLog', 'flags': 'uint8',
++            'physaddr': 'uint64', 'descriptor': 'uint8',
++            'type': 'uint8', 'transaction-type': 'uint8',
++            '*channel': 'uint8', '*rank': 'uint8',
++            '*device': 'uint32', '*component-id': 'str'
++            }}
++
+ ##
+ # @cxl-inject-poison:
+ #
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEDDEC7EE2D
+	for <linux-cxl@archiver.kernel.org>; Fri,  3 Mar 2023 15:32:13 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231377AbjCCPcM (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 3 Mar 2023 10:32:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47414 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231168AbjCCPcM (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 3 Mar 2023 10:32:12 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 981573E082
+        for <linux-cxl@vger.kernel.org>; Fri,  3 Mar 2023 07:32:10 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PSsQc1xBHz6J7L6;
+        Fri,  3 Mar 2023 23:31:52 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 3 Mar 2023 15:32:08 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>,
+        Fan Ni <fan.ni@samsung.com>
+CC: <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?UTF-8?q?Daniel=20P=20=2E=20Berrang=C3=A9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: [PATCH v4 6/7] hw/cxl/events: Add injection of DRAM events
+Date: Fri, 3 Mar 2023 15:29:02 +0000
+Message-ID: <20230303152903.28103-7-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+References: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Defined in CXL r3.0 8.2.9.2.1.2 DRAM Event Record, this event
+provides information related to DRAM devices.
+
+Example injection command in QMP:
+
+{ "execute": "cxl-inject-dram-event",
+    "arguments": {
+        "path": "/machine/peripheral/cxl-mem0",
+        "log": "informational",
+        "flags": 1,
+        "physaddr": 1000,
+        "descriptor": 3,
+        "type": 3,
+        "transaction-type": 192,
+        "channel": 3,
+        "rank": 17,
+        "nibble-mask": 37421234,
+        "bank-group": 7,
+        "bank": 11,
+        "row": 2,
+        "column": 77,
+        "correction-mask": [33, 44, 55,66]
+    }}
+
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+v4:
+Endian fix and correct timestamp for header.
+---
+ hw/mem/cxl_type3.c          | 116 ++++++++++++++++++++++++++++++++++++
+ hw/mem/cxl_type3_stubs.c    |  13 ++++
+ include/hw/cxl/cxl_events.h |  23 +++++++
+ qapi/cxl.json               |  35 +++++++++++
+ 4 files changed, 187 insertions(+)
+
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index 2900b236cd..526d55ee13 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -1167,6 +1167,11 @@ static const QemuUUID gen_media_uuid = {
+                  0x85, 0xa9, 0x08, 0x8b, 0x16, 0x21, 0xeb, 0xa6),
+ };
+ 
++static const QemuUUID dram_uuid = {
++    .data = UUID(0x601dcbb3, 0x9c06, 0x4eab, 0xb8, 0xaf,
++                 0x4e, 0x9b, 0xfb, 0x5c, 0x96, 0x24),
++};
++
+ #define CXL_GMER_VALID_CHANNEL                          BIT(0)
+ #define CXL_GMER_VALID_RANK                             BIT(1)
+ #define CXL_GMER_VALID_DEVICE                           BIT(2)
+@@ -1263,6 +1268,117 @@ void qmp_cxl_inject_gen_media_event(const char *path, CxlEventLog log,
+     }
+ }
+ 
++#define CXL_DRAM_VALID_CHANNEL                          BIT(0)
++#define CXL_DRAM_VALID_RANK                             BIT(1)
++#define CXL_DRAM_VALID_NIBBLE_MASK                      BIT(2)
++#define CXL_DRAM_VALID_BANK_GROUP                       BIT(3)
++#define CXL_DRAM_VALID_BANK                             BIT(4)
++#define CXL_DRAM_VALID_ROW                              BIT(5)
++#define CXL_DRAM_VALID_COLUMN                           BIT(6)
++#define CXL_DRAM_VALID_CORRECTION_MASK                  BIT(7)
++
++void qmp_cxl_inject_dram_event(const char *path, CxlEventLog log, uint8_t flags,
++                               uint64_t physaddr, uint8_t descriptor,
++                               uint8_t type, uint8_t transaction_type,
++                               bool has_channel, uint8_t channel,
++                               bool has_rank, uint8_t rank,
++                               bool has_nibble_mask, uint32_t nibble_mask,
++                               bool has_bank_group, uint8_t bank_group,
++                               bool has_bank, uint8_t bank,
++                               bool has_row, uint32_t row,
++                               bool has_column, uint16_t column,
++                               bool has_correction_mask, uint64List *correction_mask,
++                               Error **errp)
++{
++    Object *obj = object_resolve_path(path, NULL);
++    CXLEventDram dram;
++    CXLEventRecordHdr *hdr = &dram.hdr;
++    CXLDeviceState *cxlds;
++    CXLType3Dev *ct3d;
++    uint16_t valid_flags = 0;
++    uint8_t enc_log;
++    int rc;
++
++    if (!obj) {
++        error_setg(errp, "Unable to resolve path");
++        return;
++    }
++    if (!object_dynamic_cast(obj, TYPE_CXL_TYPE3)) {
++        error_setg(errp, "Path does not point to a CXL type 3 device");
++        return;
++    }
++    ct3d = CXL_TYPE3(obj);
++    cxlds = &ct3d->cxl_dstate;
++
++    rc = ct3d_qmp_cxl_event_log_enc(log);
++    if (rc < 0) {
++        error_setg(errp, "Unhandled error log type");
++        return;
++    }
++    enc_log = rc;
++
++    memset(&dram, 0, sizeof(dram));
++    cxl_assign_event_header(hdr, &dram_uuid, flags, sizeof(dram),
++                            cxl_device_get_timestamp(&ct3d->cxl_dstate));
++    stq_le_p(&dram.phys_addr, physaddr);
++    dram.descriptor = descriptor;
++    dram.type = type;
++    dram.transaction_type = transaction_type;
++
++    if (has_channel) {
++        dram.channel = channel;
++        valid_flags |= CXL_DRAM_VALID_CHANNEL;
++    }
++
++    if (has_rank) {
++        dram.rank = rank;
++        valid_flags |= CXL_DRAM_VALID_RANK;
++    }
++
++    if (has_nibble_mask) {
++        st24_le_p(dram.nibble_mask, nibble_mask);
++        valid_flags |= CXL_DRAM_VALID_NIBBLE_MASK;
++    }
++
++    if (has_bank_group) {
++        dram.bank_group = bank_group;
++        valid_flags |= CXL_DRAM_VALID_BANK_GROUP;
++    }
++
++    if (has_bank) {
++        dram.bank = bank;
++        valid_flags |= CXL_DRAM_VALID_BANK;
++    }
++
++    if (has_row) {
++        st24_le_p(dram.row, row);
++        valid_flags |= CXL_DRAM_VALID_ROW;
++    }
++
++    if (has_column) {
++        stw_le_p(&dram.column, column);
++        valid_flags |= CXL_DRAM_VALID_COLUMN;
++    }
++
++    if (has_correction_mask) {
++        int count = 0;
++        while (correction_mask && count < 4) {
++            stq_le_p(&dram.correction_mask[count],
++                     correction_mask->value);
++            count++;
++            correction_mask = correction_mask->next;
++        }
++        valid_flags |= CXL_DRAM_VALID_CORRECTION_MASK;
++    }
++
++    stw_le_p(&dram.validity_flags, valid_flags);
++
++    if (cxl_event_insert(cxlds, enc_log, (CXLEventRecordRaw *)&dram)) {
++        cxl_event_irq_assert(ct3d);
++    }
++    return;
++}
++
+ static void ct3_class_init(ObjectClass *oc, void *data)
+ {
+     DeviceClass *dc = DEVICE_CLASS(oc);
+diff --git a/hw/mem/cxl_type3_stubs.c b/hw/mem/cxl_type3_stubs.c
+index 55d19b0e03..235c171264 100644
+--- a/hw/mem/cxl_type3_stubs.c
++++ b/hw/mem/cxl_type3_stubs.c
+@@ -13,6 +13,19 @@ void qmp_cxl_inject_gen_media_event(const char *path, CxlEventLog log,
+                                     const char *component_id,
+                                     Error **errp) {}
+ 
++void qmp_cxl_inject_dram_event(const char *path, CxlEventLog log, uint8_t flags,
++                               uint64_t physaddr, uint8_t descriptor,
++                               uint8_t type, uint8_t transaction_type,
++                               bool has_channel, uint8_t channel,
++                               bool has_rank, uint8_t rank,
++                               bool has_nibble_mask, uint32_t nibble_mask,
++                               bool has_bank_group, uint8_t bank_group,
++                               bool has_bank, uint8_t bank,
++                               bool has_row, uint32_t row,
++                               bool has_column, uint16_t column,
++                               bool has_correction_mask, uint64List *correction_mask,
++                               Error **errp) {}
++
+ void qmp_cxl_inject_poison(const char *path, uint64_t start, uint64_t length,
+                            Error **errp)
+ {
+diff --git a/include/hw/cxl/cxl_events.h b/include/hw/cxl/cxl_events.h
+index b189193f4c..a39e30d973 100644
+--- a/include/hw/cxl/cxl_events.h
++++ b/include/hw/cxl/cxl_events.h
+@@ -123,4 +123,27 @@ typedef struct CXLEventGenMedia {
+     uint8_t reserved[CXL_EVENT_GEN_MED_RES_SIZE];
+ } QEMU_PACKED CXLEventGenMedia;
+ 
++/*
++ * DRAM Event Record
++ * CXL Rev 3.0 Section 8.2.9.2.1.2: Table 8-44
++ * All fields little endian.
++ */
++typedef struct CXLEventDram {
++    CXLEventRecordHdr hdr;
++    uint64_t phys_addr;
++    uint8_t descriptor;
++    uint8_t type;
++    uint8_t transaction_type;
++    uint16_t validity_flags;
++    uint8_t channel;
++    uint8_t rank;
++    uint8_t nibble_mask[3];
++    uint8_t bank_group;
++    uint8_t bank;
++    uint8_t row[3];
++    uint16_t column;
++    uint64_t correction_mask[4];
++    uint8_t reserved[0x17];
++} QEMU_PACKED CXLEventDram;
++
+ #endif /* CXL_EVENTS_H */
+diff --git a/qapi/cxl.json b/qapi/cxl.json
+index 4ec06c0335..32f340d972 100644
+--- a/qapi/cxl.json
++++ b/qapi/cxl.json
+@@ -55,6 +55,41 @@
+             '*device': 'uint32', '*component-id': 'str'
+             }}
+ 
++##
++# @cxl-inject-dram-event:
++#
++# Inject an event record for a DRAM Event (CXL r3.0 8.2.9.2.1.2)
++# This event type is reported via one of the event logs specified via
++# the log parameter.
++#
++# @path: CXL type 3 device canonical QOM path
++# @log: Event Log to add the event to
++# @flags: header flags
++# @physaddr: Physical Address
++# @descriptor: Descriptor
++# @type: Type
++# @transaction-type: Transaction Type
++# @channel: Channel
++# @rank: Rank
++# @nibble-mask: Identify one or more nibbles that the error affects
++# @bank-group: Bank group
++# @bank: Bank
++# @row: Row
++# @column: Column
++# @correction-mask: Bits within each nibble. Used in order of bits set
++#                   in the nibble-mask.  Up to 4 nibbles may be covered.
++#
++# Since: 8.0
++##
++{ 'command': 'cxl-inject-dram-event',
++  'data': { 'path': 'str', 'log': 'CxlEventLog', 'flags': 'uint8',
++            'physaddr': 'uint64', 'descriptor': 'uint8',
++            'type': 'uint8', 'transaction-type': 'uint8',
++            '*channel': 'uint8', '*rank': 'uint8', '*nibble-mask': 'uint32',
++            '*bank-group': 'uint8', '*bank': 'uint8', '*row': 'uint32',
++            '*column': 'uint16', '*correction-mask': [ 'uint64' ]
++           }}
++
+ ##
+ # @cxl-inject-poison:
+ #
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 675C2C64EC4
+	for <linux-cxl@archiver.kernel.org>; Fri,  3 Mar 2023 15:32:44 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231168AbjCCPcn (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 3 Mar 2023 10:32:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47938 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230112AbjCCPcm (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 3 Mar 2023 10:32:42 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4FA82312A
+        for <linux-cxl@vger.kernel.org>; Fri,  3 Mar 2023 07:32:41 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PSsKm1Mf9z67L8m;
+        Fri,  3 Mar 2023 23:27:40 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 3 Mar 2023 15:32:38 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>,
+        Fan Ni <fan.ni@samsung.com>
+CC: <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?UTF-8?q?Daniel=20P=20=2E=20Berrang=C3=A9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: [PATCH v4 7/7] hw/cxl/events: Add injection of Memory Module Events
+Date: Fri, 3 Mar 2023 15:29:03 +0000
+Message-ID: <20230303152903.28103-8-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+References: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+These events include a copy of the device health information at the
+time of the event. Actually using the emulated device health would
+require a lot of controls to manipulate that state.  Given the aim
+of this injection code is to just test the flows when events occur,
+inject the contents of the device health state as well.
+
+Future work may add more sophisticate device health emulation
+including direct generation of these records when events occur
+(such as a temperature threshold being crossed).  That does not
+reduce the usefulness of this more basic generation of the events.
+
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+--
+v4: THanks to Ira Weiny for review.
+- Fixed typo in QAPI docs
+- Use device time for event header.
+---
+ hw/mem/cxl_type3.c          | 62 +++++++++++++++++++++++++++++++++++++
+ hw/mem/cxl_type3_stubs.c    | 12 +++++++
+ include/hw/cxl/cxl_events.h | 19 ++++++++++++
+ qapi/cxl.json               | 35 +++++++++++++++++++++
+ 4 files changed, 128 insertions(+)
+
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index 526d55ee13..e1278cdfa4 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -1172,6 +1172,11 @@ static const QemuUUID dram_uuid = {
+                  0x4e, 0x9b, 0xfb, 0x5c, 0x96, 0x24),
+ };
+ 
++static const QemuUUID memory_module_uuid = {
++    .data = UUID(0xfe927475, 0xdd59, 0x4339, 0xa5, 0x86,
++                 0x79, 0xba, 0xb1, 0x13, 0xb7, 0x74),
++};
++
+ #define CXL_GMER_VALID_CHANNEL                          BIT(0)
+ #define CXL_GMER_VALID_RANK                             BIT(1)
+ #define CXL_GMER_VALID_DEVICE                           BIT(2)
+@@ -1379,6 +1384,63 @@ void qmp_cxl_inject_dram_event(const char *path, CxlEventLog log, uint8_t flags,
+     return;
+ }
+ 
++void qmp_cxl_inject_memory_module_event(const char *path, CxlEventLog log,
++                                        uint8_t flags, uint8_t type,
++                                        uint8_t health_status,
++                                        uint8_t media_status,
++                                        uint8_t additional_status,
++                                        uint8_t life_used,
++                                        int16_t temperature,
++                                        uint32_t dirty_shutdown_count,
++                                        uint32_t corrected_volatile_error_count,
++                                        uint32_t corrected_persistent_error_count,
++                                        Error **errp)
++{
++    Object *obj = object_resolve_path(path, NULL);
++    CXLEventMemoryModule module;
++    CXLEventRecordHdr *hdr = &module.hdr;
++    CXLDeviceState *cxlds;
++    CXLType3Dev *ct3d;
++    uint8_t enc_log;
++    int rc;
++
++    if (!obj) {
++        error_setg(errp, "Unable to resolve path");
++        return;
++    }
++    if (!object_dynamic_cast(obj, TYPE_CXL_TYPE3)) {
++        error_setg(errp, "Path does not point to a CXL type 3 device");
++        return;
++    }
++    ct3d = CXL_TYPE3(obj);
++    cxlds = &ct3d->cxl_dstate;
++
++    rc = ct3d_qmp_cxl_event_log_enc(log);
++    if (rc < 0) {
++        error_setg(errp, "Unhandled error log type");
++        return;
++    }
++    enc_log = rc;
++
++    memset(&module, 0, sizeof(module));
++    cxl_assign_event_header(hdr, &memory_module_uuid, flags, sizeof(module),
++                            cxl_device_get_timestamp(&ct3d->cxl_dstate));
++
++    module.type = type;
++    module.health_status = health_status;
++    module.media_status = media_status;
++    module.additional_status = additional_status;
++    module.life_used = life_used;
++    stw_le_p(&module.temperature, temperature);
++    stl_le_p(&module.dirty_shutdown_count, dirty_shutdown_count);
++    stl_le_p(&module.corrected_volatile_error_count, corrected_volatile_error_count);
++    stl_le_p(&module.corrected_persistent_error_count, corrected_persistent_error_count);
++
++    if (cxl_event_insert(cxlds, enc_log, (CXLEventRecordRaw *)&module)) {
++        cxl_event_irq_assert(ct3d);
++    }
++}
++
+ static void ct3_class_init(ObjectClass *oc, void *data)
+ {
+     DeviceClass *dc = DEVICE_CLASS(oc);
+diff --git a/hw/mem/cxl_type3_stubs.c b/hw/mem/cxl_type3_stubs.c
+index 235c171264..2196bd841c 100644
+--- a/hw/mem/cxl_type3_stubs.c
++++ b/hw/mem/cxl_type3_stubs.c
+@@ -26,6 +26,18 @@ void qmp_cxl_inject_dram_event(const char *path, CxlEventLog log, uint8_t flags,
+                                bool has_correction_mask, uint64List *correction_mask,
+                                Error **errp) {}
+ 
++void qmp_cxl_inject_memory_module_event(const char *path, CxlEventLog log,
++                                        uint8_t flags, uint8_t type,
++                                        uint8_t health_status,
++                                        uint8_t media_status,
++                                        uint8_t additional_status,
++                                        uint8_t life_used,
++                                        int16_t temperature,
++                                        uint32_t dirty_shutdown_count,
++                                        uint32_t corrected_volatile_error_count,
++                                        uint32_t corrected_persistent_error_count,
++                                        Error **errp) {}
++
+ void qmp_cxl_inject_poison(const char *path, uint64_t start, uint64_t length,
+                            Error **errp)
+ {
+diff --git a/include/hw/cxl/cxl_events.h b/include/hw/cxl/cxl_events.h
+index a39e30d973..089ba2091f 100644
+--- a/include/hw/cxl/cxl_events.h
++++ b/include/hw/cxl/cxl_events.h
+@@ -146,4 +146,23 @@ typedef struct CXLEventDram {
+     uint8_t reserved[0x17];
+ } QEMU_PACKED CXLEventDram;
+ 
++/*
++ * Memory Module Event Record
++ * CXL Rev 3.0 Section 8.2.9.2.1.3: Table 8-45
++ * All fields little endian.
++ */
++typedef struct CXLEventMemoryModule {
++    CXLEventRecordHdr hdr;
++    uint8_t type;
++    uint8_t health_status;
++    uint8_t media_status;
++    uint8_t additional_status;
++    uint8_t life_used;
++    int16_t temperature;
++    uint32_t dirty_shutdown_count;
++    uint32_t corrected_volatile_error_count;
++    uint32_t corrected_persistent_error_count;
++    uint8_t reserved[0x3d];
++} QEMU_PACKED CXLEventMemoryModule;
++
+ #endif /* CXL_EVENTS_H */
+diff --git a/qapi/cxl.json b/qapi/cxl.json
+index 32f340d972..8f06b48a0a 100644
+--- a/qapi/cxl.json
++++ b/qapi/cxl.json
+@@ -90,6 +90,41 @@
+             '*column': 'uint16', '*correction-mask': [ 'uint64' ]
+            }}
+ 
++##
++# @cxl-inject-memory-module-event:
++#
++# Inject an event record for a Memory Module Event (CXL r3.0 8.2.9.2.1.3)
++# This event includes a copy of the Device Health info at the time of
++# the event.
++#
++# @path: CXL type 3 device canonical QOM path
++# @log: Event Log to add the event to
++# @flags: header flags
++# @type: Device Event Type (see spec for permitted values)
++# @health-status: Overall health summary bitmap (see spec for permitted bits)
++# @media-status: Overall media health summary (see spec for permitted values)
++# @additional-status: Complex field (see spec for meaning)
++# @life-used: Percentage (0-100) of factory expected life span
++# @temperature: Device temperature in degrees Celsius
++# @dirty-shutdown-count: Counter incremented whenever device is unable
++#                        to determine if data loss may have occurred.
++# @corrected-volatile-error-count: Total number of correctable errors in
++#                                  volatile memory
++# @corrected-persistent-error-count: Total number correctable errors in
++#                                    persistent memory
++#
++# Since: 8.0
++##
++{ 'command': 'cxl-inject-memory-module-event',
++  'data': { 'path': 'str', 'log': 'CxlEventLog', 'flags' : 'uint8',
++            'type': 'uint8', 'health-status': 'uint8',
++            'media-status': 'uint8', 'additional-status': 'uint8',
++            'life-used': 'uint8', 'temperature' : 'int16',
++            'dirty-shutdown-count': 'uint32',
++            'corrected-volatile-error-count': 'uint32',
++            'corrected-persistent-error-count': 'uint32'
++            }}
++
+ ##
+ # @cxl-inject-poison:
+ #
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83843C678D5
+	for <linux-cxl@archiver.kernel.org>; Tue,  7 Mar 2023 17:44:43 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S232128AbjCGRom (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 7 Mar 2023 12:44:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53998 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232089AbjCGRoV (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 7 Mar 2023 12:44:21 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E4409CBF0
+        for <linux-cxl@vger.kernel.org>; Tue,  7 Mar 2023 09:39:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1678210684;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=N07NOrmF/af/LqknqhXDPQaetqT+tlSQy0zbCBgdmFI=;
+        b=ZE+Ag2P+8MYTRBNco2rFMbOxIDXY5EXOkrTops3DzgdXgmnsY+ePKhTBOi+dz25mbJjpFL
+        gQJwW7wT5iUAuBwmSnVm+gdLXaL/g3DMQ3jnEWf/fZyuiFpGjb7dJwHdnvv4WQJuMpjXIX
+        1HurixvG1mt2P3xAlzJPRL360JRuZkI=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-178-Z31a-2epOd-g8fjMX1q5QA-1; Tue, 07 Mar 2023 12:38:02 -0500
+X-MC-Unique: Z31a-2epOd-g8fjMX1q5QA-1
+Received: by mail-wm1-f69.google.com with SMTP id p22-20020a7bcc96000000b003e2036a1516so8555021wma.7
+        for <linux-cxl@vger.kernel.org>; Tue, 07 Mar 2023 09:38:02 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678210681;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=N07NOrmF/af/LqknqhXDPQaetqT+tlSQy0zbCBgdmFI=;
+        b=o+sDD6fXQDcvhov/cjnpeuhjeeZwmaKSQe9/aBp7NgJjcaMWSACjSyl6TqTsfGuc7R
+         tw6Xe3LQwBG306Y6nPIZ6w1D3VZHjipXqMOt/8D4tRxJhASYqfgwqhy2+4xepVcoQK1C
+         1dVnmq0CebYRlFxJGL1KpybqxBaSu8hA9Je32GR6/xz8U+K0S5+ZN7f2X7OHZzpeZliY
+         fAh1q1rM+/00TSFrhcAhf6ZLDoopFfTt3U9uKd9xNiMBxz6SsJUaYIFFd/yV9me3R+ol
+         ludDD6FpPHIidy8nkTaGtdiwphRJsI+eAJ/4tBYA48Uy90KUHPDi+IrzgGhwpwIjt1HQ
+         70Yw==
+X-Gm-Message-State: AO0yUKXT9gxxvmm6849Y3mn1jOQRMM21SKYJd/HAmq7Bxwcct+RsxdK9
+        uUePp+p/y0A2HaNhe1iCNr33Q/GtcOFQHlhAYIHgbU6aSGEAJuDAMai4wTWvExWbcwK1JynCMyk
+        2SKBeKZV0Rt02WQeQq9E7
+X-Received: by 2002:a5d:4046:0:b0:2cb:85ba:24f9 with SMTP id w6-20020a5d4046000000b002cb85ba24f9mr9265898wrp.66.1678210681541;
+        Tue, 07 Mar 2023 09:38:01 -0800 (PST)
+X-Google-Smtp-Source: AK7set98h4Sg9ghY8klQxwoN4EpphqmJ8WtQ6ClxKz5MkJt8YpUCenP3IGXj2Z6mFPfTd4ix2ITq/A==
+X-Received: by 2002:a5d:4046:0:b0:2cb:85ba:24f9 with SMTP id w6-20020a5d4046000000b002cb85ba24f9mr9265888wrp.66.1678210681242;
+        Tue, 07 Mar 2023 09:38:01 -0800 (PST)
+Received: from redhat.com ([2.52.138.216])
+        by smtp.gmail.com with ESMTPSA id t1-20020a5d49c1000000b002c563b124basm12901446wrs.103.2023.03.07.09.37.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Mar 2023 09:38:00 -0800 (PST)
+Date: Tue, 7 Mar 2023 12:37:56 -0500
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: qemu-devel@nongnu.org, Fan Ni <fan.ni@samsung.com>,
+        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        Daniel P =?iso-8859-1?Q?=2E_Berrang=E9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?iso-8859-1?Q?Marc-Andr=E9?= Lureau 
+        <marcandre.lureau@redhat.com>, Thomas Huth <thuth@redhat.com>
+Subject: Re: [PATCH v4 0/7] QEMU CXL Provide mock CXL events and irq support
+Message-ID: <20230307123733-mutt-send-email-mst@kernel.org>
+References: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+In-Reply-To: <20230303152903.28103-1-Jonathan.Cameron@huawei.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, Mar 03, 2023 at 03:28:56PM +0000, Jonathan Cameron wrote:
+> Whilst I'm an optimist, I suspect this is now 8.1 material because we have
+> 5 CXL patch sets outstanding before it.
+
+Yea let's not. I merged what I felt is safe.
+
+> Current bottleneck being QAPI review
+> for the RAS error series.
+> 
+> v4 changes: Thanks to Ira and to some feedback I received off list.
+> - More endian fixes for a future big endian architecture using it.
+> - Comment typo
+> 
+> One challenge here is striking the right balance between lots of constraints
+> in the injection code to enforce particular reserved bits etc by breaking
+> out all the flags as individual parameters vs having a reasonably concise
+> API.  I think this set strikes the right balance but others may well
+> disagree :)   Note that Ira raised the question of whether we should be
+> automatically establishing the volatile flag based on the Device Physical
+> Address of the injected error. My proposal is to not do so for now, but
+> to possibly revisit tightening the checking of injected errors in future.
+> Whilst the volatile flag is straight forwards, some of the other flags that
+> could be automatically set (or perhaps checked for validiaty) are much more
+> complex. Adding verification at this stage would greatly increase the
+> complexity of the patch + we are missing other elements that would interact
+> with this.  I'm not concerned about potential breaking of backwards compatibility
+> if it only related to the injection of errors that make no sense for a real
+> device.
+> 
+> Based on following series (in order)
+> 1. [PATCH v4 00/10] hw/cxl: CXL emulation cleanups and minor fixes for upstream
+> (in staging currently so fingers crossed that one is fine)
+> 2. [PATCH v6 0/8] hw/cxl: RAS error emulation and injection
+> 3. [PATCH v2 0/2] hw/cxl: Passthrough HDM decoder emulation
+> 4. [PATCH v4 0/2] hw/mem: CXL Type-3 Volatile Memory Support
+> 5. [PATCH v4 0/6] hw/cxl: Poison get, inject, clear
+> 
+> Based on: Message-Id: 20230206172816.8201-1-Jonathan.Cameron@huawei.com
+> Based-on: Message-id: 20230227112751.6101-1-Jonathan.Cameron@huawei.com
+> Based-on: Message-id: 20230227153128.8164-1-Jonathan.Cameron@huawei.com
+> Based-on: Message-id: 20230227163157.6621-1-Jonathan.Cameron@huawei.com
+> Based-on: Message-id: 20230303150908.27889-1-Jonathan.Cameron@huawei.com
+> 
+> v2 cover letter.
+> 
+> CXL Event records inform the OS of various CXL device events.  Thus far CXL
+> memory devices are emulated and therefore don't naturally generate events.
+> 
+> Add an event infrastructure and mock event injection.  Previous versions
+> included a bulk insertion of lots of events.  However, this series focuses on
+> providing the ability to inject individual events through QMP.  Only the
+> General Media Event is included in this series as an example.  Other events can
+> be added pretty easily once the infrastructure is acceptable.
+> 
+> In addition, this version updates the code to be in line with the
+> specification based on discussions around the kernel patches.
+> 
+> Injection examples;
+> 
+> { "execute": "cxl-inject-gen-media-event",
+>     "arguments": {
+>         "path": "/machine/peripheral/cxl-mem0",
+>         "log": "informational",
+>         "flags": 1,
+>         "physaddr": 1000,
+>         "descriptor": 3,
+>         "type": 3,
+>         "transaction-type": 192,
+>         "channel": 3,
+>         "device": 5,
+>         "component-id": "iras mem"
+>     }}
+> 
+> 
+> { "execute": "cxl-inject-dram-event",
+>     "arguments": {
+>         "path": "/machine/peripheral/cxl-mem0",
+>         "log": "informational",
+>         "flags": 1,
+>         "physaddr": 1000,
+>         "descriptor": 3,
+>         "type": 3,
+>         "transaction-type": 192,
+>         "channel": 3,
+>         "rank": 17,
+>         "nibble-mask": 37421234,
+>         "bank-group": 7,
+>         "bank": 11,
+>         "row": 2,
+>         "column": 77,
+>         "correction-mask": [33, 44, 55, 66]
+>     }}
+> 
+> { "execute": "cxl-inject-memory-module-event",
+>   "arguments": {
+>     "path": "/machine/peripheral/cxl-mem0",
+>     "log": "informational",
+>     "flags": 1,
+>     "type": 3,
+>     "health-status": 3,
+>     "media-status": 7,
+>     "additional-status": 33,
+>     "life-used": 30,
+>     "temperature": -15,
+>     "dirty-shutdown-count": 4,
+>     "corrected-volatile-error-count": 3233,
+>     "corrected-persistent-error-count": 1300
+>   }}
+> 
+> 
+> Ira Weiny (4):
+>   hw/cxl/events: Add event status register
+>   hw/cxl/events: Wire up get/clear event mailbox commands
+>   hw/cxl/events: Add event interrupt support
+>   hw/cxl/events: Add injection of General Media Events
+> 
+> Jonathan Cameron (3):
+>   hw/cxl: Move CXLRetCode definition to cxl_device.h
+>   hw/cxl/events: Add injection of DRAM events
+>   hw/cxl/events: Add injection of Memory Module Events
+> 
+>  hw/cxl/cxl-device-utils.c   |  43 +++++-
+>  hw/cxl/cxl-events.c         | 248 ++++++++++++++++++++++++++++++
+>  hw/cxl/cxl-mailbox-utils.c  | 166 ++++++++++++++------
+>  hw/cxl/meson.build          |   1 +
+>  hw/mem/cxl_type3.c          | 292 +++++++++++++++++++++++++++++++++++-
+>  hw/mem/cxl_type3_stubs.c    |  35 +++++
+>  include/hw/cxl/cxl_device.h |  80 +++++++++-
+>  include/hw/cxl/cxl_events.h | 168 +++++++++++++++++++++
+>  qapi/cxl.json               | 120 +++++++++++++++
+>  9 files changed, 1097 insertions(+), 56 deletions(-)
+>  create mode 100644 hw/cxl/cxl-events.c
+>  create mode 100644 include/hw/cxl/cxl_events.h
+> 
+> -- 
+> 2.37.2
+
+
