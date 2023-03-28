@@ -1,0 +1,2 @@
+use a new api to avoid the use of removed remove_double_quote_from_json_str
+

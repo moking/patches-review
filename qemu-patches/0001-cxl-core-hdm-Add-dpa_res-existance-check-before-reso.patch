@@ -1,0 +1,91 @@
+From fdb69b306e876f50a84ffec265c2669d023ad318 Mon Sep 17 00:00:00 2001
+From: Fan Ni <fan.ni@samsung.com>
+Date: Fri, 17 Mar 2023 09:41:34 -0700
+Subject: [PATCH] cxl/core/hdm: Add dpa_res existance check before resource
+ region release
+
+In cureent code, when __cxl_dpa_release is called to release resource
+region, we always assume the dpa_res has already been correctly set.
+However, there is no guarantee this assumption is true.
+If for some reason, the dpa resource is not allocated/reserved as
+expected, and __cxl_dpa_release is called to release the resource, the
+system will panic.
+
+The following steps showcase a situation where dpa_res is not set due to
+some faulty hardware behaviour and the system crashes when we release
+the dpa resource as dpa_res is not set.
+1. modprobe -a cxl_acpi cxl_core cxl_pci cxl_port cxl_mem
+2. cxl create-region -m -d decoder0.0 -w 1 mem0 -s 256M
+3. cxl destroy-region region0 -f
+4. rmmod cxl_acpi cxl_pci cxl_port cxl_mem cxl_pmem cxl_core
+5. modprobe -a cxl_acpi cxl_core cxl_pci cxl_port cxl_mem (showing
+"no CXL window for range 0x0:0xffffffffffffffff" error message)
+6. rmmod cxl_acpi cxl_pci cxl_port cxl_mem cxl_pmem cxl_core (kernel
+crash at cxl_dpa_release due to dpa_res has been freed when destroying
+the region).
+
+backtrace of step 6:
+[  130.299907]  cxl_dpa_release+0x18/0x30 [cxl_core]
+[  130.299907]  release_nodes+0x40/0x70
+[  130.299907]  devres_release_all+0x86/0xc0
+[  130.299907]  device_unbind_cleanup+0x9/0x70
+[  130.299907]  device_release_driver_internal+0xe9/0x160
+[  130.299907]  bus_remove_device+0xd3/0x140
+[  130.299907]  device_del+0x186/0x3d0
+[  130.299907]  ? _raw_spin_unlock_irqrestore+0x16/0x30
+[  130.299907]  ? devres_remove+0xcb/0xf0
+[  130.299907]  device_unregister+0xe/0x60
+[  130.299907]  ? __pfx_devm_action_release+0x10/0x10
+[  130.299907]  devres_release+0x22/0x50
+[  130.299907]  devm_release_action+0x33/0x60
+[  130.299907]  ? __pfx_unregister_port+0x10/0x10 [cxl_core]
+[  130.299907]  delete_endpoint+0x7a/0x80 [cxl_core]
+[  130.299907]  release_nodes+0x40/0x70
+[  130.299907]  devres_release_all+0x86/0xc0
+[  130.299907]  device_unbind_cleanup+0x9/0x70
+[  130.299907]  device_release_driver_internal+0xe9/0x160
+[  130.299907]  bus_remove_device+0xd3/0x140
+[  130.299907]  device_del+0x186/0x3d0
+[  130.299907]  cdev_device_del+0x10/0x30
+[  130.299907]  cxl_memdev_unregister+0x36/0x40 [cxl_core]
+[  130.299907]  release_nodes+0x40/0x70
+[  130.299907]  devres_release_all+0x86/0xc0
+[  130.299907]  device_unbind_cleanup+0x9/0x70
+[  130.299907]  device_release_driver_internal+0xe9/0x160
+[  130.299907]  driver_detach+0x3f/0x80
+[  130.299907]  bus_remove_driver+0x50/0xd0
+[  130.299907]  pci_unregister_driver+0x36/0x80
+[  130.299907]  __x64_sys_delete_module+0x191/0x270
+
+It is noted that there can be other reasons that cause dpa_res is not
+correctly set before releasing, this patch add a check before
+starting to release the resource to avoid system crash.
+
+Before the fix, a systme crash was observed with the following patch series.
+And the patch fixed the issue and is tested on top of the series.
+
+[PATCH 00/18] CXL RAM and the 'Soft Reserved' => 'System RAM' default
+Message-ID: 167601992097.1924368.18291887895351917895.stgit@dwillia2-xfh.jf.intel.com
+
+Signed-off-by: Fan Ni <fan.ni@samsung.com>
+---
+ drivers/cxl/core/hdm.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+index 80eccae6ba9e..22179b285cf5 100644
+--- a/drivers/cxl/core/hdm.c
++++ b/drivers/cxl/core/hdm.c
+@@ -176,6 +176,9 @@ static void __cxl_dpa_release(struct cxl_endpoint_decoder *cxled)
+ 
+ 	lockdep_assert_held_write(&cxl_dpa_rwsem);
+ 
++	if (!res)
++		return;
++
+ 	/* save @skip_start, before @res is released */
+ 	skip_start = res->start - cxled->skip;
+ 	__release_region(&cxlds->dpa_res, res->start, resource_size(res));
+-- 
+2.25.1
+
