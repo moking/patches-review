@@ -1,4 +1,4 @@
-From git@z Thu Jan  1 00:00:00 1970
+From mboxrd@z Thu Jan  1 00:00:00 1970
 Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
@@ -175,8 +175,763 @@ Jonathan
 > ~Gregory
 
 
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9015BC64ED6
+	for <linux-cxl@archiver.kernel.org>; Fri, 24 Feb 2023 00:29:55 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229448AbjBXA3y (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 23 Feb 2023 19:29:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33176 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229441AbjBXA3y (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 23 Feb 2023 19:29:54 -0500
+Received: from mailout1.w2.samsung.com (mailout1.w2.samsung.com [211.189.100.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 275D24AFCD
+        for <linux-cxl@vger.kernel.org>; Thu, 23 Feb 2023 16:29:52 -0800 (PST)
+Received: from uscas1p2.samsung.com (unknown [182.198.245.207])
+        by mailout1.w2.samsung.com (KnoxPortal) with ESMTP id 20230224002949usoutp01af754898b75e2b5b3ec59c80ee708f61~GmzsO8Ylw3151831518usoutp01W;
+        Fri, 24 Feb 2023 00:29:49 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w2.samsung.com 20230224002949usoutp01af754898b75e2b5b3ec59c80ee708f61~GmzsO8Ylw3151831518usoutp01W
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1677198589;
+        bh=psARQxrFQ9u3ZCSnmIKS2dxGF9XHTMrU0qHOF3hJQzA=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
+        b=QuPeTqlSJ4wlL2YtZyFzhY3iIiuH3fofNF/h1ZwA773FK/YU7Mxq+dezgLOPcmma+
+         4jOXdlxdWJx0G30SKfVaxRqC2VnlxBY+sYuRN8KBiH8JtaywkNWdxs6UbqBSuRWDkq
+         yk8TBN80tstyBlj5d+IYLeVV2+nfsCNcN36h040c=
+Received: from ussmges1new.samsung.com (u109.gpu85.samsung.co.kr
+        [203.254.195.109]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230224002949uscas1p2c9b3d0495cd7428781ec47a69aeb013f~GmzsGJD7b0553205532uscas1p2l;
+        Fri, 24 Feb 2023 00:29:49 +0000 (GMT)
+Received: from uscas1p1.samsung.com ( [182.198.245.206]) by
+        ussmges1new.samsung.com (USCPEMTA) with SMTP id 6B.1A.06976.CF408F36; Thu,
+        23 Feb 2023 19:29:48 -0500 (EST)
+Received: from ussmgxs2new.samsung.com (u91.gpu85.samsung.co.kr
+        [203.254.195.91]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230224002948uscas1p220ab1ec9fbe16138e0fd314b7412f833~GmzrwEwed0553105531uscas1p2m;
+        Fri, 24 Feb 2023 00:29:48 +0000 (GMT)
+X-AuditID: cbfec36d-d99ff70000011b40-b7-63f804fcf069
+Received: from SSI-EX2.ssi.samsung.com ( [105.128.2.146]) by
+        ussmgxs2new.samsung.com (USCPEXMTA) with SMTP id 4A.39.17110.CF408F36; Thu,
+        23 Feb 2023 19:29:48 -0500 (EST)
+Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
+        SSI-EX2.ssi.samsung.com (105.128.2.227) with Microsoft SMTP Server
+        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+        15.1.2375.24; Thu, 23 Feb 2023 16:29:47 -0800
+Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
+        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Thu,
+        23 Feb 2023 16:29:47 -0800
+From: Fan Ni <fan.ni@samsung.com>
+To: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+CC: Gregory Price <gregory.price@memverge.com>,
+        Jonathan Cameron via <qemu-devel@nongnu.org>,
+        Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "linuxarm@huawei.com" <linuxarm@huawei.com>,
+        "Ira Weiny" <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?iso-8859-1?Q?Philippe_Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Thread-Topic: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+        and Persistent)
+Thread-Index: AQHZR+cZWt0anxAoHU61497Cp1Ks6w==
+Date: Fri, 24 Feb 2023 00:29:47 +0000
+Message-ID: <20230224002940.GA1282789@bgt-140510-bm03>
+In-Reply-To: <20230220114646.000000ff@Huawei.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [105.128.2.176]
+Content-Type: text/plain; charset="iso-8859-1"
+Content-ID: <6EC59CC48AB86F42AA9D173222C05044@ssi.samsung.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-CFilter-Loop: Reflected
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrEKsWRmVeSWpSXmKPExsWy7djXc7p/WH4kG8xaY2XRPHkxo8WLP8+Z
+        LBqaHrFY7H/6nMVi1cJrbBbnZ51isTi88QyTxe+1j5ks/v96xWqxZoWwxfHeHSwO3B47Z91l
+        92g58pbVY/Gel0wem1Z1snncubaHzWPjx//sHk+ubWbyeL/vKpvH501yAZxRXDYpqTmZZalF
+        +nYJXBnTjs5jK2hXr3gy4x5jA+NF2S5GTg4JAROJrknX2LoYuTiEBFYySrze1MIO4bQySdxc
+        NJ0VpmrTrblQVWsZJV7N/ccM4XxilNjQNAcqs4xRYlPLNbAWNgFFiX1d29lAbBEBI4kryw6y
+        g9jMAmeYJTZP8AKxhQViJHb+3c0IURMrsXdvO1A9B5CtJ3GluwYkzCKgKrF32UawkbwCZhJP
+        5lwAszkFDCW+7WgDG8koICbx/dQaJojx4hK3nsxngrhaUGLR7D3MELaYxL9dD9kgbEWJ+99f
+        Qp2jJ3Fj6hQ2CNtO4ufuMywQtrbEsoWvmSH2CkqcnPmEBaJXUuLgihssIP9KCEznlNhy9zU0
+        iFwkNkycC7VMWuLv3WVMIL9ICCRLrPrIBRHOkZi/ZAvUHGuJhX/WM01gVJmF5OxZSE6aheSk
+        WUhOmoXkpAWMrKsYxUuLi3PTU4sN81LL9YoTc4tL89L1kvNzNzECk93pf4dzdzDuuPVR7xAj
+        EwfjIUYJDmYlEd6pTN+ThXhTEiurUovy44tKc1KLDzFKc7AoifMa2p5MFhJITyxJzU5NLUgt
+        gskycXBKNTDV3Di35fP6K/f4umQ6N9R8iAvjcFsW1Xm24cTeSKXtD7hWdkZ5Lre+nvRYcmmv
+        3MGGlq9xX06/UdV9ZpJdvyWa5V64iEaNmG9zqv2dbzyJDw/9UA3be/fy28SpkWZVQidtZuRn
+        6RRlvsgX/LZke0Su5TehI88Ejv71f7xJ72O/7l2BpQ+YUl91POyXZQzhrU0Oir356MWS9ZKr
+        0y7/ljF6NdvQQlz7aeiK9ojEJafW/tw01fnHv9RdJ20V5z3gCckTfvlP16fV8Oi9Xr/mC2ZT
+        9xuFvvwQwvUpdvrC5gesE5ydFn7ecYbfT37KpflF51ZPde3Tan3zKkL982VXqcj47h+95/n/
+        CYvNN0yfxS6sxFKckWioxVxUnAgA3bcpguUDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrIIsWRmVeSWpSXmKPExsWS2cA0SfcPy49kgzVTlS2aJy9mtHjx5zmT
+        RUPTIxaL/U+fs1isWniNzeL8rFMsFoc3nmGy+L32MZPF/1+vWC3WrBC2ON67g8WB22PnrLvs
+        Hi1H3rJ6LN7zkslj06pONo871/aweWz8+J/d48m1zUwe7/ddZfP4vEkugDOKyyYlNSezLLVI
+        3y6BK2Pa0XlsBe3qFU9m3GNsYLwo28XIySEhYCKx6dZcti5GLg4hgdWMEsebJrFCOJ8YJTqm
+        bWeBcJYxSqxb8ZgNpIVNQFFiX9d2MFtEwEjiyrKD7CBFzAJnmCWa151nAkkIC8RI/Oh+DGRz
+        ABXFSrw+pgZh6klc6a4BqWARUJXYu2wjK4jNK2Am8WTOBajFTxklWp5OYAdJcAoYSnzb0QZm
+        MwqISXw/tQZsPLOAuMStJ/OZIF4QkFiy5zwzhC0q8fLxP1YIW1Hi/veX7BD1ehI3pk5hg7Dt
+        JH7uPsMCYWtLLFv4mhniCEGJkzOfsED0SkocXHGDZQKjxCwk62YhGTULyahZSEbNQjJqASPr
+        Kkbx0uLi3PSKYqO81HK94sTc4tK8dL3k/NxNjMBUcfrf4egdjLdvfdQ7xMjEwXiIUYKDWUmE
+        dyrT92Qh3pTEyqrUovz4otKc1OJDjNIcLErivC+jJsYLCaQnlqRmp6YWpBbBZJk4OKUamAqv
+        PpX+/847LfiKOaOn79KQia92MC5LkP7YY7R21aLbmw9+Om9id7I8zUN9zhmJeuZbi+ImHbyt
+        Ir1AZMuz0w1WNRnuMmzX/rR4iZrvlv/4neEY89ZZUrf3X/nz+efMtZ1l11a1TcthEI/XcSz1
+        WVpXLrycxcd02c/Lb0y5nzk25R5z23dysuYHkY0Tc16yZa+tnRvIqLRxisDyoqXRxi7lz+xk
+        84I2+W5h/ntm7leGM0srJ91iuJHGMoX1dYrpniWG8/pCnjLtndhg6Biq0G9hEP+34J1Irby7
+        5pqdPa/83L+UVXzb/Icl+Jb87CUpnktK57k+fDGbxWfTnjv9BTeCbOYUlmufZwuwMtrMKq/E
+        UpyRaKjFXFScCACK5A4MhAMAAA==
+X-CMS-MailID: 20230224002948uscas1p220ab1ec9fbe16138e0fd314b7412f833
+CMS-TYPE: 301P
+X-CMS-RootMailID: 20230224002948uscas1p220ab1ec9fbe16138e0fd314b7412f833
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+        <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+        <20230217161617.000064d1@huawei.com> <Y+9gSWadbRfdqJGS@memverge.com>
+        <20230220114646.000000ff@Huawei.com>
+        <CGME20230224002948uscas1p220ab1ec9fbe16138e0fd314b7412f833@uscas1p2.samsung.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
-From git@z Thu Jan  1 00:00:00 1970
+On Mon, Feb 20, 2023 at 11:46:46AM +0000, Jonathan Cameron wrote:
+
+> On Fri, 17 Feb 2023 06:08:57 -0500
+> Gregory Price <gregory.price@memverge.com> wrote:
+>=20
+> > On Fri, Feb 17, 2023 at 04:16:17PM +0000, Jonathan Cameron via wrote:
+> > > On Tue, 31 Jan 2023 16:38:47 +0000
+> > > Jonathan Cameron via <qemu-devel@nongnu.org> wrote:
+> > >  =20
+> > > > From: Gregory Price <gourry.memverge@gmail.com>
+> > > >=20
+> > > > This commit enables each CXL Type-3 device to contain one volatile
+> > > > memory region and one persistent region.
+> > > >=20
+> > > > Two new properties have been added to cxl-type3 device initializati=
+on:
+> > > >     [volatile-memdev] and [persistent-memdev]
+> > > >=20
+> > > > The existing [memdev] property has been deprecated and will default=
+ the
+> > > > memory region to a persistent memory region (although a user may as=
+sign
+> > > > the region to a ram or file backed region). It cannot be used in
+> > > > combination with the new [persistent-memdev] property.
+> > > >=20
+> > > > Partitioning volatile memory from persistent memory is not yet supp=
+orted.
+> > > >=20
+> > > > Volatile memory is mapped at DPA(0x0), while Persistent memory is m=
+apped
+> > > > at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+> > > >=20
+> > > > Signed-off-by: Gregory Price <gregory.price@memverge.com>
+> > > > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > > >  =20
+> > > Hi Gregory,
+> > >=20
+> > > I've added support for multiple HDM decoders and hence can now
+> > > test both volatile and non volatile on same device.
+> > > It very nearly all works. With one exception which is I couldn't
+> > > poke the first byte of the non volatile region.
+> > >=20
+> > > I think we have an off by one in a single check.
+> > >=20
+> > > Interestingly it makes no difference when creating an FS on top
+> > > (which was my standard test) so I only noticed when poking memory
+> > > addresses directly to sanity check the HDM decoder setup.
+> > >=20
+> > > I'll roll a v2 if no one shouts out that I'm wrong.
+> > >=20
+> > > Note that adding multiple HDM decoders massively increases
+> > > the number of test cases over what we had before to poke all the
+> > > corners so I may well be missing stuff.  Hopefully can send an RFC
+> > > of that support out next week.
+> > >=20
+> > > Jonathan
+> > >  =20
+> >=20
+> > Very cool! Thanks for pushing this over the finishing line.
+> >=20
+> > All my testing so far has been really smooth since getting the TCG issu=
+e
+> > worked out.
+> >=20
+> > > > -MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_=
+t *data,
+> > > > -                           unsigned size, MemTxAttrs attrs) =20
+> > [...]
+> > > > +    if (vmr) {
+> > > > +        if (*dpa_offset <=3D int128_get64(vmr->size)) { =20
+> > >=20
+> > > Off by one I think.  <=20
+> > >  =20
+> >=20
+> > Yes that makes sense, should be <.  Derp derp.
+> >=20
+> > Though I think this may alludes to more off-by-one issues?  This says
+> >=20
+> > if (dpa_offset < vmr->size)
+> >=20
+> > but dpa_offset should be (hpa - memory_region_base),
+> >=20
+> > The HPA is used by memory access routing for the whole system to determ=
+ine
+> > what device it should access.
+> >=20
+> > If that corner case is being hit, doesn't it imply the higher level cod=
+e
+> > is also susceptible to this, and is routing accesses to the wrong devic=
+e?
+>=20
+> I don't think so though I may be missing something.=20
+>=20
+> Say vmr->size =3D 8
+>=20
+> hpa  dpa_offset
+> 0       0
+> 1       1
+> 2       2
+> 3       3
+> 4       4
+> 5       5
+> 6       6
+> 7       7
+> 8       0
+>=20
+> etc
+
+If vmr->size=3D8, we should expect that at most 8 offsets (e.g., hpa [0,7])=
+ will
+access vmem and hpa=3D8 will access offset=3D0 at pmem, right?
+If with hpa=3D8, dpa_offset round to 0, does it mean we never get a
+dpa_offset larger than 7? If so, when pmem will be accessed?
+
+>=20
+> Also the writes are turning up where I expect them to.
+>=20
+> Also just noticed that the code is setting Memory_base in the CXL dvsec.
+> Given we are emulating a device as if it has been freshly powered up
+> those should not be set - it's the OS or firmware's job to set them up.
+> Harmless though, so can be a cleanup to follow the main series.
+>=20
+> We don't currently handle dvsec range based routing anyway and
+> I'm not sure we ever will as it is a pain to test without some firmware
+> or OS code to program them for us.
+>=20
+> Note that if you update your kernel to cxl/next it will currently fail
+> as the Range register emulation is (I think) rather over enthusiastic
+> and currently decides to emulate the HDM decoders for the QEMU emulated
+> type 3 devices.
+>=20
+> https://lore.kernel.org/linux-cxl/167640366272.935665.1056268838301725481=
+.stgit@dwillia2-xfh.jf.intel.com/T/#m6c025d5c9b27d8360a64079593f6c5adaa4087=
+72
+>=20
+> Jonathan
+>=20
+>=20
+> >=20
+> > ~Gregory
+>=20
+> =
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25D89C61DA3
+	for <linux-cxl@archiver.kernel.org>; Fri, 24 Feb 2023 12:02:00 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229660AbjBXMB7 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 24 Feb 2023 07:01:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59126 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229458AbjBXMB6 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 24 Feb 2023 07:01:58 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54DAF64D54
+        for <linux-cxl@vger.kernel.org>; Fri, 24 Feb 2023 04:01:55 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PNSzz42pWz6J7Ys;
+        Fri, 24 Feb 2023 19:57:03 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.17; Fri, 24 Feb
+ 2023 12:01:52 +0000
+Date: Fri, 24 Feb 2023 12:01:51 +0000
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Fan Ni <fan.ni@samsung.com>
+CC: Gregory Price <gregory.price@memverge.com>,
+        Jonathan Cameron via <qemu-devel@nongnu.org>,
+        Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "linuxarm@huawei.com" <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        Philippe =?ISO-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230224120151.00007b79@Huawei.com>
+In-Reply-To: <20230224002940.GA1282789@bgt-140510-bm03>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+        <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+        <20230217161617.000064d1@huawei.com>
+        <Y+9gSWadbRfdqJGS@memverge.com>
+        <20230220114646.000000ff@Huawei.com>
+        <CGME20230224002948uscas1p220ab1ec9fbe16138e0fd314b7412f833@uscas1p2.samsung.com>
+        <20230224002940.GA1282789@bgt-140510-bm03>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500002.china.huawei.com (7.191.160.78) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, 24 Feb 2023 00:29:47 +0000
+Fan Ni <fan.ni@samsung.com> wrote:
+
+> On Mon, Feb 20, 2023 at 11:46:46AM +0000, Jonathan Cameron wrote:
+> 
+> > On Fri, 17 Feb 2023 06:08:57 -0500
+> > Gregory Price <gregory.price@memverge.com> wrote:
+> >   
+> > > On Fri, Feb 17, 2023 at 04:16:17PM +0000, Jonathan Cameron via wrote:  
+> > > > On Tue, 31 Jan 2023 16:38:47 +0000
+> > > > Jonathan Cameron via <qemu-devel@nongnu.org> wrote:
+> > > >     
+> > > > > From: Gregory Price <gourry.memverge@gmail.com>
+> > > > > 
+> > > > > This commit enables each CXL Type-3 device to contain one volatile
+> > > > > memory region and one persistent region.
+> > > > > 
+> > > > > Two new properties have been added to cxl-type3 device initialization:
+> > > > >     [volatile-memdev] and [persistent-memdev]
+> > > > > 
+> > > > > The existing [memdev] property has been deprecated and will default the
+> > > > > memory region to a persistent memory region (although a user may assign
+> > > > > the region to a ram or file backed region). It cannot be used in
+> > > > > combination with the new [persistent-memdev] property.
+> > > > > 
+> > > > > Partitioning volatile memory from persistent memory is not yet supported.
+> > > > > 
+> > > > > Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+> > > > > at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+> > > > > 
+> > > > > Signed-off-by: Gregory Price <gregory.price@memverge.com>
+> > > > > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > > > >     
+> > > > Hi Gregory,
+> > > > 
+> > > > I've added support for multiple HDM decoders and hence can now
+> > > > test both volatile and non volatile on same device.
+> > > > It very nearly all works. With one exception which is I couldn't
+> > > > poke the first byte of the non volatile region.
+> > > > 
+> > > > I think we have an off by one in a single check.
+> > > > 
+> > > > Interestingly it makes no difference when creating an FS on top
+> > > > (which was my standard test) so I only noticed when poking memory
+> > > > addresses directly to sanity check the HDM decoder setup.
+> > > > 
+> > > > I'll roll a v2 if no one shouts out that I'm wrong.
+> > > > 
+> > > > Note that adding multiple HDM decoders massively increases
+> > > > the number of test cases over what we had before to poke all the
+> > > > corners so I may well be missing stuff.  Hopefully can send an RFC
+> > > > of that support out next week.
+> > > > 
+> > > > Jonathan
+> > > >     
+> > > 
+> > > Very cool! Thanks for pushing this over the finishing line.
+> > > 
+> > > All my testing so far has been really smooth since getting the TCG issue
+> > > worked out.
+> > >   
+> > > > > -MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *data,
+> > > > > -                           unsigned size, MemTxAttrs attrs)    
+> > > [...]  
+> > > > > +    if (vmr) {
+> > > > > +        if (*dpa_offset <= int128_get64(vmr->size)) {    
+> > > > 
+> > > > Off by one I think.  < 
+> > > >     
+> > > 
+> > > Yes that makes sense, should be <.  Derp derp.
+> > > 
+> > > Though I think this may alludes to more off-by-one issues?  This says
+> > > 
+> > > if (dpa_offset < vmr->size)
+> > > 
+> > > but dpa_offset should be (hpa - memory_region_base),
+> > > 
+> > > The HPA is used by memory access routing for the whole system to determine
+> > > what device it should access.
+> > > 
+> > > If that corner case is being hit, doesn't it imply the higher level code
+> > > is also susceptible to this, and is routing accesses to the wrong device?  
+> > 
+> > I don't think so though I may be missing something. 
+> > 
+> > Say vmr->size = 8
+> > 
+> > hpa  dpa_offset
+> > 0       0
+> > 1       1
+> > 2       2
+> > 3       3
+> > 4       4
+> > 5       5
+> > 6       6
+> > 7       7
+> > 8       0
+> > 
+> > etc  
+> 
+> If vmr->size=8, we should expect that at most 8 offsets (e.g., hpa [0,7]) will
+> access vmem and hpa=8 will access offset=0 at pmem, right?
+> If with hpa=8, dpa_offset round to 0, does it mean we never get a
+> dpa_offset larger than 7? If so, when pmem will be accessed?
+
+Ah. I didn't mention that when HPA == 8 in this example the dpa_offset is
+now used to access pmem until we reach vmr->size + persistent_mr->size at
+which point it is off the end and it's routed no where at all.
+
+Table is too simplisitic!
+
+> 
+> > 
+> > Also the writes are turning up where I expect them to.
+> > 
+> > Also just noticed that the code is setting Memory_base in the CXL dvsec.
+> > Given we are emulating a device as if it has been freshly powered up
+> > those should not be set - it's the OS or firmware's job to set them up.
+> > Harmless though, so can be a cleanup to follow the main series.
+> > 
+> > We don't currently handle dvsec range based routing anyway and
+> > I'm not sure we ever will as it is a pain to test without some firmware
+> > or OS code to program them for us.
+> > 
+> > Note that if you update your kernel to cxl/next it will currently fail
+> > as the Range register emulation is (I think) rather over enthusiastic
+> > and currently decides to emulate the HDM decoders for the QEMU emulated
+> > type 3 devices.
+> > 
+> > https://lore.kernel.org/linux-cxl/167640366272.935665.1056268838301725481.stgit@dwillia2-xfh.jf.intel.com/T/#m6c025d5c9b27d8360a64079593f6c5adaa408772
+> > 
+> > Jonathan
+> > 
+> >   
+> > > 
+> > > ~Gregory  
+> > 
+> >  
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D4A9C636CC
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:38:52 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229480AbjAaQiv (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 11:38:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49378 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230215AbjAaQiu (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:38:50 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F09F166FB
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:38:47 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P5rLv6vgvz6J9Pc;
+        Wed,  1 Feb 2023 00:37:43 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.34; Tue, 31 Jan 2023 16:38:44 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: [PATCH 0/2] hw/mem: CXL Type-3 Volatile Memory Support
+Date: Tue, 31 Jan 2023 16:38:45 +0000
+Message-ID: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Now we have some kernel code to test this against (and it looks good)
+I'd like to propose this series for upstream following 3 other series
+already proposed for inclusion:
+
+a) https://lore.kernel.org/linux-cxl/20230130143705.11758-1-Jonathan.Cameron@huawei.com/
+   [PATCH v3 00/10] hw/cxl: CXL emulation cleanups and minor fixes for upstream
+b) https://lore.kernel.org/linux-cxl/20230130155251.3430-1-Jonathan.Cameron@huawei.com/
+   [PATCH v3 0/8] hw/cxl: RAS error emulation and injection
+c) https://lore.kernel.org/linux-cxl/20230125152703.9928-1-Jonathan.Cameron@huawei.com/
+   [PATCH 0/2] hw/cxl: Passthrough HDM decoder emulation
+
+Changes since RFC V4 called out in individual patches.
+ - Some minor fixes.
+ - Refactors to simplify patch / resulting code as relevant.
+ - Update the bios-tables-test for CXL to use non deprecated interfaces.
+
+Whilst the more significant changes have been discussed on list
+Gregory, please take a look at these and check your are happy with
+my tweaks.
+
+Kernel support used to test this:
+https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=for-6.3/cxl-ram-region
+
+Previous cover letter updated to reflect pulling one patch out
+as a precursor cleanup in set (a) above.
+
+This patches provides 2 features to the CXL Type-3 Device:
+    1) Volatile Memory Region Support
+    2) Multi-Region support (1 Volatile, 1 Persistent)
+
+Summary of Changes per-commit:
+1) Whitespace updates to docs and tests
+2) Refactor CDAT DSMAS Initialization for multi-region initialization
+   Multi-Region and Volatile Memory support for CXL Type-3 Devices
+   Test and Documentation updates
+
+The final patch in this series makes 6 major changes to the type-3
+device in order to implement multi-region and volatile region support
+    1) The HostMemoryBackend [hostmem] has been replaced by two
+       [hostvmem] and [hostpmem] to store volatile and persistent memory
+       respectively
+    2) The single AddressSpace has been replaced by two AddressSpaces
+       [hostvmem_as] and [hostpmem_as] to map respective memdevs.
+    3) Each memory region size and total region are stored separately
+    4) The CDAT and DVSEC memory map entries have been updated:
+       a) if vmem is present, vmem is mapped at DPA(0)
+       b) if pmem is present
+          i)  and vmem is present, pmem is mapped at DPA(vmem->size)
+          ii) else, pmem is mapped at DPA(0)
+       c) partitioning of pmem is not supported in this patch set but
+          has been discussed and this design should suffice.
+    5) Read/Write functions have been updated to access AddressSpaces
+       according to the mapping described in #4.  Access to the
+       persistent address space is calculated by (dpa-vmem_len)
+    6) cxl-mailbox has been updated to report the respective size of
+       volatile and persistent memory regions
+
+Gregory Price (2):
+  tests/qtest/cxl-test: whitespace, line ending cleanup
+  hw/cxl: Multi-Region CXL Type-3 Devices (Volatile and Persistent)
+
+ docs/system/devices/cxl.rst    |  49 ++++--
+ hw/cxl/cxl-mailbox-utils.c     |  26 +--
+ hw/mem/cxl_type3.c             | 300 +++++++++++++++++++++++++--------
+ include/hw/cxl/cxl_device.h    |  11 +-
+ tests/qtest/bios-tables-test.c |   8 +-
+ tests/qtest/cxl-test.c         | 146 +++++++++++-----
+ 6 files changed, 398 insertions(+), 142 deletions(-)
+
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE277C38142
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:39:24 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230098AbjAaQjY (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 11:39:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49894 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229895AbjAaQjX (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:39:23 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4989811648
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:39:22 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P5rJX2NfQz6J65D;
+        Wed,  1 Feb 2023 00:35:40 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.34; Tue, 31 Jan 2023 16:39:15 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
+        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: [PATCH 1/2] tests/qtest/cxl-test: whitespace, line ending cleanup
+Date: Tue, 31 Jan 2023 16:38:46 +0000
+Message-ID: <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+From: Gregory Price <gourry.memverge@gmail.com>
+
+Defines are starting to exceed line length limits, align them for
+cleanliness before making modifications.
+
+Signed-off-by: Gregory Price <gregory.price@memverge.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+Changes since RFC v4:
+  Naming consistency improvements.
+ 
+ tests/qtest/cxl-test.c | 84 +++++++++++++++++++++++-------------------
+ 1 file changed, 46 insertions(+), 38 deletions(-)
+
+diff --git a/tests/qtest/cxl-test.c b/tests/qtest/cxl-test.c
+index 61f25a72b6..eda2bbbbe6 100644
+--- a/tests/qtest/cxl-test.c
++++ b/tests/qtest/cxl-test.c
+@@ -8,50 +8,58 @@
+ #include "qemu/osdep.h"
+ #include "libqtest-single.h"
+ 
+-#define QEMU_PXB_CMD "-machine q35,cxl=on " \
+-                     "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 "  \
+-                     "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=4G "
++#define QEMU_PXB_CMD \
++    "-machine q35,cxl=on " \
++    "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 " \
++    "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=4G "
+ 
+-#define QEMU_2PXB_CMD "-machine q35,cxl=on "                            \
+-                      "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 "  \
+-                      "-device pxb-cxl,id=cxl.1,bus=pcie.0,bus_nr=53 " \
+-                      "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.targets.1=cxl.1,cxl-fmw.0.size=4G "
++#define QEMU_2PXB_CMD \
++    "-machine q35,cxl=on " \
++    "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 " \
++    "-device pxb-cxl,id=cxl.1,bus=pcie.0,bus_nr=53 " \
++    "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.targets.1=cxl.1,cxl-fmw.0.size=4G "
+ 
+-#define QEMU_RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 "
++#define QEMU_RP \
++    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 "
+ 
+ /* Dual ports on first pxb */
+-#define QEMU_2RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
+-                 "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 "
++#define QEMU_2RP \
++    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
++    "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 "
+ 
+ /* Dual ports on each of the pxb instances */
+-#define QEMU_4RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
+-                 "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 " \
+-                 "-device cxl-rp,id=rp2,bus=cxl.1,chassis=0,slot=2 " \
+-                 "-device cxl-rp,id=rp3,bus=cxl.1,chassis=0,slot=3 "
+-
+-#define QEMU_T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
+-                 "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
+-                 "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 "
+-
+-#define QEMU_2T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
+-                  "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 "
+-
+-#define QEMU_4T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
+-                  "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
+-                  "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 " \
+-                  "-object memory-backend-file,id=cxl-mem2,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa2,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp2,memdev=cxl-mem2,lsa=lsa2,id=cxl-pmem2 " \
+-                  "-object memory-backend-file,id=cxl-mem3,mem-path=%s,size=256M "    \
+-                  "-object memory-backend-file,id=lsa3,mem-path=%s,size=256M "    \
+-                  "-device cxl-type3,bus=rp3,memdev=cxl-mem3,lsa=lsa3,id=cxl-pmem3 "
++#define QEMU_4RP \
++    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
++    "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 " \
++    "-device cxl-rp,id=rp2,bus=cxl.1,chassis=0,slot=2 " \
++    "-device cxl-rp,id=rp3,bus=cxl.1,chassis=0,slot=3 "
++
++#define QEMU_T3D \
++    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 "
++
++#define QEMU_2T3D \
++    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
++    "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 "
++
++#define QEMU_4T3D \
++    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
++    "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 " \
++    "-object memory-backend-file,id=cxl-mem2,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa2,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp2,memdev=cxl-mem2,lsa=lsa2,id=cxl-pmem2 " \
++    "-object memory-backend-file,id=cxl-mem3,mem-path=%s,size=256M " \
++    "-object memory-backend-file,id=lsa3,mem-path=%s,size=256M " \
++    "-device cxl-type3,bus=rp3,memdev=cxl-mem3,lsa=lsa3,id=cxl-pmem3 "
+ 
+ static void cxl_basic_hb(void)
+ {
+-- 
+2.37.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
 Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
@@ -1056,285 +1811,394 @@ index eda2bbbbe6..edcad4a0ce 100644
 2.37.2
 
 
-
-From git@z Thu Jan  1 00:00:00 1970
+From mboxrd@z Thu Jan  1 00:00:00 1970
 Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 169C5C05027
-	for <linux-cxl@archiver.kernel.org>; Fri, 17 Feb 2023 16:38:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E340C636CC
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:48:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229999AbjBQQiN (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 17 Feb 2023 11:38:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50516 "EHLO
+        id S229973AbjAaQsW (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 11:48:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57164 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229744AbjBQQiM (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 17 Feb 2023 11:38:12 -0500
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1F8410D2
-        for <linux-cxl@vger.kernel.org>; Fri, 17 Feb 2023 08:38:04 -0800 (PST)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PJGyz6g9fz6J7R6;
-        Sat, 18 Feb 2023 00:11:39 +0800 (CST)
-Received: from localhost (10.122.247.231) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.17; Fri, 17 Feb
- 2023 16:16:18 +0000
-Date: Fri, 17 Feb 2023 16:16:17 +0000
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: Jonathan Cameron via <qemu-devel@nongnu.org>
-CC: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Michael Tsirkin <mst@redhat.com>,
-        Ben Widawsky <bwidawsk@kernel.org>,
-        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
-        Ira Weiny <ira.weiny@intel.com>,
+        with ESMTP id S230094AbjAaQsV (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:48:21 -0500
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2079.outbound.protection.outlook.com [40.107.244.79])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C89337683
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:48:20 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=k28iJmj0ejT30OMixRSwbvvIGQXQFXh4bxkul9Z/MJrMZ84rL4TqE0f5O7k4CU1f1WCNk/VCtxIsB3X2VFWmhiuKdwK897ShuYXlxG0Xli7k7OEDWlhE/G4/gqj9v8gxlwogl8XlX45j+g+N0JudIGaU1aB5lOuOY6HYbIVbsdHOQov9/hBuVvcUpRyh18VM7sSzhLilcVoIQ/e6GOCPHLKNpTGrCyYFHzKQ0KyJ2kbX0I2vPZPrUSZD3n240/eJ2VDAXw2LoqtSb5lku3WfibNhO8RXOrCXYMSk543BdO32Cr7wy5mAV9keXyQ8JIsxjeFaUvA+9yEe8l6rYe1H4g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=0dDhpAILtiplXQkjXVYHBWJhpT411w7kwr985u3k6Mc=;
+ b=Ly7d7lWnIBoD0pbPWxCk7F/WHPNy9YJVuZQNeafqUMQzZ8oXuAieotJapLJhotWyWngEuGiUO/Bx2xSujvhvM/Z/MbESlsQZLxzk3HvDFwUqwRYVLKp7wYulM+HewC16qHReEWjLO7CwwhZH9h43zGuxerxpMfiB59ddgSzrm7jTAZcAHQQRUuKQAelifebnPqTNGGUVAaJMq8msAO2mnB8na9OHVgx5Xlhx0G0iJTFhDKkanqtm4bhIMaApa0zl5eqBfwWPNgfOWS4lmbOueT7qhC4+GU/kykiTEjSvtpwpcRXE/cw3j3radzv7kWB7QmRrT92vI+lMU9KHQs8f/A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=0dDhpAILtiplXQkjXVYHBWJhpT411w7kwr985u3k6Mc=;
+ b=LITMXRY4TBqkIJSEi4goFd6POI8EMFLqnQB+/xTHuTXPjJxPbQJzUy9HeHF64+EGPMDeeEWvPUB33P0ZUSpyDgrv8r8mO9vK1tZnjsmCTxnOhXBk1iNij4cIy99KpWKUfeIjz30D3HTXdhJ/X6ZzIwvYbuWeeVHzV4OlogVnAU8=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by PH0PR17MB5567.namprd17.prod.outlook.com (2603:10b6:510:b8::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6043.38; Tue, 31 Jan
+ 2023 16:48:14 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.6043.028; Tue, 31 Jan 2023
+ 16:48:14 +0000
+Date: Tue, 31 Jan 2023 11:08:47 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
+        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
         Gregory Price <gourry.memverge@gmail.com>,
-        Philippe =?ISO-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
         Mike Maslenkin <mike.maslenkin@gmail.com>
-Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
- and Persistent)
-Message-ID: <20230217161617.000064d1@huawei.com>
-In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+Subject: Re: [PATCH 1/2] tests/qtest/cxl-test: whitespace, line ending cleanup
+Message-ID: <Y9k9D1y1gT4jZ0Zx@memverge.com>
 References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
-        <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
-Organization: Huawei Technologies R&D (UK) Ltd.
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; x86_64-w64-mingw32)
+ <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
+X-ClientProxiedBy: YT4PR01CA0356.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:fc::21) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|PH0PR17MB5567:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6ff86ade-bec6-4bb8-90a0-08db03aaf20b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: KxuLrhXasLwsfphwDV3qJRFX1l9lxonDiZqhZFcQ25ajXS+DaWHKvquRLRlLoBUJVynNMVFys3+p+3eoKfhJDUmiMqffY5xoGnsqN4Q2yTtmCMx/+NMNGrEFQkhT7JaJhoCvimZbSe2S6Rt3Cw7cqmv2laovR5dhz8qilLXkPBV+mNOg3/vB258GG3LUoPXLCfJVOKrf9i3igQwpcU0mLGyaiznbEPF5xLgMGonqmyBPUOvliG2Qk9BByi0rBKUoJAKyppIRn/nS+/wUL4SMJZLVp4nl0q+b+ZYq6yUd+b16uM4qo9x48b4LHlX+C32UBb1lEnyPRKFL4BuAxsshKN5hTXTQIfOBplgZ7PkuDvsR6WvbDbvtaD3ahpN/X2qUTKATqdXrb5EZ+FjOwjLcugg2aGAG8Lbt6nEKwrvLQHJi0kyclccfSetpjOnSpbMC048XuhZzDSPowbu0FSS6Rk/8944YJW57nhjTRYLTf19JWEA8i0d23HGzDhX55SsIZeESis3xPdjbpcm1CuWPoZlYjw1WgpjmGFDUguLmkWf/vycFfwOHHc2XUgwObUNMDZ+Do8Ptted/HaH1l+4fMmFJcsJFhfnqDmsY8TZ1/8OxnFlF8IvW6RQ+RLXvzutKpUENXk75tYtCmxPINivxkA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(39840400004)(396003)(136003)(346002)(376002)(366004)(451199018)(8676002)(4326008)(66556008)(66476007)(66946007)(6916009)(54906003)(316002)(2906002)(8936002)(41300700001)(5660300002)(44832011)(7416002)(4744005)(38100700002)(6506007)(6666004)(83380400001)(36756003)(2616005)(186003)(6512007)(26005)(6486002)(478600001)(86362001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?lvUNGL8/Iki+l2hDNAgxpVYD0lyOwWmNcvw6fAj1NaFEBQ6IqsEovDThwJkj?=
+ =?us-ascii?Q?IqbgXOT1la3Mey1ilEun0Q14wHkMfEXnWsfMVwMxJylZS/D8yaq3BWEGCPC6?=
+ =?us-ascii?Q?vlVb1shm26PGnLHNkFe6uQpIn9uZraaD5HY+vXE6lzUqNdhitu1N9eynNzLV?=
+ =?us-ascii?Q?nPJiXiR39Ud7t3tMeS9wY37MgbeQ04pFeeVUdHgiMDmXPqGkNQbdPlouvUe6?=
+ =?us-ascii?Q?EDP/NvNSM0agyCHzAXxlGxZSRHu/cTYXU7HXFTAzfnorlykHSHfvLfKmnmYw?=
+ =?us-ascii?Q?BsV92raearQDIaRPCwa37aPuJh2KlUve4aD3KNcbdgCn5SqoCQVZSqwLGH3k?=
+ =?us-ascii?Q?ZULvWwFhJVqdZejmd3K88ab9vwrKHVJg64OjgMqF336rXpnemNI3HTBLXbUL?=
+ =?us-ascii?Q?MMU+xMFa9ZW54xV5vRRu6T5ZTWnW/dcZnJEOamO7hu3x2KM72Ja27g4qmonB?=
+ =?us-ascii?Q?7BBJz39qmqyM4RW4rcLCMtf1juO/qEY/vtlG3sA8Ss8OerJHQ/plTUw0FFa0?=
+ =?us-ascii?Q?/XLIWhWgar1xg2LEZVHY1/O4Vhd7FTyHAt1jo2XQQKkZvq3eg5aQoObDGtAD?=
+ =?us-ascii?Q?FO9wOlSgdtR9i6rdxncvvebQ8HI468xeKaTGLvZ/fUyBH1Z+wo7PzFBFg+OS?=
+ =?us-ascii?Q?RDddQ6+1A32DdK+TA3cj8+hnOmqveJEraqfKXiT7qxHkZETSkVl5/OKrLttS?=
+ =?us-ascii?Q?0EAIMm6vt72yEtBfctIrAIiChHlFk4NrpkZKdC4wgis/EizugHsY24ShIR9t?=
+ =?us-ascii?Q?pmSeKWG8kJLzw/Uw9PrPXhwC+/Vn6/KanT01iC3pzDysgbpAkSBvwFbonqyD?=
+ =?us-ascii?Q?INaUskEbKEAUr8GKh1WRmKWaPNpzQKsNKVOtJGea2JPj/uY5DeNR27h3bZOZ?=
+ =?us-ascii?Q?IsbC5e2PGiz2Y45KllJLfdaGRJWJxo0cMwL0H12hgaYp1f6HvGOcvTDSrP0F?=
+ =?us-ascii?Q?Mi+yAvhJflrD+ZQBG+eIhed23S2lQJ1Itdyj89CkpeIk0fnz8ZK9HVw+QKaT?=
+ =?us-ascii?Q?zh6tWOe3sILTPo3JIjhTHmmOQ2FdD8T1tiCGUv/2866bJCFnKL1OEdNAmnvV?=
+ =?us-ascii?Q?z25o/LyD/lRu+37dukGexGYLDOvSrvd3WR8fjz0Ep8I0TAtr6IkePHxG75lW?=
+ =?us-ascii?Q?HPo3Egw9NMLXqNg+VTHYPKd9Ebxkiex28OMqliM0g3GHzfyx2sl2c4ZkgZF5?=
+ =?us-ascii?Q?dcqXtNTZv1/t2EevVGU6lOTuQnPwXK5WQ7jl9IeBFwqX5aojtSq2ZeiFeJLS?=
+ =?us-ascii?Q?A6gm3kJ+l3zqDh6IRZpgZcFTGIfzR72lRF8ukYDggPLgbbeum+GE2fl8YFlD?=
+ =?us-ascii?Q?6dmc2c+lix05z1hBAKTCvCRPHRiYsa+KSRNL6vQAF+vMi241s7vqCEGz8Q8b?=
+ =?us-ascii?Q?/dftT4+0LVKJN1Sd5ed7ckMGAh+jOV/d4DsOUPP32sBqK9V9BigFX78DpdSJ?=
+ =?us-ascii?Q?HkYLeZv6nFa7OHEgIynK7f32vJz1M+iY5zBBUsqCkedMqFYwxFb5hvl9Dc/v?=
+ =?us-ascii?Q?9LVENI70Mg4agl23MDxg7vtvxy9IcYjGTBJ6rqbk7etxgewQpxbBJ5LsbKBO?=
+ =?us-ascii?Q?KF0EFyVeowEG2ooVTAK3uC/j4EBzRYuSgqERUBLWLkixwKL4biT5yBGnBWt9?=
+ =?us-ascii?Q?Yg=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6ff86ade-bec6-4bb8-90a0-08db03aaf20b
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Jan 2023 16:48:14.4318
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: EBiaWZz5WMDQadOVw0BRfpMmdPCCcf8G8oNPtXZfxvlYctlbwbQs6cdexrd8jixR3lWCrv9pww8wZS1lVjslEX8LBDYhF/60R1P9CjovcUA=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR17MB5567
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
 
-On Tue, 31 Jan 2023 16:38:47 +0000
-Jonathan Cameron via <qemu-devel@nongnu.org> wrote:
+On Tue, Jan 31, 2023 at 04:38:46PM +0000, Jonathan Cameron wrote:
+> From: Gregory Price <gourry.memverge@gmail.com>
+> 
+> Defines are starting to exceed line length limits, align them for
+> cleanliness before making modifications.
+> 
+> Signed-off-by: Gregory Price <gregory.price@memverge.com>
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> ---
+> Changes since RFC v4:
+>   Naming consistency improvements.
+>  
+>  tests/qtest/cxl-test.c | 84 +++++++++++++++++++++++-------------------
+>  1 file changed, 46 insertions(+), 38 deletions(-)
+> 
+> // ... snip ...
+>
 
+changes lgtm
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EC15C38142
+	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 17:04:12 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230007AbjAaREL (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 31 Jan 2023 12:04:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40088 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230273AbjAaREK (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 12:04:10 -0500
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2047.outbound.protection.outlook.com [40.107.223.47])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0924916AE4
+        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 09:04:10 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=EYBYcTYGXb3JTRWAHIbilEqm9NsZQf8Ypju9fMIzClAQCYrQKqTHflMIyjKU863ahJR+fOy0/vvYZlnNkdZq8MVVLPHhmNG4WNgAfiQa5275BGzhOH27NoufyjAZc6nmbbVI263YMgLoNtuB6bUIj79XcN8iaA0RYB3V8OJwkS1R/h106yiVHQUS/sAfc8oGffr+zIIE3DBJrWLnyPcMaafKkP8PVck3ncGlfmz7i2vdnNp8mz2XKJrjJtugK/ruHy5Ae5UFApXCrmmaDQIe7vARZO3AJHYhadVUvb0hp2UthGyNbYjShKHdX3MteX748gIqIewMXTih7lfn7Bmjkw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=zGJ0zIF6e3SgC7hV323cZ3YeSXRu1fvM29xzppHE1TA=;
+ b=EnGWxzScN5TOcBju9FHn8v+jG30508Kuh2HBu+kElPgJUsvgsgW/IEyNtNZj/epMuoYGVltH3PMYYjKRrdnW5zU7W/72FaO6nVNC1UBQ+xzSWoNzsOeBH9XaXFvStIeA7LA2gCaUwgfsNBsF3ZUHs1+CyMiUBADp+zmHYN2oxvqPTlr1LsPM76fn91WwI0rd40sriWjt8DBCKciu6mup4gFcyocWBefJ0xNtNbmx42EZxaCnxBQCy0TF0Rzd4HXgwVMtWq6An/10WnB4SlW/Sa+Qaz6imLV1bLhWHp8/N343JG9eq99k9TCa9+9rTTPZCOxkG/vh9HfeRy9WHBWAlw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=zGJ0zIF6e3SgC7hV323cZ3YeSXRu1fvM29xzppHE1TA=;
+ b=Pom13VA7oeAWER9DWSK0rDibACUi/QKZncwaOwKFUzcAYaeELSW1IurIScIT8evBCYXvg/HVpExBhO9L7gDrmZ5GB6Wf2VDrrXGb8xT/YZugmFbMRh1CHaqRa/+LtFqKwbdTvCvGdl6h0LIqhemvXJ13PMiyUFfhi5ddPTsBwfA=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by SA1PR17MB5190.namprd17.prod.outlook.com (2603:10b6:806:1e1::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6043.38; Tue, 31 Jan
+ 2023 17:04:07 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.6043.028; Tue, 31 Jan 2023
+ 17:04:07 +0000
+Date: Tue, 31 Jan 2023 11:25:55 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
+        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
+        Gregory Price <gourry.memverge@gmail.com>,
+        Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <Y9lBE3dpmFGBeOxF@memverge.com>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+ <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+X-ClientProxiedBy: YT4P288CA0011.CANP288.PROD.OUTLOOK.COM
+ (2603:10b6:b01:d4::22) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|SA1PR17MB5190:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7fb10880-26c3-4d20-ba2b-08db03ad2a31
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: Bg3r3YhfkeLLhhMdkCix4HgRedYZ5fIvhN8JXfruo1nkuxWjfZw+v6u3U9obYb8cM5tajZO1IzMmorFF8y67U4mV3Ep8ZgeFkOgJOjidO/fDtyl0UpCj5SH66290ZkXHQm9/6IfYLNKyU4f9AO+dcjvBycX4YLi5v6QKifNTgHD7DoSqgOsimQ3PnxfAqXfcrucazduoNdQ9jmGJjvoQ12Grhk+LpG5iG7qP553RuMCu3++kUY3dOt23YS0WpdztQHY7etieA+LjEkGrO1qnjYV71/Uy8KJ2KGTL8qGdBVd3DZewVcWmqVjhHhb6If59Q+EehIzvTR0/2OnqsDSInZAbzO2RXelkKJs2XkONs3DfQtdMpA2w7xDpBRxOXprQhKTnC1WYq0zEU5tmGWDx+8Ysx6r8pdmgd+KBc54HSYJfzTvnjpMbojGPbickjMY2Vc1kmZ+DQ4XjwM58cLltkcHzJPwnl7UQkzNJ7GihHli7C8Y8KItVbUPAVh7VDMVGfCmDoLDemEP9Mnnj1Ux/TxvxiTHUBK3MwtLYZVcO1V05ONwq6McyrenozXlcz0sCfE1/eFnwZBHUPgq0GPM0gY1Z130eB/PLzZpkvBUzVTtvPso1vkIHCsYjIpLlwH6peD0D7n9Jj6ArUbYY1Mt5Dg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(366004)(346002)(396003)(376002)(39840400004)(136003)(451199018)(6666004)(6512007)(41300700001)(2616005)(6486002)(26005)(6506007)(478600001)(186003)(66476007)(54906003)(316002)(6916009)(8676002)(38100700002)(66946007)(4326008)(66556008)(8936002)(2906002)(36756003)(5660300002)(86362001)(44832011)(7416002)(4744005);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?atrlQZ/H6q+/x/VBG4fNr5aohWwwrFNIUFWomG2HRmRKV050+ASsJ+4j4Ytl?=
+ =?us-ascii?Q?4vbpmnNS/B1M+xP1Oit7hLdMLLg3a0jjzAGk93VoL1AxkKtc7DEiDHSmOiX9?=
+ =?us-ascii?Q?/rtP3sApZcyI1Vb3iRh7P+u1P1fsDpLY7JtaBwROnlMnJ03EBpX9u5JJalkI?=
+ =?us-ascii?Q?5u6kySSPESGuty5PVVqKrSTPNydkQFQEDtE9Bv0MmiQCWqi9cZQ/YCmnhPHZ?=
+ =?us-ascii?Q?XUzM7UFV1IIlIXRKc1IsVy/I3oC9F0H1tdfEbrfT2S1uMeSwsSjd7h8wmuS0?=
+ =?us-ascii?Q?LayZvui/0FSRx0XZFEq07+VBlQvyhncLAMMQQzpyB0IzFAKNR2ycTGqDJlgs?=
+ =?us-ascii?Q?hLc+qqmKqLjRtpoWXjF8cV2qdDPdea7IQZ9JqmnRAqy2I+wR5BePDH7Vprfq?=
+ =?us-ascii?Q?xBM3Y6XHyhkN27f7AhkQQ8zRZf+iqznJV9Iv/X/flQQzNls5vq0qa8Q40ZMo?=
+ =?us-ascii?Q?Lxti+QWafF+H3Q74FNPUc+an6O06+32VeMzJBnyR5pIfSsPOi2GYPicIF62O?=
+ =?us-ascii?Q?GuLzBkPUJGbKcgYzu/Ir8BY/eYLV/arQtBG2HlzF4Xb6qsP9rw+TCerzd61H?=
+ =?us-ascii?Q?qqeUp2gOIVmefLfXcK/+zmPgQCvM+Q8BtdXZYtZ8gNIkCZQxk9WMkebj9XYF?=
+ =?us-ascii?Q?a7o3UUZAVl5lablcYU7W9ljgwf+1psRVO9+ZJj9QlPq4XFLoQSoQyjjOJu73?=
+ =?us-ascii?Q?Y144KwDHS0xVqpBA5DBhjCOuThzh05oSwh6qA5IrBv1TBIwFvxdOEan95Dfy?=
+ =?us-ascii?Q?idZKj/OZcaOqRPlQXdY1swJsR0jDsSMnSXNQ0rW7YqwPMQExxOzkQHPTLSzt?=
+ =?us-ascii?Q?pXKFVj+FLCfuCvzFibSR4AwDS7w5Hiqg/8WC/tydxjOStUFtUwKWECHjOOxd?=
+ =?us-ascii?Q?rlJpWfcefYK2fTvTygVgK6ADamLn320KZac+ayP+gZsa5iAq3LPqhb2qXxMl?=
+ =?us-ascii?Q?7ejmR0j4bZK84QEZBq8xLIpQHYP460j4mL7PWiSWzjmuh4vJ2ib8CSSWKiIb?=
+ =?us-ascii?Q?XOrcUiZq384agy+UDTy9A4tmUl2NCYiKpHd8uyx2haZlX2DZcBll0sI3kYZ/?=
+ =?us-ascii?Q?0DRvpcAHoUOsx7HWnjqI1X0JCy8DeIelPM1+7HS8HMGZR4lczsZjNiMkp0JD?=
+ =?us-ascii?Q?o/tWh9iUDmvHWpT2b+DtoMBFaNeICAZv4cKYJJVZIh77mTBqadoMAKvJlR5o?=
+ =?us-ascii?Q?iqCHZLbUH+urFXY3eSJilNXbobP5hzZKpVR7bigMRX4rnfMSjQj/LEa3WpW2?=
+ =?us-ascii?Q?7xmwAe4mnTxNEu8NmnjCS1e9Z3fe2IGDP5RLIJBkfqFxuClWeMUz+/Kv659/?=
+ =?us-ascii?Q?/gsRZCCjw74mZNVA2G+TipPRT+aKJxBR4wpzpEj2t0+1i/ldMd/zwEZohvRK?=
+ =?us-ascii?Q?Hqd/afL45X+ShzPWi9lTooDUk29mLN4TLo5vKWunqceqWzDrGzMxL5QbGa3O?=
+ =?us-ascii?Q?H/x4oINVHVd6H5GfNGoW9HY86ydUPVMR6thU4d0+msQ0yLGQgAkQ+xUkiAIQ?=
+ =?us-ascii?Q?doOS0nidOoX4KAld80gmdy3h2LLw/Vslr5tY3AkUl5gxa4rwTG7UQTxNWoGE?=
+ =?us-ascii?Q?xxruPqAaleyDuJAH/4UuviPOU38Fti3XC9m4kOzoAzX/f1m828ig2242qSop?=
+ =?us-ascii?Q?lg=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7fb10880-26c3-4d20-ba2b-08db03ad2a31
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Jan 2023 17:04:07.6122
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: SR/j4m9ppmM/xwwtcFRZFGUCc9Q85a+YY5IWttktGwrutgU4sotbnEDXvfIU0DFk8fZoQ3xxPo+1CBUR26wNuB/scDiIwl2PJFVTKRYGjy0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR17MB5190
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, Jan 31, 2023 at 04:38:47PM +0000, Jonathan Cameron wrote:
 > From: Gregory Price <gourry.memverge@gmail.com>
 > 
 > This commit enables each CXL Type-3 device to contain one volatile
 > memory region and one persistent region.
+>
+> ... snip ...
 > 
-> Two new properties have been added to cxl-type3 device initialization:
->     [volatile-memdev] and [persistent-memdev]
-> 
-> The existing [memdev] property has been deprecated and will default the
-> memory region to a persistent memory region (although a user may assign
-> the region to a ram or file backed region). It cannot be used in
-> combination with the new [persistent-memdev] property.
-> 
-> Partitioning volatile memory from persistent memory is not yet supported.
-> 
-> Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
-> at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
-> 
-> Signed-off-by: Gregory Price <gregory.price@memverge.com>
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> 
-Hi Gregory,
 
-I've added support for multiple HDM decoders and hence can now
-test both volatile and non volatile on same device.
-It very nearly all works. With one exception which is I couldn't
-poke the first byte of the non volatile region.
+I have no objections to the changes made.  I'll test when I finish up a
+few other tasks.
 
-I think we have an off by one in a single check.
-
-Interestingly it makes no difference when creating an FS on top
-(which was my standard test) so I only noticed when poking memory
-addresses directly to sanity check the HDM decoder setup.
-
-I'll roll a v2 if no one shouts out that I'm wrong.
-
-Note that adding multiple HDM decoders massively increases
-the number of test cases over what we had before to poke all the
-corners so I may well be missing stuff.  Hopefully can send an RFC
-of that support out next week.
-
-Jonathan
-
-> -MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *data,
-> -                           unsigned size, MemTxAttrs attrs)
-> +static int cxl_type3_hpa_to_as_and_dpa(CXLType3Dev *ct3d,
-> +                                       hwaddr host_addr,
-> +                                       unsigned int size,
-> +                                       AddressSpace **as,
-> +                                       uint64_t *dpa_offset)
->  {
-> -    CXLType3Dev *ct3d = CXL_TYPE3(d);
-> -    uint64_t dpa_offset;
-> -    MemoryRegion *mr;
-> +    MemoryRegion *vmr = NULL, *pmr = NULL;
->  
-> -    /* TODO support volatile region */
-> -    mr = host_memory_backend_get_memory(ct3d->hostmem);
-> -    if (!mr) {
-> -        return MEMTX_ERROR;
-> +    if (ct3d->hostvmem) {
-> +        vmr = host_memory_backend_get_memory(ct3d->hostvmem);
-> +    }
-> +    if (ct3d->hostpmem) {
-> +        pmr = host_memory_backend_get_memory(ct3d->hostpmem);
->      }
->  
-> -    if (!cxl_type3_dpa(ct3d, host_addr, &dpa_offset)) {
-> -        return MEMTX_ERROR;
-> +    if (!vmr && !pmr) {
-> +        return -ENODEV;
-> +    }
-> +
-> +    if (!cxl_type3_dpa(ct3d, host_addr, dpa_offset)) {
-> +        return -EINVAL;
-> +    }
-> +
-> +    if (*dpa_offset > int128_get64(ct3d->cxl_dstate.mem_size)) {
-> +        return -EINVAL;
-> +    }
-> +
-> +    if (vmr) {
-> +        if (*dpa_offset <= int128_get64(vmr->size)) {
-
-Off by one I think.  < 
-
-> +            *as = &ct3d->hostvmem_as;
-> +        } else {
-> +            *as = &ct3d->hostpmem_as;
-> +            *dpa_offset -= vmr->size;
-> +        }
-> +    } else {
-> +        *as = &ct3d->hostpmem_as;
->      }
->  
-> -    if (dpa_offset > int128_get64(mr->size)) {
-> +    return 0;
-> +}
-
-
-From git@z Thu Jan  1 00:00:00 1970
+From mboxrd@z Thu Jan  1 00:00:00 1970
 Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D4A9C636CC
-	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A2AFC61DA4
+	for <linux-cxl@archiver.kernel.org>; Tue, 14 Feb 2023 18:49:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229480AbjAaQiv (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 31 Jan 2023 11:38:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49378 "EHLO
+        id S229808AbjBNSt6 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 14 Feb 2023 13:49:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230215AbjAaQiu (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:38:50 -0500
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F09F166FB
-        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:38:47 -0800 (PST)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P5rLv6vgvz6J9Pc;
-        Wed,  1 Feb 2023 00:37:43 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.34; Tue, 31 Jan 2023 16:38:44 +0000
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
-CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
-        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+        with ESMTP id S233041AbjBNStg (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 14 Feb 2023 13:49:36 -0500
+Received: from bee.birch.relay.mailchannels.net (bee.birch.relay.mailchannels.net [23.83.209.14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFFF8BBBC
+        for <linux-cxl@vger.kernel.org>; Tue, 14 Feb 2023 10:49:33 -0800 (PST)
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+Received: from relay.mailchannels.net (localhost [127.0.0.1])
+        by relay.mailchannels.net (Postfix) with ESMTP id 164278821C1;
+        Tue, 14 Feb 2023 18:43:36 +0000 (UTC)
+Received: from pdx1-sub0-mail-a221.dreamhost.com (unknown [127.0.0.6])
+        (Authenticated sender: dreamhost)
+        by relay.mailchannels.net (Postfix) with ESMTPA id 7333D8821E9;
+        Tue, 14 Feb 2023 18:43:35 +0000 (UTC)
+ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1676400215; a=rsa-sha256;
+        cv=none;
+        b=Y3yLXv0lddZ6sMNH/xFgh3EzlHduM//JnfIreN4gV9MMIoQHcX7NEu5DffM//LU/7izm7z
+        2Zopn9V5zEXZONbzFlNfpoWF15mMTH50H6H+C1wzGKHjQW5EpH4rVB209ANFfaTXGJFat7
+        BIGd/qMOhG9FknV1ayWd+ABgIzYl06UykM4lUyhTnfhL2I8dVzW+h95mcT87W/G6Az4iVJ
+        Bm6zZPElcxl2AvfJmpITTOL+pbBvEpUmno1CHyy+GAhrZKbd96hSQb4xCczx/q4ISJnD/E
+        T/1ZN4DBQ5Epg9MWfpHtfYNoRYRuEvD2cvjw3D1d8O2H9A5kWRqrGCUjGsdFIw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mailchannels.net;
+        s=arc-2022; t=1676400215;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references:dkim-signature;
+        bh=iQjhFESGKASNO0O7sxGSRCOcjSv2sTTqAFVvYDWmzZw=;
+        b=I8cIeyCJG4Shd2KxBok4OAVY7/0tFtBR6CTf8WlQGz4ekyrjbtZLvme9B9sntcWHgxd7Aa
+        vMwJnYFZcNCfbaQjPGC/sVtrUPiGTn1h0fXrLE4vUkOG4Qg2IUI1U8yn79DZJmf8N2GYxo
+        ywFfCVYW2DUH3LmWwxclNx1QuSgVbrWTy2YnQ6R8XncNAyTcIw3hfHYqkQH/NXyDH9GfkD
+        nM5FNBpxQUAsxsrKgXZPWe57ItYMAe8n5Z5bmXPQU0JKuR7I1ZB7icWBKcKFgD1EWpICnj
+        g20qmLW0N+d11SDcEl08KfwlxAa7Tovx8nO7DvT1sSh5NYOFtDz4K9VKpLu20g==
+ARC-Authentication-Results: i=1;
+        rspamd-b9c55767f-626p9;
+        auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+X-MC-Relay: Neutral
+X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
+X-MailChannels-Auth-Id: dreamhost
+X-Industry-Trade: 62a9de3c7b2a63ab_1676400215832_514669986
+X-MC-Loop-Signature: 1676400215832:1443824501
+X-MC-Ingress-Time: 1676400215832
+Received: from pdx1-sub0-mail-a221.dreamhost.com (pop.dreamhost.com
+ [64.90.62.162])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
+        by 100.126.30.37 (trex/6.7.1);
+        Tue, 14 Feb 2023 18:43:35 +0000
+Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: dave@stgolabs.net)
+        by pdx1-sub0-mail-a221.dreamhost.com (Postfix) with ESMTPSA id 4PGVTf0vrqz9d;
+        Tue, 14 Feb 2023 10:43:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
+        s=dreamhost; t=1676400215;
+        bh=iQjhFESGKASNO0O7sxGSRCOcjSv2sTTqAFVvYDWmzZw=;
+        h=Date:From:To:Cc:Subject:Content-Type;
+        b=EDDH6di4kwthAfEiKhr9dLe5O/NqvfWnvufFlOeOISOtylMimQkevyq+z5m58w8BJ
+         z0dgfe8gmMKmbV9wuBn6p7LgVyL/9WUJaYgrcdwA7fGu6Qr93bzl5oeONncsuCGQ14
+         OZGXhSMvSZ/U5gIyEwWjUdOHhwalYgMZaAOvgw8YeEeK2e58fRPo/GBdEiEC7cPQJW
+         19YLDhWIFgzHqRFQgrJI55HjqbNUlOK470gN0JX6KoRiehfJEaMwYEsab/ofsGSOmJ
+         gNFvS6VKrfeZkiL2Ux9MbSEzLNMa4Q3w+ax+sx7WJNLkQl3SbvFzDr1sFV4SapqgBP
+         NHhF7iDjsBH2g==
+Date: Tue, 14 Feb 2023 10:15:40 -0800
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
+        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
         Gregory Price <gourry.memverge@gmail.com>,
-        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Philippe =?utf-8?B?TWF0aGlldS1EYXVkw6/Cv8K9?= <philmd@linaro.org>,
         Mike Maslenkin <mike.maslenkin@gmail.com>
-Subject: [PATCH 0/2] hw/mem: CXL Type-3 Volatile Memory Support
-Date: Tue, 31 Jan 2023 16:38:45 +0000
-Message-ID: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.37.2
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230214181540.6yurhcasg3sezh3e@offworld>
+References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+ <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+User-Agent: NeoMutt/20220429
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
 
-Now we have some kernel code to test this against (and it looks good)
-I'd like to propose this series for upstream following 3 other series
-already proposed for inclusion:
+On Tue, 31 Jan 2023, Jonathan Cameron wrote:
 
-a) https://lore.kernel.org/linux-cxl/20230130143705.11758-1-Jonathan.Cameron@huawei.com/
-   [PATCH v3 00/10] hw/cxl: CXL emulation cleanups and minor fixes for upstream
-b) https://lore.kernel.org/linux-cxl/20230130155251.3430-1-Jonathan.Cameron@huawei.com/
-   [PATCH v3 0/8] hw/cxl: RAS error emulation and injection
-c) https://lore.kernel.org/linux-cxl/20230125152703.9928-1-Jonathan.Cameron@huawei.com/
-   [PATCH 0/2] hw/cxl: Passthrough HDM decoder emulation
+>From: Gregory Price <gourry.memverge@gmail.com>
+>
+>This commit enables each CXL Type-3 device to contain one volatile
+>memory region and one persistent region.
+>
+>Two new properties have been added to cxl-type3 device initialization:
+>    [volatile-memdev] and [persistent-memdev]
+>
+>The existing [memdev] property has been deprecated and will default the
+>memory region to a persistent memory region (although a user may assign
+>the region to a ram or file backed region). It cannot be used in
+>combination with the new [persistent-memdev] property.
+>
+>Partitioning volatile memory from persistent memory is not yet supported.
+>
+>Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+>at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
+>
+>Signed-off-by: Gregory Price <gregory.price@memverge.com>
+>Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-Changes since RFC V4 called out in individual patches.
- - Some minor fixes.
- - Refactors to simplify patch / resulting code as relevant.
- - Update the bios-tables-test for CXL to use non deprecated interfaces.
+Reviewed-by: Davidlohr Bueso <dave@stgolabs.net>
 
-Whilst the more significant changes have been discussed on list
-Gregory, please take a look at these and check your are happy with
-my tweaks.
-
-Kernel support used to test this:
-https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=for-6.3/cxl-ram-region
-
-Previous cover letter updated to reflect pulling one patch out
-as a precursor cleanup in set (a) above.
-
-This patches provides 2 features to the CXL Type-3 Device:
-    1) Volatile Memory Region Support
-    2) Multi-Region support (1 Volatile, 1 Persistent)
-
-Summary of Changes per-commit:
-1) Whitespace updates to docs and tests
-2) Refactor CDAT DSMAS Initialization for multi-region initialization
-   Multi-Region and Volatile Memory support for CXL Type-3 Devices
-   Test and Documentation updates
-
-The final patch in this series makes 6 major changes to the type-3
-device in order to implement multi-region and volatile region support
-    1) The HostMemoryBackend [hostmem] has been replaced by two
-       [hostvmem] and [hostpmem] to store volatile and persistent memory
-       respectively
-    2) The single AddressSpace has been replaced by two AddressSpaces
-       [hostvmem_as] and [hostpmem_as] to map respective memdevs.
-    3) Each memory region size and total region are stored separately
-    4) The CDAT and DVSEC memory map entries have been updated:
-       a) if vmem is present, vmem is mapped at DPA(0)
-       b) if pmem is present
-          i)  and vmem is present, pmem is mapped at DPA(vmem->size)
-          ii) else, pmem is mapped at DPA(0)
-       c) partitioning of pmem is not supported in this patch set but
-          has been discussed and this design should suffice.
-    5) Read/Write functions have been updated to access AddressSpaces
-       according to the mapping described in #4.  Access to the
-       persistent address space is calculated by (dpa-vmem_len)
-    6) cxl-mailbox has been updated to report the respective size of
-       volatile and persistent memory regions
-
-Gregory Price (2):
-  tests/qtest/cxl-test: whitespace, line ending cleanup
-  hw/cxl: Multi-Region CXL Type-3 Devices (Volatile and Persistent)
-
- docs/system/devices/cxl.rst    |  49 ++++--
- hw/cxl/cxl-mailbox-utils.c     |  26 +--
- hw/mem/cxl_type3.c             | 300 +++++++++++++++++++++++++--------
- include/hw/cxl/cxl_device.h    |  11 +-
- tests/qtest/bios-tables-test.c |   8 +-
- tests/qtest/cxl-test.c         | 146 +++++++++++-----
- 6 files changed, 398 insertions(+), 142 deletions(-)
-
--- 
-2.37.2
-
-
-
-From git@z Thu Jan  1 00:00:00 1970
+From mboxrd@z Thu Jan  1 00:00:00 1970
 Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
@@ -2437,437 +3301,163 @@ _4t3d);
 >=20
 > =
 
-
-From git@z Thu Jan  1 00:00:00 1970
+From mboxrd@z Thu Jan  1 00:00:00 1970
 Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE277C38142
-	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:39:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 169C5C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 17 Feb 2023 16:38:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230098AbjAaQjY (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 31 Jan 2023 11:39:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49894 "EHLO
+        id S229999AbjBQQiN (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 17 Feb 2023 11:38:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229895AbjAaQjX (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:39:23 -0500
+        with ESMTP id S229744AbjBQQiM (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 17 Feb 2023 11:38:12 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4989811648
-        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:39:22 -0800 (PST)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4P5rJX2NfQz6J65D;
-        Wed,  1 Feb 2023 00:35:40 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.34; Tue, 31 Jan 2023 16:39:15 +0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1F8410D2
+        for <linux-cxl@vger.kernel.org>; Fri, 17 Feb 2023 08:38:04 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PJGyz6g9fz6J7R6;
+        Sat, 18 Feb 2023 00:11:39 +0800 (CST)
+Received: from localhost (10.122.247.231) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.17; Fri, 17 Feb
+ 2023 16:16:18 +0000
+Date: Fri, 17 Feb 2023 16:16:17 +0000
 From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <qemu-devel@nongnu.org>, Michael Tsirkin <mst@redhat.com>
-CC: Ben Widawsky <bwidawsk@kernel.org>, <linux-cxl@vger.kernel.org>,
-        <linuxarm@huawei.com>, Ira Weiny <ira.weiny@intel.com>,
+To: Jonathan Cameron via <qemu-devel@nongnu.org>
+CC: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Michael Tsirkin <mst@redhat.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
         Gregory Price <gourry.memverge@gmail.com>,
-        =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+        Philippe =?ISO-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
         Mike Maslenkin <mike.maslenkin@gmail.com>
-Subject: [PATCH 1/2] tests/qtest/cxl-test: whitespace, line ending cleanup
-Date: Tue, 31 Jan 2023 16:38:46 +0000
-Message-ID: <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.37.2
-In-Reply-To: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230217161617.000064d1@huawei.com>
+In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
 References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
+        <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
+Organization: Huawei Technologies R&D (UK) Ltd.
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; x86_64-w64-mingw32)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
 
-From: Gregory Price <gourry.memverge@gmail.com>
+On Tue, 31 Jan 2023 16:38:47 +0000
+Jonathan Cameron via <qemu-devel@nongnu.org> wrote:
 
-Defines are starting to exceed line length limits, align them for
-cleanliness before making modifications.
-
-Signed-off-by: Gregory Price <gregory.price@memverge.com>
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
-Changes since RFC v4:
-  Naming consistency improvements.
- 
- tests/qtest/cxl-test.c | 84 +++++++++++++++++++++++-------------------
- 1 file changed, 46 insertions(+), 38 deletions(-)
-
-diff --git a/tests/qtest/cxl-test.c b/tests/qtest/cxl-test.c
-index 61f25a72b6..eda2bbbbe6 100644
---- a/tests/qtest/cxl-test.c
-+++ b/tests/qtest/cxl-test.c
-@@ -8,50 +8,58 @@
- #include "qemu/osdep.h"
- #include "libqtest-single.h"
- 
--#define QEMU_PXB_CMD "-machine q35,cxl=on " \
--                     "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 "  \
--                     "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=4G "
-+#define QEMU_PXB_CMD \
-+    "-machine q35,cxl=on " \
-+    "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 " \
-+    "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=4G "
- 
--#define QEMU_2PXB_CMD "-machine q35,cxl=on "                            \
--                      "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 "  \
--                      "-device pxb-cxl,id=cxl.1,bus=pcie.0,bus_nr=53 " \
--                      "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.targets.1=cxl.1,cxl-fmw.0.size=4G "
-+#define QEMU_2PXB_CMD \
-+    "-machine q35,cxl=on " \
-+    "-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 " \
-+    "-device pxb-cxl,id=cxl.1,bus=pcie.0,bus_nr=53 " \
-+    "-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.targets.1=cxl.1,cxl-fmw.0.size=4G "
- 
--#define QEMU_RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 "
-+#define QEMU_RP \
-+    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 "
- 
- /* Dual ports on first pxb */
--#define QEMU_2RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
--                 "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 "
-+#define QEMU_2RP \
-+    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
-+    "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 "
- 
- /* Dual ports on each of the pxb instances */
--#define QEMU_4RP "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
--                 "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 " \
--                 "-device cxl-rp,id=rp2,bus=cxl.1,chassis=0,slot=2 " \
--                 "-device cxl-rp,id=rp3,bus=cxl.1,chassis=0,slot=3 "
--
--#define QEMU_T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
--                 "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
--                 "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 "
--
--#define QEMU_2T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M "    \
--                  "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
--                  "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
--                  "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M "    \
--                  "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M "    \
--                  "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 "
--
--#define QEMU_4T3D "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
--                  "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M "    \
--                  "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
--                  "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M "    \
--                  "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M "    \
--                  "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 " \
--                  "-object memory-backend-file,id=cxl-mem2,mem-path=%s,size=256M "    \
--                  "-object memory-backend-file,id=lsa2,mem-path=%s,size=256M "    \
--                  "-device cxl-type3,bus=rp2,memdev=cxl-mem2,lsa=lsa2,id=cxl-pmem2 " \
--                  "-object memory-backend-file,id=cxl-mem3,mem-path=%s,size=256M "    \
--                  "-object memory-backend-file,id=lsa3,mem-path=%s,size=256M "    \
--                  "-device cxl-type3,bus=rp3,memdev=cxl-mem3,lsa=lsa3,id=cxl-pmem3 "
-+#define QEMU_4RP \
-+    "-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,slot=0 " \
-+    "-device cxl-rp,id=rp1,bus=cxl.0,chassis=0,slot=1 " \
-+    "-device cxl-rp,id=rp2,bus=cxl.1,chassis=0,slot=2 " \
-+    "-device cxl-rp,id=rp3,bus=cxl.1,chassis=0,slot=3 "
-+
-+#define QEMU_T3D \
-+    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
-+    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
-+    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 "
-+
-+#define QEMU_2T3D \
-+    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
-+    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
-+    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
-+    "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M " \
-+    "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M " \
-+    "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 "
-+
-+#define QEMU_4T3D \
-+    "-object memory-backend-file,id=cxl-mem0,mem-path=%s,size=256M " \
-+    "-object memory-backend-file,id=lsa0,mem-path=%s,size=256M " \
-+    "-device cxl-type3,bus=rp0,memdev=cxl-mem0,lsa=lsa0,id=cxl-pmem0 " \
-+    "-object memory-backend-file,id=cxl-mem1,mem-path=%s,size=256M " \
-+    "-object memory-backend-file,id=lsa1,mem-path=%s,size=256M " \
-+    "-device cxl-type3,bus=rp1,memdev=cxl-mem1,lsa=lsa1,id=cxl-pmem1 " \
-+    "-object memory-backend-file,id=cxl-mem2,mem-path=%s,size=256M " \
-+    "-object memory-backend-file,id=lsa2,mem-path=%s,size=256M " \
-+    "-device cxl-type3,bus=rp2,memdev=cxl-mem2,lsa=lsa2,id=cxl-pmem2 " \
-+    "-object memory-backend-file,id=cxl-mem3,mem-path=%s,size=256M " \
-+    "-object memory-backend-file,id=lsa3,mem-path=%s,size=256M " \
-+    "-device cxl-type3,bus=rp3,memdev=cxl-mem3,lsa=lsa3,id=cxl-pmem3 "
- 
- static void cxl_basic_hb(void)
- {
--- 
-2.37.2
-
-
-
-From git@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E340C636CC
-	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 16:48:23 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229973AbjAaQsW (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 31 Jan 2023 11:48:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57164 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230094AbjAaQsV (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 11:48:21 -0500
-Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2079.outbound.protection.outlook.com [40.107.244.79])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C89337683
-        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 08:48:20 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=k28iJmj0ejT30OMixRSwbvvIGQXQFXh4bxkul9Z/MJrMZ84rL4TqE0f5O7k4CU1f1WCNk/VCtxIsB3X2VFWmhiuKdwK897ShuYXlxG0Xli7k7OEDWlhE/G4/gqj9v8gxlwogl8XlX45j+g+N0JudIGaU1aB5lOuOY6HYbIVbsdHOQov9/hBuVvcUpRyh18VM7sSzhLilcVoIQ/e6GOCPHLKNpTGrCyYFHzKQ0KyJ2kbX0I2vPZPrUSZD3n240/eJ2VDAXw2LoqtSb5lku3WfibNhO8RXOrCXYMSk543BdO32Cr7wy5mAV9keXyQ8JIsxjeFaUvA+9yEe8l6rYe1H4g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0dDhpAILtiplXQkjXVYHBWJhpT411w7kwr985u3k6Mc=;
- b=Ly7d7lWnIBoD0pbPWxCk7F/WHPNy9YJVuZQNeafqUMQzZ8oXuAieotJapLJhotWyWngEuGiUO/Bx2xSujvhvM/Z/MbESlsQZLxzk3HvDFwUqwRYVLKp7wYulM+HewC16qHReEWjLO7CwwhZH9h43zGuxerxpMfiB59ddgSzrm7jTAZcAHQQRUuKQAelifebnPqTNGGUVAaJMq8msAO2mnB8na9OHVgx5Xlhx0G0iJTFhDKkanqtm4bhIMaApa0zl5eqBfwWPNgfOWS4lmbOueT7qhC4+GU/kykiTEjSvtpwpcRXE/cw3j3radzv7kWB7QmRrT92vI+lMU9KHQs8f/A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
- dkim=pass header.d=memverge.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0dDhpAILtiplXQkjXVYHBWJhpT411w7kwr985u3k6Mc=;
- b=LITMXRY4TBqkIJSEi4goFd6POI8EMFLqnQB+/xTHuTXPjJxPbQJzUy9HeHF64+EGPMDeeEWvPUB33P0ZUSpyDgrv8r8mO9vK1tZnjsmCTxnOhXBk1iNij4cIy99KpWKUfeIjz30D3HTXdhJ/X6ZzIwvYbuWeeVHzV4OlogVnAU8=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=memverge.com;
-Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
- by PH0PR17MB5567.namprd17.prod.outlook.com (2603:10b6:510:b8::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6043.38; Tue, 31 Jan
- 2023 16:48:14 +0000
-Received: from BN6PR17MB3121.namprd17.prod.outlook.com
- ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
- ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.6043.028; Tue, 31 Jan 2023
- 16:48:14 +0000
-Date: Tue, 31 Jan 2023 11:08:47 -0500
-From: Gregory Price <gregory.price@memverge.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
-        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
-        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
-        Gregory Price <gourry.memverge@gmail.com>,
-        Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
-        Mike Maslenkin <mike.maslenkin@gmail.com>
-Subject: Re: [PATCH 1/2] tests/qtest/cxl-test: whitespace, line ending cleanup
-Message-ID: <Y9k9D1y1gT4jZ0Zx@memverge.com>
-References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
- <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230131163847.23025-2-Jonathan.Cameron@huawei.com>
-X-ClientProxiedBy: YT4PR01CA0356.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:fc::21) To BN6PR17MB3121.namprd17.prod.outlook.com
- (2603:10b6:405:7c::19)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|PH0PR17MB5567:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6ff86ade-bec6-4bb8-90a0-08db03aaf20b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: KxuLrhXasLwsfphwDV3qJRFX1l9lxonDiZqhZFcQ25ajXS+DaWHKvquRLRlLoBUJVynNMVFys3+p+3eoKfhJDUmiMqffY5xoGnsqN4Q2yTtmCMx/+NMNGrEFQkhT7JaJhoCvimZbSe2S6Rt3Cw7cqmv2laovR5dhz8qilLXkPBV+mNOg3/vB258GG3LUoPXLCfJVOKrf9i3igQwpcU0mLGyaiznbEPF5xLgMGonqmyBPUOvliG2Qk9BByi0rBKUoJAKyppIRn/nS+/wUL4SMJZLVp4nl0q+b+ZYq6yUd+b16uM4qo9x48b4LHlX+C32UBb1lEnyPRKFL4BuAxsshKN5hTXTQIfOBplgZ7PkuDvsR6WvbDbvtaD3ahpN/X2qUTKATqdXrb5EZ+FjOwjLcugg2aGAG8Lbt6nEKwrvLQHJi0kyclccfSetpjOnSpbMC048XuhZzDSPowbu0FSS6Rk/8944YJW57nhjTRYLTf19JWEA8i0d23HGzDhX55SsIZeESis3xPdjbpcm1CuWPoZlYjw1WgpjmGFDUguLmkWf/vycFfwOHHc2XUgwObUNMDZ+Do8Ptted/HaH1l+4fMmFJcsJFhfnqDmsY8TZ1/8OxnFlF8IvW6RQ+RLXvzutKpUENXk75tYtCmxPINivxkA==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(39840400004)(396003)(136003)(346002)(376002)(366004)(451199018)(8676002)(4326008)(66556008)(66476007)(66946007)(6916009)(54906003)(316002)(2906002)(8936002)(41300700001)(5660300002)(44832011)(7416002)(4744005)(38100700002)(6506007)(6666004)(83380400001)(36756003)(2616005)(186003)(6512007)(26005)(6486002)(478600001)(86362001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?lvUNGL8/Iki+l2hDNAgxpVYD0lyOwWmNcvw6fAj1NaFEBQ6IqsEovDThwJkj?=
- =?us-ascii?Q?IqbgXOT1la3Mey1ilEun0Q14wHkMfEXnWsfMVwMxJylZS/D8yaq3BWEGCPC6?=
- =?us-ascii?Q?vlVb1shm26PGnLHNkFe6uQpIn9uZraaD5HY+vXE6lzUqNdhitu1N9eynNzLV?=
- =?us-ascii?Q?nPJiXiR39Ud7t3tMeS9wY37MgbeQ04pFeeVUdHgiMDmXPqGkNQbdPlouvUe6?=
- =?us-ascii?Q?EDP/NvNSM0agyCHzAXxlGxZSRHu/cTYXU7HXFTAzfnorlykHSHfvLfKmnmYw?=
- =?us-ascii?Q?BsV92raearQDIaRPCwa37aPuJh2KlUve4aD3KNcbdgCn5SqoCQVZSqwLGH3k?=
- =?us-ascii?Q?ZULvWwFhJVqdZejmd3K88ab9vwrKHVJg64OjgMqF336rXpnemNI3HTBLXbUL?=
- =?us-ascii?Q?MMU+xMFa9ZW54xV5vRRu6T5ZTWnW/dcZnJEOamO7hu3x2KM72Ja27g4qmonB?=
- =?us-ascii?Q?7BBJz39qmqyM4RW4rcLCMtf1juO/qEY/vtlG3sA8Ss8OerJHQ/plTUw0FFa0?=
- =?us-ascii?Q?/XLIWhWgar1xg2LEZVHY1/O4Vhd7FTyHAt1jo2XQQKkZvq3eg5aQoObDGtAD?=
- =?us-ascii?Q?FO9wOlSgdtR9i6rdxncvvebQ8HI468xeKaTGLvZ/fUyBH1Z+wo7PzFBFg+OS?=
- =?us-ascii?Q?RDddQ6+1A32DdK+TA3cj8+hnOmqveJEraqfKXiT7qxHkZETSkVl5/OKrLttS?=
- =?us-ascii?Q?0EAIMm6vt72yEtBfctIrAIiChHlFk4NrpkZKdC4wgis/EizugHsY24ShIR9t?=
- =?us-ascii?Q?pmSeKWG8kJLzw/Uw9PrPXhwC+/Vn6/KanT01iC3pzDysgbpAkSBvwFbonqyD?=
- =?us-ascii?Q?INaUskEbKEAUr8GKh1WRmKWaPNpzQKsNKVOtJGea2JPj/uY5DeNR27h3bZOZ?=
- =?us-ascii?Q?IsbC5e2PGiz2Y45KllJLfdaGRJWJxo0cMwL0H12hgaYp1f6HvGOcvTDSrP0F?=
- =?us-ascii?Q?Mi+yAvhJflrD+ZQBG+eIhed23S2lQJ1Itdyj89CkpeIk0fnz8ZK9HVw+QKaT?=
- =?us-ascii?Q?zh6tWOe3sILTPo3JIjhTHmmOQ2FdD8T1tiCGUv/2866bJCFnKL1OEdNAmnvV?=
- =?us-ascii?Q?z25o/LyD/lRu+37dukGexGYLDOvSrvd3WR8fjz0Ep8I0TAtr6IkePHxG75lW?=
- =?us-ascii?Q?HPo3Egw9NMLXqNg+VTHYPKd9Ebxkiex28OMqliM0g3GHzfyx2sl2c4ZkgZF5?=
- =?us-ascii?Q?dcqXtNTZv1/t2EevVGU6lOTuQnPwXK5WQ7jl9IeBFwqX5aojtSq2ZeiFeJLS?=
- =?us-ascii?Q?A6gm3kJ+l3zqDh6IRZpgZcFTGIfzR72lRF8ukYDggPLgbbeum+GE2fl8YFlD?=
- =?us-ascii?Q?6dmc2c+lix05z1hBAKTCvCRPHRiYsa+KSRNL6vQAF+vMi241s7vqCEGz8Q8b?=
- =?us-ascii?Q?/dftT4+0LVKJN1Sd5ed7ckMGAh+jOV/d4DsOUPP32sBqK9V9BigFX78DpdSJ?=
- =?us-ascii?Q?HkYLeZv6nFa7OHEgIynK7f32vJz1M+iY5zBBUsqCkedMqFYwxFb5hvl9Dc/v?=
- =?us-ascii?Q?9LVENI70Mg4agl23MDxg7vtvxy9IcYjGTBJ6rqbk7etxgewQpxbBJ5LsbKBO?=
- =?us-ascii?Q?KF0EFyVeowEG2ooVTAK3uC/j4EBzRYuSgqERUBLWLkixwKL4biT5yBGnBWt9?=
- =?us-ascii?Q?Yg=3D=3D?=
-X-OriginatorOrg: memverge.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6ff86ade-bec6-4bb8-90a0-08db03aaf20b
-X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Jan 2023 16:48:14.4318
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: EBiaWZz5WMDQadOVw0BRfpMmdPCCcf8G8oNPtXZfxvlYctlbwbQs6cdexrd8jixR3lWCrv9pww8wZS1lVjslEX8LBDYhF/60R1P9CjovcUA=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR17MB5567
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Tue, Jan 31, 2023 at 04:38:46PM +0000, Jonathan Cameron wrote:
 > From: Gregory Price <gourry.memverge@gmail.com>
 > 
-> Defines are starting to exceed line length limits, align them for
-> cleanliness before making modifications.
+> This commit enables each CXL Type-3 device to contain one volatile
+> memory region and one persistent region.
+> 
+> Two new properties have been added to cxl-type3 device initialization:
+>     [volatile-memdev] and [persistent-memdev]
+> 
+> The existing [memdev] property has been deprecated and will default the
+> memory region to a persistent memory region (although a user may assign
+> the region to a ram or file backed region). It cannot be used in
+> combination with the new [persistent-memdev] property.
+> 
+> Partitioning volatile memory from persistent memory is not yet supported.
+> 
+> Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
+> at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
 > 
 > Signed-off-by: Gregory Price <gregory.price@memverge.com>
 > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> ---
-> Changes since RFC v4:
->   Naming consistency improvements.
->  
->  tests/qtest/cxl-test.c | 84 +++++++++++++++++++++++-------------------
->  1 file changed, 46 insertions(+), 38 deletions(-)
 > 
-> // ... snip ...
->
+Hi Gregory,
 
-changes lgtm
+I've added support for multiple HDM decoders and hence can now
+test both volatile and non volatile on same device.
+It very nearly all works. With one exception which is I couldn't
+poke the first byte of the non volatile region.
 
+I think we have an off by one in a single check.
 
-From git@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A2AFC61DA4
-	for <linux-cxl@archiver.kernel.org>; Tue, 14 Feb 2023 18:49:59 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229808AbjBNSt6 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 14 Feb 2023 13:49:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44294 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233041AbjBNStg (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 14 Feb 2023 13:49:36 -0500
-Received: from bee.birch.relay.mailchannels.net (bee.birch.relay.mailchannels.net [23.83.209.14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFFF8BBBC
-        for <linux-cxl@vger.kernel.org>; Tue, 14 Feb 2023 10:49:33 -0800 (PST)
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-Received: from relay.mailchannels.net (localhost [127.0.0.1])
-        by relay.mailchannels.net (Postfix) with ESMTP id 164278821C1;
-        Tue, 14 Feb 2023 18:43:36 +0000 (UTC)
-Received: from pdx1-sub0-mail-a221.dreamhost.com (unknown [127.0.0.6])
-        (Authenticated sender: dreamhost)
-        by relay.mailchannels.net (Postfix) with ESMTPA id 7333D8821E9;
-        Tue, 14 Feb 2023 18:43:35 +0000 (UTC)
-ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1676400215; a=rsa-sha256;
-        cv=none;
-        b=Y3yLXv0lddZ6sMNH/xFgh3EzlHduM//JnfIreN4gV9MMIoQHcX7NEu5DffM//LU/7izm7z
-        2Zopn9V5zEXZONbzFlNfpoWF15mMTH50H6H+C1wzGKHjQW5EpH4rVB209ANFfaTXGJFat7
-        BIGd/qMOhG9FknV1ayWd+ABgIzYl06UykM4lUyhTnfhL2I8dVzW+h95mcT87W/G6Az4iVJ
-        Bm6zZPElcxl2AvfJmpITTOL+pbBvEpUmno1CHyy+GAhrZKbd96hSQb4xCczx/q4ISJnD/E
-        T/1ZN4DBQ5Epg9MWfpHtfYNoRYRuEvD2cvjw3D1d8O2H9A5kWRqrGCUjGsdFIw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=mailchannels.net;
-        s=arc-2022; t=1676400215;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references:dkim-signature;
-        bh=iQjhFESGKASNO0O7sxGSRCOcjSv2sTTqAFVvYDWmzZw=;
-        b=I8cIeyCJG4Shd2KxBok4OAVY7/0tFtBR6CTf8WlQGz4ekyrjbtZLvme9B9sntcWHgxd7Aa
-        vMwJnYFZcNCfbaQjPGC/sVtrUPiGTn1h0fXrLE4vUkOG4Qg2IUI1U8yn79DZJmf8N2GYxo
-        ywFfCVYW2DUH3LmWwxclNx1QuSgVbrWTy2YnQ6R8XncNAyTcIw3hfHYqkQH/NXyDH9GfkD
-        nM5FNBpxQUAsxsrKgXZPWe57ItYMAe8n5Z5bmXPQU0JKuR7I1ZB7icWBKcKFgD1EWpICnj
-        g20qmLW0N+d11SDcEl08KfwlxAa7Tovx8nO7DvT1sSh5NYOFtDz4K9VKpLu20g==
-ARC-Authentication-Results: i=1;
-        rspamd-b9c55767f-626p9;
-        auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-X-MC-Relay: Neutral
-X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
-X-MailChannels-Auth-Id: dreamhost
-X-Industry-Trade: 62a9de3c7b2a63ab_1676400215832_514669986
-X-MC-Loop-Signature: 1676400215832:1443824501
-X-MC-Ingress-Time: 1676400215832
-Received: from pdx1-sub0-mail-a221.dreamhost.com (pop.dreamhost.com
- [64.90.62.162])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
-        by 100.126.30.37 (trex/6.7.1);
-        Tue, 14 Feb 2023 18:43:35 +0000
-Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: dave@stgolabs.net)
-        by pdx1-sub0-mail-a221.dreamhost.com (Postfix) with ESMTPSA id 4PGVTf0vrqz9d;
-        Tue, 14 Feb 2023 10:43:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
-        s=dreamhost; t=1676400215;
-        bh=iQjhFESGKASNO0O7sxGSRCOcjSv2sTTqAFVvYDWmzZw=;
-        h=Date:From:To:Cc:Subject:Content-Type;
-        b=EDDH6di4kwthAfEiKhr9dLe5O/NqvfWnvufFlOeOISOtylMimQkevyq+z5m58w8BJ
-         z0dgfe8gmMKmbV9wuBn6p7LgVyL/9WUJaYgrcdwA7fGu6Qr93bzl5oeONncsuCGQ14
-         OZGXhSMvSZ/U5gIyEwWjUdOHhwalYgMZaAOvgw8YeEeK2e58fRPo/GBdEiEC7cPQJW
-         19YLDhWIFgzHqRFQgrJI55HjqbNUlOK470gN0JX6KoRiehfJEaMwYEsab/ofsGSOmJ
-         gNFvS6VKrfeZkiL2Ux9MbSEzLNMa4Q3w+ax+sx7WJNLkQl3SbvFzDr1sFV4SapqgBP
-         NHhF7iDjsBH2g==
-Date: Tue, 14 Feb 2023 10:15:40 -0800
-From: Davidlohr Bueso <dave@stgolabs.net>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
-        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
-        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
-        Gregory Price <gourry.memverge@gmail.com>,
-        Philippe =?utf-8?B?TWF0aGlldS1EYXVkw6/Cv8K9?= <philmd@linaro.org>,
-        Mike Maslenkin <mike.maslenkin@gmail.com>
-Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
- and Persistent)
-Message-ID: <20230214181540.6yurhcasg3sezh3e@offworld>
-References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
- <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
-User-Agent: NeoMutt/20220429
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+Interestingly it makes no difference when creating an FS on top
+(which was my standard test) so I only noticed when poking memory
+addresses directly to sanity check the HDM decoder setup.
 
-On Tue, 31 Jan 2023, Jonathan Cameron wrote:
+I'll roll a v2 if no one shouts out that I'm wrong.
 
->From: Gregory Price <gourry.memverge@gmail.com>
->
->This commit enables each CXL Type-3 device to contain one volatile
->memory region and one persistent region.
->
->Two new properties have been added to cxl-type3 device initialization:
->    [volatile-memdev] and [persistent-memdev]
->
->The existing [memdev] property has been deprecated and will default the
->memory region to a persistent memory region (although a user may assign
->the region to a ram or file backed region). It cannot be used in
->combination with the new [persistent-memdev] property.
->
->Partitioning volatile memory from persistent memory is not yet supported.
->
->Volatile memory is mapped at DPA(0x0), while Persistent memory is mapped
->at DPA(vmem->size), per CXL Spec 8.2.9.8.2.0 - Get Partition Info.
->
->Signed-off-by: Gregory Price <gregory.price@memverge.com>
->Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Note that adding multiple HDM decoders massively increases
+the number of test cases over what we had before to poke all the
+corners so I may well be missing stuff.  Hopefully can send an RFC
+of that support out next week.
 
-Reviewed-by: Davidlohr Bueso <dave@stgolabs.net>
+Jonathan
 
+> -MemTxResult cxl_type3_read(PCIDevice *d, hwaddr host_addr, uint64_t *data,
+> -                           unsigned size, MemTxAttrs attrs)
+> +static int cxl_type3_hpa_to_as_and_dpa(CXLType3Dev *ct3d,
+> +                                       hwaddr host_addr,
+> +                                       unsigned int size,
+> +                                       AddressSpace **as,
+> +                                       uint64_t *dpa_offset)
+>  {
+> -    CXLType3Dev *ct3d = CXL_TYPE3(d);
+> -    uint64_t dpa_offset;
+> -    MemoryRegion *mr;
+> +    MemoryRegion *vmr = NULL, *pmr = NULL;
+>  
+> -    /* TODO support volatile region */
+> -    mr = host_memory_backend_get_memory(ct3d->hostmem);
+> -    if (!mr) {
+> -        return MEMTX_ERROR;
+> +    if (ct3d->hostvmem) {
+> +        vmr = host_memory_backend_get_memory(ct3d->hostvmem);
+> +    }
+> +    if (ct3d->hostpmem) {
+> +        pmr = host_memory_backend_get_memory(ct3d->hostpmem);
+>      }
+>  
+> -    if (!cxl_type3_dpa(ct3d, host_addr, &dpa_offset)) {
+> -        return MEMTX_ERROR;
+> +    if (!vmr && !pmr) {
+> +        return -ENODEV;
+> +    }
+> +
+> +    if (!cxl_type3_dpa(ct3d, host_addr, dpa_offset)) {
+> +        return -EINVAL;
+> +    }
+> +
+> +    if (*dpa_offset > int128_get64(ct3d->cxl_dstate.mem_size)) {
+> +        return -EINVAL;
+> +    }
+> +
+> +    if (vmr) {
+> +        if (*dpa_offset <= int128_get64(vmr->size)) {
 
-From git@z Thu Jan  1 00:00:00 1970
+Off by one I think.  < 
+
+> +            *as = &ct3d->hostvmem_as;
+> +        } else {
+> +            *as = &ct3d->hostpmem_as;
+> +            *dpa_offset -= vmr->size;
+> +        }
+> +    } else {
+> +        *as = &ct3d->hostpmem_as;
+>      }
+>  
+> -    if (dpa_offset > int128_get64(mr->size)) {
+> +    return 0;
+> +}
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
 Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
@@ -3062,134 +3652,4 @@ If that corner case is being hit, doesn't it imply the higher level code
 is also susceptible to this, and is routing accesses to the wrong device?
 
 ~Gregory
-
-
-From git@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EC15C38142
-	for <linux-cxl@archiver.kernel.org>; Tue, 31 Jan 2023 17:04:12 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230007AbjAaREL (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 31 Jan 2023 12:04:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40088 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230273AbjAaREK (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 31 Jan 2023 12:04:10 -0500
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2047.outbound.protection.outlook.com [40.107.223.47])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0924916AE4
-        for <linux-cxl@vger.kernel.org>; Tue, 31 Jan 2023 09:04:10 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=EYBYcTYGXb3JTRWAHIbilEqm9NsZQf8Ypju9fMIzClAQCYrQKqTHflMIyjKU863ahJR+fOy0/vvYZlnNkdZq8MVVLPHhmNG4WNgAfiQa5275BGzhOH27NoufyjAZc6nmbbVI263YMgLoNtuB6bUIj79XcN8iaA0RYB3V8OJwkS1R/h106yiVHQUS/sAfc8oGffr+zIIE3DBJrWLnyPcMaafKkP8PVck3ncGlfmz7i2vdnNp8mz2XKJrjJtugK/ruHy5Ae5UFApXCrmmaDQIe7vARZO3AJHYhadVUvb0hp2UthGyNbYjShKHdX3MteX748gIqIewMXTih7lfn7Bmjkw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=zGJ0zIF6e3SgC7hV323cZ3YeSXRu1fvM29xzppHE1TA=;
- b=EnGWxzScN5TOcBju9FHn8v+jG30508Kuh2HBu+kElPgJUsvgsgW/IEyNtNZj/epMuoYGVltH3PMYYjKRrdnW5zU7W/72FaO6nVNC1UBQ+xzSWoNzsOeBH9XaXFvStIeA7LA2gCaUwgfsNBsF3ZUHs1+CyMiUBADp+zmHYN2oxvqPTlr1LsPM76fn91WwI0rd40sriWjt8DBCKciu6mup4gFcyocWBefJ0xNtNbmx42EZxaCnxBQCy0TF0Rzd4HXgwVMtWq6An/10WnB4SlW/Sa+Qaz6imLV1bLhWHp8/N343JG9eq99k9TCa9+9rTTPZCOxkG/vh9HfeRy9WHBWAlw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
- dkim=pass header.d=memverge.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=zGJ0zIF6e3SgC7hV323cZ3YeSXRu1fvM29xzppHE1TA=;
- b=Pom13VA7oeAWER9DWSK0rDibACUi/QKZncwaOwKFUzcAYaeELSW1IurIScIT8evBCYXvg/HVpExBhO9L7gDrmZ5GB6Wf2VDrrXGb8xT/YZugmFbMRh1CHaqRa/+LtFqKwbdTvCvGdl6h0LIqhemvXJ13PMiyUFfhi5ddPTsBwfA=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=memverge.com;
-Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
- by SA1PR17MB5190.namprd17.prod.outlook.com (2603:10b6:806:1e1::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6043.38; Tue, 31 Jan
- 2023 17:04:07 +0000
-Received: from BN6PR17MB3121.namprd17.prod.outlook.com
- ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
- ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.6043.028; Tue, 31 Jan 2023
- 17:04:07 +0000
-Date: Tue, 31 Jan 2023 11:25:55 -0500
-From: Gregory Price <gregory.price@memverge.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: qemu-devel@nongnu.org, Michael Tsirkin <mst@redhat.com>,
-        Ben Widawsky <bwidawsk@kernel.org>, linux-cxl@vger.kernel.org,
-        linuxarm@huawei.com, Ira Weiny <ira.weiny@intel.com>,
-        Gregory Price <gourry.memverge@gmail.com>,
-        Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
-        Mike Maslenkin <mike.maslenkin@gmail.com>
-Subject: Re: [PATCH 2/2] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
- and Persistent)
-Message-ID: <Y9lBE3dpmFGBeOxF@memverge.com>
-References: <20230131163847.23025-1-Jonathan.Cameron@huawei.com>
- <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230131163847.23025-3-Jonathan.Cameron@huawei.com>
-X-ClientProxiedBy: YT4P288CA0011.CANP288.PROD.OUTLOOK.COM
- (2603:10b6:b01:d4::22) To BN6PR17MB3121.namprd17.prod.outlook.com
- (2603:10b6:405:7c::19)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|SA1PR17MB5190:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7fb10880-26c3-4d20-ba2b-08db03ad2a31
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: Bg3r3YhfkeLLhhMdkCix4HgRedYZ5fIvhN8JXfruo1nkuxWjfZw+v6u3U9obYb8cM5tajZO1IzMmorFF8y67U4mV3Ep8ZgeFkOgJOjidO/fDtyl0UpCj5SH66290ZkXHQm9/6IfYLNKyU4f9AO+dcjvBycX4YLi5v6QKifNTgHD7DoSqgOsimQ3PnxfAqXfcrucazduoNdQ9jmGJjvoQ12Grhk+LpG5iG7qP553RuMCu3++kUY3dOt23YS0WpdztQHY7etieA+LjEkGrO1qnjYV71/Uy8KJ2KGTL8qGdBVd3DZewVcWmqVjhHhb6If59Q+EehIzvTR0/2OnqsDSInZAbzO2RXelkKJs2XkONs3DfQtdMpA2w7xDpBRxOXprQhKTnC1WYq0zEU5tmGWDx+8Ysx6r8pdmgd+KBc54HSYJfzTvnjpMbojGPbickjMY2Vc1kmZ+DQ4XjwM58cLltkcHzJPwnl7UQkzNJ7GihHli7C8Y8KItVbUPAVh7VDMVGfCmDoLDemEP9Mnnj1Ux/TxvxiTHUBK3MwtLYZVcO1V05ONwq6McyrenozXlcz0sCfE1/eFnwZBHUPgq0GPM0gY1Z130eB/PLzZpkvBUzVTtvPso1vkIHCsYjIpLlwH6peD0D7n9Jj6ArUbYY1Mt5Dg==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(366004)(346002)(396003)(376002)(39840400004)(136003)(451199018)(6666004)(6512007)(41300700001)(2616005)(6486002)(26005)(6506007)(478600001)(186003)(66476007)(54906003)(316002)(6916009)(8676002)(38100700002)(66946007)(4326008)(66556008)(8936002)(2906002)(36756003)(5660300002)(86362001)(44832011)(7416002)(4744005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?atrlQZ/H6q+/x/VBG4fNr5aohWwwrFNIUFWomG2HRmRKV050+ASsJ+4j4Ytl?=
- =?us-ascii?Q?4vbpmnNS/B1M+xP1Oit7hLdMLLg3a0jjzAGk93VoL1AxkKtc7DEiDHSmOiX9?=
- =?us-ascii?Q?/rtP3sApZcyI1Vb3iRh7P+u1P1fsDpLY7JtaBwROnlMnJ03EBpX9u5JJalkI?=
- =?us-ascii?Q?5u6kySSPESGuty5PVVqKrSTPNydkQFQEDtE9Bv0MmiQCWqi9cZQ/YCmnhPHZ?=
- =?us-ascii?Q?XUzM7UFV1IIlIXRKc1IsVy/I3oC9F0H1tdfEbrfT2S1uMeSwsSjd7h8wmuS0?=
- =?us-ascii?Q?LayZvui/0FSRx0XZFEq07+VBlQvyhncLAMMQQzpyB0IzFAKNR2ycTGqDJlgs?=
- =?us-ascii?Q?hLc+qqmKqLjRtpoWXjF8cV2qdDPdea7IQZ9JqmnRAqy2I+wR5BePDH7Vprfq?=
- =?us-ascii?Q?xBM3Y6XHyhkN27f7AhkQQ8zRZf+iqznJV9Iv/X/flQQzNls5vq0qa8Q40ZMo?=
- =?us-ascii?Q?Lxti+QWafF+H3Q74FNPUc+an6O06+32VeMzJBnyR5pIfSsPOi2GYPicIF62O?=
- =?us-ascii?Q?GuLzBkPUJGbKcgYzu/Ir8BY/eYLV/arQtBG2HlzF4Xb6qsP9rw+TCerzd61H?=
- =?us-ascii?Q?qqeUp2gOIVmefLfXcK/+zmPgQCvM+Q8BtdXZYtZ8gNIkCZQxk9WMkebj9XYF?=
- =?us-ascii?Q?a7o3UUZAVl5lablcYU7W9ljgwf+1psRVO9+ZJj9QlPq4XFLoQSoQyjjOJu73?=
- =?us-ascii?Q?Y144KwDHS0xVqpBA5DBhjCOuThzh05oSwh6qA5IrBv1TBIwFvxdOEan95Dfy?=
- =?us-ascii?Q?idZKj/OZcaOqRPlQXdY1swJsR0jDsSMnSXNQ0rW7YqwPMQExxOzkQHPTLSzt?=
- =?us-ascii?Q?pXKFVj+FLCfuCvzFibSR4AwDS7w5Hiqg/8WC/tydxjOStUFtUwKWECHjOOxd?=
- =?us-ascii?Q?rlJpWfcefYK2fTvTygVgK6ADamLn320KZac+ayP+gZsa5iAq3LPqhb2qXxMl?=
- =?us-ascii?Q?7ejmR0j4bZK84QEZBq8xLIpQHYP460j4mL7PWiSWzjmuh4vJ2ib8CSSWKiIb?=
- =?us-ascii?Q?XOrcUiZq384agy+UDTy9A4tmUl2NCYiKpHd8uyx2haZlX2DZcBll0sI3kYZ/?=
- =?us-ascii?Q?0DRvpcAHoUOsx7HWnjqI1X0JCy8DeIelPM1+7HS8HMGZR4lczsZjNiMkp0JD?=
- =?us-ascii?Q?o/tWh9iUDmvHWpT2b+DtoMBFaNeICAZv4cKYJJVZIh77mTBqadoMAKvJlR5o?=
- =?us-ascii?Q?iqCHZLbUH+urFXY3eSJilNXbobP5hzZKpVR7bigMRX4rnfMSjQj/LEa3WpW2?=
- =?us-ascii?Q?7xmwAe4mnTxNEu8NmnjCS1e9Z3fe2IGDP5RLIJBkfqFxuClWeMUz+/Kv659/?=
- =?us-ascii?Q?/gsRZCCjw74mZNVA2G+TipPRT+aKJxBR4wpzpEj2t0+1i/ldMd/zwEZohvRK?=
- =?us-ascii?Q?Hqd/afL45X+ShzPWi9lTooDUk29mLN4TLo5vKWunqceqWzDrGzMxL5QbGa3O?=
- =?us-ascii?Q?H/x4oINVHVd6H5GfNGoW9HY86ydUPVMR6thU4d0+msQ0yLGQgAkQ+xUkiAIQ?=
- =?us-ascii?Q?doOS0nidOoX4KAld80gmdy3h2LLw/Vslr5tY3AkUl5gxa4rwTG7UQTxNWoGE?=
- =?us-ascii?Q?xxruPqAaleyDuJAH/4UuviPOU38Fti3XC9m4kOzoAzX/f1m828ig2242qSop?=
- =?us-ascii?Q?lg=3D=3D?=
-X-OriginatorOrg: memverge.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7fb10880-26c3-4d20-ba2b-08db03ad2a31
-X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Jan 2023 17:04:07.6122
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: SR/j4m9ppmM/xwwtcFRZFGUCc9Q85a+YY5IWttktGwrutgU4sotbnEDXvfIU0DFk8fZoQ3xxPo+1CBUR26wNuB/scDiIwl2PJFVTKRYGjy0=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR17MB5190
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Tue, Jan 31, 2023 at 04:38:47PM +0000, Jonathan Cameron wrote:
-> From: Gregory Price <gourry.memverge@gmail.com>
-> 
-> This commit enables each CXL Type-3 device to contain one volatile
-> memory region and one persistent region.
->
-> ... snip ...
-> 
-
-I have no objections to the changes made.  I'll test when I finish up a
-few other tasks.
-
 
