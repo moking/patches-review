@@ -713,6 +713,9 @@ X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 3474
+Lines: 97
 
 Davidlohr Bueso wrote:
 > This adds the sysfs memdev's security/ directory with
@@ -958,6 +961,9 @@ X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 343
+Lines: 10
 
 Davidlohr Bueso wrote:
 [..]
@@ -1116,6 +1122,9 @@ X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 8690
+Lines: 246
 
 Hi Davidlohr,
 
@@ -1454,6 +1463,9 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 2470
+Lines: 60
 
 Hello,
 
@@ -1609,6 +1621,8 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Content-Length: 8574
+Lines: 241
 
 This adds support for handling background operations, as defined in
 the CXL 3.0 spec. Commands that can take too long (over ~2 seconds)
@@ -1945,6 +1959,9 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 3475
+Lines: 111
 
 This adds the sysfs memdev's security/ directory with
 a single 'state' file, which is always visible. In the
@@ -2151,6 +2168,9 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 4520
+Lines: 152
 
 Track all regions associated to a memdev in order to
 tell if the device might be in active use.
@@ -2398,6 +2418,9 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1575
+Lines: 54
 
 Add support to emulate a CXL mem device support the "Sanitize"
 operation, without incurring in the background.
@@ -2547,6 +2570,9 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 6604
+Lines: 202
 
 Implement support for the non-pmem exclusive sanitize (aka overwrite),
 per CXL specs. This is the baseline for the sanitize-on-release
@@ -2844,6 +2870,9 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1577
+Lines: 56
 
 Add support to emulate a CXL mem device support the "Secure Erase"
 operation.
@@ -2995,6 +3024,9 @@ User-Agent: NeoMutt/20220429
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 2594
+Lines: 64
 
 +Cc Dave (sorry).
 
@@ -3154,6 +3186,9 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 5975
+Lines: 185
 
 Implement support for the non-pmem exclusive secure erase, per
 CXL specs.
@@ -3398,6 +3433,9 @@ In-Reply-To: <20230224194652.1990604-4-dave@stgolabs.net>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 5510
+Lines: 173
 
 On Fri, Feb 24, 2023 at 11:46:48AM -0800, Davidlohr Bueso wrote:
 > Track all regions associated to a memdev in order to
@@ -3633,6 +3671,8 @@ Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Content-Length: 9321
+Lines: 250
 
 
 
@@ -3945,6 +3985,9 @@ Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 3973
+Lines: 118
 
 
 
@@ -4125,6 +4168,9 @@ Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 7177
+Lines: 208
 
 
 
@@ -4395,6 +4441,9 @@ Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1773
+Lines: 56
 
 
 
@@ -4513,6 +4562,9 @@ Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 6450
+Lines: 190
 
 
 
@@ -4765,6 +4817,9 @@ Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1780
+Lines: 59
 
 
 
@@ -4921,6 +4976,8 @@ User-Agent: NeoMutt/20220429
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Content-Length: 396
+Lines: 19
 
 On Tue, 28 Feb 2023, Dave Jiang wrote:
 >>+
@@ -5037,6 +5094,9 @@ User-Agent: NeoMutt/20220429
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 639
+Lines: 19
 
 On Tue, 28 Feb 2023, Dave Jiang wrote:
 
@@ -5153,6 +5213,9 @@ User-Agent: NeoMutt/20220429
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 755
+Lines: 24
 
 Hi Alison,
 
@@ -5295,6 +5358,9 @@ References: <20230224194652.1990604-1-dave@stgolabs.net>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 1082
+Lines: 31
 
 On Tue, Feb 28, 2023 at 12:26:23PM -0800, Davidlohr Bueso wrote:
 > Hi Alison,
@@ -5390,6 +5456,8 @@ Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
+Content-Length: 545
+Lines: 25
 
 
 
