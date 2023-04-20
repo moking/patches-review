@@ -1297,3 +1297,1395 @@ Oh, i meant to add that i tested whether the memory is accessible via
 numactl --membind=1 with both memhog and a python prompt, and things
 worked just fine.  So memory works.
 
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDB5FC74A5B
+	for <linux-cxl@archiver.kernel.org>; Thu, 30 Mar 2023 06:33:31 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229598AbjC3Gdb (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 30 Mar 2023 02:33:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54846 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229649AbjC3Gda (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 30 Mar 2023 02:33:30 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 855795252
+        for <linux-cxl@vger.kernel.org>; Wed, 29 Mar 2023 23:33:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680158009; x=1711694009;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=EFD8kkzvGjMK2/psgJOrgFBEl1Xx5oiOZ5NsP7g4oPY=;
+  b=NqnYCTlQyaxV4Jp7DKAcHgVCkODLWyjGV7kku49mlqnHrMw3lKFBvMew
+   g1mIy0PxVrO/Xe6y3TkC+4uHEvZJGOYvbXp+m+QiX9UzeTVdyQiYu1iS4
+   fT+KsImJScxJa0YTPfB24Q3jBGUfVZ+3NIiWHHi7Lgtrh6h3v2UBxZg5c
+   /RLptm6/msx+lqY9c+31Rb0oyNTOx7cS/zF7LaQk4Wbkdm7inAB2bfSwB
+   jrsV+5Au9k4K9ssNIzYi+N/yHQ34aYGFbN8UMZfnptnke8jcPyRWxcDhM
+   uUJdlUE3rN42t2dpQp6SuBQBiSUda5hqALPqXIvxsjX4/gJzUAaMgU/mS
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10664"; a="368862238"
+X-IronPort-AV: E=Sophos;i="5.98,303,1673942400"; 
+   d="scan'208";a="368862238"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Mar 2023 23:33:29 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10664"; a="661884228"
+X-IronPort-AV: E=Sophos;i="5.98,303,1673942400"; 
+   d="scan'208";a="661884228"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+  by orsmga006.jf.intel.com with ESMTP; 29 Mar 2023 23:33:28 -0700
+Received: from orsmsx601.amr.corp.intel.com (10.22.229.14) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Wed, 29 Mar 2023 23:33:28 -0700
+Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
+ orsmsx601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21 via Frontend Transport; Wed, 29 Mar 2023 23:33:28 -0700
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (104.47.55.108)
+ by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.21; Wed, 29 Mar 2023 23:33:15 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=hGHC/ML4IUjnVvrNCXTjcNOdbe6iIBB0WhuGZ7uQBy6lzer8JwV3FoLQiLaRxK1jOaU9i0jxy49VgK1yMvXH0CoGG0aBExsdfz2ENDxXeSB894VPD9l3klHEH/QMrLX+tQ0vxgBeMUUFaoRBjg/gwwfWITo+duP0UinUlI7sK0yAESFaQMh9MMScqsL3vFBCrihNp+MhUKN09Qc/slLQzpVcVYmWcmw1YI9IULkGZ1q7enEIYuUUMh8ESX1Z//1D2dgcdRRzFM5AMM/SAimGPXaDvOqsn0L9YUU5FQDsMHrgl/VODv1mkwG6ZbMIN+bifxCnKXVwYXjxaw4wWXWrtQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=fKGAgzwOTM9Nw2HGXFJA6r9ymCaDkqyvYJmtI6d65D8=;
+ b=O5EyGlQNehoVYPd0YlRi/XROqVOMKb0vTToibTgsxuXuPsiDJE3m0OqVioVs42Sw1ADIDflKBEu3CJ6nMHDp1so+2Et3NNjdgPEzMwiyLReBUdYDpPCKMz5ZEwy+lRkGN+OOEeOx52hn9gENpF4NJp0/SWKnmi9GMbpZ0bfKCQXgRVreQOAOv3VN0qUyaCqg9REm5joYEBaYf3ApNiG8IKI1f/me+Gjwd+UShQYfZVWQDKgXIgMTPf5TalLX0HFKuEf4ZZmXVbV/ZlcT+0EUTACOWP7LvSQ18R+AdftXrnLHcR5HA4pcKklNrZBhGR2CBleIK5gPluMnZWuQ3mjaQQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by DM4PR11MB6043.namprd11.prod.outlook.com (2603:10b6:8:62::8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6222.33; Thu, 30 Mar 2023 06:33:07 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::ffa1:410b:20b3:6233]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::ffa1:410b:20b3:6233%4]) with mapi id 15.20.6254.021; Thu, 30 Mar 2023
+ 06:33:07 +0000
+Date: Wed, 29 Mar 2023 23:33:05 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+To: Gregory Price <gregory.price@memverge.com>,
+        Dan Williams <dan.j.williams@intel.com>
+CC: <linux-cxl@vger.kernel.org>, Dave Jiang <dave.jiang@intel.com>
+Subject: Re: [PATCH] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+Message-ID: <64252d214f0b_c7222942@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+ <ZCRhhUDcmypVKu0X@memverge.com>
+ <64250e45bea49_c722294c2@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+ <ZCRzh0VLSVF/7jya@memverge.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <ZCRzh0VLSVF/7jya@memverge.com>
+X-ClientProxiedBy: BY5PR13CA0025.namprd13.prod.outlook.com
+ (2603:10b6:a03:180::38) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|DM4PR11MB6043:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0cd3e979-0ef1-40bf-9270-08db30e89f99
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: hjjTQOW1FdfXp3V1HmgwAM9Ub+TMQMWxaNiWPbJNS7APnEjIwJNIOsdKIFmgdX2FWA1hoHcCsc79ugLDGkfjRJWBysA9Iqguh5NIeG/sI8IFv/HUT3mwRssiK7DEFc+ZUXIel3JDBVwlVH5G2oY/JnOXggg2IMKeEJOr9fBGuEPsurcNXmAJ0E2MmMkCwAnhi+zLl30X5HmJpQmXzU39o550bixVuWAifJgTDaZ9PcyGY2JvFPlPGGsnJ02KtEymZIhPT5dQEfktGUKKs2rm1gec0mo/jl2Jn/KKJT8XxFLZkKOq9jSsiC8EWwJLSxmVRymsPWsO+ReL8lIkxPbeC7ft8knjWJNXbww1mjddrWp2SKK34S/POIcTAiQB+mvHAJucc6Wa+b0ftu9wzqHsbXFPu7ndgaAG4nI8fy5De+A6fRuRPpJWdjafS6ETuN3YyFmL3aIxp33nWYkk2NafIUVuqnOcpiGU6kbV37T5+Hrjusg2IYNhi1b/HFxGFZltsoBtk7hfOOn5LkyoPqOPZvIhmXyF2vAPAcBuFmb96bxhkrtTuODmTk9qBarUsaM6
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(136003)(366004)(396003)(376002)(346002)(39860400002)(451199021)(86362001)(478600001)(316002)(6486002)(82960400001)(4744005)(8676002)(110136005)(66476007)(66946007)(41300700001)(9686003)(6512007)(26005)(4326008)(6506007)(186003)(83380400001)(107886003)(2906002)(66556008)(8936002)(5660300002)(38100700002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?K8MQfenKyyj4V8FlOzd/vN9COkGoWMkDiQK/uCLXRq9Mg2JkH6f2Gk2zqbsO?=
+ =?us-ascii?Q?9PTtvta1JgBprFngvm5KyDa/JfoARkm1rSx0ixVWj/wPMCoRQ27Vv09+1iYk?=
+ =?us-ascii?Q?98kXYNeXOZv7CsvyNuocb+L6YXs+AkTADfok61YkBn8lW/7cgo82A4Ju5udm?=
+ =?us-ascii?Q?+IWLuDzDBDbHFVFkqzPGHpbzVrcLkMGVT5xFjyh8MSuJpZaEwznfBHwbBpSF?=
+ =?us-ascii?Q?WYsV0T2/9sDzdUKpvDsJII2rFhWSbl6ChlwtRN46+/+eYRq2enC+dhHAgu+1?=
+ =?us-ascii?Q?nyuiFmO/e2wZA3L5u/tZEeIbkhbXdciBi4TMiHDZZEXqKLoROLmL2ORRcSCr?=
+ =?us-ascii?Q?gC4j4DFMCYceEAJSw+8vxk1BQYhKNNvif9pL1Ba+yT1cStAyu7v/8ShtBjHD?=
+ =?us-ascii?Q?FMmbcvXBnIs9Ra8LDZ5crs1wDs1V3fhE3QwjtJYFjFbjvwrhe61QzjGDZBAc?=
+ =?us-ascii?Q?73rJD4Q/iTz2OVTdsTBCaMUgk7uBUTNk1i8SfrE+snfB+xE6jvEaqfaiYQKl?=
+ =?us-ascii?Q?8UMLnJsUwI4fN7WtCA1Rl5ETuq2sOQegEoKmsOavqx2ju7bzmcjnu1XWPSEp?=
+ =?us-ascii?Q?fGyU1GbpRt2RAX2r5+LZQO9Sv6GR7O/Pad0WQAKc1tMF+ggvBUAQt6SjIzbt?=
+ =?us-ascii?Q?i1dloeYDqA6Rx6BsUfvy/UwO9AFoUxn+o3IDjJFh5d58MyX4bq4/gygCM5ZZ?=
+ =?us-ascii?Q?tS+MSnE9d6pr9iNj+/qhw6M2bpL64GD52CLinLuZPE+iUFP88QpxBEHsUAgR?=
+ =?us-ascii?Q?YW/+6GOmqYOmn466w0z3RaQd+KQ9/2DFCv7CbXxZAC1EXoMRsgv+OPSDC/kM?=
+ =?us-ascii?Q?SFQXEC6X1R7f+CJFqWYAHuaVQhTJGRmaWktuQ1K6GUbkjkWVvl0smoe01CMf?=
+ =?us-ascii?Q?IKm/JJq4qcO9j06i8B0CazfDG/MfIOYFAsPQzbFsBEzQKvo21vNfyZ6svLIq?=
+ =?us-ascii?Q?duwedBuMBPdwkoJFDxAlacz8cbaVflUsEdGFz5gieCUl7/Fuysqso2QZhFx2?=
+ =?us-ascii?Q?xVkP03wp0V6rDwdA+E+WLk1F+G3Y1QBRWqekqBxvEpojtj41S9OQTs0G4bwv?=
+ =?us-ascii?Q?xMpYX0AUU7NMhIsqN/BJSROM2HdtP6rURXAaXddx+MkdUaHlOeAapcSVH2DV?=
+ =?us-ascii?Q?ZVkxspGiy+M7ZITofsZSUKT8Mwh9yjlhHDYaGXHjkXc6bwbcqn01C3cc9Vls?=
+ =?us-ascii?Q?lM2+xrsdDV8A3Og9ALsPmVvMP4i2PWN9ye47w8A/WkMRyF8WmjCGRzVdRxU3?=
+ =?us-ascii?Q?RiGeDJq9rBilxo0y+00aIyl4kZfNshcYu4EXRt1omBOrZ7iy8thaUqXu5JWs?=
+ =?us-ascii?Q?GuAooszCoYge//hPr1lRyFfF4DyYUwfkrk5llAP0+0MwDd5sQZEgeRgUvGhg?=
+ =?us-ascii?Q?cYcKTQeM9Mfl4Gt9D0YuXOMX/vlECzycz06ggY7y63XrMDKv+LUSNs7j9eyG?=
+ =?us-ascii?Q?8q/Ref4evB2Ps9YqGXxv2gIlxASy4YgOYE7wWE4bUoyg3tLX5XnKKhQR7Ebw?=
+ =?us-ascii?Q?CfesfWJJrFG920YkiR4TuC5GB8yBkk5ThAmG9MVaoaKO/SULfcnlKBT4LncQ?=
+ =?us-ascii?Q?5ZL6ZERlItoWsGFw1lUJDgW0EDFbY0wGpnfnz9UgGE97cIMoOwk41gQPua1E?=
+ =?us-ascii?Q?jg=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0cd3e979-0ef1-40bf-9270-08db30e89f99
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Mar 2023 06:33:07.3153
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: uOi9IdY0P5wI09q7MwYSvg8CWpdVfQgX+1OeHusst1la7euA7LLt0svrctXILWLjAqP2NeVGMYOnenxKX2jz6wjn4hdHapUqt0htGcwMCSg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB6043
+X-OriginatorOrg: intel.com
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Gregory Price wrote:
+> On Wed, Mar 29, 2023 at 09:21:25PM -0700, Dan Williams wrote:
+> > > Is the DVSEC Range Register expected to be programmed by bios, and are
+> > > not being programmed correctly?
+> > 
+> > This debug experiment makes me think perhaps the *device* is at fault,
+> > not the BIOS. Perhaps the device accepts writes to CXL_DVSEC_RANGE_BASE
+> > to set up the decode as expected, but reads return 0? That's the only
+> > way that I can see that forcing that offset results in successfully
+> > talking to memory.
+> > 
+> 
+> Oh, i meant to add that i tested whether the memory is accessible via
+> numactl --membind=1 with both memhog and a python prompt, and things
+> worked just fine.  So memory works.
+
+One other theory is that the device is correct, but the platform CXL
+window accepts transactions at an offset and then removes that offset
+when transmitting the address down the CXL port. So device thinks its
+decoding 0x0 and never sees the offset removed by the host bridge.
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2682FC6FD1D
+	for <linux-cxl@archiver.kernel.org>; Thu, 30 Mar 2023 14:51:20 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231157AbjC3OvT (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 30 Mar 2023 10:51:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58736 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231322AbjC3OvS (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 30 Mar 2023 10:51:18 -0400
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com (mail-sn1nam02on2079.outbound.protection.outlook.com [40.107.96.79])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72A99900D
+        for <linux-cxl@vger.kernel.org>; Thu, 30 Mar 2023 07:51:16 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ViowWFxH39glL2otdcWxm2DlQM58N0YRpRTCQeAIsSmspmdi40a9/43E87PsFZRbNoQlon5HiaBXY0Ot9xG/9PRf5iIQGxfB3IvW2StbiQtSRQkm2XnCSXiVsVhE2l6HEWG7Y3gf7qW/dUe4PzMFw8dOT+WTNMutDNsJ2dClHojSJl8KkMGFZoSAaAuR7YY4A9dPwICznYsjNumbk1c44LnQOtWvCkR+scHU9jxWqQ3D3dH3w20wUTIxRpI6kOTC1bVoGroEFsSgom1MEmUMHPw4/avMmUSKz1mh8ygJTUahF34XISw2r5VPAGf3U5RnW1y9KRH//U/k/Qmll0Q45g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=0bObu8aKPXod3KHL2Se5ihFkf2HoeIiJNaYVgSLRtpc=;
+ b=iy6RDcyB60gp+TUhqSpgxXaK57I0JQAeKN8QdRmhmTq1eui6UtMjuJbwchX+JHv5p3s/l8I6JbAPstsEaKGqFFUGMUazZB/zoQRTCfAzKDKVZ3LwXDVOW1A9qRFfMrJcNBpg+RSoDKad7SdthOTnBNe+DPF1V/yzAeKcSULAbkL95GLxXpDImvKWkneKnuaeom0J/M1m0xEn1Sm9TZawlLMZiKQ/9OBgkd3tRF3rBJrNBOKexYtXT/CTtfnz0QzDZQApewuDdUxO/opG1gzQ+RGwg/+wcZ1G7Heslf5upY0qNnvWJbICi3/gminy6warv7dMIevBIFN8nZaCFZafcQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=0bObu8aKPXod3KHL2Se5ihFkf2HoeIiJNaYVgSLRtpc=;
+ b=v/5zJ5PrlAPllH1N4ubn8gp9ZvtNHVy9wX0BL7aOT1geux/M73+hpjGzOAGrf98tNhXoJTXISi4ADoSYipHcngo5HMaRV2XwSJCjOl/qapczGYlzBZXqGMTJ9CGHH7PkkNWtS0kvNZjN+Rl+zs/lVOBvKPOB4FVXMX53eNewdxM=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from SJ0PR17MB5512.namprd17.prod.outlook.com (2603:10b6:a03:394::19)
+ by SA1PR17MB5540.namprd17.prod.outlook.com (2603:10b6:806:1c9::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.41; Thu, 30 Mar
+ 2023 14:51:12 +0000
+Received: from SJ0PR17MB5512.namprd17.prod.outlook.com
+ ([fe80::7b97:62c3:4602:b47a]) by SJ0PR17MB5512.namprd17.prod.outlook.com
+ ([fe80::7b97:62c3:4602:b47a%5]) with mapi id 15.20.6222.033; Thu, 30 Mar 2023
+ 14:51:12 +0000
+Date: Thu, 30 Mar 2023 00:27:02 -0400
+From: Gregory Price <gregory.price@memverge.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-cxl@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>
+Subject: Re: [PATCH] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+Message-ID: <ZCUPlnQYVRCumy2O@memverge.com>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+ <ZCRhhUDcmypVKu0X@memverge.com>
+ <64250e45bea49_c722294c2@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+ <ZCRzh0VLSVF/7jya@memverge.com>
+ <64252d214f0b_c7222942@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <64252d214f0b_c7222942@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+X-ClientProxiedBy: BYAPR01CA0063.prod.exchangelabs.com (2603:10b6:a03:94::40)
+ To SJ0PR17MB5512.namprd17.prod.outlook.com (2603:10b6:a03:394::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ0PR17MB5512:EE_|SA1PR17MB5540:EE_
+X-MS-Office365-Filtering-Correlation-Id: 341a6f12-9f2a-4773-8c60-08db312e346c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: FSZfW0J8yl629iaMNnct6KD0h6FxCjgYqOvepBxb2VIo0w598PwpZXx02bkvxzq/KFxd+5bAYE/LEiBLDzSlIelojRAAYZuIOE879x33F9B53e9g1KMR3d1TfxbY+YL1twKh4+VsnHKKLlmhM0Af+zOdpvlNVTtQxNlOmWh39Lvo0pFm0WqiMUe/kr8IsC/6ErJeBu9qU7C5VHZEMrJyBSMF9CvVIIEK/GrqKmIA5r23W/q8/ihE4Ph44cBy3O8SKFoaZa/Pnya/hVRNYxUUUgQUcVltMfKeUrFczTWjj2buSpcYMgDJtz0MNVP0QlNBZORPehACqdy2QzWC2/iaTP3FXSRzlroc3u7br5Xf79BZxthjtn7JHsXhaPsK0U9qlWKGRqHlltXvTxVQcSWdDU3unqagwjFn150Fgubpgbf+o9+HX3SoKEGN3ffcH2HAzHU2/lVepIGJhYGFRbvjo2WR+5MYCHo9g45ACAVPT0mkjZo7Y3vsVQ1oiq5ErUeHUZPfb1jvYNXzm7pxwHGUJfKSwYZwyIudyjLFfQhHFMp0Vw7A6OFLKzgbNsfsTmEq
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR17MB5512.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(366004)(136003)(346002)(376002)(396003)(39840400004)(451199021)(6512007)(6666004)(36756003)(2616005)(2906002)(44832011)(83380400001)(8936002)(6486002)(5660300002)(316002)(66946007)(478600001)(8676002)(6916009)(186003)(38100700002)(41300700001)(86362001)(66556008)(4326008)(26005)(6506007)(66476007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?hyJAIEL19k0I+1oh1eAfb16iDsBN0AmkvwQ9wZU5aVh1tEHKTt523nVaLbNS?=
+ =?us-ascii?Q?jicUhOGSI6rBJ7SzOYjI/fQTf6IX6/bNyZ7hdgbIoJqJGOGh1T8Lokk949Ez?=
+ =?us-ascii?Q?Dkp7fisXEXIb8qFzEY6hV4sHcwIYEGmiV7wHMHtzA3I1UHO4A1kA6SdwTePX?=
+ =?us-ascii?Q?nvGLIVGpEak/0C3p1/8b64JA+l5vIRqAItpyTbJB2MlJ/oLxLUDnH7HArOck?=
+ =?us-ascii?Q?0c4PYy3T5L3nTaRSNxqDe155RT2lMrU942TT+PpNHNR+BVolagUDX2Jyt/Su?=
+ =?us-ascii?Q?l03ARl4WxqrLb8DeRQ7Tlf3upIerR3t3SPxWr//60TPt5zLdmSuElANu6mn2?=
+ =?us-ascii?Q?Q27ZDqbyKQAFcTOXVIM5smwPLfgAohBKmQ0csC0Cc3f/jsSgmcx03prb1ojQ?=
+ =?us-ascii?Q?Crl09JzVW2x2nposO7tSd6y9IZSCSD0bFtQQBlxypVUTVX1zJO1NlzFKq0al?=
+ =?us-ascii?Q?D46FCtVf/+xtBjRuZ+VP5kX1TzsbcMfsTVRqGVwOQNhyQzHnMprixbZJMQsK?=
+ =?us-ascii?Q?iRaQdBIjEuur+sXJAPfNiiaUU0xNabFHPpF9aJ0NJtnP7aoxATHwwYy2fRvv?=
+ =?us-ascii?Q?/ePcX/x0VKnuxBTV5NDBzYZgSDqNj+gBBlJLTEw8Ww9Zw87KoeAn6o5OzvN0?=
+ =?us-ascii?Q?nmTJDIr2FwbXyde2PSWhT6SAgGIj9wPGM0jjVIoXfTLCJFWn57A55JQncV7L?=
+ =?us-ascii?Q?DT+d1/E9AFBhagVDMHKS3BkGyUn/kZDyPofMJ/aF42KRw+NJo6M9EAzJ1xo7?=
+ =?us-ascii?Q?IbeuXx0ywDGcHh5ERHSYCHSRW10LtbNBaHWd7VH3KZ+z00U2ti0A31JSQ8ws?=
+ =?us-ascii?Q?rgKlDRGT22GuHQiXEVlF18IOBkRuoth5/jRLKxbaEs+2iyspzggbv6/zpqED?=
+ =?us-ascii?Q?outZYv0FOCx/kwMakhXZ1Hrq/aT+KWmrH079heRKQDlPV8RMekU4D77fN0e4?=
+ =?us-ascii?Q?Xx0950og0OxGbA7l4QixQIA2GapxU2AfUoWF4KlpJ4g5bpdEhIMj+UBtarTB?=
+ =?us-ascii?Q?2am3ecu5Z74YChNrkKiOs2Wad41Mv3uBLZZ4LRU5vDgS+1ZRqrNRpif2AElp?=
+ =?us-ascii?Q?GWKqZbApGF2XwpWsbFVgwIwXhbQBjPyEvnDRMen5SZpi2Wh66GWD4Y/Ih/Yz?=
+ =?us-ascii?Q?DlUfLryEr/NsTKayplM9XQV2PGBzrd3ZRn4wp5AIxdj1ik6tcXTWnlYkBL1M?=
+ =?us-ascii?Q?JOFHAtcmSZwTSAK4+p/qoB0msxhHHnPwrgPAi/qiXoF8+QJ5WmOfS0y1pTsq?=
+ =?us-ascii?Q?kInAH6bFXnc5Gc7GzgABrs5h4SZBhSDWxH/We9YsjVUjSGYNUxubZqPGsXbQ?=
+ =?us-ascii?Q?VQT+V3COu1eG25eWoj2j8zPDXThUHKJc+AtKvhnRYRPqoGsbIbdzUWMNSjmH?=
+ =?us-ascii?Q?MjbW4derVZd4TxVGpGjuwRgVMrLupVXr2ZqDr4cN7i3+CNZADaZl0l1CREMP?=
+ =?us-ascii?Q?G5U/S6dmg6ye4zStN6x7NtzxrS/gRWd876fNn1MNE63vnTjW1PoemcuhCp6R?=
+ =?us-ascii?Q?c8NvnfTl0tyxNcSUEPghzd3BOwatJ36OkkweniZPumVPR5uzI40K1rkXulnM?=
+ =?us-ascii?Q?JLgIIGB+XlmREkuf+GAfCvrWK5FNk7ehNtiIX4C6io5l1tcY2oB2j0vBxbi8?=
+ =?us-ascii?Q?zA=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 341a6f12-9f2a-4773-8c60-08db312e346c
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR17MB5512.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Mar 2023 14:51:12.2944
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: /AwZSgQoGIMuShYZMKyIEvV1w0J9yLq+QmOL/kOayqpKW4cw4dAAXE4r/Cn3sEUJ08qZUZC2w3MF5GGOOCsltPEzSjHbMxHgip4bhtwYBCE=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR17MB5540
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Wed, Mar 29, 2023 at 11:33:05PM -0700, Dan Williams wrote:
+> Gregory Price wrote:
+> > On Wed, Mar 29, 2023 at 09:21:25PM -0700, Dan Williams wrote:
+> > > > Is the DVSEC Range Register expected to be programmed by bios, and are
+> > > > not being programmed correctly?
+> > > 
+> > > This debug experiment makes me think perhaps the *device* is at fault,
+> > > not the BIOS. Perhaps the device accepts writes to CXL_DVSEC_RANGE_BASE
+> > > to set up the decode as expected, but reads return 0? That's the only
+> > > way that I can see that forcing that offset results in successfully
+> > > talking to memory.
+> > > 
+> > 
+> > Oh, i meant to add that i tested whether the memory is accessible via
+> > numactl --membind=1 with both memhog and a python prompt, and things
+> > worked just fine.  So memory works.
+> 
+> One other theory is that the device is correct, but the platform CXL
+> window accepts transactions at an offset and then removes that offset
+> when transmitting the address down the CXL port. So device thinks its
+> decoding 0x0 and never sees the offset removed by the host bridge.
+
+Wouldn't that be against the spec?  I thought the device intended to
+receive HPA and do its decode accordingly.
+
+Otherwise you could have multiple devices programmed capable of decoding
+0x0, which is already the device address, so there's nothing to
+"decode".
+
+I'll follow up as I learn more, this is concerning.  Certainly explains
+why every time I switch hardware nothing seems to work quite right.
+
+~Gregory
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 508CDC6FD1D
+	for <linux-cxl@archiver.kernel.org>; Thu, 30 Mar 2023 17:01:12 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231254AbjC3RBL (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 30 Mar 2023 13:01:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49684 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231796AbjC3RBJ (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 30 Mar 2023 13:01:09 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B967CE065
+        for <linux-cxl@vger.kernel.org>; Thu, 30 Mar 2023 10:00:43 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PnV4H2HJZz6J7SZ;
+        Fri, 31 Mar 2023 00:58:39 +0800 (CST)
+Received: from localhost (10.48.159.148) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.21; Thu, 30 Mar
+ 2023 18:00:20 +0100
+Date: Thu, 30 Mar 2023 18:00:19 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Dan Williams <dan.j.williams@intel.com>
+CC: <linux-cxl@vger.kernel.org>, Dave Jiang <dave.jiang@intel.com>
+Subject: Re: [PATCH] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+Message-ID: <20230330180019.00001b7b@Huawei.com>
+In-Reply-To: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.48.159.148]
+X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Wed, 29 Mar 2023 14:35:55 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
+
+> One motivation for mapping range registers to decoder objects is
+> to use those settings for region autodiscovery.
+> 
+> The need to map a region for devices programmed to use range registers
+> is especially urgent now that the kernel no longer routes "Soft
+> Reserved" ranges in the memory map to device-dax by default. The CXL
+> memory range loses all access mechanisms.
+> 
+> Complete the implementation by filling out ways and granularity, marking
+> the DPA reservation, and setting the endpoint-decoder state to signal
+> autodiscovery.
+> 
+> Fixes: 09d09e04d2fc ("cxl/dax: Create dax devices for CXL RAM regions")
+> Tested-by: Dave Jiang <dave.jiang@intel.com>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
+>  drivers/cxl/core/hdm.c |   30 ++++++++++++++++++++++++------
+>  1 file changed, 24 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 9884b6d4d930..5339c0719177 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -738,20 +738,26 @@ static int cxl_decoder_reset(struct cxl_decoder *cxld)
+>  	return 0;
+>  }
+>  
+> -static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+> -					    struct cxl_decoder *cxld, int which,
+> -					    struct cxl_endpoint_dvsec_info *info)
+> +static int cxl_setup_hdm_decoder_from_dvsec(
+> +	struct cxl_port *port, struct cxl_decoder *cxld, u64 *dpa_base,
+> +	int which, struct cxl_endpoint_dvsec_info *info)
+>  {
+> +	struct cxl_endpoint_decoder *cxled;
+> +	struct range *range;
+> +	int rc;
+> +
+>  	if (!is_cxl_endpoint(port))
+>  		return -EOPNOTSUPP;
+>  
+> -	if (!range_len(&info->dvsec_range[which]))
+> +	cxled = to_cxl_endpoint_decoder(&cxld->dev);
+> +	range = &info->dvsec_range[which];
+> +	if (!range_len(range))
+
+You call range_len(range) quite a few times in here.
+I'd be tempted to suggest a more minor diff of
+
+	u64 len;
+	...
+
+	len = range_len(&info->dvsec_range[which]);
+
+then use that throughout and don't bother with
+the local range variable.
+
+range is a bit odd to keep in a local variable as
+it's not immediately obvious it's an hpa range - obviously you
+could call it hpa_range which would help, but feels like
+the length is the important bit except in one place.
+
+>  		return -ENOENT;
+>  
+>  	cxld->target_type = CXL_DECODER_EXPANDER;
+>  	cxld->commit = NULL;
+>  	cxld->reset = NULL;
+> -	cxld->hpa_range = info->dvsec_range[which];
+> +	cxld->hpa_range = *range;
+>  
+>  	/*
+>  	 * Set the emulated decoder as locked pending additional support to
+> @@ -760,6 +766,17 @@ static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+>  	cxld->flags |= CXL_DECODER_F_ENABLE | CXL_DECODER_F_LOCK;
+>  	port->commit_end = cxld->id;
+>  
+> +	rc = devm_cxl_dpa_reserve(cxled, *dpa_base, range_len(range), 0);
+> +	if (rc) {
+> +		dev_err(&port->dev,
+> +			"decoder%d.%d: Failed to reserve DPA range %#llx - %#llx\n (%d)",
+> +			port->id, cxld->id, *dpa_base,
+> +			*dpa_base + range_len(range) - 1, rc);
+> +		return rc;
+> +	}
+> +	*dpa_base += range_len(range);
+> +	cxled->state = CXL_DECODER_STATE_AUTO;
+> +
+>  	return 0;
+>  }
+>  
+> @@ -779,7 +796,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  	} target_list;
+>  
+>  	if (should_emulate_decoders(info))
+> -		return cxl_setup_hdm_decoder_from_dvsec(port, cxld, which, info);
+> +		return cxl_setup_hdm_decoder_from_dvsec(port, cxld, dpa_base,
+> +							which, info);
+>  
+>  	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
+>  	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+> 
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64404C761A6
+	for <linux-cxl@archiver.kernel.org>; Thu, 30 Mar 2023 18:25:19 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231148AbjC3SZS (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 30 Mar 2023 14:25:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56340 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231228AbjC3SZS (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 30 Mar 2023 14:25:18 -0400
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C3A6D517
+        for <linux-cxl@vger.kernel.org>; Thu, 30 Mar 2023 11:25:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680200716; x=1711736716;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=9V6IbwW5fKh723uay3pGDGj2iW6AF7Nc2Z3kL2vagfI=;
+  b=Ufyb/LLlAsTg4OS7fkJr63nBaLa5jCEdZfzyEJeQabalvndjw2oLx8eU
+   mVC+LRTLL3DCHjPqorKG8M3X81FlfMtnV/IGVI4B8vsV1NCZWsOBb+wQb
+   OS7RT34vMQumzphoK+6wewXbNFWUaNmTrrCeKjed3Lu1lDt9DQNvNS+VK
+   T4AGAnzjAyn2DyeWiNKpl62OJSeeX0U5dov5flUiQ9K6EsuzyN0PNYHAP
+   WXUXoMljM2JM1TIciPmDIaTu/QnzTj3ZhiY0WXrUIOTlIYEAkCl4DG7fQ
+   cegGhlc0N2NykX7LkV3zlfsq2/xOFmbdPAZ7plCCT8Jpspbqy/OMvHgZ8
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="342896796"
+X-IronPort-AV: E=Sophos;i="5.98,305,1673942400"; 
+   d="scan'208";a="342896796"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2023 11:24:48 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="828417461"
+X-IronPort-AV: E=Sophos;i="5.98,305,1673942400"; 
+   d="scan'208";a="828417461"
+Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
+  by fmsmga001.fm.intel.com with ESMTP; 30 Mar 2023 11:24:47 -0700
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Thu, 30 Mar 2023 11:24:47 -0700
+Received: from fmsmsx612.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Thu, 30 Mar 2023 11:24:47 -0700
+Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
+ fmsmsx612.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21 via Frontend Transport; Thu, 30 Mar 2023 11:24:47 -0700
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (104.47.55.106)
+ by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.21; Thu, 30 Mar 2023 11:24:47 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=OknnttD+TNYweitgTDlP/RPC5feNx+ekw6zivLzjT8504DcBLkKbe1bblSD4714nEtqUnM3O+mtrQvk7/RFyibLYBxtTBX7NGrsB/Mo1uIXi7XDbf5adE2kxJKz5hEwzbqYPFO8vyqc8PjEcbvsk7sj5jxWPU0gG1iZfmRpsjKo5a0GVtRrrkHkzGNYkelArD6SaGX9EPPWu4ERLdsqWC1nqe2MGyYHOdD+vXhqvAqN2wcYM0B7tBIB4ltXiGOG7Pj8xpEDzbDQqMFSq7y3Btz6bchlDuVZJjpY9XRFXoysHdbiYcAXN4d6lCYm64vyds82ng4hWIRwDe+xNRW9juA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=f3kCd9UytLg0EsDLEklU6bFwObRGX/z7cJ7chW3hGtk=;
+ b=VlXbCj3AEOfDsXL3HqmlXcsTMUp5oEw9ZhCUKCrSVFF51qkKJ4j++zEwwYGhhRZr9EjwLcHUyAsucSNn4oZ+KMzOWj8OJBoKITUjv/rnqfBmQ7O9YtQ8nWfj1EQg5Zy25fVv0jKbU3r7kVU6obJ7NTxKwknXyGHcItBFpd8hJV78j6e7hqgiDRSEcl2M7bI0w4XeGkE4QOVL5E/23IOOC1c3FO2vfdxlJrOa2WmW8hGNhmfJJ53rKty4t6//OAGmI4i/Kwk8Bzoepo/9B6Bmbl3ex6EOZt8HcT3BNx3IqfOT18LpD6452IzLfzBrYpOC58O+qWvkJ/cB+TpxqGNASg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by SN7PR11MB7638.namprd11.prod.outlook.com (2603:10b6:806:34b::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6222.33; Thu, 30 Mar
+ 2023 18:24:45 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::ffa1:410b:20b3:6233]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::ffa1:410b:20b3:6233%4]) with mapi id 15.20.6254.021; Thu, 30 Mar 2023
+ 18:24:45 +0000
+Date: Thu, 30 Mar 2023 11:24:43 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Dan Williams <dan.j.williams@intel.com>
+CC: <linux-cxl@vger.kernel.org>, Dave Jiang <dave.jiang@intel.com>
+Subject: Re: [PATCH] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+Message-ID: <6425d3eb9cd89_c722294a9@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+ <20230330180019.00001b7b@Huawei.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20230330180019.00001b7b@Huawei.com>
+X-ClientProxiedBy: SJ0PR03CA0226.namprd03.prod.outlook.com
+ (2603:10b6:a03:39f::21) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|SN7PR11MB7638:EE_
+X-MS-Office365-Filtering-Correlation-Id: ab54e4d4-340b-4943-a71d-08db314c0996
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: i9lRukR2IpoKNUJj5aNuwMznbXh4U08ERQRp4chiKq0CwU+hiFSAS9uGJi6D/MkgZjGAtJoXoIzDX9bfCixyLaCdcKzAoJB4kSl/3C2FLQLT9SgGise1KEd8NzaijxWbMlXx3nND5xH11E0JPpKalHLAQzdqf/7SmspWsjd69+Tz3xOYktd9Gzg0c9rxNl4f9WHsOBoKx8PTrEpDlcefEvXBgMg9rXGJ4jDx/+9D6iwjz5rmnaQ9qRl4Y/BX5ljZGQgXJ/ZJdHpxlUQR7dM6I7jdEfzKuUJDAOSi2oir1veaBmkiR73IdMJKcrj9p1LGTKuF3lR5yk557VeVS8oUDm8efBJVhYGr+zkncyRsGiWlrCVRflOZ/Dwvap69ri/R1KJCLAfFXV3lp//6yDaPpP9KHuh1Epuljyjk4C7pLxZ/g1SWEAOtFBD4DlOdR5XyauN+fGvbAOwhheqvp+eCNq0IZIwrKEo36fDGvJZdUO0CzkyMRSybHpowZFMQiAF3RiSpldk43gDQVnqJ6wfbVNWHUs6jDMQXMTTY9P+AaNha3+V12Wlguoqmi9syI5kK
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(376002)(366004)(136003)(346002)(396003)(39860400002)(451199021)(9686003)(2906002)(107886003)(83380400001)(6486002)(186003)(4326008)(66946007)(66476007)(6506007)(66556008)(478600001)(8936002)(5660300002)(38100700002)(316002)(26005)(41300700001)(82960400001)(86362001)(110136005)(6512007)(8676002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?lv3tDs28SSRpvJGixFR5S7asMtTvSvC9f5/vt0Lq5mkkZc3q6beHTRLswTyJ?=
+ =?us-ascii?Q?Tokjt/89VpegHb5U1XY07aoj9JmFI52xoOBqiOh8FrB/Iaz55reaiqi6DJ7k?=
+ =?us-ascii?Q?/r4+k12PqRJKXPXIO6CGKWarVRFXfl1JE/BcVHW/IX5peCmx8AvatmSeyQCX?=
+ =?us-ascii?Q?d259qZbnsSQULHe/JDHGNQnq3U5DcAS07Y2g/XR/HprCW5MnPMu2zFkSSxfw?=
+ =?us-ascii?Q?bgzKTeEWWzcoK9RllMkSo5HFj555xDq37iiPWYovnSANkJ2vIWtJHkB57ovl?=
+ =?us-ascii?Q?s48x+pre2+gZjLsXOD/IsPRI40514utR5jpLI+jw3MHxqXD2O/A7yTxNO3xJ?=
+ =?us-ascii?Q?KMu1qmCCiN50uj1ZmhVM5x7SPIZP3i+tjZrNL+NC3oHbRZXrsWifL6DUkXCF?=
+ =?us-ascii?Q?d97pvpdQPR5YlOkXJXzOe1A+ohgOlAP2IFGr4qE5dGdFrEhgCeZHbJSUDKR6?=
+ =?us-ascii?Q?7cjIJx3cRX1QgVf2Be9LQ/wmPEeuww7FdCW1GqfesxI/EuDil7rInwCr6Ku6?=
+ =?us-ascii?Q?qaxl5BaqtspbpIHX/g1Q2llagFr8NgEQH+ICUPMS1Gujto4WQf0Ji/qrsjuN?=
+ =?us-ascii?Q?4llAWOZAqKWUI50IQx3c1sB90dFMU0dbKQWZB9+/7xgBzEf3uDfIS2W52f6r?=
+ =?us-ascii?Q?wNDvaSsE4ErpPBEkhWbcLpKQjVbNYL3ikbZqUOCM6832gp/xrh7MCjLsSQM/?=
+ =?us-ascii?Q?OJTq/wCMHVJqU90ssjYVSd8rJZVlu2wSbP3qwlYmg9MIZnrIhKh4CLzzcTyH?=
+ =?us-ascii?Q?FdXHI2LhIfkdlnsOxOFt9E7yjHfxqLvjnnq6VQ9Y1yl0Ee5JclufvS9wMU6d?=
+ =?us-ascii?Q?hyURvgs+AZJ+afHScuVKGilsbNjBegWumO3vhniDqf9hbGujjt7KpJS89/EA?=
+ =?us-ascii?Q?2W43hZS+yImoD43OIuIx3S1NvWgTeE1XOElP7ThGP/MbPIYneo/DvrLOc2VI?=
+ =?us-ascii?Q?1U4USjVwc8A1YGQBLg1taMlwL3c7MSeTy50lv2n2I7SHgZ21g3RbZT43dvWG?=
+ =?us-ascii?Q?loVcsYYZUMNOCib64cT8bspmU9UfFoNyMh0tFCyTDi2fcj3RA4Fkuvp6otKm?=
+ =?us-ascii?Q?sZyEJG7r+UpcbDMuYlfz5HUODw0XTMxZrS3YwKb1nnvK+7q/9jlt7+D6no8J?=
+ =?us-ascii?Q?gKyXJx/VB7P0kXiPYRRvzcQdgnF4+i+CP2gJUVWnDkR+7R7Imflo9Mlmsm6j?=
+ =?us-ascii?Q?FS9KrNBkLbGw774U5f3iQ6n8gOaeHFaSTtrUS4OJwuYm9RvWMgrCbSt1XtS9?=
+ =?us-ascii?Q?PV61TLbkoju34K1SeeMRdiuQus4kVwrkumuj0C2X78/OCzaWT1KahdW+blD7?=
+ =?us-ascii?Q?//cHw5QPbt+lC3hZTw9GKLjH2h69ryzz/YgPEKMHulF+P7NWtY+TsLSKQvM3?=
+ =?us-ascii?Q?ZCfBTp51ukaeukNyWovZGjBk6AassRv+zjq3hzbxE8UbAXVa5szStmwG+0iB?=
+ =?us-ascii?Q?P4eACoTJqlvR6NGQMwO5EqO9ehPrPIffUU4y0A35mDUPe64E6d2GTAs3QOR/?=
+ =?us-ascii?Q?rHOgOYWVUXKhy2UrJVgN+n8tpvt1tvpI/JHCOlCZtkPdZ6+OX0A8XxexByhO?=
+ =?us-ascii?Q?eK/r1deha9EeGZm2YGvWndRcc7I6HUvNhilmYHRHDC62ve4/dnbCdm/YaiLr?=
+ =?us-ascii?Q?IQ=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: ab54e4d4-340b-4943-a71d-08db314c0996
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Mar 2023 18:24:45.3012
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: rwIxkbG2533X/ldP0kenhJRQgXhZAzgXWbQb5TFmw5CxNy5vypRuBQcSD31KIeItqc0NHZr+mJjJBISwjaGcZbm+YeuXgWrp6CtX3QdOPjQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR11MB7638
+X-OriginatorOrg: intel.com
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Jonathan Cameron wrote:
+> On Wed, 29 Mar 2023 14:35:55 -0700
+> Dan Williams <dan.j.williams@intel.com> wrote:
+> 
+> > One motivation for mapping range registers to decoder objects is
+> > to use those settings for region autodiscovery.
+> > 
+> > The need to map a region for devices programmed to use range registers
+> > is especially urgent now that the kernel no longer routes "Soft
+> > Reserved" ranges in the memory map to device-dax by default. The CXL
+> > memory range loses all access mechanisms.
+> > 
+> > Complete the implementation by filling out ways and granularity, marking
+> > the DPA reservation, and setting the endpoint-decoder state to signal
+> > autodiscovery.
+> > 
+> > Fixes: 09d09e04d2fc ("cxl/dax: Create dax devices for CXL RAM regions")
+> > Tested-by: Dave Jiang <dave.jiang@intel.com>
+> > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> > ---
+> >  drivers/cxl/core/hdm.c |   30 ++++++++++++++++++++++++------
+> >  1 file changed, 24 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> > index 9884b6d4d930..5339c0719177 100644
+> > --- a/drivers/cxl/core/hdm.c
+> > +++ b/drivers/cxl/core/hdm.c
+> > @@ -738,20 +738,26 @@ static int cxl_decoder_reset(struct cxl_decoder *cxld)
+> >  	return 0;
+> >  }
+> >  
+> > -static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+> > -					    struct cxl_decoder *cxld, int which,
+> > -					    struct cxl_endpoint_dvsec_info *info)
+> > +static int cxl_setup_hdm_decoder_from_dvsec(
+> > +	struct cxl_port *port, struct cxl_decoder *cxld, u64 *dpa_base,
+> > +	int which, struct cxl_endpoint_dvsec_info *info)
+> >  {
+> > +	struct cxl_endpoint_decoder *cxled;
+> > +	struct range *range;
+> > +	int rc;
+> > +
+> >  	if (!is_cxl_endpoint(port))
+> >  		return -EOPNOTSUPP;
+> >  
+> > -	if (!range_len(&info->dvsec_range[which]))
+> > +	cxled = to_cxl_endpoint_decoder(&cxld->dev);
+> > +	range = &info->dvsec_range[which];
+> > +	if (!range_len(range))
+> 
+> You call range_len(range) quite a few times in here.
+> I'd be tempted to suggest a more minor diff of
+> 
+> 	u64 len;
+> 	...
+> 
+> 	len = range_len(&info->dvsec_range[which]);
+> 
+> then use that throughout and don't bother with
+> the local range variable.
+> 
+> range is a bit odd to keep in a local variable as
+> it's not immediately obvious it's an hpa range - obviously you
+> could call it hpa_range which would help, but feels like
+> the length is the important bit except in one place.
+
+Done.
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F0ADC76196
+	for <linux-cxl@archiver.kernel.org>; Mon,  3 Apr 2023 23:06:18 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S233773AbjDCXGR (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 3 Apr 2023 19:06:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43934 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233723AbjDCXGR (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 3 Apr 2023 19:06:17 -0400
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3A5AA8
+        for <linux-cxl@vger.kernel.org>; Mon,  3 Apr 2023 16:06:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680563175; x=1712099175;
+  h=subject:from:to:cc:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=LduSQlEmDuRBUPQLoUBunWoyhUYcAiAySEiUnMY2GZk=;
+  b=D7GaLIB/KIAY/n4N8ovNJR0I6O8xqJFa9hNdkUwauXCY7md8orD9faJm
+   R7QrqAFVpj79sB6cKeweBQCYgsW1yxtZrbtTmKpKr/hjNLUzbbWeM4u/9
+   l1/VXTqv24ODvz+VRCwYytWCgLbP/rwNIkxd4C5qbpH4f1MDAg6FYdw9O
+   NaGkzdBejiXZvHYAXvvSLVJfV2Ru1UYbEQIuaGMmjyKMAy8AzxpRdQerJ
+   oDPa2Gc9rTmDySnP1gI1Spu2uuNCKSGsEQnv8of6/mYyU3P4rFTVz4x0k
+   ZUoZiUO5K6Sto1HC7kXOamkRLjH92mgFykBtd0miC3vq3iMYHWvslxKsP
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="342062664"
+X-IronPort-AV: E=Sophos;i="5.98,315,1673942400"; 
+   d="scan'208";a="342062664"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2023 16:06:15 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="775398287"
+X-IronPort-AV: E=Sophos;i="5.98,315,1673942400"; 
+   d="scan'208";a="775398287"
+Received: from kkohner-mobl.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.97.191])
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2023 16:06:14 -0700
+Subject: [PATCH v2] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+From: Dan Williams <dan.j.williams@intel.com>
+To: linux-cxl@vger.kernel.org
+Cc: Dave Jiang <dave.jiang@intel.com>,
+        Gregory Price <gregory.price@memverge.com>
+Date: Mon, 03 Apr 2023 16:06:14 -0700
+Message-ID: <168056315526.436217.14417826023537916154.stgit@dwillia2-xfh.jf.intel.com>
+In-Reply-To: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+User-Agent: StGit/0.18-3-g996c
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+One motivation for mapping range registers to decoder objects is
+to use those settings for region autodiscovery.
+
+The need to map a region for devices programmed to use range registers
+is especially urgent now that the kernel no longer routes "Soft
+Reserved" ranges in the memory map to device-dax by default. The CXL
+memory range loses all access mechanisms.
+
+Complete the implementation by filling out ways and granularity, marking
+the DPA reservation, and setting the endpoint-decoder state to signal
+autodiscovery.
+
+Fixes: 09d09e04d2fc ("cxl/dax: Create dax devices for CXL RAM regions")
+Tested-by: Dave Jiang <dave.jiang@intel.com>
+Tested-by: Gregory Price <gregory.price@memverge.com>
+Link: https://lore.kernel.org/r/168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+Changes since v1:
+- Swap out the local @range variable which was mostly only used for the
+  mapping length with a @len variable for that purpose (Jonathan)
+
+ drivers/cxl/core/hdm.c |   27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+index 9884b6d4d930..02cc2c38b44b 100644
+--- a/drivers/cxl/core/hdm.c
++++ b/drivers/cxl/core/hdm.c
+@@ -738,14 +738,20 @@ static int cxl_decoder_reset(struct cxl_decoder *cxld)
+ 	return 0;
+ }
+ 
+-static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+-					    struct cxl_decoder *cxld, int which,
+-					    struct cxl_endpoint_dvsec_info *info)
++static int cxl_setup_hdm_decoder_from_dvsec(
++	struct cxl_port *port, struct cxl_decoder *cxld, u64 *dpa_base,
++	int which, struct cxl_endpoint_dvsec_info *info)
+ {
++	struct cxl_endpoint_decoder *cxled;
++	u64 len;
++	int rc;
++
+ 	if (!is_cxl_endpoint(port))
+ 		return -EOPNOTSUPP;
+ 
+-	if (!range_len(&info->dvsec_range[which]))
++	cxled = to_cxl_endpoint_decoder(&cxld->dev);
++	len = range_len(&info->dvsec_range[which]);
++	if (!len)
+ 		return -ENOENT;
+ 
+ 	cxld->target_type = CXL_DECODER_EXPANDER;
+@@ -760,6 +766,16 @@ static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+ 	cxld->flags |= CXL_DECODER_F_ENABLE | CXL_DECODER_F_LOCK;
+ 	port->commit_end = cxld->id;
+ 
++	rc = devm_cxl_dpa_reserve(cxled, *dpa_base, len, 0);
++	if (rc) {
++		dev_err(&port->dev,
++			"decoder%d.%d: Failed to reserve DPA range %#llx - %#llx\n (%d)",
++			port->id, cxld->id, *dpa_base, *dpa_base + len - 1, rc);
++		return rc;
++	}
++	*dpa_base += len;
++	cxled->state = CXL_DECODER_STATE_AUTO;
++
+ 	return 0;
+ }
+ 
+@@ -779,7 +795,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+ 	} target_list;
+ 
+ 	if (should_emulate_decoders(info))
+-		return cxl_setup_hdm_decoder_from_dvsec(port, cxld, which, info);
++		return cxl_setup_hdm_decoder_from_dvsec(port, cxld, dpa_base,
++							which, info);
+ 
+ 	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
+ 	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1B59C76188
+	for <linux-cxl@archiver.kernel.org>; Mon,  3 Apr 2023 23:44:31 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231246AbjDCXob (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 3 Apr 2023 19:44:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58984 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233886AbjDCXo3 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 3 Apr 2023 19:44:29 -0400
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E806235A1
+        for <linux-cxl@vger.kernel.org>; Mon,  3 Apr 2023 16:44:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680565465; x=1712101465;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=cykA4A8nqg/kZp5yVx1emL8MjYljRQhmKPPNOaEXNVM=;
+  b=hW3YrV6m39D1mD7RhS6TFW8S4MQCvRzNh1VJo8kfa6VabSqMWhpN4tnC
+   0dZFVDeOvAg0Q5EMJp4JDSjvL0NGY8Hk9MWGJCFrPMr429iAdenlp5Q0i
+   G2/7C2EZvr7ABmxwRLRdCbuuEcxFd/LhSRmAj+eAAKVzBcOVKl/OxXp3v
+   vxmHP+60SqbcEkruRDES0wcoph9tI1YpQ/uw/auHIr3W6MlhlVDREI3Cu
+   pcaaOiSy+++q0y2gk9mLBUZaVwnbw6N056R1mxltcPGa5MnFZUv6DC3XR
+   fuCS+MMeFxjAGjzvdz0IhcSikTF1Syq50gvtygXacMnMDMQMktDvS5UqG
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="322438167"
+X-IronPort-AV: E=Sophos;i="5.98,316,1673942400"; 
+   d="scan'208";a="322438167"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2023 16:44:25 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="750691519"
+X-IronPort-AV: E=Sophos;i="5.98,316,1673942400"; 
+   d="scan'208";a="750691519"
+Received: from djiang5-mobl3.amr.corp.intel.com (HELO [10.213.181.144]) ([10.213.181.144])
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2023 16:44:25 -0700
+Message-ID: <1dc1b324-8e77-f98d-3fd0-a20cbf328d2f@intel.com>
+Date: Mon, 3 Apr 2023 16:44:24 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.9.0
+Subject: Re: [PATCH v2] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+Content-Language: en-US
+To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
+Cc: Gregory Price <gregory.price@memverge.com>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+ <168056315526.436217.14417826023537916154.stgit@dwillia2-xfh.jf.intel.com>
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <168056315526.436217.14417826023537916154.stgit@dwillia2-xfh.jf.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+
+
+On 4/3/23 4:06 PM, Dan Williams wrote:
+> One motivation for mapping range registers to decoder objects is
+> to use those settings for region autodiscovery.
+> 
+> The need to map a region for devices programmed to use range registers
+> is especially urgent now that the kernel no longer routes "Soft
+> Reserved" ranges in the memory map to device-dax by default. The CXL
+> memory range loses all access mechanisms.
+> 
+> Complete the implementation by filling out ways and granularity, marking
+> the DPA reservation, and setting the endpoint-decoder state to signal
+> autodiscovery.
+
+If you don't mind making a note that the default values of ways and 
+granularity are coming from cxl_decode_init(). Thanks.
+
+> 
+> Fixes: 09d09e04d2fc ("cxl/dax: Create dax devices for CXL RAM regions")
+> Tested-by: Dave Jiang <dave.jiang@intel.com>
+> Tested-by: Gregory Price <gregory.price@memverge.com>
+> Link: https://lore.kernel.org/r/168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+
+> ---
+> Changes since v1:
+> - Swap out the local @range variable which was mostly only used for the
+>    mapping length with a @len variable for that purpose (Jonathan)
+> 
+>   drivers/cxl/core/hdm.c |   27 ++++++++++++++++++++++-----
+>   1 file changed, 22 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 9884b6d4d930..02cc2c38b44b 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -738,14 +738,20 @@ static int cxl_decoder_reset(struct cxl_decoder *cxld)
+>   	return 0;
+>   }
+>   
+> -static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+> -					    struct cxl_decoder *cxld, int which,
+> -					    struct cxl_endpoint_dvsec_info *info)
+> +static int cxl_setup_hdm_decoder_from_dvsec(
+> +	struct cxl_port *port, struct cxl_decoder *cxld, u64 *dpa_base,
+> +	int which, struct cxl_endpoint_dvsec_info *info)
+>   {
+> +	struct cxl_endpoint_decoder *cxled;
+> +	u64 len;
+> +	int rc;
+> +
+>   	if (!is_cxl_endpoint(port))
+>   		return -EOPNOTSUPP;
+>   
+> -	if (!range_len(&info->dvsec_range[which]))
+> +	cxled = to_cxl_endpoint_decoder(&cxld->dev);
+> +	len = range_len(&info->dvsec_range[which]);
+> +	if (!len)
+>   		return -ENOENT;
+>   
+>   	cxld->target_type = CXL_DECODER_EXPANDER;
+> @@ -760,6 +766,16 @@ static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+>   	cxld->flags |= CXL_DECODER_F_ENABLE | CXL_DECODER_F_LOCK;
+>   	port->commit_end = cxld->id;
+>   
+> +	rc = devm_cxl_dpa_reserve(cxled, *dpa_base, len, 0);
+> +	if (rc) {
+> +		dev_err(&port->dev,
+> +			"decoder%d.%d: Failed to reserve DPA range %#llx - %#llx\n (%d)",
+> +			port->id, cxld->id, *dpa_base, *dpa_base + len - 1, rc);
+> +		return rc;
+> +	}
+> +	*dpa_base += len;
+> +	cxled->state = CXL_DECODER_STATE_AUTO;
+> +
+>   	return 0;
+>   }
+>   
+> @@ -779,7 +795,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>   	} target_list;
+>   
+>   	if (should_emulate_decoders(info))
+> -		return cxl_setup_hdm_decoder_from_dvsec(port, cxld, which, info);
+> +		return cxl_setup_hdm_decoder_from_dvsec(port, cxld, dpa_base,
+> +							which, info);
+>   
+>   	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
+>   	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+> 
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 096EBC76188
+	for <linux-cxl@archiver.kernel.org>; Tue,  4 Apr 2023 00:08:36 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229446AbjDDAIf (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 3 Apr 2023 20:08:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38498 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231468AbjDDAId (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 3 Apr 2023 20:08:33 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AB2E3C14
+        for <linux-cxl@vger.kernel.org>; Mon,  3 Apr 2023 17:08:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680566912; x=1712102912;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=kAphUKoMSJlF3whUDEyzj2wjGeE5U3I1sjjrlT26QGQ=;
+  b=f4Le11QT3x6CR4f8YU0IYmOw9Fan8TT0PzhWt4vxLQWmMwacfIUv7nFk
+   352f/GU0sWkDr71AaCP3DachQcfdmUfydfIY4ZpdXAePlAJTyrYHbolro
+   i7tRQudSdrfhIqsf0DFfRqtptYTcVKPwYnnM1POIJoojJU5FP3QhclMHA
+   GpGSv9kQu9R4re6Rl3IFTvoKJK5fzz7/+GdKa1V1f9ivBUrubOuySw+ao
+   f5aHwBSH0I2rKJJ4xP0P5VgPX2MeImB3Kmf9PlYFKVPxXLlmJ6ggb/iNK
+   dR0FIP67QU25igKnM9r2aEoRZyf1AJeiodB4RjPClQxN+mwhEZScFNTS2
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="404807227"
+X-IronPort-AV: E=Sophos;i="5.98,316,1673942400"; 
+   d="scan'208";a="404807227"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2023 17:08:31 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="797284389"
+X-IronPort-AV: E=Sophos;i="5.98,316,1673942400"; 
+   d="scan'208";a="797284389"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+  by fmsmga002.fm.intel.com with ESMTP; 03 Apr 2023 17:08:30 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Mon, 3 Apr 2023 17:08:30 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Mon, 3 Apr 2023 17:08:30 -0700
+Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21 via Frontend Transport; Mon, 3 Apr 2023 17:08:30 -0700
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (104.47.59.172)
+ by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.21; Mon, 3 Apr 2023 17:08:29 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=E69WIFCERWOlcULxoGVMyd0Uu6R7XkrdWNvbA/LwNsRn71eP1KEL1UhFUjrdEPW03zpIuXUk2eUF47KG1g1ArkCDi3NKFjujeueU4LGbwRphLK7o360ZZTMVKaYRM3FrhhebsELFehSRHOi4VM0M2lO9yBeX4CJSv60VgrB/a43eyMVd8QcQZyzWkhxBWDhQZuxjmWPnjOM9t7J5iMJcRbe61kNYN2D1yghdlNTj49iQ+uu5kNe2mCD65Mak0YVRYs+Y/oFm/a5Q12j6y/8fDkUZ/wso5+IF2wjZnRfTAV1+eJJJVW4PYLkTKDM81uMyNanOiIjJ4vnqbcszk++vKA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/M9iJsfGx8Ad7Lx+v6hPa/tBy5eN7VQVnZ/a8DeAAq4=;
+ b=RhYqdtPEFKEQZa4QDsyQL356vUI4/Qw/XUiHEE4YRmDcmjVGU7HfmDSKIgXoMavf+Gzj6yCcax+SPMeA0R19sMW5cFY0JX7Q0IGGNeze0JAplnFqouPAHjFp1skjYsF5IJZZF1l2HgQSZ3s+7NLj+cz2PXZAnwDAOXWnbQ7/or3vBrpJjs9leMDlls632SUdzUbUv5VdTOhkEDnVI8unl9Jy4AbDXTTi0V2cDH4fuZdG5YAkNq3s9KsFfjMRJqNJOajHYYyrQ0JqkChp7TQz7YoWpmMJn6A46aNGV9O6eLTwMRmcFrSh9I/3vxxkNQFJ0o4jGm0KZvqAkdJvTJsG+A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by CH3PR11MB7201.namprd11.prod.outlook.com (2603:10b6:610:143::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6254.33; Tue, 4 Apr
+ 2023 00:08:28 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::ffa1:410b:20b3:6233]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::ffa1:410b:20b3:6233%5]) with mapi id 15.20.6254.033; Tue, 4 Apr 2023
+ 00:08:28 +0000
+Date: Mon, 3 Apr 2023 17:08:26 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+To: Dave Jiang <dave.jiang@intel.com>,
+        Dan Williams <dan.j.williams@intel.com>,
+        <linux-cxl@vger.kernel.org>
+CC: Gregory Price <gregory.price@memverge.com>
+Subject: Re: [PATCH v2] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+Message-ID: <642b6a7a3b806_29cc29486@dwillia2-xfh.jf.intel.com.notmuch>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+ <168056315526.436217.14417826023537916154.stgit@dwillia2-xfh.jf.intel.com>
+ <1dc1b324-8e77-f98d-3fd0-a20cbf328d2f@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1dc1b324-8e77-f98d-3fd0-a20cbf328d2f@intel.com>
+X-ClientProxiedBy: BYAPR06CA0020.namprd06.prod.outlook.com
+ (2603:10b6:a03:d4::33) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|CH3PR11MB7201:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1421dc61-5967-4880-edc5-08db34a0b755
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: crpvIzUq8IT+7Mcy5MDmJmHXv6yzv2eE2z4n/l1gOO+E2bIHnHePhSmK8f05Lk5K9DCJ2evHXiyl2hQtJInGrgFllXqdjUIYLcgWjQOxmLfwca2vW4NlZz3GhHLJ4p34DLlR39XRiPkGsoFydCFr8gLMxydqgZDQCoQqIg+U5VxOHw8fNhRk47491zzN/s1EVN/P5amBoIG6aR/DyyWT2p+QcCk9u9Gvzv0ujOP5vEtt/1SNwHxHqyrxu/JOBHakBY2Cd/e2d6i8tV+CooL83xU958TXRCi3FFpku8uihuTgfLTBGqi+SwHWJmH5hZKN6F/qXXGk4GR0i0XaXH628B/WQC0obUyOChHhEFPf8XDnyQkXQzYrdVTlhMm63mIHcm+X5QlgKxcQnM9LlJcXqHJ93QEWoeYH9P6rJh8No6pkt9igD3Rb+9bhtP2wMYr7BvigDpmbrG3CPc9zILDspeCFw6XDNQQ1UeE4zHAHE0p+c0jC2r7qjAKRioZSw3CfFDI2lLgJzOac3sULtF5ZOYtEzB8Tz55Aw2IcpgXDj1WOVD+/6M/yStL4QiN3klN8
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(39860400002)(136003)(376002)(396003)(346002)(366004)(451199021)(478600001)(4326008)(66556008)(8676002)(66476007)(66946007)(110136005)(8936002)(316002)(41300700001)(82960400001)(5660300002)(38100700002)(186003)(53546011)(83380400001)(9686003)(6486002)(26005)(6506007)(6512007)(86362001)(2906002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?Gyl1dG06Cg1TzUb/tWW/NFIwnGVvzDEgvGsPjO2PQrZTmEOUyuolnvF1nIYi?=
+ =?us-ascii?Q?2OnjfQap40RHOztiUYQRo9oRK5u1ITb7VGetD9iPF23Hj3up2bZQZf+fsa2H?=
+ =?us-ascii?Q?S9veu1nmc3Dp7iomyNwcDe+raMBq/+CdXsSAzdcQ2oRg/6bdF1bFM+u2Tcy1?=
+ =?us-ascii?Q?nc96al5lSqUvwR9s0fVENt2InV2VMStEjTre7rGA6zXG7XTqb8G4HmucACmH?=
+ =?us-ascii?Q?RCzwOhqW1ivdj5FLRgbAp3aGxsxlOMRXoxIK+ChrIMihM1wflRI6Bz/WBFuB?=
+ =?us-ascii?Q?JxLEG0HsmkEvQyLMavPrvgYQaQAA40mmo8Y4cNQRSbahhTsrzUEznL9eZljd?=
+ =?us-ascii?Q?bjQ1y6Sx6KVSlwKVSL1mEeVqyJ+5tNkEib5wuOzTYXOQlVXqndDKl8e5UAyi?=
+ =?us-ascii?Q?RjEnnWCbyAljDD2Slj6dMKQkiKv2mBg0bVX5YdapQgPoY6fBni2Z099uW8vE?=
+ =?us-ascii?Q?pqHrG2SJXgLll89Yyh7YDfBEXc7qriUwUuhz73bu96kxPOZPuhlWCY5PtpGp?=
+ =?us-ascii?Q?65X+WNFD6yo98B1BHBvfSgnclbG0KK5QUolKoBqQSx4bVJRslCZL/9TjyHf1?=
+ =?us-ascii?Q?VtAxaaPE6tKEWttOh1kKRwE5vpLt5zH89NDTXZGX0McJ4vhzbCrHmOTgPS1s?=
+ =?us-ascii?Q?ShKwVglHRU9v1eN9wt6ZfC2pRAkpZ8Kq2NgXooIyQZSTwOD5bKLA1geYe1Vb?=
+ =?us-ascii?Q?vjYQ15DIOOsOBsEVkd+qqVLq1MhZl29TuWyiEc3cYWzWOeN8SEJT5vPy+Shk?=
+ =?us-ascii?Q?rS5izlZgZIicQsUix/6QvH/rR1Fhq6t6EHUa2eCdJjZH96I/NHdIoLs09o2o?=
+ =?us-ascii?Q?tXvT9FZWASvWmIVxHf6q1pzXKamCJQ9OIu5V5KY8EORXME+IRe4KxtHU7vpS?=
+ =?us-ascii?Q?Uxq4OqFvN8mxRDdnWT2mwxs77nJ+iEDswRu1sOZj/GwrCU5Ui3AjBui+Vrn5?=
+ =?us-ascii?Q?3gMT404tjSejcPqOblGSPreRrdg1jlNs3XQmDvCTrbBAu8V4XN1Wi/ZyGET2?=
+ =?us-ascii?Q?zImXsL/MFSo9uTbnu/az2zvHgAPeW/pCyEsH8a+iJ8vXsLI9utzhV8ov/0Ru?=
+ =?us-ascii?Q?o2RJwQgAh+KxU1nv/LL3ty39gcz9SVOZig3Rhr+zoTMYH8iOvaOXgcMoNzwW?=
+ =?us-ascii?Q?4lHVUiN1JeX9yqAphqZhhDgekbMugoyPQ+UiQIpKoFg++A4sv7dTlM4l7iAU?=
+ =?us-ascii?Q?7rMrUDzcbT6k+wUvzMkqELVOhBVDucr1dydyBzNgVOE30kJFLXQ3BsckUXUc?=
+ =?us-ascii?Q?bxU6ZOXjN3beZNJnX8d57ysBenFIrj+TA4Zp9Gb9IZ9CCxBrboHJFB2DVEYa?=
+ =?us-ascii?Q?w1QWfSUSmrkBw2nDEmyS0kI/tjUWD/TwQEWB7b65Gb9vfGcUtE3dS5HOlFFs?=
+ =?us-ascii?Q?GPcSO80M0cJeuPU+ydWo2zEFX7jRGO27CEYhAK06IIfg3ZJFC2ptWK50JbaN?=
+ =?us-ascii?Q?WDyEQWxtoKpfuacsiSj0AmWAaVuEA1ThVVhJczB3bmrfQx5Rpe4kfc3v7uF6?=
+ =?us-ascii?Q?V3i2VF1g/rQW6wweyuHlkTuOMKCu325ajmI6MRfjX9GAyAzb+58uRrG98PjY?=
+ =?us-ascii?Q?QxTgEt+3IJsMuIHZXpJVzElWB8Ek1oybil3WNAj6PS9h2IY+1tVux4MCP9bh?=
+ =?us-ascii?Q?rw=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1421dc61-5967-4880-edc5-08db34a0b755
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Apr 2023 00:08:28.0357
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: WQftq7uHxsg/rCIsPMuA/ELpudriWk/xxgFYfwdVgxIfGZWxEiaogJG8Ci3dEjqVz5Y+NwfhUjlmHlH0gbSCp4YITVvobRLbOmJZ7LJ90Pk=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR11MB7201
+X-OriginatorOrg: intel.com
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Dave Jiang wrote:
+> 
+> 
+> On 4/3/23 4:06 PM, Dan Williams wrote:
+> > One motivation for mapping range registers to decoder objects is
+> > to use those settings for region autodiscovery.
+> > 
+> > The need to map a region for devices programmed to use range registers
+> > is especially urgent now that the kernel no longer routes "Soft
+> > Reserved" ranges in the memory map to device-dax by default. The CXL
+> > memory range loses all access mechanisms.
+> > 
+> > Complete the implementation by filling out ways and granularity, marking
+> > the DPA reservation, and setting the endpoint-decoder state to signal
+> > autodiscovery.
+> 
+> If you don't mind making a note that the default values of ways and 
+> granularity are coming from cxl_decode_init(). Thanks.
+
+Changed this paragraph to:
+
+Complete the implementation by marking the DPA reservation and setting
+the endpoint-decoder state to signal autodiscovery. Note that the
+default settings of ways=1 and granularity=4096 set in cxl_decode_init()
+do not need to be updated.
+
+> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+
+Thanks!
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B204C76188
+	for <linux-cxl@archiver.kernel.org>; Tue,  4 Apr 2023 00:17:03 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231552AbjDDARC (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 3 Apr 2023 20:17:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44442 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229576AbjDDARB (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 3 Apr 2023 20:17:01 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E20AA6
+        for <linux-cxl@vger.kernel.org>; Mon,  3 Apr 2023 17:17:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680567420; x=1712103420;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=gK3zfwjjvZEBkTTwY7Pll/xInJNT+a1e9MQ5dXe1oWc=;
+  b=d5MKusj2MgXmmJWot1x6s5l4AQomO0h7PZEKl2xTSC1JBexoC+nZ61SL
+   3kQANqlIfiUhJzdnW+scZ+s3w+MPUQ9SrjntxUY/AGe8gE5BVMaWfDxQg
+   Ej1+lFm47oZkGU7a67coY59SDSc/cqR//UPaAQZpO20G40NAc/oVqFVTy
+   Wl+Mu/X0tV41awfVcJf9Ieix3O2icZEmg6Klufhp5WybAp9lI7oB/47rt
+   idWZ2n1lxw09Cjbkrg3scSSCPwZb9taiKJtIjzTkQqlOTNXve1bl25lFh
+   MB39TDyNBP8X7JgzHXz1iS2o2QAnCiKj9472X58xivXvn8bTr+59ouaMV
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="326066102"
+X-IronPort-AV: E=Sophos;i="5.98,316,1673942400"; 
+   d="scan'208";a="326066102"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2023 17:16:59 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="636311991"
+X-IronPort-AV: E=Sophos;i="5.98,316,1673942400"; 
+   d="scan'208";a="636311991"
+Received: from djiang5-mobl3.amr.corp.intel.com (HELO [10.213.181.144]) ([10.213.181.144])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2023 17:16:59 -0700
+Message-ID: <f2ff608d-d984-1aab-18e2-ae1fcd65413c@intel.com>
+Date: Mon, 3 Apr 2023 17:16:58 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.9.0
+Subject: Re: [PATCH v2] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+Content-Language: en-US
+To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
+Cc: Gregory Price <gregory.price@memverge.com>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+ <168056315526.436217.14417826023537916154.stgit@dwillia2-xfh.jf.intel.com>
+ <1dc1b324-8e77-f98d-3fd0-a20cbf328d2f@intel.com>
+ <642b6a7a3b806_29cc29486@dwillia2-xfh.jf.intel.com.notmuch>
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <642b6a7a3b806_29cc29486@dwillia2-xfh.jf.intel.com.notmuch>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+
+
+On 4/3/23 5:08 PM, Dan Williams wrote:
+> Dave Jiang wrote:
+>>
+>>
+>> On 4/3/23 4:06 PM, Dan Williams wrote:
+>>> One motivation for mapping range registers to decoder objects is
+>>> to use those settings for region autodiscovery.
+>>>
+>>> The need to map a region for devices programmed to use range registers
+>>> is especially urgent now that the kernel no longer routes "Soft
+>>> Reserved" ranges in the memory map to device-dax by default. The CXL
+>>> memory range loses all access mechanisms.
+>>>
+>>> Complete the implementation by filling out ways and granularity, marking
+>>> the DPA reservation, and setting the endpoint-decoder state to signal
+>>> autodiscovery.
+>>
+>> If you don't mind making a note that the default values of ways and
+>> granularity are coming from cxl_decode_init(). Thanks.
+> 
+> Changed this paragraph to:
+> 
+> Complete the implementation by marking the DPA reservation and setting
+> the endpoint-decoder state to signal autodiscovery. Note that the
+> default settings of ways=1 and granularity=4096 set in cxl_decode_init()
+> do not need to be updated.
+
+LGTM
+
+> 
+>> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+> 
+> Thanks!
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22BD8C6FD1D
+	for <linux-cxl@archiver.kernel.org>; Tue,  4 Apr 2023 09:19:25 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S233955AbjDDJTY (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 4 Apr 2023 05:19:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53334 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234142AbjDDJTW (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 4 Apr 2023 05:19:22 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE7D41982
+        for <linux-cxl@vger.kernel.org>; Tue,  4 Apr 2023 02:19:13 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PrMYD6lxdz67YXJ;
+        Tue,  4 Apr 2023 17:15:12 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Tue, 4 Apr
+ 2023 10:19:10 +0100
+Date: Tue, 4 Apr 2023 10:19:09 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Dan Williams <dan.j.williams@intel.com>
+CC: <linux-cxl@vger.kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+        "Gregory Price" <gregory.price@memverge.com>
+Subject: Re: [PATCH v2] cxl/hdm: Extend DVSEC range register emulation for
+ region enumeration
+Message-ID: <20230404101909.0000695a@Huawei.com>
+In-Reply-To: <168056315526.436217.14417826023537916154.stgit@dwillia2-xfh.jf.intel.com>
+References: <168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com>
+        <168056315526.436217.14417826023537916154.stgit@dwillia2-xfh.jf.intel.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Mon, 03 Apr 2023 16:06:14 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
+
+> One motivation for mapping range registers to decoder objects is
+> to use those settings for region autodiscovery.
+> 
+> The need to map a region for devices programmed to use range registers
+> is especially urgent now that the kernel no longer routes "Soft
+> Reserved" ranges in the memory map to device-dax by default. The CXL
+> memory range loses all access mechanisms.
+> 
+> Complete the implementation by filling out ways and granularity, marking
+> the DPA reservation, and setting the endpoint-decoder state to signal
+> autodiscovery.
+> 
+> Fixes: 09d09e04d2fc ("cxl/dax: Create dax devices for CXL RAM regions")
+> Tested-by: Dave Jiang <dave.jiang@intel.com>
+> Tested-by: Gregory Price <gregory.price@memverge.com>
+> Link: https://lore.kernel.org/r/168012575521.221280.14177293493678527326.stgit@dwillia2-xfh.jf.intel.com
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+LGTM
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+> ---
+> Changes since v1:
+> - Swap out the local @range variable which was mostly only used for the
+>   mapping length with a @len variable for that purpose (Jonathan)
+> 
+>  drivers/cxl/core/hdm.c |   27 ++++++++++++++++++++++-----
+>  1 file changed, 22 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 9884b6d4d930..02cc2c38b44b 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -738,14 +738,20 @@ static int cxl_decoder_reset(struct cxl_decoder *cxld)
+>  	return 0;
+>  }
+>  
+> -static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+> -					    struct cxl_decoder *cxld, int which,
+> -					    struct cxl_endpoint_dvsec_info *info)
+> +static int cxl_setup_hdm_decoder_from_dvsec(
+> +	struct cxl_port *port, struct cxl_decoder *cxld, u64 *dpa_base,
+> +	int which, struct cxl_endpoint_dvsec_info *info)
+>  {
+> +	struct cxl_endpoint_decoder *cxled;
+> +	u64 len;
+> +	int rc;
+> +
+>  	if (!is_cxl_endpoint(port))
+>  		return -EOPNOTSUPP;
+>  
+> -	if (!range_len(&info->dvsec_range[which]))
+> +	cxled = to_cxl_endpoint_decoder(&cxld->dev);
+> +	len = range_len(&info->dvsec_range[which]);
+> +	if (!len)
+>  		return -ENOENT;
+>  
+>  	cxld->target_type = CXL_DECODER_EXPANDER;
+> @@ -760,6 +766,16 @@ static int cxl_setup_hdm_decoder_from_dvsec(struct cxl_port *port,
+>  	cxld->flags |= CXL_DECODER_F_ENABLE | CXL_DECODER_F_LOCK;
+>  	port->commit_end = cxld->id;
+>  
+> +	rc = devm_cxl_dpa_reserve(cxled, *dpa_base, len, 0);
+> +	if (rc) {
+> +		dev_err(&port->dev,
+> +			"decoder%d.%d: Failed to reserve DPA range %#llx - %#llx\n (%d)",
+> +			port->id, cxld->id, *dpa_base, *dpa_base + len - 1, rc);
+> +		return rc;
+> +	}
+> +	*dpa_base += len;
+> +	cxled->state = CXL_DECODER_STATE_AUTO;
+> +
+>  	return 0;
+>  }
+>  
+> @@ -779,7 +795,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  	} target_list;
+>  
+>  	if (should_emulate_decoders(info))
+> -		return cxl_setup_hdm_decoder_from_dvsec(port, cxld, which, info);
+> +		return cxl_setup_hdm_decoder_from_dvsec(port, cxld, dpa_base,
+> +							which, info);
+>  
+>  	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
+>  	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+> 
+
+

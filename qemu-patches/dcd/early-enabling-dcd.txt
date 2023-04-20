@@ -1,0 +1,179 @@
+Since the early draft of DCD support at kernel is out last week (https://lore.kernel.org/linux-cxl/20230417164126.GA1904906@bgt-140510-bm03/T/#t), we share the early enabling of dcd emulation in qemu so people who are interested can have a early try and use it as base to carry the feature on. The code is only for early code path check and not ready for review yet. 
+
+Here is the qemu code branch:  
+https://github.com/moking/qemu-dev/tree/dcd-v2
+
+What we can do with the code together with kernel dcd code:
+1. load the cxl modules touching identify memory device 
+2. touch the code path of the mailbox command to get dc region info (spec 3.0, 8.2.9.8.9) on both kernel and qemu side
+3. touch the code path of the mailbox command to get dc extent list info
+4. touch the dc region related code to create dc region
+5. using qmp interface to add one dc exent and the kernel was able to create dax device for the extent, and the memory can show as offline RAM. And the extent can be released with the qmp dc extent release interface. Re-add a released dc extent has issue.
+6. NOTE: real read/write access to the dynamic capacity is not supported yet.
+
+What operations have been tested:
+1. install the cxl modules 
+	modprobe -a cxl_acpi cxl_core cxl_pci cxl_port cxl_mem
+
+2. create dc regions:
+
+region=$(cat /sys/bus/cxl/devices/decoder0.0/create_dc_region)
+echo $region> /sys/bus/cxl/devices/decoder0.0/create_dc_region
+echo 256 > /sys/bus/cxl/devices/$region/interleave_granularity
+echo 1 > /sys/bus/cxl/devices/$region/interleave_ways
+
+echo "dc" >/sys/bus/cxl/devices/decoder2.0/mode
+echo 0x10000000 >/sys/bus/cxl/devices/decoder2.0/dpa_size
+
+echo 0x10000000 > /sys/bus/cxl/devices/$region/size
+echo  "decoder2.0" > /sys/bus/cxl/devices/$region/target0
+echo 1 > /sys/bus/cxl/devices/$region/commit
+echo $region > /sys/bus/cxl/drivers/cxl_region/bind
+
+root@bgt-140510-bm03:/home/fan/cxl/tools-and-scripts# cxl list
+[
+  {
+    "memdevs":[
+      {
+        "memdev":"mem0",
+        "pmem_size":536870912,
+        "ram_size":0,
+        "serial":0,
+        "host":"0000:0d:00.0"
+      }
+    ]
+  },
+  {
+    "regions":[
+      {
+        "region":"region0",
+        "resource":45365592064,
+        "size":268435456,
+        "interleave_ways":1,
+        "interleave_granularity":256,
+        "decode_state":"commit"
+      }
+    ]
+  }
+]
+
+
+3. add one dc extent (128MB) through qmp interface
+
+{ "execute": "qmp_capabilities" }                                               
+                                                                                
+{ "execute": "cxl-add-dynamic-capacity-event",                                  
+    "arguments": {                                                              
+         "path": "/machine/peripheral/cxl-pmem0",                               
+         "num-extent": 1                                                        
+    }                                                                           
+}                  
+
+root@bgt-140510-bm03:/home/fan/cxl/tools-and-scripts# lsmem 
+RANGE                                  SIZE   STATE REMOVABLE BLOCK
+0x0000000000000000-0x000000007fffffff    2G  online       yes  0-15
+0x0000000100000000-0x000000027fffffff    6G  online       yes 32-79
+0x0000000a90000000-0x0000000a97ffffff  128M offline             338
+
+Memory block size:       128M
+Total online memory:       8G
+Total offline memory:    128M
+
+
+4. release the dc extent (128MB) added through qmp interface
+
+{ "execute": "cxl-release-dynamic-capacity-event",                                                                                                                                                                                                            
+    "arguments": {                                                              
+         "path": "/machine/peripheral/cxl-pmem0",                               
+         "num-extent": 1                                                        
+    }                                                                           
+}                                                                               
+~                     
+root@bgt-140510-bm03:/home/fan/cxl/tools-and-scripts# lsmem 
+RANGE                                 SIZE  STATE REMOVABLE BLOCK
+0x0000000000000000-0x000000007fffffff   2G online       yes  0-15
+0x0000000100000000-0x000000027fffffff   6G online       yes 32-79
+
+Memory block size:       128M
+Total online memory:       8G
+Total offline memory:      0B
+
+
+
+QEMU command cxl configuration:
+
+RP1="-object memory-backend-file,id=cxl-mem1,share=on,mem-path=/tmp/cxltest.raw,size=512M \
+-object memory-backend-file,id=cxl-mem2,share=on,mem-path=/tmp/cxltest.raw,size=512M \
+-object memory-backend-file,id=cxl-lsa1,share=on,mem-path=/tmp/lsa.raw,size=512M \
+-device pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1 \                            
+-device cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2 \          
+-device cxl-type3,bus=root_port13,memdev=cxl-mem1,lsa=cxl-lsa1,dc-memdev=cxl-mem2,id=cxl-pmem0,num-dc-regions=1\
+-M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G,cxl-fmw.0.interleave-granularity=8k"
+
+
+The code is tested with the posted kernel dcd support:
+https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=for-6.5/dcd-preview
+
+To make the test work, we have made the following changes to the above kernel code:
+
+
+diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+index 5f04bbc18af5..5f421d3c5cef 100644
+--- a/drivers/cxl/core/mbox.c
++++ b/drivers/cxl/core/mbox.c
+@@ -68,6 +68,7 @@ static struct cxl_mem_command cxl_mem_commands[CXL_MEM_COMMAND_ID_MAX] = {
+ 	CXL_CMD(SCAN_MEDIA, 0x11, 0, 0),
+ 	CXL_CMD(GET_SCAN_MEDIA, 0, CXL_VARIABLE_PAYLOAD, 0),
+ 	CXL_CMD(GET_DC_EXTENT_LIST, 0x8, CXL_VARIABLE_PAYLOAD, 0),
++	CXL_CMD(GET_DC_CONFIG, 0x2, CXL_VARIABLE_PAYLOAD, 0),
+ };
+ 
+ /*
+diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
+index 291c716abd49..ae10e3cf43a1 100644
+--- a/drivers/cxl/core/region.c
++++ b/drivers/cxl/core/region.c
+@@ -194,7 +194,7 @@ static int cxl_region_manage_dc(struct cxl_region *cxlr)
+ 		}
+ 		cxlds->dc_list_gen_num = extent_gen_num;
+ 		dev_dbg(cxlds->dev, "No of preallocated extents :%d\n", rc);
+-		enable_irq(cxlds->cxl_irq[CXL_EVENT_TYPE_DCD]);
++		/*enable_irq(cxlds->cxl_irq[CXL_EVENT_TYPE_DCD]);*/
+ 	}
+ 	return 0;
+ err:
+@@ -2810,7 +2810,8 @@ int cxl_add_dc_extent(struct cxl_dev_state *cxlds, struct resource *alloc_dpa_re
+ 				dev_dax->align, memremap_compat_align()))) {
+ 		rc = alloc_dev_dax_range(dev_dax, hpa,
+ 					resource_size(alloc_dpa_res));
+-		return rc;
++		if (rc)
++			return rc;
+ 	}
+ 
+ 	rc = xa_insert(&cxlr_dc->dax_dev_list, hpa, dev_dax, GFP_KERNEL);
+diff --git a/drivers/cxl/pci.c b/drivers/cxl/pci.c
+index 9e45b1056022..653bec203838 100644
+--- a/drivers/cxl/pci.c
++++ b/drivers/cxl/pci.c
+@@ -659,7 +659,7 @@ static int cxl_event_irqsetup(struct cxl_dev_state *cxlds)
+ 
+ 	/* Driver enables DCD interrupt after creating the dc cxl_region */
+ 	rc = cxl_event_req_irq(cxlds, policy.dyncap_settings, CXL_EVENT_TYPE_DCD,
+-					IRQF_SHARED | IRQF_ONESHOT | IRQF_NO_AUTOEN);
++					IRQF_SHARED | IRQF_ONESHOT);
+ 	if (rc) {
+ 		dev_err(cxlds->dev, "Failed to get interrupt for event dc log\n");
+ 		return rc;
+diff --git a/include/uapi/linux/cxl_mem.h b/include/uapi/linux/cxl_mem.h
+index 6ca85861750c..910a48259239 100644
+--- a/include/uapi/linux/cxl_mem.h
++++ b/include/uapi/linux/cxl_mem.h
+@@ -47,6 +47,7 @@
+ 	___C(SCAN_MEDIA, "Scan Media"),                                   \
+ 	___C(GET_SCAN_MEDIA, "Get Scan Media Results"),                   \
+ 	___C(GET_DC_EXTENT_LIST, "Get dynamic capacity extents"),         \
++	___C(GET_DC_CONFIG, "Get dynamic capacity configuration"),         \
+ 	___C(MAX, "invalid / last command")
+ 
+ #define ___C(a, b) CXL_MEM_COMMAND_ID_##a
