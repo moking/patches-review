@@ -1,0 +1,455 @@
+From 5d722120a10d7263de3f874708cf795ca34c9c0c Mon Sep 17 00:00:00 2001
+From: Navneet Singh <navneet.singh@intel.com>
+Date: Fri, 7 Apr 2023 14:32:16 -0700
+Subject: [PATCH 2/7] cxl/region: Add dynamic capacity cxl region support.
+Status: RO
+Content-Length: 13888
+Lines: 446
+
+CXL devices optionally support dynamic capacity. CXL Regions must be created
+to access this capacity.
+
+Add sysfs entries to create dynamic capacity cxl regions. Provide a new
+Dynamic Capacity decoder mode which targets dynamic capacity on devices
+which are added to that region.
+
+Below are the steps to create and delete dynamic capacity region(example).
+
+    region=$(cat /sys/bus/cxl/devices/decoder0.0/create_dc_region)
+    echo $region> /sys/bus/cxl/devices/decoder0.0/create_dc_region
+    echo 256 > /sys/bus/cxl/devices/$region/interleave_granularity
+    echo 1 > /sys/bus/cxl/devices/$region/interleave_ways
+
+    echo "dc" >/sys/bus/cxl/devices/decoder1.0/mode
+    echo 0x400000000 >/sys/bus/cxl/devices/decoder1.0/dpa_size
+
+    echo 0x400000000 > /sys/bus/cxl/devices/$region/size
+    echo  "decoder1.0" > /sys/bus/cxl/devices/$region/target0
+    echo 1 > /sys/bus/cxl/devices/$region/commit
+    echo $region > /sys/bus/cxl/drivers/cxl_region/bind
+
+    echo $region> /sys/bus/cxl/devices/decoder0.0/delete_region
+
+Signed-off-by: Navneet Singh <navneet.singh@intel.com>
+[iweiny: fixups]
+[djbw: fixups, no sign-off: preview only]
+[TODO: kill add_dc_region_attribute(), make it static]
+---
+ drivers/cxl/core/core.h   |   1 +
+ drivers/cxl/core/hdm.c    |  48 +++++++++++++++--
+ drivers/cxl/core/port.c   |  23 ++++++++
+ drivers/cxl/core/region.c | 108 +++++++++++++++++++++++++++++++++++---
+ drivers/cxl/cxl.h         |  10 ++++
+ drivers/cxl/mem.c         |   8 +++
+ drivers/dax/cxl.c         |   4 ++
+ 7 files changed, 190 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/cxl/core/core.h b/drivers/cxl/core/core.h
+index cde475e13216..4efce25b2d3c 100644
+--- a/drivers/cxl/core/core.h
++++ b/drivers/cxl/core/core.h
+@@ -12,6 +12,7 @@ extern struct attribute_group cxl_base_attribute_group;
+ #ifdef CONFIG_CXL_REGION
+ extern struct device_attribute dev_attr_create_pmem_region;
+ extern struct device_attribute dev_attr_create_ram_region;
++extern struct device_attribute dev_attr_create_dc_region;
+ extern struct device_attribute dev_attr_delete_region;
+ extern struct device_attribute dev_attr_region;
+ extern const struct device_type cxl_pmem_region_type;
+diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+index 02cc2c38b44b..d1a8350a83e2 100644
+--- a/drivers/cxl/core/hdm.c
++++ b/drivers/cxl/core/hdm.c
+@@ -313,7 +313,9 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
+ 	cxled->dpa_res = res;
+ 	cxled->skip = skipped;
+ 
+-	if (resource_contains(&cxlds->pmem_res, res))
++	if (resource_contains(&cxlds->dc_res, res))
++		cxled->mode = CXL_DECODER_DC;
++	else if (resource_contains(&cxlds->pmem_res, res))
+ 		cxled->mode = CXL_DECODER_PMEM;
+ 	else if (resource_contains(&cxlds->ram_res, res))
+ 		cxled->mode = CXL_DECODER_RAM;
+@@ -417,6 +419,7 @@ int cxl_dpa_set_mode(struct cxl_endpoint_decoder *cxled,
+ 	switch (mode) {
+ 	case CXL_DECODER_RAM:
+ 	case CXL_DECODER_PMEM:
++	case CXL_DECODER_DC:
+ 		break;
+ 	default:
+ 		dev_dbg(dev, "unsupported mode: %d\n", mode);
+@@ -443,6 +446,11 @@ int cxl_dpa_set_mode(struct cxl_endpoint_decoder *cxled,
+ 		rc = -ENXIO;
+ 		goto out;
+ 	}
++	if (mode == CXL_DECODER_DC && !resource_size(&cxlds->dc_res)) {
++		dev_dbg(dev, "no available dynamic capacity\n");
++		rc = -ENXIO;
++		goto out;
++	}
+ 
+ 	cxled->mode = mode;
+ 	rc = 0;
+@@ -455,7 +463,7 @@ int cxl_dpa_set_mode(struct cxl_endpoint_decoder *cxled,
+ int cxl_dpa_alloc(struct cxl_endpoint_decoder *cxled, unsigned long long size)
+ {
+ 	struct cxl_memdev *cxlmd = cxled_to_memdev(cxled);
+-	resource_size_t free_ram_start, free_pmem_start;
++	resource_size_t free_ram_start, free_pmem_start, free_dc_start;
+ 	struct cxl_port *port = cxled_to_port(cxled);
+ 	struct cxl_dev_state *cxlds = cxlmd->cxlds;
+ 	struct device *dev = &cxled->cxld.dev;
+@@ -491,6 +499,13 @@ int cxl_dpa_alloc(struct cxl_endpoint_decoder *cxled, unsigned long long size)
+ 	else
+ 		free_pmem_start = cxlds->pmem_res.start;
+ 
++	for (p = cxlds->dc_res.child, last = NULL; p; p = p->sibling)
++		last = p;
++	if (last)
++		free_dc_start = last->end + 1;
++	else
++		free_dc_start = cxlds->dc_res.start;
++
+ 	if (cxled->mode == CXL_DECODER_RAM) {
+ 		start = free_ram_start;
+ 		avail = cxlds->ram_res.end - start + 1;
+@@ -512,6 +527,25 @@ int cxl_dpa_alloc(struct cxl_endpoint_decoder *cxled, unsigned long long size)
+ 		else
+ 			skip_end = start - 1;
+ 		skip = skip_end - skip_start + 1;
++	} else if (cxled->mode == CXL_DECODER_DC) {
++		resource_size_t skip_start, skip_end;
++
++		start = free_dc_start;
++		avail = cxlds->dc_res.end - start + 1;
++		if ((resource_size(&cxlds->pmem_res) == 0) || !cxlds->pmem_res.child)
++			skip_start = free_ram_start;
++		else
++			skip_start = free_pmem_start;
++		/*
++		 * If some dc is already allocated, then that allocation
++		 * already handled the skip.
++		 */
++		if (cxlds->dc_res.child &&
++		    skip_start == cxlds->dc_res.child->start)
++			skip_end = skip_start - 1;
++		else
++			skip_end = start - 1;
++		skip = skip_end - skip_start + 1;
+ 	} else {
+ 		dev_dbg(dev, "mode not set\n");
+ 		rc = -EINVAL;
+@@ -519,9 +553,15 @@ int cxl_dpa_alloc(struct cxl_endpoint_decoder *cxled, unsigned long long size)
+ 	}
+ 
+ 	if (size > avail) {
++		static const char * const names[] = {
++			[CXL_DECODER_NONE] = "none",
++			[CXL_DECODER_RAM] = "ram",
++			[CXL_DECODER_PMEM] = "pmem",
++			[CXL_DECODER_MIXED] = "mixed",
++			[CXL_DECODER_DC] = "dc",
++		};
+ 		dev_dbg(dev, "%pa exceeds available %s capacity: %pa\n", &size,
+-			cxled->mode == CXL_DECODER_RAM ? "ram" : "pmem",
+-			&avail);
++			names[cxled->mode], &avail);
+ 		rc = -ENOSPC;
+ 		goto out;
+ 	}
+diff --git a/drivers/cxl/core/port.c b/drivers/cxl/core/port.c
+index 4d1f9c5b5029..0e826ee77bec 100644
+--- a/drivers/cxl/core/port.c
++++ b/drivers/cxl/core/port.c
+@@ -196,6 +196,8 @@ static ssize_t mode_store(struct device *dev, struct device_attribute *attr,
+ 		mode = CXL_DECODER_PMEM;
+ 	else if (sysfs_streq(buf, "ram"))
+ 		mode = CXL_DECODER_RAM;
++	else if (sysfs_streq(buf, "dc"))
++		mode = CXL_DECODER_DC;
+ 	else
+ 		return -EINVAL;
+ 
+@@ -301,6 +303,27 @@ static struct attribute *cxl_decoder_root_attrs[] = {
+ 	NULL,
+ };
+ 
++int add_dc_region_attribute(struct device *dev, void *data)
++{
++	struct cxl_root_decoder *cxlrd;
++
++	if (!is_root_decoder(dev))
++		return 0;
++
++	cxlrd = to_cxl_root_decoder(dev);
++	if (!cxlrd->dc_sysfs_initialized) {
++		if (sysfs_add_file_to_group(&dev->kobj,
++				&dev_attr_create_dc_region.attr, NULL)) {
++			dev_err(dev, "Failed to create_dc_region file\n");
++			cxlrd->dc_sysfs_initialized = true;
++			return 1;
++		}
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_NS_GPL(add_dc_region_attribute, CXL);
++
+ static bool can_create_pmem(struct cxl_root_decoder *cxlrd)
+ {
+ 	unsigned long flags = CXL_DECODER_F_TYPE3 | CXL_DECODER_F_PMEM;
+diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
+index b2fd67fcebfb..46d60ffd1e02 100644
+--- a/drivers/cxl/core/region.c
++++ b/drivers/cxl/core/region.c
+@@ -2038,6 +2038,7 @@ static struct cxl_region *devm_cxl_add_region(struct cxl_root_decoder *cxlrd,
+ 	switch (mode) {
+ 	case CXL_DECODER_RAM:
+ 	case CXL_DECODER_PMEM:
++	case CXL_DECODER_DC:
+ 		break;
+ 	default:
+ 		dev_err(&cxlrd->cxlsd.cxld.dev, "unsupported mode %d\n", mode);
+@@ -2089,6 +2090,12 @@ static ssize_t create_ram_region_show(struct device *dev,
+ 	return __create_region_show(to_cxl_root_decoder(dev), buf);
+ }
+ 
++static ssize_t create_dc_region_show(struct device *dev,
++				      struct device_attribute *attr, char *buf)
++{
++	return __create_region_show(to_cxl_root_decoder(dev), buf);
++}
++
+ static struct cxl_region *__create_region(struct cxl_root_decoder *cxlrd,
+ 					  enum cxl_decoder_mode mode, int id)
+ {
+@@ -2146,6 +2153,26 @@ static ssize_t create_ram_region_store(struct device *dev,
+ }
+ DEVICE_ATTR_RW(create_ram_region);
+ 
++static ssize_t create_dc_region_store(struct device *dev,
++				       struct device_attribute *attr,
++				       const char *buf, size_t len)
++{
++	struct cxl_root_decoder *cxlrd = to_cxl_root_decoder(dev);
++	struct cxl_region *cxlr;
++	int rc, id;
++
++	rc = sscanf(buf, "region%d\n", &id);
++	if (rc != 1)
++		return -EINVAL;
++
++	cxlr = __create_region(cxlrd, CXL_DECODER_DC, id);
++	if (IS_ERR(cxlr))
++		return PTR_ERR(cxlr);
++
++	return len;
++}
++DEVICE_ATTR_RW(create_dc_region);
++
+ static ssize_t region_show(struct device *dev, struct device_attribute *attr,
+ 			   char *buf)
+ {
+@@ -2494,6 +2521,61 @@ static int devm_cxl_add_dax_region(struct cxl_region *cxlr)
+ 	return rc;
+ }
+ 
++static void cxl_dc_region_release(void *data)
++{
++	struct cxl_region *cxlr = data;
++	struct cxl_dc_region *cxlr_dc = cxlr->cxlr_dc;
++
++	xa_destroy(&cxlr_dc->dax_dev_list);
++	kfree(cxlr_dc);
++}
++
++static int devm_cxl_add_dc_region(struct cxl_region *cxlr)
++{
++	struct cxl_dc_region *cxlr_dc;
++	struct cxl_dax_region *cxlr_dax;
++	struct device *dev;
++	int rc = 0;
++
++	cxlr_dax = cxl_dax_region_alloc(cxlr);
++	if (IS_ERR(cxlr_dax))
++		return PTR_ERR(cxlr_dax);
++
++	cxlr_dc = kzalloc(sizeof(*cxlr_dc), GFP_KERNEL);
++	if (!cxlr_dc) {
++		rc = -ENOMEM;
++		goto err;
++	}
++
++	dev = &cxlr_dax->dev;
++	rc = dev_set_name(dev, "dax_region%d", cxlr->id);
++	if (rc)
++		goto err;
++
++	rc = device_add(dev);
++	if (rc)
++		goto err;
++
++	dev_dbg(&cxlr->dev, "%s: register %s\n", dev_name(dev->parent),
++		dev_name(dev));
++
++	rc = devm_add_action_or_reset(&cxlr->dev, cxlr_dax_unregister,
++					cxlr_dax);
++	if (rc)
++		goto err;
++
++	cxlr_dc->cxlr_dax = cxlr_dax;
++	xa_init(&cxlr_dc->dax_dev_list);
++	cxlr->cxlr_dc = cxlr_dc;
++	rc = devm_add_action_or_reset(&cxlr->dev, cxl_dc_region_release, cxlr);
++	if (!rc)
++		return 0;
++err:
++	put_device(dev);
++	kfree(cxlr_dc);
++	return rc;
++}
++
+ static int match_decoder_by_range(struct device *dev, void *data)
+ {
+ 	struct range *r1, *r2 = data;
+@@ -2712,6 +2794,19 @@ static int is_system_ram(struct resource *res, void *arg)
+ 	return 1;
+ }
+ 
++/*
++ * The region can not be manged by CXL if any portion of
++ * it is already online as 'System RAM'
++ */
++static bool region_is_system_ram(struct cxl_region *cxlr,
++				 struct cxl_region_params *p)
++{
++	return (walk_iomem_res_desc(IORES_DESC_NONE,
++				    IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
++				    p->res->start, p->res->end, cxlr,
++				    is_system_ram) > 0);
++}
++
+ static int cxl_region_probe(struct device *dev)
+ {
+ 	struct cxl_region *cxlr = to_cxl_region(dev);
+@@ -2746,16 +2841,13 @@ static int cxl_region_probe(struct device *dev)
+ 	case CXL_DECODER_PMEM:
+ 		return devm_cxl_add_pmem_region(cxlr);
+ 	case CXL_DECODER_RAM:
+-		/*
+-		 * The region can not be manged by CXL if any portion of
+-		 * it is already online as 'System RAM'
+-		 */
+-		if (walk_iomem_res_desc(IORES_DESC_NONE,
+-					IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
+-					p->res->start, p->res->end, cxlr,
+-					is_system_ram) > 0)
++		if (region_is_system_ram(cxlr, p))
+ 			return 0;
+ 		return devm_cxl_add_dax_region(cxlr);
++	case CXL_DECODER_DC:
++		if (region_is_system_ram(cxlr, p))
++			return 0;
++		return devm_cxl_add_dc_region(cxlr);
+ 	default:
+ 		dev_dbg(&cxlr->dev, "unsupported region mode: %d\n",
+ 			cxlr->mode);
+diff --git a/drivers/cxl/cxl.h b/drivers/cxl/cxl.h
+index 044a92d9813e..959ad4ca4a3b 100644
+--- a/drivers/cxl/cxl.h
++++ b/drivers/cxl/cxl.h
+@@ -335,6 +335,7 @@ enum cxl_decoder_mode {
+ 	CXL_DECODER_NONE,
+ 	CXL_DECODER_RAM,
+ 	CXL_DECODER_PMEM,
++	CXL_DECODER_DC,
+ 	CXL_DECODER_MIXED,
+ 	CXL_DECODER_DEAD,
+ };
+@@ -346,6 +347,7 @@ static inline const char *cxl_decoder_mode_name(enum cxl_decoder_mode mode)
+ 		[CXL_DECODER_RAM] = "ram",
+ 		[CXL_DECODER_PMEM] = "pmem",
+ 		[CXL_DECODER_MIXED] = "mixed",
++		[CXL_DECODER_DC] = "dc",
+ 	};
+ 
+ 	if (mode >= CXL_DECODER_NONE && mode <= CXL_DECODER_MIXED)
+@@ -419,6 +421,7 @@ struct cxl_root_decoder {
+ 	cxl_calc_hb_fn calc_hb;
+ 	void *platform_data;
+ 	struct mutex range_lock;
++	bool dc_sysfs_initialized;
+ 	struct cxl_switch_decoder cxlsd;
+ };
+ 
+@@ -475,6 +478,11 @@ struct cxl_region_params {
+  */
+ #define CXL_REGION_F_AUTO 1
+ 
++struct cxl_dc_region {
++	struct xarray dax_dev_list;
++	struct cxl_dax_region *cxlr_dax;
++};
++
+ /**
+  * struct cxl_region - CXL region
+  * @dev: This region's device
+@@ -493,6 +501,7 @@ struct cxl_region {
+ 	enum cxl_decoder_type type;
+ 	struct cxl_nvdimm_bridge *cxl_nvb;
+ 	struct cxl_pmem_region *cxlr_pmem;
++	struct cxl_dc_region *cxlr_dc;
+ 	unsigned long flags;
+ 	struct cxl_region_params params;
+ };
+@@ -659,6 +668,7 @@ struct cxl_port *devm_cxl_add_port(struct device *host, struct device *uport,
+ 				   resource_size_t component_reg_phys,
+ 				   struct cxl_dport *parent_dport);
+ struct cxl_port *find_cxl_root(struct cxl_port *port);
++int add_dc_region_attribute(struct device *dev, void *data);
+ int devm_cxl_enumerate_ports(struct cxl_memdev *cxlmd);
+ void cxl_bus_rescan(void);
+ void cxl_bus_drain(void);
+diff --git a/drivers/cxl/mem.c b/drivers/cxl/mem.c
+index 39c4b54f0715..6c4343b919a3 100644
+--- a/drivers/cxl/mem.c
++++ b/drivers/cxl/mem.c
+@@ -76,11 +76,19 @@ static int devm_cxl_add_endpoint(struct device *host, struct cxl_memdev *cxlmd,
+ 			&cxlmd->dev, parent_dport->rcrb, CXL_RCRB_UPSTREAM);
+ 	else
+ 		component_reg_phys = cxlds->component_reg_phys;
++
+ 	endpoint = devm_cxl_add_port(host, &cxlmd->dev, component_reg_phys,
+ 				     parent_dport);
+ 	if (IS_ERR(endpoint))
+ 		return PTR_ERR(endpoint);
+ 
++	if (resource_size(&cxlds->dc_res)) {
++		for (iter = endpoint; !is_cxl_root(iter);
++		     iter = to_cxl_port(iter->dev.parent))
++			;
++		device_for_each_child(&iter->dev, NULL, add_dc_region_attribute);
++	}
++
+ 	rc = cxl_endpoint_autoremove(cxlmd, endpoint);
+ 	if (rc)
+ 		return rc;
+diff --git a/drivers/dax/cxl.c b/drivers/dax/cxl.c
+index ccdf8de85bd5..8c35555c70d2 100644
+--- a/drivers/dax/cxl.c
++++ b/drivers/dax/cxl.c
+@@ -28,6 +28,10 @@ static int cxl_dax_region_probe(struct device *dev)
+ 		.id = -1,
+ 		.size = range_len(&cxlr_dax->hpa_range),
+ 	};
++
++	if (cxlr->mode == CXL_DECODER_DC)
++		return 0;
++
+ 	dev_dax = devm_create_dev_dax(&data);
+ 	if (IS_ERR(dev_dax))
+ 		return PTR_ERR(dev_dax);
+-- 
+2.25.1
+

@@ -1,0 +1,370 @@
+From d4d29ea64c09ae3049b0f5225c41460ea2a8e2a6 Mon Sep 17 00:00:00 2001
+From: Navneet Singh <navneet.singh@intel.com>
+Date: Fri, 24 Feb 2023 13:26:58 -0500
+Subject: [PATCH 6/7] cxl/mem : Add get dynamic capacity extent list mbox
+ support
+Status: RO
+Content-Length: 11305
+Lines: 360
+
+A dynamic capactiy device learns about which extents are mapped to it
+via 2 mechanisms, events signalling the arrival and release requests for
+extents, and a command to retrieve the list of all extents that have
+been assigned to the device (CXL 3.0 Get DC Region Extent Lists (Opcode
+5603h)). Implement support for the latter by querying for prepopulated
+extents a DC region creation.
+
+Enable DC interrupts when creating a region to capture any changes to
+the extent list.  Disable interrupts when deleting the regions.
+
+Signed-off-by: Navneet Singh <navneet.singh@intel.com>
+[iweiny: fixups]
+[djbw: fixups, no sign-off: preview only]
+[TODO: revisit dynamic interrupt manipulation, drop ioctl visibility of
+the command]
+---
+ drivers/cxl/core/mbox.c      | 139 +++++++++++++++++++++++++++++++++++
+ drivers/cxl/core/region.c    |  71 ++++++++++++++++--
+ drivers/cxl/cxlmem.h         |  21 +++++-
+ include/uapi/linux/cxl_mem.h |   1 +
+ 4 files changed, 224 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+index 80a45b52fc6b..67e3168576dc 100644
+--- a/drivers/cxl/core/mbox.c
++++ b/drivers/cxl/core/mbox.c
+@@ -67,6 +67,7 @@ static struct cxl_mem_command cxl_mem_commands[CXL_MEM_COMMAND_ID_MAX] = {
+ 	CXL_CMD(GET_SCAN_MEDIA_CAPS, 0x10, 0x4, 0),
+ 	CXL_CMD(SCAN_MEDIA, 0x11, 0, 0),
+ 	CXL_CMD(GET_SCAN_MEDIA, 0, CXL_VARIABLE_PAYLOAD, 0),
++	CXL_CMD(GET_DC_EXTENT_LIST, 0x8, CXL_VARIABLE_PAYLOAD, 0),
+ };
+ 
+ /*
+@@ -1357,6 +1358,144 @@ int cxl_dev_dynamic_capacity_identify(struct cxl_dev_state *cxlds)
+ }
+ EXPORT_SYMBOL_NS_GPL(cxl_dev_dynamic_capacity_identify, CXL);
+ 
++int cxl_dev_get_dc_extent_cnt(struct cxl_dev_state *cxlds,
++				unsigned int *extent_gen_num)
++{
++	struct device *dev = cxlds->dev;
++	struct cxl_mbox_dc_extents *dc_extents;
++	struct cxl_mbox_get_dc_extent get_dc_extent;
++	unsigned int total_extent_cnt;
++	struct cxl_mbox_cmd mbox_cmd;
++	struct cxl_mem_command *cmd =
++			cxl_mem_find_command(CXL_MBOX_OP_GET_DC_EXTENT_LIST);
++	int rc;
++
++	if (!test_bit(cmd->info.id, cxlds->enabled_cmds)) {
++		dev_dbg(dev, "unsupported cmd : get dyn cap extent list\n");
++		return 0;
++	}
++
++	dc_extents = kvmalloc(cxlds->payload_size, GFP_KERNEL);
++	if (!dc_extents)
++		return -ENOMEM;
++
++	get_dc_extent = (struct cxl_mbox_get_dc_extent) {
++		.extent_cnt = 0,
++		.start_extent_index = 0,
++	};
++
++	mbox_cmd = (struct cxl_mbox_cmd) {
++		.opcode = CXL_MBOX_OP_GET_DC_EXTENT_LIST,
++		.payload_in = &get_dc_extent,
++		.size_in = sizeof(get_dc_extent),
++		.size_out = cxlds->payload_size,
++		.payload_out = dc_extents,
++		.min_out = 1,
++	};
++	rc = cxl_internal_send_cmd(cxlds, &mbox_cmd);
++	if (rc < 0)
++		goto out;
++
++	total_extent_cnt = le32_to_cpu(dc_extents->total_extent_cnt);
++	*extent_gen_num = le32_to_cpu(dc_extents->extent_list_num);
++	dev_dbg(dev, "Total extent count :%d Extent list Generation Num: %d\n",
++			total_extent_cnt, *extent_gen_num);
++out:
++
++	kvfree(dc_extents);
++	if (rc < 0)
++		return rc;
++
++	return total_extent_cnt;
++
++}
++
++EXPORT_SYMBOL_NS_GPL(cxl_dev_get_dc_extent_cnt, CXL);
++
++int cxl_dev_get_dc_extents(struct cxl_dev_state *cxlds,
++				unsigned int index, unsigned int cnt)
++{
++	/* See CXL 3.0 Table 125 dynamic capacity config  Output Payload */
++	struct device *dev = cxlds->dev;
++	struct cxl_mbox_dc_extents *dc_extents;
++	struct cxl_mbox_get_dc_extent get_dc_extent;
++	unsigned int extent_gen_num, available_extents, total_extent_cnt;
++	int rc;
++	struct cxl_dc_extent_data *extent;
++	struct cxl_mbox_cmd mbox_cmd;
++	struct resource alloc_dpa_res;
++	struct cxl_mem_command *cmd =
++			cxl_mem_find_command(CXL_MBOX_OP_GET_DC_EXTENT_LIST);
++
++	if (!test_bit(cmd->info.id, cxlds->enabled_cmds)) {
++		dev_dbg(dev, "unsupported cmd : get dyn cap extent list\n");
++		return 0;
++	}
++
++	dc_extents = kvmalloc(cxlds->payload_size, GFP_KERNEL);
++	if (!dc_extents)
++		return -ENOMEM;
++	get_dc_extent = (struct cxl_mbox_get_dc_extent) {
++		.extent_cnt = cnt,
++		.start_extent_index = index,
++	};
++
++	mbox_cmd = (struct cxl_mbox_cmd) {
++		.opcode = CXL_MBOX_OP_GET_DC_EXTENT_LIST,
++		.payload_in = &get_dc_extent,
++		.size_in = sizeof(get_dc_extent),
++		.size_out = cxlds->payload_size,
++		.payload_out = dc_extents,
++		.min_out = 1,
++	};
++	rc = cxl_internal_send_cmd(cxlds, &mbox_cmd);
++	if (rc < 0)
++		goto out;
++
++	available_extents = le32_to_cpu(dc_extents->ret_extent_cnt);
++	total_extent_cnt = le32_to_cpu(dc_extents->total_extent_cnt);
++	extent_gen_num = le32_to_cpu(dc_extents->extent_list_num);
++	dev_dbg(dev, "No Total extent count :%d Extent list Generation Num:%d\n",
++			total_extent_cnt, extent_gen_num);
++
++
++	for (int i = 0; i < available_extents ; i++) {
++		extent = devm_kzalloc(dev, sizeof(*extent), GFP_KERNEL);
++		if (!extent) {
++			dev_err(dev, "No memory available\n");
++			rc = -ENOMEM;
++			goto out;
++		}
++		extent->dpa_start = le64_to_cpu(dc_extents->extent[i].start_dpa);
++		extent->length = le64_to_cpu(dc_extents->extent[i].length);
++		memcpy(extent->tag, dc_extents->extent[i].tag,
++					sizeof(dc_extents->extent[i].tag));
++		extent->shared_extent_seq =
++				le16_to_cpu(dc_extents->extent[i].shared_extn_seq);
++		dev_dbg(dev, "dynamic capacity extent[%d] DPA:0x%llx LEN:%llx\n",
++				i, extent->dpa_start, extent->length);
++
++		alloc_dpa_res = (struct resource){
++			.start = extent->dpa_start,
++			.end = extent->dpa_start + extent->length - 1,
++		};
++
++		rc = cxl_add_dc_extent(cxlds, &alloc_dpa_res);
++		if (rc < 0)
++			goto out;
++		rc = xa_insert(&cxlds->dc_extent_list, extent->dpa_start, extent,
++				GFP_KERNEL);
++	}
++
++out:
++	kvfree(dc_extents);
++	if (rc < 0)
++		return rc;
++
++	return available_extents;
++}
++EXPORT_SYMBOL_NS_GPL(cxl_dev_get_dc_extents, CXL);
++
+ static int add_dpa_res(struct device *dev, struct resource *parent,
+ 		       struct resource *res, resource_size_t start,
+ 		       resource_size_t size, const char *type)
+diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
+index f95f97a2ca52..291c716abd49 100644
+--- a/drivers/cxl/core/region.c
++++ b/drivers/cxl/core/region.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /* Copyright(c) 2022 Intel Corporation. All rights reserved. */
+ #include <linux/memregion.h>
++#include <linux/interrupt.h>
+ #include <linux/genalloc.h>
+ #include <linux/device.h>
+ #include <linux/module.h>
+@@ -168,6 +169,38 @@ static int cxl_region_decode_reset(struct cxl_region *cxlr, int count)
+ 	return 0;
+ }
+ 
++static int cxl_region_manage_dc(struct cxl_region *cxlr)
++{
++	struct cxl_region_params *p = &cxlr->params;
++	unsigned int extent_gen_num;
++	int i, rc;
++
++	/* Designed for Non Interleaving flow with the assumption one
++	 * cxl_region will map the complete device DC region's DPA range */
++	for (i = 0; i < p->nr_targets; i++) {
++		struct cxl_endpoint_decoder *cxled = p->targets[i];
++		struct cxl_memdev *cxlmd = cxled_to_memdev(cxled);
++		struct cxl_dev_state *cxlds = cxlmd->cxlds;
++
++		rc = cxl_dev_get_dc_extent_cnt(cxlds, &extent_gen_num);
++		if (rc < 0)
++			goto err;
++		else if (rc > 1) {
++			rc = cxl_dev_get_dc_extents(cxlds, rc, 0);
++			if (rc < 0)
++				goto err;
++			cxlds->num_dc_extents = rc;
++			cxlds->dc_extents_index = rc - 1;
++		}
++		cxlds->dc_list_gen_num = extent_gen_num;
++		dev_dbg(cxlds->dev, "No of preallocated extents :%d\n", rc);
++		enable_irq(cxlds->cxl_irq[CXL_EVENT_TYPE_DCD]);
++	}
++	return 0;
++err:
++	return rc;
++}
++
+ static int commit_decoder(struct cxl_decoder *cxld)
+ {
+ 	struct cxl_switch_decoder *cxlsd = NULL;
+@@ -1699,6 +1732,9 @@ static int cxl_region_detach(struct cxl_endpoint_decoder *cxled)
+ {
+ 	struct cxl_port *iter, *ep_port = cxled_to_port(cxled);
+ 	struct cxl_region *cxlr = cxled->cxld.region;
++	struct cxl_memdev *cxlmd = cxled_to_memdev(cxled);
++	struct cxl_dev_state *cxlds = cxlmd->cxlds;
++
+ 	struct cxl_region_params *p;
+ 	int rc = 0;
+ 
+@@ -1710,6 +1746,10 @@ static int cxl_region_detach(struct cxl_endpoint_decoder *cxled)
+ 	p = &cxlr->params;
+ 	get_device(&cxlr->dev);
+ 
++	if (cxlr->mode == CXL_DECODER_DC) {
++		disable_irq(cxlds->cxl_irq[CXL_EVENT_TYPE_DCD]);
++	}
++
+ 	if (p->state > CXL_CONFIG_ACTIVE) {
+ 		/*
+ 		 * TODO: tear down all impacted regions if a device is
+@@ -2544,11 +2584,14 @@ static int devm_cxl_add_dc_region(struct cxl_region *cxlr)
+ 		return PTR_ERR(cxlr_dax);
+ 
+ 	cxlr_dc = kzalloc(sizeof(*cxlr_dc), GFP_KERNEL);
+-	if (!cxlr_dc) {
+-		rc = -ENOMEM;
+-		goto err;
+-	}
++	if (!cxlr_dc)
++		return -ENOMEM;
+ 
++	rc = request_module("dax_cxl");
++	if (rc) {
++		dev_err(dev, "failed to load dax-ctl module\n");
++		goto load_err;
++	}
+ 	dev = &cxlr_dax->dev;
+ 	rc = dev_set_name(dev, "dax_region%d", cxlr->id);
+ 	if (rc)
+@@ -2570,10 +2613,24 @@ static int devm_cxl_add_dc_region(struct cxl_region *cxlr)
+ 	xa_init(&cxlr_dc->dax_dev_list);
+ 	cxlr->cxlr_dc = cxlr_dc;
+ 	rc = devm_add_action_or_reset(&cxlr->dev, cxl_dc_region_release, cxlr);
+-	if (!rc)
+-		return 0;
+-err:
++	if (rc)
++		goto err;
++
++	if (!dev->driver) {
++		dev_err(dev, "%s Driver not attached\n", dev_name(dev));
++		rc = -ENXIO;
++		goto err;
++	}
++
++	rc = cxl_region_manage_dc(cxlr);
++	if (rc)
++		goto err;
++
++	return 0;
++
++err :
+ 	put_device(dev);
++load_err :
+ 	kfree(cxlr_dc);
+ 	return rc;
+ }
+diff --git a/drivers/cxl/cxlmem.h b/drivers/cxl/cxlmem.h
+index 1d299b7fda40..af9724760d4f 100644
+--- a/drivers/cxl/cxlmem.h
++++ b/drivers/cxl/cxlmem.h
+@@ -323,9 +323,11 @@ struct cxl_dev_state {
+ 		u32 dsmad_handle;
+ 		u8 flags;
+ 	} dc_region[CXL_MAX_DC_REGION];
++
++	u32 dc_list_gen_num;
++	u32 dc_extents_index;
+ 	struct xarray dc_extent_list;
+ 	u32 num_dc_extents;
+-
+ 	size_t dc_event_log_size;
+ 	resource_size_t component_reg_phys;
+ 	u64 serial;
+@@ -631,6 +633,19 @@ struct cxl_mbox_dynamic_capacity {
+ #define  CXL_SET_PARTITION_IMMEDIATE_FLAG	BIT(0)
+ #define CXL_DYNAMIC_CAPACITY_SANITIZE_ON_RELEASE_FLAG BIT(0)
+ 
++struct cxl_mbox_get_dc_extent {
++	__le32 extent_cnt;
++	__le32 start_extent_index;
++} __packed;
++
++struct cxl_mbox_dc_extents {
++	__le32 ret_extent_cnt;
++	__le32 total_extent_cnt;
++	__le32 extent_list_num;
++	u8 rsvd[4];
++	struct cxl_dc_extent extent[];
++}  __packed;
++
+ /* Set Timestamp CXL 3.0 Spec 8.2.9.4.2 */
+ struct cxl_mbox_set_timestamp_in {
+ 	__le64 timestamp;
+@@ -704,6 +719,10 @@ int cxl_await_media_ready(struct cxl_dev_state *cxlds);
+ int cxl_enumerate_cmds(struct cxl_dev_state *cxlds);
+ int cxl_handle_dcd_event_records(struct cxl_dev_state *cxlds,
+ 				struct cxl_event_record_raw *rec);
++int cxl_dev_get_dc_extent_cnt(struct cxl_dev_state *cxlds,
++		unsigned int *extent_gen_num);
++int cxl_dev_get_dc_extents(struct cxl_dev_state *cxlds,
++		unsigned int cnt, unsigned int index);
+ int cxl_mem_create_range_info(struct cxl_dev_state *cxlds);
+ struct cxl_dev_state *cxl_dev_state_create(struct device *dev);
+ void set_exclusive_cxl_commands(struct cxl_dev_state *cxlds, unsigned long *cmds);
+diff --git a/include/uapi/linux/cxl_mem.h b/include/uapi/linux/cxl_mem.h
+index 86bbacf2a315..6ca85861750c 100644
+--- a/include/uapi/linux/cxl_mem.h
++++ b/include/uapi/linux/cxl_mem.h
+@@ -46,6 +46,7 @@
+ 	___C(GET_SCAN_MEDIA_CAPS, "Get Scan Media Capabilities"),         \
+ 	___C(SCAN_MEDIA, "Scan Media"),                                   \
+ 	___C(GET_SCAN_MEDIA, "Get Scan Media Results"),                   \
++	___C(GET_DC_EXTENT_LIST, "Get dynamic capacity extents"),         \
+ 	___C(MAX, "invalid / last command")
+ 
+ #define ___C(a, b) CXL_MEM_COMMAND_ID_##a
+-- 
+2.25.1
+

@@ -1,0 +1,199 @@
+From 5096a8ef63d4c96c8588678eff0c130ab228c608 Mon Sep 17 00:00:00 2001
+From: Navneet Singh <navneet.singh@intel.com>
+Date: Mon, 27 Feb 2023 05:32:58 -0500
+Subject: [PATCH 3/7] cxl/mem : Expose dynamic capacity configuration to
+ userpace
+
+Exposing driver cached dynamic capacity configuration through sysfs
+attributes.User will create one or more dynamic capacity
+cxl regions based on this information and map the dynamic capacity of
+the device into HDM ranges using one or more HDM decoders.
+
+Signed-off-by: Navneet Singh <navneet.singh@intel.com>
+[iweiny: fixups]
+[djbw: fixups, no sign-off: preview only]
+[TODO: review if this can get away with just @size per dc region, a dc
+region is just like a ram or pmem partition]
+---
+ drivers/cxl/core/memdev.c | 147 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 147 insertions(+)
+
+diff --git a/drivers/cxl/core/memdev.c b/drivers/cxl/core/memdev.c
+index 28a05f2fe32d..2ec642aeea80 100644
+--- a/drivers/cxl/core/memdev.c
++++ b/drivers/cxl/core/memdev.c
+@@ -89,6 +89,33 @@ static ssize_t pmem_size_show(struct device *dev, struct device_attribute *attr,
+ static struct device_attribute dev_attr_pmem_size =
+ 	__ATTR(size, 0444, pmem_size_show, NULL);
+ 
++static ssize_t size_show(struct device *dev, struct device_attribute *attr,
++			      char *buf)
++{
++	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
++	struct cxl_dev_state *cxlds = cxlmd->cxlds;
++	unsigned long long len = resource_size(&cxlds->dc_res);
++
++	return sysfs_emit(buf, "%#llx\n", len);
++}
++
++static struct device_attribute dev_attr_size =
++	__ATTR(size, 0444, size_show, NULL);
++
++static ssize_t num_dc_regions_show(struct device *dev, struct device_attribute *attr,
++		char *buf)
++{
++	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
++	struct cxl_dev_state *cxlds = cxlmd->cxlds;
++	int len = 0;
++
++	len = sysfs_emit(buf, "0x%x\n", cxlds->nr_dc_region);
++	return len;
++}
++
++struct device_attribute dev_attr_num_dc_regions =
++	__ATTR(num_dc_regions, 0444, num_dc_regions_show, NULL);
++
+ static ssize_t serial_show(struct device *dev, struct device_attribute *attr,
+ 			   char *buf)
+ {
+@@ -125,6 +152,119 @@ static struct attribute *cxl_memdev_ram_attributes[] = {
+ 	NULL,
+ };
+ 
++static ssize_t show_blk_sz_regionN(struct cxl_memdev *cxlmd, char *buf, int pos)
++{
++	struct cxl_dev_state *cxlds = cxlmd->cxlds;
++
++	return sysfs_emit(buf, "0x%llx\n", cxlds->dc_region[pos].blk_size);
++}
++
++#define BLKSZ_ATTR_RO(n)                                              \
++static ssize_t blk_sz_region##n##_show(                                       \
++	struct device *dev, struct device_attribute *attr, char *buf)  \
++{                                                                      \
++	return show_blk_sz_regionN(to_cxl_memdev(dev), buf, (n));             \
++}                                                                      \
++static DEVICE_ATTR_RO(blk_sz_region##n)
++
++BLKSZ_ATTR_RO(0);
++BLKSZ_ATTR_RO(1);
++BLKSZ_ATTR_RO(2);
++BLKSZ_ATTR_RO(3);
++BLKSZ_ATTR_RO(4);
++BLKSZ_ATTR_RO(5);
++BLKSZ_ATTR_RO(6);
++BLKSZ_ATTR_RO(7);
++
++static ssize_t show_size_regionN(struct cxl_memdev *cxlmd, char *buf, int pos)
++{
++	struct cxl_dev_state *cxlds = cxlmd->cxlds;
++
++	return sysfs_emit(buf, "0x%llx\n", cxlds->dc_region[pos].decode_len);
++}
++
++#define SIZE_ATTR_RO(n)                                              \
++static ssize_t size_region##n##_show(                                       \
++	struct device *dev, struct device_attribute *attr, char *buf)  \
++{                                                                      \
++	return show_size_regionN(to_cxl_memdev(dev), buf, (n));             \
++}                                                                      \
++static DEVICE_ATTR_RO(size_region##n)
++SIZE_ATTR_RO(0);
++SIZE_ATTR_RO(1);
++SIZE_ATTR_RO(2);
++SIZE_ATTR_RO(3);
++SIZE_ATTR_RO(4);
++SIZE_ATTR_RO(5);
++SIZE_ATTR_RO(6);
++SIZE_ATTR_RO(7);
++
++static ssize_t show_base_regionN(struct cxl_memdev *cxlmd, char *buf, int pos)
++{
++	struct cxl_dev_state *cxlds = cxlmd->cxlds;
++
++	return sysfs_emit(buf, "0x%llx\n", cxlds->dc_region[pos].base);
++}
++
++#define BASE_ATTR_RO(n)                                              \
++static ssize_t base_region##n##_show(                                       \
++	struct device *dev, struct device_attribute *attr, char *buf)  \
++{                                                                      \
++	return show_base_regionN(to_cxl_memdev(dev), buf, (n));             \
++}                                                                      \
++static DEVICE_ATTR_RO(base_region##n)
++BASE_ATTR_RO(0);
++BASE_ATTR_RO(1);
++BASE_ATTR_RO(2);
++BASE_ATTR_RO(3);
++BASE_ATTR_RO(4);
++BASE_ATTR_RO(5);
++BASE_ATTR_RO(6);
++BASE_ATTR_RO(7);
++
++static struct attribute *cxl_memdev_dc_attributes[] = {
++	&dev_attr_base_region0.attr,
++	&dev_attr_base_region1.attr,
++	&dev_attr_base_region2.attr,
++	&dev_attr_base_region3.attr,
++	&dev_attr_base_region4.attr,
++	&dev_attr_base_region5.attr,
++	&dev_attr_base_region6.attr,
++	&dev_attr_base_region7.attr,
++	&dev_attr_size_region0.attr,
++	&dev_attr_size_region1.attr,
++	&dev_attr_size_region2.attr,
++	&dev_attr_size_region3.attr,
++	&dev_attr_size_region4.attr,
++	&dev_attr_size_region5.attr,
++	&dev_attr_size_region6.attr,
++	&dev_attr_size_region7.attr,
++	&dev_attr_blk_sz_region0.attr,
++	&dev_attr_blk_sz_region1.attr,
++	&dev_attr_blk_sz_region2.attr,
++	&dev_attr_blk_sz_region3.attr,
++	&dev_attr_blk_sz_region4.attr,
++	&dev_attr_blk_sz_region5.attr,
++	&dev_attr_blk_sz_region6.attr,
++	&dev_attr_blk_sz_region7.attr,
++	&dev_attr_num_dc_regions.attr,
++	&dev_attr_size.attr,
++	NULL,
++};
++
++static umode_t cxl_dc_visible(struct kobject *kobj, struct attribute *a, int n)
++{
++	struct device *dev = kobj_to_dev(kobj);
++	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
++	struct cxl_dev_state *cxlds = cxlmd->cxlds;
++
++	if (a == &dev_attr_num_dc_regions.attr || a == &dev_attr_size.attr)
++		return a->mode;
++	if ((n%8) < cxlds->nr_dc_region)
++		return a->mode;
++	return 0;
++}
++
+ static umode_t cxl_memdev_visible(struct kobject *kobj, struct attribute *a,
+ 				  int n)
+ {
+@@ -148,10 +288,17 @@ static struct attribute_group cxl_memdev_pmem_attribute_group = {
+ 	.attrs = cxl_memdev_pmem_attributes,
+ };
+ 
++static struct attribute_group cxl_memdev_dc_attribute_group = {
++	.name = "dc",
++	.attrs = cxl_memdev_dc_attributes,
++	.is_visible = cxl_dc_visible,
++};
++
+ static const struct attribute_group *cxl_memdev_attribute_groups[] = {
+ 	&cxl_memdev_attribute_group,
+ 	&cxl_memdev_ram_attribute_group,
+ 	&cxl_memdev_pmem_attribute_group,
++	&cxl_memdev_dc_attribute_group,
+ 	NULL,
+ };
+ 
+-- 
+2.25.1
+

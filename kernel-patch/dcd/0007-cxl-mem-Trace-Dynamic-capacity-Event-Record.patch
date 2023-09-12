@@ -1,0 +1,119 @@
+From f425bc34c600e2a3721d6560202962ec41622815 Mon Sep 17 00:00:00 2001
+From: Navneet Singh <navneet.singh@intel.com>
+Date: Mon, 6 Mar 2023 08:45:59 -0500
+Subject: [PATCH 7/7] cxl/mem: Trace Dynamic capacity Event Record
+Status: RO
+Content-Length: 3452
+Lines: 110
+
+CXL rev 3.0 section 8.2.9.2.1.5 defines the Dynamic Capacity Event Record
+Determine if the event read is a Dynamic capacity event record and
+if so trace the record.
+
+Add DC trace points to the trace log.
+
+Signed-off-by: Navneet Singh <navneet.singh@intel.com>
+[iweiny: fixups]
+[djbw: no sign-off: preview only]
+[TODO: value not clear beyond debug, KOBJ_ADD of a dax device is the
+event userspace cares about wrt to new capacity being available]
+---
+ drivers/cxl/core/mbox.c  |  5 ++++
+ drivers/cxl/core/trace.h | 65 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 70 insertions(+)
+
+diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+index 67e3168576dc..5f04bbc18af5 100644
+--- a/drivers/cxl/core/mbox.c
++++ b/drivers/cxl/core/mbox.c
+@@ -805,6 +805,11 @@ static void cxl_event_trace_record(const struct cxl_memdev *cxlmd,
+ 				(struct cxl_event_mem_module *)record;
+ 
+ 		trace_cxl_memory_module(cxlmd, type, rec);
++	} else if (uuid_equal(id, &dc_event_uuid)) {
++		struct dcd_event_dyn_cap *rec =
++				(struct dcd_event_dyn_cap *)record;
++
++		trace_cxl_dynamic_capacity(cxlmd, type, rec);
+ 	} else {
+ 		/* For unknown record types print just the header */
+ 		trace_cxl_generic_event(cxlmd, type, record);
+diff --git a/drivers/cxl/core/trace.h b/drivers/cxl/core/trace.h
+index 5195ff729b8e..81b5b9667a57 100644
+--- a/drivers/cxl/core/trace.h
++++ b/drivers/cxl/core/trace.h
+@@ -601,6 +601,71 @@ TRACE_EVENT(cxl_memory_module,
+ 	)
+ );
+ 
++/*
++ * DYNAMIC CAPACITY Event Record - DER
++ *
++ * CXL rev 3.0 section 8.2.9.2.1.5 Table 8-47
++ */
++
++#define CXL_DC_ADD_CAPACITY			0x00
++#define CXL_DC_REL_CAPACITY			0x01
++#define CXL_DC_FORCED_REL_CAPACITY		0x02
++#define CXL_DC_REG_CONF_UPDATED			0x03
++#define show_dc_evt_type(type)	__print_symbolic(type,		\
++	{ CXL_DC_ADD_CAPACITY,	"Add capacity"},		\
++	{ CXL_DC_REL_CAPACITY,	"Release capacity"},		\
++	{ CXL_DC_FORCED_REL_CAPACITY,	"Forced capacity release"},	\
++	{ CXL_DC_REG_CONF_UPDATED,	"Region Configuration Updated"	} \
++)
++
++TRACE_EVENT(cxl_dynamic_capacity,
++
++	TP_PROTO(const struct cxl_memdev *cxlmd, enum cxl_event_log_type log,
++		 struct dcd_event_dyn_cap  *rec),
++
++	TP_ARGS(cxlmd, log, rec),
++
++	TP_STRUCT__entry(
++		CXL_EVT_TP_entry
++
++		/* Dynamic capacity Event */
++		__field(u8, event_type)
++		__field(u16, hostid)
++		__field(u8, region_id)
++		__field(u64, dpa_start)
++		__field(u64, length)
++		__array(u8, tag, CXL_EVENT_DC_TAG_SIZE)
++		__field(u16, sh_extent_seq)
++	),
++
++	TP_fast_assign(
++		CXL_EVT_TP_fast_assign(cxlmd, log, rec->hdr);
++
++		/* Dynamic_capacity Event */
++		__entry->event_type = rec->data.event_type;
++
++		/* DCD event record data */
++		__entry->hostid = le16_to_cpu(rec->data.host_id);
++		__entry->region_id = rec->data.region_index;
++		__entry->dpa_start = le64_to_cpu(rec->data.extent.start_dpa);
++		__entry->length = le64_to_cpu(rec->data.extent.length);
++		memcpy(__entry->tag, &rec->data.extent.tag, CXL_EVENT_DC_TAG_SIZE);
++		__entry->sh_extent_seq = le16_to_cpu(rec->data.extent.shared_extn_seq);
++	),
++
++	CXL_EVT_TP_printk("event_type='%s' host_id='%d' region_id='%d' " \
++		"starting_dpa=%llx length=%llx tag=%s " \
++		"shared_extent_sequence=%d",
++		show_dc_evt_type(__entry->event_type),
++		__entry->hostid,
++		__entry->region_id,
++		__entry->dpa_start,
++		__entry->length,
++		__print_hex(__entry->tag, CXL_EVENT_DC_TAG_SIZE),
++		__entry->sh_extent_seq
++	)
++);
++
+ #endif /* _CXL_EVENTS_H */
+ 
+ #define TRACE_INCLUDE_FILE trace
+-- 
+2.25.1
+

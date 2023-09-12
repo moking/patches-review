@@ -1,0 +1,406 @@
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 808C0C77B6E
+	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 12:04:23 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229446AbjDNMEW (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 14 Apr 2023 08:04:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56370 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230025AbjDNMET (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 08:04:19 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC49D13A
+        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 05:04:17 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PyZpW3PMWz6DFgW;
+        Fri, 14 Apr 2023 20:03:15 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Fri, 14 Apr
+ 2023 13:04:15 +0100
+Date: Fri, 14 Apr 2023 13:04:14 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Gregory Price <gregory.price@memverge.com>
+CC: Dan Williams <dan.j.williams@intel.com>,
+        <linux-cxl@vger.kernel.org>, <navneet.singh@intel.com>,
+        <ira.weiny@intel.com>
+Subject: Re: "release early" preview of DCD enabling
+Message-ID: <20230414130414.00007c88@Huawei.com>
+In-Reply-To: <ZDWVkJKVThJzhMzM@memverge.com>
+References: <64326437c1496_934b2949f@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+        <ZDWVkJKVThJzhMzM@memverge.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+X-Status: A
+Content-Length: 2108
+Lines: 57
+
+On Tue, 11 Apr 2023 13:14:56 -0400
+Gregory Price <gregory.price@memverge.com> wrote:
+
+> On Sun, Apr 09, 2023 at 12:07:36AM -0700, Dan Williams wrote:
+> > Here is an early draft of the DCD work that Navneet has spearheaded.
+> > Given the interest level I thought it best to do the remaining
+> > development and refinement of the functionality in the open.  For now
+> > this is just a git branch that will become a patchkit on the mailing
+> > list in a few weeks.
+> > 
+> > Questions are welcome, but I do not recommend a formal review until the
+> > patches hit the mailing list.
+> > 
+> > This has had some checkout on an internal functional model, I expect
+> > QEMU and/or cxl_test grows an emulation of DCD before this patchkit is
+> > committed for mainline.
+> > 
+> > https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=for-6.5/dcd-preview  
+> 
+> Awesome!
+> 
+> for the QEMU folks, has anyone be actively working on a DCD device? I
+> was going to start looking at it, but didn't want to duplicate work.
+
+Not that I know of.  Was thinking I might hack some of it together, but
+not gotten to it yet. 
+
+For and end goal I think we want:
+
+a) Add all the config stuff for DCD regions - perhaps hardcode one initially.
+b) Device that generates DCD events (don't care on interface to make them happen but maybe start
+   with QMP similar to injection interfaces).
+c) Device that maps the DCD extents through to doing the correct read and write behavior for
+   reads that aren't in DCD extents.
+d) A standards based way to poke the FM-API. Tunneling and / or MCTP CCIs
+
+
+Can probably split this up though so if multiple people are hacking on it they don't clash.
+
+(a) and (b) needed to do anything useful with kernel side.
+(c) needed for testing long term, but don't care initially.
+
+(d) mostly separable - needed for a 'nice' test setup but not for basic functionality testing.
+
+If you want to take a look at (a) and (b) and maybe (c) that would be great.
+
+There is lots of independent stuff to do for (d) so maybe I'll focus on that in short term?
+
+How's that work for you?
+
+Jonathan
+
+
+> 
+> ~Gregory
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80776C76196
+	for <linux-cxl@archiver.kernel.org>; Tue, 11 Apr 2023 17:15:12 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229875AbjDKRPL (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 11 Apr 2023 13:15:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37134 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229619AbjDKRPK (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 11 Apr 2023 13:15:10 -0400
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2043.outbound.protection.outlook.com [40.107.223.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D3815BB1
+        for <linux-cxl@vger.kernel.org>; Tue, 11 Apr 2023 10:15:02 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=V1ggglIGqHyhhtWFXXoC9le2G4khFd+YGPMMrEfWPHct1+ipXoXzTHSVVw3Zh4ZNCkxw1gfHAsAoHzRhQWb0DqHHCSYrk+7tuTl6+iFc5eB/ZaPZHCYbCq9nuaMxTLI0O82OrZF7/ub2AfH5oEFx1USfENA7FGWN2K3S3vGGQNTFVdaq0WRCekb5XuVSN6I7iCYU9wMMBDFR2flQ/1uEVZolurFHol52o4Ehf+rtwEA8Ur2LgLaAM0Fsn2BfqAzCoAjVUori5YaiYfj+W7vLKSjiegcVEvJ0WFmhcQheVGH/d4PXRr9Sv2wh3HMrkeaBHT5ggIBJceCWWGHpq4fguA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=pqWq0boF1eLwvr5vBBfSFppTHWTEawaxdOho8hcvzG0=;
+ b=Q/F9cWcEp+cT8wocQsi9mc9L3bftzzgftEHJ6CBeJ4MDOhKp7FE2HLi6ndZUuOM5VPtECKDlvokH6Sw35c7+/GayHe5p9md8LzmZ0G7FueplfstycQYBZo1+2dKyyFIbgiW+575GZhFU7zvIZqh8tyJ3U8tqMh8c80o1UOnGWC8fTLtZxX2I8fKPGTWTqG4HWsWkcPAQwBT6hqlpuuTTS812voMKnpNtddstK1zwAA/fkjvT/Af5EJOZ4VNSnwTJ83XvttcneZxhrOeSzO7t8oPi3C7qpAwBon+Y9H17OZ090w3qxLgz9J1WXXsJRKr9nHTc0SvvNhCFXINzMNxlog==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=pqWq0boF1eLwvr5vBBfSFppTHWTEawaxdOho8hcvzG0=;
+ b=IK9/1NpzuwvUeyhKsxyBYMZZQjP4p5NnuV3HjM8YTX8KzeP/u23b18JJVTOZY8iEr5enImtqvSdvnvc8dhWhVjpoxx+WVp3zoqbm8hihf7Kmy/4756XilOpjBbQa9uED/qmyKegodG4z+AmILika7G3U3p5Uv1k9X+VCRJsujKg=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from SJ0PR17MB5512.namprd17.prod.outlook.com (2603:10b6:a03:394::19)
+ by SA1PR17MB4740.namprd17.prod.outlook.com (2603:10b6:806:19b::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.36; Tue, 11 Apr
+ 2023 17:14:59 +0000
+Received: from SJ0PR17MB5512.namprd17.prod.outlook.com
+ ([fe80::7b97:62c3:4602:b47a]) by SJ0PR17MB5512.namprd17.prod.outlook.com
+ ([fe80::7b97:62c3:4602:b47a%6]) with mapi id 15.20.6277.036; Tue, 11 Apr 2023
+ 17:14:59 +0000
+Date: Tue, 11 Apr 2023 13:14:56 -0400
+From: Gregory Price <gregory.price@memverge.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-cxl@vger.kernel.org, navneet.singh@intel.com,
+        ira.weiny@intel.com
+Subject: Re: "release early" preview of DCD enabling
+Message-ID: <ZDWVkJKVThJzhMzM@memverge.com>
+References: <64326437c1496_934b2949f@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <64326437c1496_934b2949f@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+X-ClientProxiedBy: BYAPR01CA0019.prod.exchangelabs.com (2603:10b6:a02:80::32)
+ To SJ0PR17MB5512.namprd17.prod.outlook.com (2603:10b6:a03:394::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ0PR17MB5512:EE_|SA1PR17MB4740:EE_
+X-MS-Office365-Filtering-Correlation-Id: 34524b7f-2ba3-4b29-e09e-08db3ab0476e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: onS6U01SSqy2RfRTejBv5gM0ct+nISKis9oFUG3DqScP7fy/i8+ys6H/mJl+4qdUxpgr9uCyvvTcOtJH5WjkuUJGf9fMWV1GnlliJ9v2sdtRmg3TUillYGZNeSmgF/73/RGGHmqOC3euTOQ3w35FWptqaLMrHiqeK7FDlOHXFbmiSDPNXebzQzZWAiirNsK8fl33Dy8Yo1yupUCQ9RZP6Pz7R/jHTNog+oDy7qs1j4exVwwsPefZajrsFw/U4uy3RRslytFss9tjTktsldBc8lDf+l3hDZlGoR5tIWEXBfe0N9EZqDfOwJ46txfHdxn1V28nGqfZH2FMoNkXdJjc0w50svFeZmY1XQrrZrw5nUIf3wpPugtildmgQAFRLTHucpXAc3q0IxnL332AhmVME2xB9n26jKm2UR+/G23qiu+ZTjn/RvWc3njUkLRJ3KeX2NNjIflN6QFtc/nV0N9TaNJUQF/xNFw0dNvIRt6QorcsBkelF/dK4Ea8Y/iOkSaLUQ9p8DjLbfgt305EtP7eTqoNBDj7cw7QG57IITpuc/c=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR17MB5512.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(366004)(136003)(39840400004)(376002)(346002)(396003)(451199021)(44832011)(36756003)(2906002)(4744005)(38100700002)(5660300002)(8936002)(66899021)(8676002)(86362001)(966005)(6512007)(6486002)(6666004)(6506007)(26005)(478600001)(2616005)(186003)(66946007)(41300700001)(66476007)(6916009)(4326008)(316002)(66556008);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?kjEjN93uVHbrCqRuudTNN6PWAqdZ5xcH8e++IoF2jXycZW2gY6duo6siJzcj?=
+ =?us-ascii?Q?U33G6RUDxwjhAyPu8ZPyh0Tl6wIuKIjFJoR4CFTMb/5Oa9AYQZNYCA2qp0Xw?=
+ =?us-ascii?Q?zBM7VYSm/YxzKo/2UgeQlNA63GreWKQXlNg4EDLQ0mPgnyUNa0VpAOKnPMbQ?=
+ =?us-ascii?Q?gAwlzX+M8G8JF48xkEWb0jLFi9myM2K+zuLyzd526e8xkjN5czzbzyK9g9in?=
+ =?us-ascii?Q?dQOTJPC78olT0YKQlu+I+3x+fe95a+/mohJxzu2ideIHBfjkrbX4n/UYGYSc?=
+ =?us-ascii?Q?QNjoPwpLrm/oWTmlzmy3tscfYlY9hVS7d9bfkfZATuibtNJDQlflzLwFwm+c?=
+ =?us-ascii?Q?Rtzuy/TTxo2NTN/LTx8MWKSfBrEMjXPHaxymwV/bbs5afB8MMyWW5uQzB1ju?=
+ =?us-ascii?Q?MOl8GECOoE8D6io6Veaax7rZCbyXO83TB0f4wPiaZ9cYUlsFlufuZUzGN0Ho?=
+ =?us-ascii?Q?DCL6oI1TiEZ0DjpLeyWw4EHLbPhjdAzM2NDQ0TLa/NIWW+oRb2WQJl9sk+LN?=
+ =?us-ascii?Q?2Sk2QUB7jyErbEHLmSjTmuCWjA6q9hV0nunB8fTlcX0uTDZX3RiglJR6EM8u?=
+ =?us-ascii?Q?BJsvuGhjWefmHvz7A6t8kN6VnSo1/F/nhu8VbKWTPLWBKv6iWjjBCkni8Rrh?=
+ =?us-ascii?Q?ZCd46F19R9ZMX8t8QywL+5GQAPQ1Qo7fxxUzLbriqRFtLQoLVxldnem4ZmGT?=
+ =?us-ascii?Q?4MU7p8MdOAyYP0ur4GKqKs2HVSX8zeCngXMW8fP8/P09gyIYiaPASz4eT9xx?=
+ =?us-ascii?Q?kP9pQEPkMGvvWTgeiQhDFEZQEiPoSuRPRvmFvIUV/QsaSV9BQ2j8VgXNZEUT?=
+ =?us-ascii?Q?JLUsQoKObk1niiI02GPZvp+eQcjp4wPJdgqhsA5Dhdo9jpSiwDjDCBn0yz67?=
+ =?us-ascii?Q?hiljXuu2wYQbujXeYps1dsLph8Uff/l08z8xCSl0NOyuzp6Fvi0vz8yd42Pk?=
+ =?us-ascii?Q?wT1eSlzbETgg/UDBT1J1TnL2OCfQiI1eCwmUjCdWWSuRHMlyXBFYQp8gisIK?=
+ =?us-ascii?Q?62GBPxaUJ9JTZpQ60sFSVwGObul3//uuopq2w2ffWT6m68UBh7PTqnF2ZY2x?=
+ =?us-ascii?Q?uPLTKPEiD9mvUv3GXtAbhIFhVk/q4XnlTKtqxAVH6wJvoln/3r2IFrB98GTX?=
+ =?us-ascii?Q?ZBQ5nvm0Dg+NYcp9Xg1McjYIRESQLocg4QviKpzZ1OLdlEBK7rHwoWiS5R0/?=
+ =?us-ascii?Q?ntomJwHgnjd3OyOn6Iqj6+6htOZngH/TWZ2U3Ye9626sqA4UkRMggOMewTaR?=
+ =?us-ascii?Q?CRbG6zlgyhUDFcD8q3aKpZbZjkVWQtZRe6jO2wq9TRiNA3OTwryFzsJqB0Em?=
+ =?us-ascii?Q?s7ZVdRd/c2zvLusixm65hD7CeeIRd8803fVlkE2d/09+tsE8FUVQCTq5uSVF?=
+ =?us-ascii?Q?d6G+PmQSXJn/7XIByNZxzhSRQTAn+H3pE8CQcgFMVTOnRVqM7AwQvE80MYz5?=
+ =?us-ascii?Q?QDdP18Z48B59xyY/8HDjek7IhvHPlY05PRsPLSDkHrYSL0yY3Fii2EnW2VHq?=
+ =?us-ascii?Q?Ay3r7mpmO1wdmpKHWml3EtTq84jJu4cytn1vodAKVKqczXlcyF4DCmdrqdx2?=
+ =?us-ascii?Q?5rGJqL3hsX/RkLeIYCS7RQl9zJ5hbzLHns83JlDOiz9DDhGBkqJJrT08QcJk?=
+ =?us-ascii?Q?CA=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 34524b7f-2ba3-4b29-e09e-08db3ab0476e
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR17MB5512.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Apr 2023 17:14:59.3362
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: maiQcOUEpnAZTqYmDeqVRCCde6WRTKwatzQ+f7WHyr95eRd8y+0hcKBUNutmja7nuN8q2MjKheVT7+6AfUgvkz6/vlIDjWKQFzOPLvPb2zo=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR17MB4740
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 899
+Lines: 23
+
+On Sun, Apr 09, 2023 at 12:07:36AM -0700, Dan Williams wrote:
+> Here is an early draft of the DCD work that Navneet has spearheaded.
+> Given the interest level I thought it best to do the remaining
+> development and refinement of the functionality in the open.  For now
+> this is just a git branch that will become a patchkit on the mailing
+> list in a few weeks.
+> 
+> Questions are welcome, but I do not recommend a formal review until the
+> patches hit the mailing list.
+> 
+> This has had some checkout on an internal functional model, I expect
+> QEMU and/or cxl_test grows an emulation of DCD before this patchkit is
+> committed for mainline.
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=for-6.5/dcd-preview
+
+Awesome!
+
+for the QEMU folks, has anyone be actively working on a DCD device? I
+was going to start looking at it, but didn't want to duplicate work.
+
+~Gregory
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE3F6C77B61
+	for <linux-cxl@archiver.kernel.org>; Sun,  9 Apr 2023 07:07:46 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229517AbjDIHHp (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Sun, 9 Apr 2023 03:07:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42504 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229436AbjDIHHo (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Sun, 9 Apr 2023 03:07:44 -0400
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A739159ED
+        for <linux-cxl@vger.kernel.org>; Sun,  9 Apr 2023 00:07:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681024063; x=1712560063;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=UICP3DSBJ4iLlpaCQDi+lYHgWflh7U4t7sPHZiiBhXk=;
+  b=NuufJ480kHNBnDx0b0TuzximKbVHT155j2Dzd4o01TteNBQBmc4ywEKA
+   hsigMhDTTDl2MIi/3melQb0GMkjeja7kfhIzGtkEZVkC2sUYrPI2ED5zg
+   j+uNL/4vy/4ZdHmRrskkr5ULfAimdvsBufuspCSl2OtjSJFlPedrSW3Cb
+   h7i39qB3hW2Xpa560zSR7DuWRM65zTkooTWa8ffvzzRnMoTX4J2BXqGHJ
+   /SrPvzDMHQE6uDdKkoeQpWQAT4XkTC5h5BCFjh4NYEBQ5/J/vpgPg5+ER
+   pTM8rBRdOio+/nxD4jSHQYrT/yuT71cPvH1vhkNXFmZdv1wiIuIzeW5Cn
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10674"; a="344983098"
+X-IronPort-AV: E=Sophos;i="5.98,330,1673942400"; 
+   d="scan'208";a="344983098"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Apr 2023 00:07:43 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10674"; a="687935538"
+X-IronPort-AV: E=Sophos;i="5.98,330,1673942400"; 
+   d="scan'208";a="687935538"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+  by orsmga002.jf.intel.com with ESMTP; 09 Apr 2023 00:07:43 -0700
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Sun, 9 Apr 2023 00:07:42 -0700
+Received: from fmsmsx601.amr.corp.intel.com (10.18.126.81) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Sun, 9 Apr 2023 00:07:42 -0700
+Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21 via Frontend Transport; Sun, 9 Apr 2023 00:07:42 -0700
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (104.47.55.105)
+ by edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.21; Sun, 9 Apr 2023 00:07:42 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=HhDb9YjELrPqFOMytyn74sFSOSIH45VVdzyv98lgu1CzXEoHuXjffg4efKIBmV7ap38PBGybNBBvZ9hRY0jpsyKdEpDDcya+ZIk1ZSCCa45hNp7WZjwMAIV2cXkDngBFNLw4IIAOasC+Gb9kOpXhqYlKhTfCwuHDIjmqR/ESn88G1WWkTg6F+qYqD7Uw3Y7f2Rf2Q3D0Jqi7vWQzSUBYz0epFTfaicU8L0sHHrEuMU4Cs7BRWyq8S0Vm+a4nz1iq/wjxp3a5uVV456duQXNlbQS3pWpXNReYyVduumFLWezq7GfVU3Y5TrkaOrTb0Le4bVroJag+ZJ64AcvNyDKGNw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=H3X14UcQ84JVbTvAPqtXNBsxpepi3EFJMl7whxdQqnI=;
+ b=TPv5/aCANnXLD7hy9iPE0K2DK6mH9HKJIi9KnlliWOIGXGxFUYzpORb6ItDDXXHv07+x9SUzlSCnaFBGUkLCGRA/ll4+Lv9k6tp83uTpbcGquci4BRjTkn4GNLiI0qp2rwPC2Y2GEeKGh281Mv32OIEuGRrs6utOleRG17l8Bem6cQ7VY1rq9AY3nogtZLOLhWLLE7RtEORikD/YaYR1N0oFVX9vZhAcB/rrbEWcIByxB7RmYalrSb1To2LS5bOqnebDBFCcBI001Q2eHaJ5NtDrvwBcXKYk8+gUV7OkP/bRaTHKlFYWTHvzD5ur0NlasHY9lECXZ5CEUgUy5/kzLQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by PH0PR11MB4807.namprd11.prod.outlook.com (2603:10b6:510:3a::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.35; Sun, 9 Apr
+ 2023 07:07:40 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::ffa1:410b:20b3:6233]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::ffa1:410b:20b3:6233%5]) with mapi id 15.20.6277.035; Sun, 9 Apr 2023
+ 07:07:40 +0000
+Date: Sun, 9 Apr 2023 00:07:36 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+To: <linux-cxl@vger.kernel.org>
+CC: <navneet.singh@intel.com>, <ira.weiny@intel.com>
+Subject: "release early" preview of DCD enabling
+Message-ID: <64326437c1496_934b2949f@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+X-ClientProxiedBy: BYAPR07CA0083.namprd07.prod.outlook.com
+ (2603:10b6:a03:12b::24) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|PH0PR11MB4807:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4df0662e-ad04-4a8c-c7e8-08db38c91aea
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: KfMBQdSpht9FHRCeoyu185Z7YsWo4VJRRb7u7hlePAmoqdAnKnmZKMgrHwEBisaTGsmfRFReWzs1IW7krAKcG26s7XBs0H+O/v+ILUGrt1cvmHlLxwhzVKvJ+Rj3E+S+Zu8igzpxdGALaTsadLgFXl8+fy8Ck5Tleyu8kCsdN+v/a9vttanbH75NVPbmuLYgXpvaN+ab8d5NVfMvuVadtnjeMAWwgs1/oAYnDsemQSJ2VzCuL3bjqvXZtL0hISFiO44AQGRhp6wftYVEI3U6egYC4hyrkDzSC/eq4Ye4clxwDbDn2m/OET/uCou9b3rG2ZWoDlt6BzT17GPWcgpn5tAKaIBFjZaI7TeuBXNebeY/WDhSlpfZu4ThhsqIN/3SaIcl7yFz/et7dODMz+ERnUgDUEXUBIEiGxIAaFsICKJc7HGRxOVxdWEPadmzjtq1KD4BXfkY87MYuwBn9EriVS4oEFjxfSeKguN/v/Kfc/4woP+oGAE0E1kK1dqz97p7c27apS/1jLk8LeBQ8p0Hu84CVe/TjyZsv3tRnxGNUhI=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(346002)(39860400002)(396003)(136003)(376002)(366004)(451199021)(86362001)(316002)(41300700001)(66946007)(66556008)(66476007)(8676002)(4326008)(966005)(6916009)(6486002)(478600001)(5660300002)(8936002)(2906002)(4744005)(38100700002)(82960400001)(186003)(6666004)(107886003)(9686003)(6512007)(6506007)(26005)(66899021);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?1FO4xTLogcX3J0coFIwdyF53ORjqQjqEdPsW5OmSRmMxBVu4v3apZm/xCV5o?=
+ =?us-ascii?Q?g3fbos7a1+fNW6TxuVyBfM0LRQ92y1F5kxTTM6EFzN1qmOdJI3YliPYsLuq/?=
+ =?us-ascii?Q?c2qvov+LGKjbatujFO5hiL3oe3NEwsxt0AIu19MvEkJOAknIteTEE5ppPwbC?=
+ =?us-ascii?Q?vyP+cxLPAIFXywtHx5ec8kT5vRMaHZ6PF6o2pM5QA0JagOqDE2NL//4GzSXd?=
+ =?us-ascii?Q?tM7RBARbyTFFUFv5kt69UHq+2fSRYyCF5GxJz584ZaJ5eqJAObEP20Yj5sDw?=
+ =?us-ascii?Q?eZIzYNw+KPTDZRa0v/8X2R4XYHvx5t25Vn1+ri3CAZ+TaFK+TZsRFOWsFPGn?=
+ =?us-ascii?Q?2grA5Lub4PmHeBhLaTO62kNJe0ifUQy8wuOY1KavTmNjnO4BNTYB1953MaMF?=
+ =?us-ascii?Q?jnBMwyA0YNf3i8+UAk2d5n/twJCeFcu1r5lMhAjrg/FG1/nxJu+PSFY3UWjK?=
+ =?us-ascii?Q?dVsLoLZdIsQSFyEqflQJrtoZYWHC1wu5NlRdHFj+xRw3agHi9gpG2EisC1nm?=
+ =?us-ascii?Q?aq0I7PnmLT8+C2Slvl6xT+MCcLS84Frhd/ZQU78uBxy4DYf3re5awhUczOVW?=
+ =?us-ascii?Q?cyE6f0Rod6AtkrjtDOB9vVslUGiBT9v1zSAu75Z27fhVqoFFZr6gvwwxQeum?=
+ =?us-ascii?Q?ZChppI/R7wArVF0D+RzTkuweeGGsXbp3lvsFdg/F0CFeQ1RjyKW3KBaSE0ib?=
+ =?us-ascii?Q?rIbLybVSTf4JjinkLGo1qVbewp9fG/EfMg6Zf79Q8zpTPCBco3zWfe9rNX3V?=
+ =?us-ascii?Q?211mcxlZMBTQQSd/ysl0LsjuIs3gfdQ5R8WV0SG6JNLjJFbULzdNL/MBHIU2?=
+ =?us-ascii?Q?rL0PJTAgDgAIMWJZ48Lx+Cml4bh7OckCyQZ7Qxp0V04fk+FLbMwSjys7Ml6m?=
+ =?us-ascii?Q?1rz/bFFpG//UwbvtgbITIQzz3bbQxmiphaEG90gCfg1DxQ7ZtDvGMvnK1+58?=
+ =?us-ascii?Q?GCsIKyGKQyzuQkkD/usj2ZZneqAhpqPy6OsGopvbaf2W93MKurBxW2b0Lo75?=
+ =?us-ascii?Q?xNqUVQyGiHfR344gwf/xboTEbCuOoEP5xDJWFoFj8jTFskf3UwmyrBpEsYl+?=
+ =?us-ascii?Q?oEMYaMIxXtlVm9J/tmOG1QGNxv2Bvf0WOqGVstMwIU6sp0mZ8ShRLaKHeZOQ?=
+ =?us-ascii?Q?6SLlBdiT23RAiFDqaaN1JWOUXk3YOB1hTpXWQkA2Tyx0Adlc6XzIAYHfQw1Q?=
+ =?us-ascii?Q?Uaj2xz1fpfRNwQNavIgpcFFgtrNruOO178PMbuV1nOhOJsB4GnTYjrMUE34w?=
+ =?us-ascii?Q?tHyLzZZJ/Ykuu23OLtXbweJengc8bdXNso0NWEvhdOnB5RwDoWVuXBPR03ZU?=
+ =?us-ascii?Q?vOTexvoeCe/CAoyCWiLw9hFqnt0EhVJ+UvjuazpQZfurEfAcBAzut9IAgg+G?=
+ =?us-ascii?Q?7/VdBa0aewjDkEGZ1QTJmHIawGqxuRDN6R5P/xHTMQqXnBxrhKNMzXoswB0J?=
+ =?us-ascii?Q?6LaqFasb9HrIfjMxr0C0jygw1YYbuFNRQkdLZ6JP8QVEMM/SOQTw2zfQNA3h?=
+ =?us-ascii?Q?9NBZg/7vu048Tmo5oSD0pHVWG1GZ3rM6pl4nqYAb9OM1YJyaEeFExxvzn6ZP?=
+ =?us-ascii?Q?4ePSlL0vnoUwPWHJabAxmb2i/ibgvUUwBnesZ5Cb5jlHPFngddt4gfmclUwN?=
+ =?us-ascii?Q?Mw=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4df0662e-ad04-4a8c-c7e8-08db38c91aea
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Apr 2023 07:07:39.6352
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: JOsH669TQfMq4Lb+UePyI6/hNnjBYbNlg6++UQ6BcjKAANF6oFvbo+pf5tDwUHAem/99yF67ItTPzk/WAH+F48Tr6X9l0Q53OC7/WV4E6us=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB4807
+X-OriginatorOrg: intel.com
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 649
+Lines: 15
+
+Here is an early draft of the DCD work that Navneet has spearheaded.
+Given the interest level I thought it best to do the remaining
+development and refinement of the functionality in the open.  For now
+this is just a git branch that will become a patchkit on the mailing
+list in a few weeks.
+
+Questions are welcome, but I do not recommend a formal review until the
+patches hit the mailing list.
+
+This has had some checkout on an internal functional model, I expect
+QEMU and/or cxl_test grows an emulation of DCD before this patchkit is
+committed for mainline.
+
+https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=for-6.5/dcd-preview
+
+

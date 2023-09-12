@@ -1,0 +1,817 @@
+From 3113a430f1ccbad8340234cf38b00f271ccee103 Mon Sep 17 00:00:00 2001
+From: Navneet Singh <navneet.singh@intel.com>
+Date: Sat, 8 Apr 2023 11:46:26 -0700
+Subject: [PATCH 5/7] cxl/mem: Add support to handle DCD add and release
+ capacity events.
+Status: RO
+Content-Length: 23857
+Lines: 807
+
+A dynamic capacity device utilizes events to signal the host about the
+changes to the allocation of DC blocks. The device communicates the
+state of these blocks of dynamic capacity through an extent list that
+describes the starting DPA and length of all blocks the host can access.
+
+Based on the dynamic capacity add or release event type,
+dynamic memory represented by the extents are either added
+or removed as devdax device.
+
+Process the dynamic capacity add and release events.
+
+Signed-off-by: Navneet Singh <navneet.singh@intel.com>
+[iweiny: fixups]
+[djbw: fixups, no sign-off: preview only]
+[TODO: replace 'struct resource' with 'struct range' usage, revist
+extent_size usage]
+---
+ drivers/cxl/core/core.h   |   2 +
+ drivers/cxl/core/mbox.c   | 217 +++++++++++++++++++++++++++++++++++++-
+ drivers/cxl/core/region.c | 151 ++++++++++++++++++++++++++
+ drivers/cxl/core/trace.h  |   3 +-
+ drivers/cxl/cxl.h         |   4 +-
+ drivers/cxl/cxlmem.h      |  76 +++++++++++--
+ drivers/cxl/pci.c         |  28 +++--
+ drivers/dax/bus.c         |  11 +-
+ drivers/dax/bus.h         |   5 +-
+ 9 files changed, 471 insertions(+), 26 deletions(-)
+
+diff --git a/drivers/cxl/core/core.h b/drivers/cxl/core/core.h
+index 4efce25b2d3c..ecd0a191cd3b 100644
+--- a/drivers/cxl/core/core.h
++++ b/drivers/cxl/core/core.h
+@@ -57,6 +57,8 @@ int cxl_dpa_set_mode(struct cxl_endpoint_decoder *cxled,
+ 		     enum cxl_decoder_mode mode);
+ int cxl_dpa_alloc(struct cxl_endpoint_decoder *cxled, unsigned long long size);
+ int cxl_dpa_free(struct cxl_endpoint_decoder *cxled);
++int cxl_add_dc_extent(struct cxl_dev_state *cxlds, struct resource *alloc_dpa_res);
++int cxl_release_dc_extent(struct cxl_dev_state *cxlds, struct resource *rel_dpa_res);
+ resource_size_t cxl_dpa_size(struct cxl_endpoint_decoder *cxled);
+ resource_size_t cxl_dpa_resource_start(struct cxl_endpoint_decoder *cxled);
+ extern struct rw_semaphore cxl_dpa_rwsem;
+diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+index 6c2459e61bc8..80a45b52fc6b 100644
+--- a/drivers/cxl/core/mbox.c
++++ b/drivers/cxl/core/mbox.c
+@@ -683,6 +683,14 @@ static const uuid_t log_uuid[] = {
+ 	[VENDOR_DEBUG_UUID] = DEFINE_CXL_VENDOR_DEBUG_UUID,
+ };
+ 
++/* See CXL 3.0 8.2.9.2.1.5 */
++enum dc_event {
++	ADD_CAPACITY,
++	RELEASE_CAPACITY,
++	FORCED_CAPACITY_RELEASE,
++	REGION_CONFIGURATION_UPDATED,
++};
++
+ /**
+  * cxl_enumerate_cmds() - Enumerate commands for a device.
+  * @cxlds: The device data for the operation
+@@ -768,6 +776,14 @@ static const uuid_t mem_mod_event_uuid =
+ 	UUID_INIT(0xfe927475, 0xdd59, 0x4339,
+ 		  0xa5, 0x86, 0x79, 0xba, 0xb1, 0x13, 0xb7, 0x74);
+ 
++/*
++ * Dynamic Capacity Event Record
++ * CXL rev 3.0 section 8.2.9.2.1.3; Table 8-45
++ */
++static const uuid_t dc_event_uuid =
++	UUID_INIT(0xca95afa7, 0xf183, 0x4018, 0x8c,
++		0x2f, 0x95, 0x26, 0x8e, 0x10, 0x1a, 0x2a);
++
+ static void cxl_event_trace_record(const struct cxl_memdev *cxlmd,
+ 				   enum cxl_event_log_type type,
+ 				   struct cxl_event_record_raw *record)
+@@ -860,6 +876,190 @@ static int cxl_clear_event_record(struct cxl_dev_state *cxlds,
+ 	kvfree(payload);
+ 	return rc;
+ }
++static int cxl_send_dc_cap_response(struct cxl_dev_state *cxlds,
++				struct cxl_mbox_dc_response *res,
++				int extent_size, int opcode)
++{
++	struct cxl_mbox_cmd mbox_cmd;
++	int rc, size;
++
++	size = struct_size(res, extent_list, extent_size);
++	res->extent_list_size = cpu_to_le32(extent_size);
++
++	mbox_cmd = (struct cxl_mbox_cmd) {
++		.opcode = opcode,
++		.size_in = size,
++		.payload_in = res,
++	};
++
++	rc = cxl_internal_send_cmd(cxlds, &mbox_cmd);
++
++	return rc;
++
++}
++
++static int cxl_prepare_ext_list(struct cxl_mbox_dc_response **res,
++					int *n, struct resource *extent)
++{
++	struct cxl_mbox_dc_response *dc_res;
++	unsigned int size;
++
++	if (!extent)
++		size = struct_size(dc_res, extent_list, 0);
++	else
++		size = struct_size(dc_res, extent_list, *n + 1);
++
++	dc_res = krealloc(*res, size, GFP_KERNEL);
++	if (!dc_res)
++		return -ENOMEM;
++
++	if (extent) {
++		dc_res->extent_list[*n].dpa_start = cpu_to_le64(extent->start);
++		memset(dc_res->extent_list[*n].reserved, 0, 8);
++		dc_res->extent_list[*n].length =
++				cpu_to_le64(resource_size(extent));
++		(*n)++;
++	}
++
++	*res = dc_res;
++	return 0;
++}
++/**
++ * cxl_handle_dcd_event_records() - Read DCD event records.
++ * @cxlds: The device data for the operation
++ *
++ * Returns 0 if enumerate completed successfully.
++ *
++ * CXL devices can generate DCD events to add or remove extents in the list.
++ */
++int cxl_handle_dcd_event_records(struct cxl_dev_state *cxlds, struct cxl_event_record_raw *rec)
++{
++	struct cxl_mbox_dc_response *dc_res = NULL;
++	struct device *dev = cxlds->dev;
++	uuid_t *id = &rec->hdr.id;
++	struct dcd_event_dyn_cap *record =
++			(struct dcd_event_dyn_cap *)rec;
++	int extent_size = 0, rc = 0;
++	struct cxl_dc_extent_data *extent;
++	struct resource alloc_dpa_res, rel_dpa_res;
++	resource_size_t dpa, size;
++
++	if (!uuid_equal(id, &dc_event_uuid))
++		return -EINVAL;
++
++	switch (record->data.event_type) {
++	case ADD_CAPACITY:
++		extent = devm_kzalloc(dev, sizeof(*extent), GFP_ATOMIC);
++		if (!extent) {
++			dev_err(dev, "No memory available\n");
++			return -ENOMEM;
++		}
++
++		extent->dpa_start = le64_to_cpu(record->data.extent.start_dpa);
++		extent->length = le64_to_cpu(record->data.extent.length);
++		memcpy(extent->tag, record->data.extent.tag,
++				sizeof(record->data.extent.tag));
++		extent->shared_extent_seq =
++			le16_to_cpu(record->data.extent.shared_extn_seq);
++		dev_dbg(dev, "Add DC extent DPA:0x%llx LEN:%llx\n",
++					extent->dpa_start, extent->length);
++		alloc_dpa_res = (struct resource) {
++			.start = extent->dpa_start,
++			.end = extent->dpa_start + extent->length - 1,
++			.flags = IORESOURCE_MEM,
++		};
++
++		rc = cxl_add_dc_extent(cxlds, &alloc_dpa_res);
++		if (rc < 0) {
++			dev_dbg(dev, "unconsumed DC extent DPA:0x%llx LEN:%llx\n",
++					extent->dpa_start, extent->length);
++			rc = cxl_prepare_ext_list(&dc_res, &extent_size, NULL);
++			if (rc < 0){
++				dev_err(dev, "Couldn't create extent list %d\n",
++									rc);
++				devm_kfree(dev, extent);
++				return rc;
++			}
++
++			rc = cxl_send_dc_cap_response(cxlds, dc_res,
++					extent_size, CXL_MBOX_OP_ADD_DC_RESPONSE);
++			if (rc < 0){
++				devm_kfree(dev, extent);
++				goto out;
++			}
++
++			kfree(dc_res);
++			devm_kfree(dev, extent);
++
++			return 0;
++		}
++
++		rc = xa_insert(&cxlds->dc_extent_list, extent->dpa_start, extent,
++				GFP_KERNEL);
++		if (rc < 0)
++			goto out;
++
++		cxlds->num_dc_extents++;
++		rc = cxl_prepare_ext_list(&dc_res, &extent_size, &alloc_dpa_res);
++		if (rc < 0){
++			dev_err(dev, "Couldn't create extent list %d\n", rc);
++			return rc;
++		}
++
++		rc = cxl_send_dc_cap_response(cxlds, dc_res,
++				extent_size, CXL_MBOX_OP_ADD_DC_RESPONSE);
++		if (rc < 0)
++			goto out;
++
++		break;
++
++	case RELEASE_CAPACITY:
++		dpa = le64_to_cpu(record->data.extent.start_dpa);
++		size = le64_to_cpu(record->data.extent.length);
++		dev_dbg(dev, "Release DC extents DPA:0x%llx LEN:%llx\n",
++				dpa, size);
++		extent = xa_load(&cxlds->dc_extent_list, dpa);
++		if (!extent) {
++			dev_err(dev, "No extent found with DPA:0x%llx\n", dpa);
++			return -EINVAL;
++		}
++
++		rel_dpa_res = (struct resource) {
++			.start = dpa,
++			.end = dpa + size - 1,
++			.flags = IORESOURCE_MEM,
++		};
++
++		rc = cxl_release_dc_extent(cxlds, &rel_dpa_res);
++		if (rc < 0) {
++			dev_dbg(dev, "withhold DC extent DPA:0x%llx LEN:%llx\n",
++									dpa, size);
++			return 0;
++		}
++
++		xa_erase(&cxlds->dc_extent_list, dpa);
++		devm_kfree(dev, extent);
++		cxlds->num_dc_extents--;
++		rc = cxl_prepare_ext_list(&dc_res, &extent_size, &rel_dpa_res);
++		if (rc < 0){
++			dev_err(dev, "Couldn't create extent list %d\n", rc);
++			return rc;
++		}
++
++		rc = cxl_send_dc_cap_response(cxlds, dc_res,
++				extent_size, CXL_MBOX_OP_RELEASE_DC);
++		if (rc < 0)
++			goto out;
++
++		break;
++
++	default:
++		return -EINVAL;
++	}
++out:
++	kfree(dc_res);
++	return rc;
++}
+ 
+ static void cxl_mem_get_records_log(struct cxl_dev_state *cxlds,
+ 				    enum cxl_event_log_type type)
+@@ -896,9 +1096,19 @@ static void cxl_mem_get_records_log(struct cxl_dev_state *cxlds,
+ 		if (!nr_rec)
+ 			break;
+ 
+-		for (i = 0; i < nr_rec; i++)
++		for (i = 0; i < nr_rec; i++) {
+ 			cxl_event_trace_record(cxlds->cxlmd, type,
+-					       &payload->records[i]);
++					&payload->records[i]);
++			if (type == CXL_EVENT_TYPE_DCD) {
++				rc = cxl_handle_dcd_event_records(cxlds,
++							&payload->records[i]);
++				if (rc) {
++					dev_err_ratelimited(cxlds->dev,
++						"dcd event failed: %d\n", rc);
++					break;
++				}
++			}
++		}
+ 
+ 		if (payload->flags & CXL_GET_EVENT_FLAG_OVERFLOW)
+ 			trace_cxl_overflow(cxlds->cxlmd, type, payload);
+@@ -938,6 +1148,8 @@ void cxl_mem_get_event_records(struct cxl_dev_state *cxlds, u32 status)
+ 		cxl_mem_get_records_log(cxlds, CXL_EVENT_TYPE_WARN);
+ 	if (status & CXLDEV_EVENT_STATUS_INFO)
+ 		cxl_mem_get_records_log(cxlds, CXL_EVENT_TYPE_INFO);
++	if (status & CXLDEV_EVENT_STATUS_DCD)
++		cxl_mem_get_records_log(cxlds, CXL_EVENT_TYPE_DCD);
+ }
+ EXPORT_SYMBOL_NS_GPL(cxl_mem_get_event_records, CXL);
+ 
+@@ -1254,6 +1466,7 @@ struct cxl_dev_state *cxl_dev_state_create(struct device *dev)
+ 
+ 	mutex_init(&cxlds->mbox_mutex);
+ 	mutex_init(&cxlds->event.log_lock);
++	xa_init(&cxlds->dc_extent_list);
+ 	cxlds->dev = dev;
+ 
+ 	return cxlds;
+diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
+index 46d60ffd1e02..f95f97a2ca52 100644
+--- a/drivers/cxl/core/region.c
++++ b/drivers/cxl/core/region.c
+@@ -11,6 +11,8 @@
+ #include <cxlmem.h>
+ #include <cxl.h>
+ #include "core.h"
++#include "../../dax/bus.h"
++#include "../../dax/dax-private.h"
+ 
+ /**
+  * DOC: cxl core region
+@@ -2610,6 +2612,155 @@ static int match_region_by_range(struct device *dev, void *data)
+ 	return rc;
+ }
+ 
++static int match_ep_decoder_by_range(struct device *dev, void *data)
++{
++	struct cxl_endpoint_decoder *cxled;
++	struct resource *dpa_res = data;
++
++	if (!is_endpoint_decoder(dev))
++		return 0;
++
++	cxled = to_cxl_endpoint_decoder(dev);
++	if (!cxled->cxld.region)
++		return 0;
++
++	if (cxled->dpa_res->start <= dpa_res->start &&
++				cxled->dpa_res->end >= dpa_res->end)
++		return 1;
++
++	return 0;
++}
++
++int cxl_release_dc_extent(struct cxl_dev_state *cxlds,
++			  struct resource *rel_dpa_res)
++{
++	struct cxl_memdev *cxlmd = cxlds->cxlmd;
++	struct cxl_endpoint_decoder *cxled;
++	struct cxl_dc_region *cxlr_dc;
++	struct dax_region *dax_region;
++	resource_size_t dpa_offset;
++	struct cxl_region *cxlr;
++	struct range hpa_range;
++	struct dev_dax *dev_dax;
++	resource_size_t hpa;
++	struct device *dev;
++	int ranges, rc = 0;
++
++	/*
++	 * Find the cxl endpoind decoder with which has the extent dpa range and
++	 * get the cxl_region, dax_region refrences.
++	 */
++	dev = device_find_child(&cxlmd->endpoint->dev, rel_dpa_res,
++				match_ep_decoder_by_range);
++	if (!dev) {
++		dev_err(cxlds->dev, "%pr not mapped\n",	rel_dpa_res);
++		return PTR_ERR(dev);
++	}
++
++	cxled = to_cxl_endpoint_decoder(dev);
++	hpa_range = cxled->cxld.hpa_range;
++	cxlr = cxled->cxld.region;
++	cxlr_dc = cxlr->cxlr_dc;
++
++	/* DPA to HPA translation */
++	if (cxled->cxld.interleave_ways == 1) {
++		dpa_offset = rel_dpa_res->start - cxled->dpa_res->start;
++		hpa = hpa_range.start + dpa_offset;
++	} else {
++		dev_err(cxlds->dev, "Interleaving DC not supported\n");
++		return -EINVAL;
++	}
++
++	dev_dax = xa_load(&cxlr_dc->dax_dev_list, hpa);
++	if (!dev_dax)
++		return -EINVAL;
++
++	dax_region = dev_dax->region;
++	ranges = dev_dax->nr_range;
++
++	while (ranges) {
++		int i = ranges - 1;
++		struct dax_mapping *mapping = dev_dax->ranges[i].mapping;
++
++		devm_release_action(dax_region->dev, unregister_dax_mapping,
++								&mapping->dev);
++		ranges--;
++	}
++
++	dev_dbg(cxlds->dev, "removing devdax device:%s\n",
++						dev_name(&dev_dax->dev));
++	devm_release_action(dax_region->dev, unregister_dev_dax,
++							&dev_dax->dev);
++	xa_erase(&cxlr_dc->dax_dev_list, hpa);
++
++	return rc;
++}
++
++int cxl_add_dc_extent(struct cxl_dev_state *cxlds, struct resource *alloc_dpa_res)
++{
++	struct dev_dax_data data;
++	struct dev_dax *dev_dax;
++	struct cxl_endpoint_decoder *cxled;
++	struct cxl_memdev *cxlmd = cxlds->cxlmd;
++	struct device *dev;
++	struct range hpa_range;
++	struct cxl_region *cxlr;
++	struct cxl_dc_region *cxlr_dc;
++	struct cxl_dax_region *cxlr_dax;
++	struct dax_region *dax_region;
++	resource_size_t dpa_offset;
++	resource_size_t hpa;
++	int rc;
++
++	/*
++	 * Find the cxl endpoind decoder with which has the extent dpa range and
++	 * get the cxl_region, dax_region refrences.
++	 */
++	dev = device_find_child(&cxlmd->endpoint->dev, alloc_dpa_res,
++				match_ep_decoder_by_range);
++	if (!dev) {
++		dev_err(cxlds->dev, "%pr not mapped\n",	alloc_dpa_res);
++		return PTR_ERR(dev);
++	}
++
++	cxled = to_cxl_endpoint_decoder(dev);
++	hpa_range = cxled->cxld.hpa_range;
++	cxlr = cxled->cxld.region;
++	cxlr_dc = cxlr->cxlr_dc;
++	cxlr_dax = cxlr_dc->cxlr_dax;
++	dax_region = dev_get_drvdata(&cxlr_dax->dev);
++
++	/* DPA to HPA translation */
++	if (cxled->cxld.interleave_ways == 1) {
++		dpa_offset = alloc_dpa_res->start - cxled->dpa_res->start;
++		hpa = hpa_range.start + dpa_offset;
++	} else {
++		dev_err(cxlds->dev, "Interleaving DC not supported\n");
++		return -EINVAL;
++	}
++
++	data = (struct dev_dax_data) {
++		.dax_region = dax_region,
++		.id = -1,
++		.size = 0,
++	};
++
++	dev_dax = devm_create_dev_dax(&data);
++	if (IS_ERR(dev_dax))
++		return PTR_ERR(dev_dax);
++
++	if (IS_ALIGNED(resource_size(alloc_dpa_res), max_t(unsigned long,
++				dev_dax->align, memremap_compat_align()))) {
++		rc = alloc_dev_dax_range(dev_dax, hpa,
++					resource_size(alloc_dpa_res));
++		return rc;
++	}
++
++	rc = xa_insert(&cxlr_dc->dax_dev_list, hpa, dev_dax, GFP_KERNEL);
++
++	return rc;
++}
++
+ /* Establish an empty region covering the given HPA range */
+ static struct cxl_region *construct_region(struct cxl_root_decoder *cxlrd,
+ 					   struct cxl_endpoint_decoder *cxled)
+diff --git a/drivers/cxl/core/trace.h b/drivers/cxl/core/trace.h
+index 9b8d3d997834..5195ff729b8e 100644
+--- a/drivers/cxl/core/trace.h
++++ b/drivers/cxl/core/trace.h
+@@ -120,7 +120,8 @@ TRACE_EVENT(cxl_aer_correctable_error,
+ 		{ CXL_EVENT_TYPE_INFO, "Informational" },	\
+ 		{ CXL_EVENT_TYPE_WARN, "Warning" },		\
+ 		{ CXL_EVENT_TYPE_FAIL, "Failure" },		\
+-		{ CXL_EVENT_TYPE_FATAL, "Fatal" })
++		{ CXL_EVENT_TYPE_FATAL, "Fatal" },		\
++		{ CXL_EVENT_TYPE_DCD, "DCD" })
+ 
+ TRACE_EVENT(cxl_overflow,
+ 
+diff --git a/drivers/cxl/cxl.h b/drivers/cxl/cxl.h
+index 959ad4ca4a3b..4146850a5ad3 100644
+--- a/drivers/cxl/cxl.h
++++ b/drivers/cxl/cxl.h
+@@ -163,11 +163,13 @@ static inline int ways_to_eiw(unsigned int ways, u8 *eiw)
+ #define CXLDEV_EVENT_STATUS_WARN		BIT(1)
+ #define CXLDEV_EVENT_STATUS_FAIL		BIT(2)
+ #define CXLDEV_EVENT_STATUS_FATAL		BIT(3)
++#define CXLDEV_EVENT_STATUS_DCD			BIT(4)
+ 
+ #define CXLDEV_EVENT_STATUS_ALL (CXLDEV_EVENT_STATUS_INFO |	\
+ 				 CXLDEV_EVENT_STATUS_WARN |	\
+ 				 CXLDEV_EVENT_STATUS_FAIL |	\
+-				 CXLDEV_EVENT_STATUS_FATAL)
++				 CXLDEV_EVENT_STATUS_FATAL|	\
++				 CXLDEV_EVENT_STATUS_DCD)
+ 
+ /* CXL rev 3.0 section 8.2.9.2.4; Table 8-52 */
+ #define CXLDEV_EVENT_INT_MODE_MASK	GENMASK(1, 0)
+diff --git a/drivers/cxl/cxlmem.h b/drivers/cxl/cxlmem.h
+index d426994a7027..1d299b7fda40 100644
+--- a/drivers/cxl/cxlmem.h
++++ b/drivers/cxl/cxlmem.h
+@@ -5,6 +5,7 @@
+ #include <uapi/linux/cxl_mem.h>
+ #include <linux/cdev.h>
+ #include <linux/uuid.h>
++#include <linux/xarray.h>
+ #include "cxl.h"
+ 
+ /* CXL 2.0 8.2.8.5.1.1 Memory Device Status Register */
+@@ -204,6 +205,7 @@ struct cxl_event_interrupt_policy {
+ 	u8 warn_settings;
+ 	u8 failure_settings;
+ 	u8 fatal_settings;
++	u8 dyncap_settings;
+ } __packed;
+ 
+ /**
+@@ -217,6 +219,25 @@ struct cxl_event_state {
+ 	struct mutex log_lock;
+ };
+ 
++struct cxl_dc_extent_data {
++	u64 dpa_start;
++	u64 length;
++	u8 tag[16];
++	u16 shared_extent_seq;
++};
++
++/*
++ * CXL rev 3.0 section 8.2.9.2.2; Table 8-49
++ */
++enum cxl_event_log_type {
++	CXL_EVENT_TYPE_INFO = 0x00,
++	CXL_EVENT_TYPE_WARN,
++	CXL_EVENT_TYPE_FAIL,
++	CXL_EVENT_TYPE_FATAL,
++	CXL_EVENT_TYPE_DCD,
++	CXL_EVENT_TYPE_MAX
++};
++
+ /**
+  * struct cxl_dev_state - The driver device state
+  *
+@@ -302,6 +323,8 @@ struct cxl_dev_state {
+ 		u32 dsmad_handle;
+ 		u8 flags;
+ 	} dc_region[CXL_MAX_DC_REGION];
++	struct xarray dc_extent_list;
++	u32 num_dc_extents;
+ 
+ 	size_t dc_event_log_size;
+ 	resource_size_t component_reg_phys;
+@@ -310,6 +333,7 @@ struct cxl_dev_state {
+ 	struct xarray doe_mbs;
+ 
+ 	struct cxl_event_state event;
++	unsigned int cxl_irq[CXL_EVENT_TYPE_MAX];
+ 
+ 	int (*mbox_send)(struct cxl_dev_state *cxlds, struct cxl_mbox_cmd *cmd);
+ };
+@@ -363,6 +387,17 @@ enum cxl_opcode {
+ 	UUID_INIT(0xe1819d9, 0x11a9, 0x400c, 0x81, 0x1f, 0xd6, 0x07, 0x19,     \
+ 		  0x40, 0x3d, 0x86)
+ 
++
++struct cxl_mbox_dc_response {
++	__le32 extent_list_size;
++	u8 reserved[4];
++	struct updated_extent_list {
++		__le64 dpa_start;
++		__le64 length;
++		u8 reserved[8];
++	} __packed extent_list[];
++} __packed;
++
+ struct cxl_mbox_get_supported_logs {
+ 	__le16 entries;
+ 	u8 rsvd[6];
+@@ -440,16 +475,6 @@ struct cxl_get_event_payload {
+ 	struct cxl_event_record_raw records[];
+ } __packed;
+ 
+-/*
+- * CXL rev 3.0 section 8.2.9.2.2; Table 8-49
+- */
+-enum cxl_event_log_type {
+-	CXL_EVENT_TYPE_INFO = 0x00,
+-	CXL_EVENT_TYPE_WARN,
+-	CXL_EVENT_TYPE_FAIL,
+-	CXL_EVENT_TYPE_FATAL,
+-	CXL_EVENT_TYPE_MAX
+-};
+ 
+ /*
+  * Clear Event Records input payload
+@@ -532,6 +557,35 @@ struct cxl_event_mem_module {
+ 	u8 reserved[0x3d];
+ } __packed;
+ 
++/*
++ * Dynamic Capacity Event Record
++ * CXL rev 3.0 section 8.2.9.2.1.5; Table 8-47
++ */
++
++#define CXL_EVENT_DC_TAG_SIZE	0x10
++struct cxl_dc_extent {
++	__le64 start_dpa;
++	__le64 length;
++	u8 tag[CXL_EVENT_DC_TAG_SIZE];
++	__le16 shared_extn_seq;
++	u8 reserved[6];
++} __packed;
++
++struct dcd_record_data {
++	u8 event_type;
++	u8 reserved;
++	__le16 host_id;
++	u8 region_index;
++	u8 reserved1[3];
++	struct cxl_dc_extent extent;
++	u8 reserved2[32];
++} __packed;
++
++struct dcd_event_dyn_cap {
++	struct cxl_event_record_hdr hdr;
++	struct dcd_record_data data;
++} __packed;
++
+ struct cxl_mbox_get_partition_info {
+ 	__le64 active_volatile_cap;
+ 	__le64 active_persistent_cap;
+@@ -648,6 +702,8 @@ int cxl_dev_state_identify(struct cxl_dev_state *cxlds);
+ int cxl_dev_dynamic_capacity_identify(struct cxl_dev_state *cxlds);
+ int cxl_await_media_ready(struct cxl_dev_state *cxlds);
+ int cxl_enumerate_cmds(struct cxl_dev_state *cxlds);
++int cxl_handle_dcd_event_records(struct cxl_dev_state *cxlds,
++				struct cxl_event_record_raw *rec);
+ int cxl_mem_create_range_info(struct cxl_dev_state *cxlds);
+ struct cxl_dev_state *cxl_dev_state_create(struct device *dev);
+ void set_exclusive_cxl_commands(struct cxl_dev_state *cxlds, unsigned long *cmds);
+diff --git a/drivers/cxl/pci.c b/drivers/cxl/pci.c
+index 549bc84d3049..9e45b1056022 100644
+--- a/drivers/cxl/pci.c
++++ b/drivers/cxl/pci.c
+@@ -543,7 +543,8 @@ static irqreturn_t cxl_event_thread(int irq, void *id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static int cxl_event_req_irq(struct cxl_dev_state *cxlds, u8 setting)
++static int cxl_event_req_irq(struct cxl_dev_state *cxlds, u8 setting,
++		enum cxl_event_log_type type, unsigned long irqflags)
+ {
+ 	struct device *dev = cxlds->dev;
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+@@ -564,9 +565,10 @@ static int cxl_event_req_irq(struct cxl_dev_state *cxlds, u8 setting)
+ 	if (irq < 0)
+ 		return irq;
+ 
++	cxlds->cxl_irq[type] = irq;
++
+ 	return devm_request_threaded_irq(dev, irq, NULL, cxl_event_thread,
+-					 IRQF_SHARED | IRQF_ONESHOT, NULL,
+-					 dev_id);
++							irqflags, NULL, dev_id);
+ }
+ 
+ static int cxl_event_get_int_policy(struct cxl_dev_state *cxlds,
+@@ -598,6 +600,7 @@ static int cxl_event_config_msgnums(struct cxl_dev_state *cxlds,
+ 		.warn_settings = CXL_INT_MSI_MSIX,
+ 		.failure_settings = CXL_INT_MSI_MSIX,
+ 		.fatal_settings = CXL_INT_MSI_MSIX,
++		.dyncap_settings = CXL_INT_MSI_MSIX,
+ 	};
+ 
+ 	mbox_cmd = (struct cxl_mbox_cmd) {
+@@ -626,30 +629,41 @@ static int cxl_event_irqsetup(struct cxl_dev_state *cxlds)
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = cxl_event_req_irq(cxlds, policy.info_settings);
++	rc = cxl_event_req_irq(cxlds, policy.info_settings, CXL_EVENT_TYPE_INFO,
++					IRQF_SHARED | IRQF_ONESHOT);
+ 	if (rc) {
+ 		dev_err(cxlds->dev, "Failed to get interrupt for event Info log\n");
+ 		return rc;
+ 	}
+ 
+-	rc = cxl_event_req_irq(cxlds, policy.warn_settings);
++	rc = cxl_event_req_irq(cxlds, policy.warn_settings, CXL_EVENT_TYPE_WARN,
++					IRQF_SHARED | IRQF_ONESHOT);
+ 	if (rc) {
+ 		dev_err(cxlds->dev, "Failed to get interrupt for event Warn log\n");
+ 		return rc;
+ 	}
+ 
+-	rc = cxl_event_req_irq(cxlds, policy.failure_settings);
++	rc = cxl_event_req_irq(cxlds, policy.failure_settings, CXL_EVENT_TYPE_FAIL,
++					IRQF_SHARED | IRQF_ONESHOT);
+ 	if (rc) {
+ 		dev_err(cxlds->dev, "Failed to get interrupt for event Failure log\n");
+ 		return rc;
+ 	}
+ 
+-	rc = cxl_event_req_irq(cxlds, policy.fatal_settings);
++	rc = cxl_event_req_irq(cxlds, policy.fatal_settings, CXL_EVENT_TYPE_FATAL,
++					IRQF_SHARED | IRQF_ONESHOT);
+ 	if (rc) {
+ 		dev_err(cxlds->dev, "Failed to get interrupt for event Fatal log\n");
+ 		return rc;
+ 	}
+ 
++	/* Driver enables DCD interrupt after creating the dc cxl_region */
++	rc = cxl_event_req_irq(cxlds, policy.dyncap_settings, CXL_EVENT_TYPE_DCD,
++					IRQF_SHARED | IRQF_ONESHOT | IRQF_NO_AUTOEN);
++	if (rc) {
++		dev_err(cxlds->dev, "Failed to get interrupt for event dc log\n");
++		return rc;
++	}
+ 	return 0;
+ }
+ 
+diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
+index 227800053309..b2b27033f589 100644
+--- a/drivers/dax/bus.c
++++ b/drivers/dax/bus.c
+@@ -434,7 +434,7 @@ static void free_dev_dax_ranges(struct dev_dax *dev_dax)
+ 		trim_dev_dax_range(dev_dax);
+ }
+ 
+-static void unregister_dev_dax(void *dev)
++void unregister_dev_dax(void *dev)
+ {
+ 	struct dev_dax *dev_dax = to_dev_dax(dev);
+ 
+@@ -445,6 +445,7 @@ static void unregister_dev_dax(void *dev)
+ 	free_dev_dax_ranges(dev_dax);
+ 	put_device(dev);
+ }
++EXPORT_SYMBOL_GPL(unregister_dev_dax);
+ 
+ /* a return value >= 0 indicates this invocation invalidated the id */
+ static int __free_dev_dax_id(struct dev_dax *dev_dax)
+@@ -641,7 +642,7 @@ static void dax_mapping_release(struct device *dev)
+ 	kfree(mapping);
+ }
+ 
+-static void unregister_dax_mapping(void *data)
++void unregister_dax_mapping(void *data)
+ {
+ 	struct device *dev = data;
+ 	struct dax_mapping *mapping = to_dax_mapping(dev);
+@@ -658,7 +659,7 @@ static void unregister_dax_mapping(void *data)
+ 	device_del(dev);
+ 	put_device(dev);
+ }
+-
++EXPORT_SYMBOL_GPL(unregister_dax_mapping);
+ static struct dev_dax_range *get_dax_range(struct device *dev)
+ {
+ 	struct dax_mapping *mapping = to_dax_mapping(dev);
+@@ -793,7 +794,7 @@ static int devm_register_dax_mapping(struct dev_dax *dev_dax, int range_id)
+ 	return 0;
+ }
+ 
+-static int alloc_dev_dax_range(struct dev_dax *dev_dax, u64 start,
++int alloc_dev_dax_range(struct dev_dax *dev_dax, u64 start,
+ 		resource_size_t size)
+ {
+ 	struct dax_region *dax_region = dev_dax->region;
+@@ -853,6 +854,8 @@ static int alloc_dev_dax_range(struct dev_dax *dev_dax, u64 start,
+ 
+ 	return rc;
+ }
++EXPORT_SYMBOL_GPL(alloc_dev_dax_range);
++
+ 
+ static int adjust_dev_dax_range(struct dev_dax *dev_dax, struct resource *res, resource_size_t size)
+ {
+diff --git a/drivers/dax/bus.h b/drivers/dax/bus.h
+index 8cd79ab34292..aa8418c7aead 100644
+--- a/drivers/dax/bus.h
++++ b/drivers/dax/bus.h
+@@ -47,8 +47,11 @@ int __dax_driver_register(struct dax_device_driver *dax_drv,
+ 	__dax_driver_register(driver, THIS_MODULE, KBUILD_MODNAME)
+ void dax_driver_unregister(struct dax_device_driver *dax_drv);
+ void kill_dev_dax(struct dev_dax *dev_dax);
++void unregister_dev_dax(void *dev);
++void unregister_dax_mapping(void *data);
+ bool static_dev_dax(struct dev_dax *dev_dax);
+-
++int alloc_dev_dax_range(struct dev_dax *dev_dax, u64 start,
++					resource_size_t size);
+ /*
+  * While run_dax() is potentially a generic operation that could be
+  * defined in include/linux/dax.h we don't want to grow any users
+-- 
+2.25.1
+

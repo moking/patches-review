@@ -1,0 +1,2093 @@
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AB7BC7619A
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:35 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229653AbjC0FDd (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51032 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230351AbjC0FD3 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:29 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A76F74ECE
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893408; x=1711429408;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=WAv51r/GHPCocb0ndW4vWbeVQ+VrUTXGjc45AFEw9zg=;
+  b=MNCZRCcC2eM7EI5HZGDTOMmvuAoqXubwjFual1ghITGAHAStyc0oOsID
+   KUhfNWvMmeNlob3Av9SropNq/++Dnbm/sjj2QElUWRzh66c5gTX+YMQ7B
+   bV3n0BtgcFANl4hUvjKeTLp/nsxifoTdzOMpDQS4iMhCKYiTyWJf6M8Ln
+   AihCTNEvZQKvf6YFQ9/Cjk35FjOJkPGC5AGBOqEEbDA321LBFJfPW+YKA
+   84LREOqfQYHmxAeW/8/T9nBTKLNmvP5ARrYySdHCKgTyEZ4LfnML5wV8I
+   yWxlprWY5EKnSx9Sn+09pKP3nLTJiUpQ8hzbeO3mJo3+v9iIRgrvMB2Qy
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920214"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920214"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:28 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492291"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492291"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:27 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v5 11/12] tools/testing/cxl: Add a sysfs attr to test poison inject limits
+Date: Sun, 26 Mar 2023 22:03:17 -0700
+Message-Id: <8c6a37f71095be970eb04cc1e2ab2cdb08062020.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 3900
+Lines: 131
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+CXL devices may report a maximum number of addresses that a device
+allows to be poisoned using poison injection. When cxl_test creates
+mock CXL memory devices, it defaults to MOCK_INJECT_DEV_MAX==88 for
+all mocked memdevs.
+
+Add a sysfs attribute, poison_inject_max to module cxl_mock_mem so
+that users can set a custom device injection limit. Fail, and return
+-EBUSY, if the mock poison list is not empty.
+
+/sys/bus/platform/drivers/cxl_mock_mem/poison_inject_max
+
+A simple usage model is to set the attribute before running a test in
+order to emulate a device's poison handling.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ tools/testing/cxl/test/mem.c | 52 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 48 insertions(+), 4 deletions(-)
+
+diff --git a/tools/testing/cxl/test/mem.c b/tools/testing/cxl/test/mem.c
+index 9658d95236b7..5c3b3e5a3b4b 100644
+--- a/tools/testing/cxl/test/mem.c
++++ b/tools/testing/cxl/test/mem.c
+@@ -19,6 +19,8 @@
+ #define MOCK_INJECT_DEV_MAX 8
+ #define MOCK_INJECT_TEST_MAX 128
+ 
++static unsigned int poison_inject_dev_max = MOCK_INJECT_DEV_MAX;
++
+ static struct cxl_cel_entry mock_cel[] = {
+ 	{
+ 		.opcode = cpu_to_le16(CXL_MBOX_OP_GET_SUPPORTED_LOGS),
+@@ -485,7 +487,7 @@ static int mock_id(struct cxl_dev_state *cxlds, struct cxl_mbox_cmd *cmd)
+ 			cpu_to_le64(SZ_256M / CXL_CAPACITY_MULTIPLIER),
+ 		.total_capacity =
+ 			cpu_to_le64(DEV_SIZE / CXL_CAPACITY_MULTIPLIER),
+-		.inject_poison_limit = cpu_to_le16(MOCK_INJECT_DEV_MAX),
++		.inject_poison_limit = cpu_to_le16(MOCK_INJECT_TEST_MAX),
+ 	};
+ 
+ 	put_unaligned_le24(CXL_POISON_LIST_MAX, id.poison_list_max_mer);
+@@ -919,7 +921,7 @@ static struct cxl_mbox_poison_payload_out
+ 	int nr_records = 0;
+ 	u64 dpa;
+ 
+-	po = kzalloc(struct_size(po, record, MOCK_INJECT_DEV_MAX), GFP_KERNEL);
++	po = kzalloc(struct_size(po, record, poison_inject_dev_max), GFP_KERNEL);
+ 	if (!po)
+ 		return NULL;
+ 
+@@ -934,7 +936,7 @@ static struct cxl_mbox_poison_payload_out
+ 		po->record[nr_records].address = cpu_to_le64(dpa);
+ 		po->record[nr_records].length = cpu_to_le32(1);
+ 		nr_records++;
+-		if (nr_records == MOCK_INJECT_DEV_MAX)
++		if (nr_records == poison_inject_dev_max)
+ 			break;
+ 	}
+ 
+@@ -969,7 +971,7 @@ static bool mock_poison_dev_max_injected(struct cxl_dev_state *cxlds)
+ 		if (mock_poison_list[i].cxlds == cxlds)
+ 			count++;
+ 	}
+-	return (count >= MOCK_INJECT_DEV_MAX);
++	return (count >= poison_inject_dev_max);
+ }
+ 
+ static bool mock_poison_add(struct cxl_dev_state *cxlds, u64 dpa)
+@@ -1051,6 +1053,47 @@ static int mock_clear_poison(struct cxl_dev_state *cxlds,
+ 	return 0;
+ }
+ 
++static bool mock_poison_list_empty(void)
++{
++	for (int i = 0; i < MOCK_INJECT_TEST_MAX; i++) {
++		if (mock_poison_list[i].cxlds)
++			return false;
++	}
++	return true;
++}
++
++static ssize_t poison_inject_max_show(struct device_driver *drv, char *buf)
++{
++	return sysfs_emit(buf, "%u\n", poison_inject_dev_max);
++}
++
++static ssize_t poison_inject_max_store(struct device_driver *drv,
++				       const char *buf, size_t len)
++{
++	int val;
++
++	if (kstrtoint(buf, 0, &val) < 0)
++		return -EINVAL;
++
++	if (!mock_poison_list_empty())
++		return -EBUSY;
++
++	if (val <= MOCK_INJECT_TEST_MAX)
++		poison_inject_dev_max = val;
++	else
++		return -EINVAL;
++
++	return len;
++}
++
++static DRIVER_ATTR_RW(poison_inject_max);
++
++static struct attribute *cxl_mock_mem_core_attrs[] = {
++	&driver_attr_poison_inject_max.attr,
++	NULL
++};
++ATTRIBUTE_GROUPS(cxl_mock_mem_core);
++
+ static int cxl_mock_mbox_send(struct cxl_dev_state *cxlds, struct cxl_mbox_cmd *cmd)
+ {
+ 	struct device *dev = cxlds->dev;
+@@ -1259,6 +1302,7 @@ static struct platform_driver cxl_mock_mem_driver = {
+ 	.driver = {
+ 		.name = KBUILD_MODNAME,
+ 		.dev_groups = cxl_mock_mem_groups,
++		.groups = cxl_mock_mem_core_groups,
+ 	},
+ };
+ 
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA105C77B61
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:27 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230227AbjC0FD1 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50836 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229677AbjC0FDX (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:23 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68EDF4230
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893402; x=1711429402;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=bg78VwnU1HCF8UScppD8XxEXYi/d+QDJY+9Rr5LI/1w=;
+  b=kqr1+nSRk/DSfziLMkga5n0SwhMM1E6zrgrZ/1lDKdJToKhmG0ycyV89
+   eoIL4zW/6l2ho4KzGciHUH22uilCivwZHgf6EAqRArsJY4cwZoxAWvm7b
+   +auhL+dGv2znGWjSrIPl0Fy/WminzmWwcqSEcAXbBbmL8jlq9cccsQRB4
+   q3pIy7Cseqc806Sq24h6LgSg6fvnHIxK+P4InS2Q3/+xbrdJ43ZiBMUbM
+   XkMbvvNGQO1aiSAzvAv/tSY1kf94RGIHrU33EASGlOPOsQRPlsjnsIPlZ
+   +JfHPCroCMjZfA3+aEzIUBoJVpQYCE/Iwz2gy8ai8J4FnZBHJ/6HSsg7G
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920182"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920182"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:22 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492255"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492255"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:21 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org
+Subject: [PATCH v5 03/12] cxl/memdev: Warn of poison inject or clear to a mapped region
+Date: Sun, 26 Mar 2023 22:03:09 -0700
+Message-Id: <fc7db7de4778803a3221d7fd5a203bf971fdac61.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 3206
+Lines: 116
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+Inject and clear poison capabilities and intended for debug usage only.
+In order to be useful in debug environments, the driver needs to allow
+inject and clear operations on DPAs mapped in regions.
+
+dev_warn_once() when either operation occurs.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+---
+ drivers/cxl/core/memdev.c | 59 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
+
+diff --git a/drivers/cxl/core/memdev.c b/drivers/cxl/core/memdev.c
+index 0e39c3c3fb09..a83619c31f61 100644
+--- a/drivers/cxl/core/memdev.c
++++ b/drivers/cxl/core/memdev.c
+@@ -213,6 +213,50 @@ ssize_t cxl_trigger_poison_list(struct device *dev,
+ }
+ EXPORT_SYMBOL_NS_GPL(cxl_trigger_poison_list, CXL);
+ 
++struct cxl_dpa_to_region_context {
++	struct cxl_region *cxlr;
++	u64 dpa;
++};
++
++static int __cxl_dpa_to_region(struct device *dev, void *arg)
++{
++	struct cxl_dpa_to_region_context *ctx = arg;
++	struct cxl_endpoint_decoder *cxled;
++	u64 dpa = ctx->dpa;
++
++	if (!is_endpoint_decoder(dev))
++		return 0;
++
++	cxled = to_cxl_endpoint_decoder(dev);
++	if (!cxled->dpa_res || !resource_size(cxled->dpa_res))
++		return 0;
++
++	if (dpa > cxled->dpa_res->end || dpa < cxled->dpa_res->start)
++		return 0;
++
++	dev_dbg(dev, "dpa:0x%llx mapped in region:%s\n", dpa,
++		dev_name(&cxled->cxld.region->dev));
++
++	ctx->cxlr = cxled->cxld.region;
++
++	return 0;
++}
++
++static struct cxl_region *cxl_dpa_to_region(struct cxl_memdev *cxlmd, u64 dpa)
++{
++	struct cxl_dpa_to_region_context ctx;
++	struct cxl_port *port;
++
++	ctx = (struct cxl_dpa_to_region_context) {
++		.dpa = dpa,
++	};
++	port = dev_get_drvdata(&cxlmd->dev);
++	if (port && is_cxl_endpoint(port) && port->commit_end != -1)
++		device_for_each_child(&port->dev, &ctx, __cxl_dpa_to_region);
++
++	return ctx.cxlr;
++}
++
+ static int cxl_validate_poison_dpa(struct cxl_memdev *cxlmd, u64 dpa)
+ {
+ 	struct cxl_dev_state *cxlds = cxlmd->cxlds;
+@@ -242,6 +286,7 @@ int cxl_inject_poison(struct device *dev, u64 dpa)
+ 	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
+ 	struct cxl_mbox_inject_poison inject;
+ 	struct cxl_mbox_cmd mbox_cmd;
++	struct cxl_region *cxlr;
+ 	int rc;
+ 
+ 	if (!IS_ENABLED(CONFIG_DEBUG_FS))
+@@ -261,6 +306,13 @@ int cxl_inject_poison(struct device *dev, u64 dpa)
+ 		.payload_in = &inject,
+ 	};
+ 	rc = cxl_internal_send_cmd(cxlmd->cxlds, &mbox_cmd);
++	if (rc)
++		goto out;
++
++	cxlr = cxl_dpa_to_region(cxlmd, dpa);
++	if (cxlr)
++		dev_warn_once(dev, "poison inject dpa:0x%llx region: %s\n",
++			      dpa, dev_name(&cxlr->dev));
+ out:
+ 	up_read(&cxl_dpa_rwsem);
+ 
+@@ -273,6 +325,7 @@ int cxl_clear_poison(struct device *dev, u64 dpa)
+ 	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
+ 	struct cxl_mbox_clear_poison clear;
+ 	struct cxl_mbox_cmd mbox_cmd;
++	struct cxl_region *cxlr;
+ 	int rc;
+ 
+ 	if (!IS_ENABLED(CONFIG_DEBUG_FS))
+@@ -303,7 +356,13 @@ int cxl_clear_poison(struct device *dev, u64 dpa)
+ 	};
+ 
+ 	rc = cxl_internal_send_cmd(cxlmd->cxlds, &mbox_cmd);
++	if (rc)
++		goto out;
+ 
++	cxlr = cxl_dpa_to_region(cxlmd, dpa);
++	if (cxlr)
++		dev_warn_once(dev, "poison clear dpa:0x%llx region: %s\n",
++			      dpa, dev_name(&cxlr->dev));
+ out:
+ 	up_read(&cxl_dpa_rwsem);
+ 
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52E42C77B61
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:32 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230254AbjC0FDa (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50922 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230212AbjC0FD1 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:27 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 450DA4230
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893406; x=1711429406;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=l5qydJc2qTxClYAA3khPwiAT8pVGyO4LrUT5kTe7wxc=;
+  b=mZ8L1qsLPBPMsTso1/Nn7PeHOr6jsD1K91UbohtBG6igvUIJLSasa+fT
+   RqoOKU0jl+qXADwYhwoT394OFGmskdyafh+vtQxt1xL6WdPDCLyZzDRjZ
+   EKy6VgqA7k35qt+mp4OzWTaBcMIYK9vAR927ewuBxCNAVENoCYmVpo0sN
+   /4usslYAD60Fcc1oInJJHvdIgy7i1xNkr+sArKrxmdAYhF0s50wFbzQmu
+   IJf0axu4n1Lp4WKV+fiagjp3jBHnNEybgYkunbPlCL3VXTfMvMsJ8Jc6y
+   7xVQCwJQTLRP6C1L9A9tPPDResP5hR48deeus4g0K/TBTmCuDqAMJuf2V
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920204"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920204"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:25 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492278"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492278"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:25 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v5 08/12] tools/testing/cxl: Mock the Inject Poison mailbox command
+Date: Sun, 26 Mar 2023 22:03:14 -0700
+Message-Id: <fc4ee78a1574ba5a0a7a7c2918af2c0d57012fd5.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 4038
+Lines: 142
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+Mock the injection of poison by storing the device:address entries in
+mock_poison_list[]. Enforce a limit of 8 poison injections per memdev
+device and 128 total entries for the cxl_test mock driver.
+
+Introducing the mock_poison[] list here, makes it available for use in
+the mock of Clear Poison, and the mock of Get Poison List.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ tools/testing/cxl/test/mem.c | 77 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
+
+diff --git a/tools/testing/cxl/test/mem.c b/tools/testing/cxl/test/mem.c
+index 2fa9c18d4c2c..4fca886e2a7c 100644
+--- a/tools/testing/cxl/test/mem.c
++++ b/tools/testing/cxl/test/mem.c
+@@ -16,6 +16,9 @@
+ #define DEV_SIZE SZ_2G
+ #define EFFECT(x) (1U << x)
+ 
++#define MOCK_INJECT_DEV_MAX 8
++#define MOCK_INJECT_TEST_MAX 128
++
+ static struct cxl_cel_entry mock_cel[] = {
+ 	{
+ 		.opcode = cpu_to_le16(CXL_MBOX_OP_GET_SUPPORTED_LOGS),
+@@ -45,6 +48,10 @@ static struct cxl_cel_entry mock_cel[] = {
+ 		.opcode = cpu_to_le16(CXL_MBOX_OP_GET_POISON),
+ 		.effect = cpu_to_le16(0),
+ 	},
++	{
++		.opcode = cpu_to_le16(CXL_MBOX_OP_INJECT_POISON),
++		.effect = cpu_to_le16(0),
++	},
+ };
+ 
+ /* See CXL 2.0 Table 181 Get Health Info Output Payload */
+@@ -474,6 +481,7 @@ static int mock_id(struct cxl_dev_state *cxlds, struct cxl_mbox_cmd *cmd)
+ 			cpu_to_le64(SZ_256M / CXL_CAPACITY_MULTIPLIER),
+ 		.total_capacity =
+ 			cpu_to_le64(DEV_SIZE / CXL_CAPACITY_MULTIPLIER),
++		.inject_poison_limit = cpu_to_le16(MOCK_INJECT_DEV_MAX),
+ 	};
+ 
+ 	put_unaligned_le24(CXL_POISON_LIST_MAX, id.poison_list_max_mer);
+@@ -895,6 +903,11 @@ static int mock_health_info(struct cxl_dev_state *cxlds,
+ 	return 0;
+ }
+ 
++static struct mock_poison {
++	struct cxl_dev_state *cxlds;
++	u64 dpa;
++} mock_poison_list[MOCK_INJECT_TEST_MAX];
++
+ static int mock_get_poison(struct cxl_dev_state *cxlds,
+ 			   struct cxl_mbox_cmd *cmd)
+ {
+@@ -923,6 +936,67 @@ static int mock_get_poison(struct cxl_dev_state *cxlds,
+ 	return 0;
+ }
+ 
++static bool mock_poison_dev_max_injected(struct cxl_dev_state *cxlds)
++{
++	int count = 0;
++
++	for (int i = 0; i < MOCK_INJECT_TEST_MAX; i++) {
++		if (mock_poison_list[i].cxlds == cxlds)
++			count++;
++	}
++	return (count >= MOCK_INJECT_DEV_MAX);
++}
++
++static bool mock_poison_add(struct cxl_dev_state *cxlds, u64 dpa)
++{
++	if (mock_poison_dev_max_injected(cxlds)) {
++		dev_dbg(cxlds->dev,
++			"Device poison injection limit has been reached: %d\n",
++			MOCK_INJECT_DEV_MAX);
++		return false;
++	}
++
++	for (int i = 0; i < MOCK_INJECT_TEST_MAX; i++) {
++		if (!mock_poison_list[i].cxlds) {
++			mock_poison_list[i].cxlds = cxlds;
++			mock_poison_list[i].dpa = dpa;
++			return true;
++		}
++	}
++	dev_dbg(cxlds->dev,
++		"Mock test poison injection limit has been reached: %d\n",
++		MOCK_INJECT_TEST_MAX);
++
++	return false;
++}
++
++static bool mock_poison_found(struct cxl_dev_state *cxlds, u64 dpa)
++{
++	for (int i = 0; i < MOCK_INJECT_TEST_MAX; i++) {
++		if (mock_poison_list[i].cxlds == cxlds &&
++		    mock_poison_list[i].dpa == dpa)
++			return true;
++	}
++	return false;
++}
++
++static int mock_inject_poison(struct cxl_dev_state *cxlds,
++			      struct cxl_mbox_cmd *cmd)
++{
++	struct cxl_mbox_inject_poison *pi = cmd->payload_in;
++	u64 dpa = le64_to_cpu(pi->address);
++
++	if (mock_poison_found(cxlds, dpa)) {
++		/* Not an error to inject poison if already poisoned */
++		dev_dbg(cxlds->dev, "DPA: 0x%llx already poisoned\n", dpa);
++		return 0;
++	}
++	if (!mock_poison_add(cxlds, dpa))
++		return -ENXIO;
++
++	return 0;
++}
++
+ static int cxl_mock_mbox_send(struct cxl_dev_state *cxlds, struct cxl_mbox_cmd *cmd)
+ {
+ 	struct device *dev = cxlds->dev;
+@@ -980,6 +1054,9 @@ static int cxl_mock_mbox_send(struct cxl_dev_state *cxlds, struct cxl_mbox_cmd *
+ 	case CXL_MBOX_OP_GET_POISON:
+ 		rc = mock_get_poison(cxlds, cmd);
+ 		break;
++	case CXL_MBOX_OP_INJECT_POISON:
++		rc = mock_inject_poison(cxlds, cmd);
++		break;
+ 	default:
+ 		break;
+ 	}
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 623BBC76195
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:26 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229878AbjC0FDZ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50812 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229653AbjC0FDW (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:22 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5962CAA
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893401; x=1711429401;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=FHVqwv/bz/5lvzQyKh3Gj6d7lJzsFVN7/4uHxlOfnZ8=;
+  b=n2CyqPtHu5VVtAAo4pIxCT67DYnNt6xlTzeBr3tWqdSM7hB+0ZyTLjvu
+   EUmuskc50PhYsQ+PS0qg/FSxOe+1UE3+deJo0fkCeMGHwJtLCrBmHqlvI
+   8gGg/X+tSo6At9fMQFTpqLgQZnLDY/mQjwLSHmdwZTXJCe4hC24Ogb+Qy
+   40phZiebtmKfBKm96W+NO/JCYR60epm9KUVFy6JoZJZu5VYw6yVu5Olum
+   dfJsZtyoyv8NWDNomij/MQIoqcfZ5TprwJnehH7GQH2SScNSL59DKDY1t
+   Wb/4n89qxkm2kOLl5a0RCrD6dbexFTKEZb6+3IJJRg5J9jEm015Fbq1TE
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920177"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920177"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:20 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492243"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492243"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:20 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org
+Subject: [PATCH v5 01/12] cxl/memdev: Add support for the Inject Poison mailbox command
+Date: Sun, 26 Mar 2023 22:03:07 -0700
+Message-Id: <976c3fcb43f31c0b303709a14a044652bc267978.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 3879
+Lines: 123
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+CXL devices optionally support the INJECT POISON mailbox command. Add
+memdev driver support for the mailbox command.
+
+Per the CXL Specification (3.0 8.2.9.8.4.2), after receiving a valid
+inject poison request, the device will return poison when the address
+is accessed through the CXL.mem bus. Injecting poison adds the address
+to the device's Poison List and the error source is set to Injected.
+In addition, the device adds a poison creation event to its internal
+Informational Event log, updates the Event Status register, and if
+configured, interrupts the host.
+
+Also, per the CXL Specification, it is not an error to inject poison
+into an address that already has poison present and no error is
+returned from the device.
+
+If the address is not contained in the device's dpa resource, or is
+not 64 byte aligned, return -EINVAL without issuing the mbox command.
+
+Poison injection is intended for debug only and will be exposed to
+userspace through debugfs. Restrict compilation to CONFIG_DEBUG_FS.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+---
+ drivers/cxl/core/memdev.c | 55 +++++++++++++++++++++++++++++++++++++++
+ drivers/cxl/cxlmem.h      |  6 +++++
+ 2 files changed, 61 insertions(+)
+
+diff --git a/drivers/cxl/core/memdev.c b/drivers/cxl/core/memdev.c
+index f26b5b6cda10..3b3ac2868848 100644
+--- a/drivers/cxl/core/memdev.c
++++ b/drivers/cxl/core/memdev.c
+@@ -213,6 +213,61 @@ ssize_t cxl_trigger_poison_list(struct device *dev,
+ }
+ EXPORT_SYMBOL_NS_GPL(cxl_trigger_poison_list, CXL);
+ 
++static int cxl_validate_poison_dpa(struct cxl_memdev *cxlmd, u64 dpa)
++{
++	struct cxl_dev_state *cxlds = cxlmd->cxlds;
++
++	if (!IS_ENABLED(CONFIG_DEBUG_FS))
++		return 0;
++
++	if (!resource_size(&cxlds->dpa_res)) {
++		dev_dbg(cxlds->dev, "device has no dpa resource\n");
++		return -EINVAL;
++	}
++	if (dpa < cxlds->dpa_res.start || dpa > cxlds->dpa_res.end) {
++		dev_dbg(cxlds->dev, "dpa:0x%llx not in resource:%pR\n",
++			dpa, &cxlds->dpa_res);
++		return -EINVAL;
++	}
++	if (!IS_ALIGNED(dpa, 64)) {
++		dev_dbg(cxlds->dev, "dpa:0x%llx is not 64-byte aligned\n", dpa);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++int cxl_inject_poison(struct device *dev, u64 dpa)
++{
++	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
++	struct cxl_mbox_inject_poison inject;
++	struct cxl_mbox_cmd mbox_cmd;
++	int rc;
++
++	if (!IS_ENABLED(CONFIG_DEBUG_FS))
++		return 0;
++
++	down_read(&cxl_dpa_rwsem);
++	rc = cxl_validate_poison_dpa(cxlmd, dpa);
++	if (rc)
++		goto out;
++
++	inject = (struct cxl_mbox_inject_poison) {
++		.address = cpu_to_le64(dpa)
++	};
++	mbox_cmd = (struct cxl_mbox_cmd) {
++		.opcode = CXL_MBOX_OP_INJECT_POISON,
++		.size_in = sizeof(inject),
++		.payload_in = &inject,
++	};
++	rc = cxl_internal_send_cmd(cxlmd->cxlds, &mbox_cmd);
++out:
++	up_read(&cxl_dpa_rwsem);
++
++	return rc;
++}
++EXPORT_SYMBOL_NS_GPL(cxl_inject_poison, CXL);
++
+ static struct attribute *cxl_memdev_attributes[] = {
+ 	&dev_attr_serial.attr,
+ 	&dev_attr_firmware_version.attr,
+diff --git a/drivers/cxl/cxlmem.h b/drivers/cxl/cxlmem.h
+index 5febaa3f9b04..527efef2d700 100644
+--- a/drivers/cxl/cxlmem.h
++++ b/drivers/cxl/cxlmem.h
+@@ -602,6 +602,11 @@ struct cxl_mbox_poison_payload_out {
+ #define CXL_POISON_SOURCE_INJECTED	3
+ #define CXL_POISON_SOURCE_VENDOR	7
+ 
++/* Inject & Clear Poison  CXL 3.0 Spec 8.2.9.8.4.2/3 */
++struct cxl_mbox_inject_poison {
++	__le64 address;
++};
++
+ /**
+  * struct cxl_mem_command - Driver representation of a memory device command
+  * @info: Command information as it exists for the UAPI
+@@ -678,6 +683,7 @@ int cxl_mem_get_poison(struct cxl_memdev *cxlmd, u64 offset, u64 len,
+ ssize_t cxl_trigger_poison_list(struct device *dev,
+ 				struct device_attribute *attr, const char *buf,
+ 				size_t len);
++int cxl_inject_poison(struct device *dev, u64 dpa);
+ 
+ #ifdef CONFIG_CXL_SUSPEND
+ void cxl_mem_active_inc(void);
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47B79C77B6D
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:30 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229606AbjC0FD2 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50894 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229653AbjC0FDZ (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:25 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9D6CAA
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893404; x=1711429404;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=pBV9VOAMkbepzR+gVgGgvxx6gd/wvP6z2s4+Acq00EQ=;
+  b=jlCk7T+34256ysuAT3wVxvSyUj/Dh+GbYtuLi1RiRXaC/PNzC4v2/Fmj
+   Iiy1BwO0RW29c6q/gZX2mO0ruglOviQl80c6oNDd2EqDFsf1OLw1MxlUI
+   IE8thxbY+dR314WdivpjasFEIlSZMXhbcDYrNNCB1UJjc/RCND6E6n3xV
+   QPjcut1HAGCbitsaqk7gIiDMO54qXEn1hU4Tt2BvX6www+2hOt/P45qKx
+   j7HaiDPIi1EqOvEFNX3yDr8pEKcUraa31y5Fi5AMUi6aAm89lYbNyqH5P
+   ZNR/zEQWkY4kbbqr7cMb1+TbhnG1OHk0GZ7qcvA4t1TwAAU6zcOsYrYTp
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920194"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920194"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:24 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492269"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492269"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:23 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v5 06/12] cxl/memdev: Make inject and clear poison cmds kernel exclusive
+Date: Sun, 26 Mar 2023 22:03:12 -0700
+Message-Id: <d88366e1b749c0100f2480f0036117667b62bc95.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 3785
+Lines: 95
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+Inject and clear poison commands are intended to be used in debug
+mode only, and if improperly used, can lead to data corruption. The
+kernel provides a debugfs interface to issue these commands [1]
+
+The CXL driver defines Enabled commands in its ABI.[2] Enabled means
+that the device and the driver both support the command. If a device
+supports inject and/or clear, those commands are flagged Enabled.
+
+The ABI also defines another command flag: Exclusive. Exclusive
+commands are reserved for kernel use. The exclusive flags can be
+temporal, but for inject and clear, the status is permanent.
+
+Document the exclusivity of Inject and Clear in the ABI kernel doc.
+(Clean up a typo in kdoc too: 'CXL_MEM_COMMAND_FLAG_ENABLED')
+
+Create an exclusive commands bitmap in the memdev driver, add the
+inject and clear poison commands, and set it in the cxl_dev_state.
+
+[1] Documentation/ABI/testing/debugfs-cxl
+[2] include/uapi/linux/cxl_mem.h
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ drivers/cxl/core/memdev.c    |  6 ++++++
+ include/uapi/linux/cxl_mem.h | 20 +++++++++++++++-----
+ 2 files changed, 21 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cxl/core/memdev.c b/drivers/cxl/core/memdev.c
+index 71ebe3795616..617d8378ca9a 100644
+--- a/drivers/cxl/core/memdev.c
++++ b/drivers/cxl/core/memdev.c
+@@ -11,6 +11,8 @@
+ 
+ static DECLARE_RWSEM(cxl_memdev_rwsem);
+ 
++static __read_mostly DECLARE_BITMAP(exclusive_cmds, CXL_MEM_COMMAND_ID_MAX);
++
+ /*
+  * An entire PCI topology full of devices should be enough for any
+  * config
+@@ -628,6 +630,10 @@ struct cxl_memdev *devm_cxl_add_memdev(struct cxl_dev_state *cxlds)
+ 	cxlmd->cxlds = cxlds;
+ 	cxlds->cxlmd = cxlmd;
+ 
++	set_bit(CXL_MEM_COMMAND_ID_INJECT_POISON, exclusive_cmds);
++	set_bit(CXL_MEM_COMMAND_ID_CLEAR_POISON, exclusive_cmds);
++	set_exclusive_cxl_commands(cxlds, exclusive_cmds);
++
+ 	cdev = &cxlmd->cdev;
+ 	rc = cdev_device_add(cdev, dev);
+ 	if (rc)
+diff --git a/include/uapi/linux/cxl_mem.h b/include/uapi/linux/cxl_mem.h
+index 86bbacf2a315..6294278f9dcb 100644
+--- a/include/uapi/linux/cxl_mem.h
++++ b/include/uapi/linux/cxl_mem.h
+@@ -74,17 +74,27 @@ static const struct {
+  * @id: ID number for the command.
+  * @flags: Flags that specify command behavior.
+  *
+- *         CXL_MEM_COMMAND_FLAG_USER_ENABLED
++ *         CXL_MEM_COMMAND_FLAG_ENABLED
+  *
+  *         The given command id is supported by the driver and is supported by
+  *         a related opcode on the device.
+  *
+  *         CXL_MEM_COMMAND_FLAG_EXCLUSIVE
+  *
+- *         Requests with the given command id will terminate with EBUSY as the
+- *         kernel actively owns management of the given resource. For example,
+- *         the label-storage-area can not be written while the kernel is
+- *         actively managing that space.
++ *         The given command id is for kernel exclusive use and is not
++ *         available to userspace. Requests will terminate with EBUSY.
++ *
++ *         The exclusive flag may be temporal, and only set while the
++ *         kernel actively owns management of the given resource. For
++ *         example, the label-storage-area can not be written while the
++ *         kernel is actively managing that space.
++ *
++ *         The exclusive flag can be permanent, as in commands that can
++ *         never be issued through the ioctl interface.
++ *
++ *         INJECT_POISON and CLEAR_POISON are permanently kernel exclusive,
++ *         and are supported through a debugfs interface.
++ *         See: Documentation/ABI/testing/debugfs-cxl
+  *
+  * @size_in: Expected input size, or ~0 if variable length.
+  * @size_out: Expected output size, or ~0 if variable length.
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAE40C7619A
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:31 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230020AbjC0FDa (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50942 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230254AbjC0FD1 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:27 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06BBDAA
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893406; x=1711429406;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=jy1UQLJ3GWQhq9KyEdeSl/Ei3C69x5gUL0OGBx9pdqg=;
+  b=gbAHmP2NABZE4hLAZXWW1kThLVMo8tSZBX/qW32ubSKTv2UTsj++lbIo
+   AMomO2eeHNXbNKkQrsnYyEpyFyIdi9iFUWJkEvBHSRxVetiQVUKz/9JKu
+   9yj1l3NeeRPa0+RzJB+7UVOxRjFJQe2CpqnQWdtCw5oFxamnVRVctXX09
+   dtyA2p5KTCZCkdol1Hdg8VVLw44tyPUgJR1WBWqndn1WuUu26Z+cl1143
+   t6kUaRXQLQ6/wXvEFwa0v/PwdJRTYho2iU5qN+y1Utn1wwqdEX7BHQnvz
+   ncWsEYiaWKdf98wx6oklHxNur4HGsKnivPE2O/kEufCWtbC0lC0hFdODC
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920207"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920207"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:26 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492283"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492283"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:26 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v5 09/12] tools/testing/cxl: Mock the Clear Poison mailbox command
+Date: Sun, 26 Mar 2023 22:03:15 -0700
+Message-Id: <e2145b982de1d862188c725e7320f3a27d807db7.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 2282
+Lines: 78
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+Mock the clear of poison by deleting the device:address entry from
+the mock_poison_list[]. Behave like a real CXL device and do not fail
+if the address is not in the poison list, but offer a dev_dbg()
+message.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ tools/testing/cxl/test/mem.c | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+diff --git a/tools/testing/cxl/test/mem.c b/tools/testing/cxl/test/mem.c
+index 4fca886e2a7c..720147c7cb2b 100644
+--- a/tools/testing/cxl/test/mem.c
++++ b/tools/testing/cxl/test/mem.c
+@@ -52,6 +52,10 @@ static struct cxl_cel_entry mock_cel[] = {
+ 		.opcode = cpu_to_le16(CXL_MBOX_OP_INJECT_POISON),
+ 		.effect = cpu_to_le16(0),
+ 	},
++	{
++		.opcode = cpu_to_le16(CXL_MBOX_OP_CLEAR_POISON),
++		.effect = cpu_to_le16(0),
++	},
+ };
+ 
+ /* See CXL 2.0 Table 181 Get Health Info Output Payload */
+@@ -997,6 +1001,35 @@ static int mock_inject_poison(struct cxl_dev_state *cxlds,
+ 	return 0;
+ }
+ 
++static bool mock_poison_del(struct cxl_dev_state *cxlds, u64 dpa)
++{
++	for (int i = 0; i < MOCK_INJECT_TEST_MAX; i++) {
++		if (mock_poison_list[i].cxlds == cxlds &&
++		    mock_poison_list[i].dpa == dpa) {
++			mock_poison_list[i].cxlds = NULL;
++			return true;
++		}
++	}
++	return false;
++}
++
++static int mock_clear_poison(struct cxl_dev_state *cxlds,
++			     struct cxl_mbox_cmd *cmd)
++{
++	struct cxl_mbox_clear_poison *pi = cmd->payload_in;
++	u64 dpa = le64_to_cpu(pi->address);
++
++	/*
++	 * A real CXL device will write pi->write_data to the address
++	 * being cleared. In this mock, just delete this address from
++	 * the mock poison list.
++	 */
++	if (!mock_poison_del(cxlds, dpa))
++		dev_dbg(cxlds->dev, "DPA: 0x%llx not in poison list\n", dpa);
++
++	return 0;
++}
++
+ static int cxl_mock_mbox_send(struct cxl_dev_state *cxlds, struct cxl_mbox_cmd *cmd)
+ {
+ 	struct device *dev = cxlds->dev;
+@@ -1057,6 +1090,9 @@ static int cxl_mock_mbox_send(struct cxl_dev_state *cxlds, struct cxl_mbox_cmd *
+ 	case CXL_MBOX_OP_INJECT_POISON:
+ 		rc = mock_inject_poison(cxlds, cmd);
+ 		break;
++	case CXL_MBOX_OP_CLEAR_POISON:
++		rc = mock_clear_poison(cxlds, cmd);
++		break;
+ 	default:
+ 		break;
+ 	}
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0CF8C77B6C
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:28 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230309AbjC0FD1 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50852 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229821AbjC0FDY (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:24 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3BBC04234
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893403; x=1711429403;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=eOa6PTzsbbOOifFcLKiYSro65LcaKPOf+snM3L6es78=;
+  b=YaVeQ59nmDb7L+d1nOSDDyEVAw22lCrVQM1Q6ZSgCm/aHrZcr+R2/NWi
+   94r2qfOuWJUCOnLhZo93Q566n8ogUVJZYBjVwqln+uF9RofRz9mDPvP3k
+   426uUKfN6o/uFrs2vy/HgrtdDxC7VG3vYhEphYKny81mX2Lcva7vO40ZJ
+   liCJ6dyGq8MnmPIOmg2vCFv3J0jzIEkrxzCGDd7FNBZpQW3gX4fdWfulJ
+   2ZX26PnhsJlTH/LBv8eLn7gOwQw3GuJyLzJcb56WtWU7OIsQEGZmZXlf1
+   axwDkPHgSgXrsEzz/GSgg3xqxhBE0XHVa0ITkJe+apHf6L4Bq/nQCVC20
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920188"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920188"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:22 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492260"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492260"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:22 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org
+Subject: [PATCH v5 04/12] cxl/memdev: Trace inject and clear poison as cxl_poison events
+Date: Sun, 26 Mar 2023 22:03:10 -0700
+Message-Id: <9074fc4d2ac3fb1aa1c4db7ea55fba85c4f3864a.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 3545
+Lines: 112
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+The cxl_poison trace event allows users to view the history of poison
+list reads. With the addition of inject and clear poison capabilities,
+users will expect similar tracing.
+
+Add trace types 'Inject' and 'Clear' to the cxl_poison trace_event and
+trace successful operations only.
+
+If the driver finds that the DPA being injected or cleared of poison
+is mapped in a region, that region info is included in the cxl_poison
+trace event. Region reconfigurations can make this extra info useless
+if the debug operations are not carefully managed.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+---
+ drivers/cxl/core/core.h   |  2 ++
+ drivers/cxl/core/memdev.c | 16 ++++++++++++++++
+ drivers/cxl/core/trace.h  |  8 +++++---
+ 3 files changed, 23 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cxl/core/core.h b/drivers/cxl/core/core.h
+index 57bd22e01a0b..5b673eca8f12 100644
+--- a/drivers/cxl/core/core.h
++++ b/drivers/cxl/core/core.h
+@@ -71,6 +71,8 @@ void cxl_mbox_init(void);
+ 
+ enum cxl_poison_trace_type {
+ 	CXL_POISON_TRACE_LIST,
++	CXL_POISON_TRACE_INJECT,
++	CXL_POISON_TRACE_CLEAR,
+ };
+ 
+ struct cxl_trigger_poison_context {
+diff --git a/drivers/cxl/core/memdev.c b/drivers/cxl/core/memdev.c
+index a83619c31f61..71ebe3795616 100644
+--- a/drivers/cxl/core/memdev.c
++++ b/drivers/cxl/core/memdev.c
+@@ -6,6 +6,7 @@
+ #include <linux/idr.h>
+ #include <linux/pci.h>
+ #include <cxlmem.h>
++#include "trace.h"
+ #include "core.h"
+ 
+ static DECLARE_RWSEM(cxl_memdev_rwsem);
+@@ -285,6 +286,7 @@ int cxl_inject_poison(struct device *dev, u64 dpa)
+ {
+ 	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
+ 	struct cxl_mbox_inject_poison inject;
++	struct cxl_poison_record record;
+ 	struct cxl_mbox_cmd mbox_cmd;
+ 	struct cxl_region *cxlr;
+ 	int rc;
+@@ -313,6 +315,13 @@ int cxl_inject_poison(struct device *dev, u64 dpa)
+ 	if (cxlr)
+ 		dev_warn_once(dev, "poison inject dpa:0x%llx region: %s\n",
+ 			      dpa, dev_name(&cxlr->dev));
++
++	record = (struct cxl_poison_record) {
++		.address = cpu_to_le64(dpa),
++		.length = cpu_to_le32(1),
++	};
++	trace_cxl_poison(cxlmd, cxlr, &record, 0, 0, CXL_POISON_TRACE_INJECT);
++
+ out:
+ 	up_read(&cxl_dpa_rwsem);
+ 
+@@ -324,6 +333,7 @@ int cxl_clear_poison(struct device *dev, u64 dpa)
+ {
+ 	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
+ 	struct cxl_mbox_clear_poison clear;
++	struct cxl_poison_record record;
+ 	struct cxl_mbox_cmd mbox_cmd;
+ 	struct cxl_region *cxlr;
+ 	int rc;
+@@ -363,6 +373,12 @@ int cxl_clear_poison(struct device *dev, u64 dpa)
+ 	if (cxlr)
+ 		dev_warn_once(dev, "poison clear dpa:0x%llx region: %s\n",
+ 			      dpa, dev_name(&cxlr->dev));
++
++	record = (struct cxl_poison_record) {
++		.address = cpu_to_le64(dpa),
++		.length = cpu_to_le32(1),
++	};
++	trace_cxl_poison(cxlmd, cxlr, &record, 0, 0, CXL_POISON_TRACE_CLEAR);
+ out:
+ 	up_read(&cxl_dpa_rwsem);
+ 
+diff --git a/drivers/cxl/core/trace.h b/drivers/cxl/core/trace.h
+index 65d81d27cb85..5e5e29995d3e 100644
+--- a/drivers/cxl/core/trace.h
++++ b/drivers/cxl/core/trace.h
+@@ -602,9 +602,11 @@ TRACE_EVENT(cxl_memory_module,
+ 	)
+ );
+ 
+-#define show_poison_trace_type(type)		   \
+-	__print_symbolic(type,			   \
+-	{ CXL_POISON_TRACE_LIST,	"List"	})
++#define show_poison_trace_type(type)			\
++	__print_symbolic(type,				\
++	{ CXL_POISON_TRACE_LIST,	"List"   },	\
++	{ CXL_POISON_TRACE_INJECT,	"Inject" },	\
++	{ CXL_POISON_TRACE_CLEAR,	"Clear"  })
+ 
+ #define __show_poison_source(source)                          \
+ 	__print_symbolic(source,                              \
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39A41C761AF
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:36 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231659AbjC0FDe (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51062 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229677AbjC0FDa (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:30 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 646E54EE0
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893409; x=1711429409;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=0fuED8H/zsIymaPpbpMXBUqZUJmiyI+xaC/NxmwMEkU=;
+  b=dPIs5cvKQWeJGC9cq/73RMtBeLdIDs3pgHFNE3hpCe92HNRu0Vm0yv2I
+   BJ+3gFxJSUYyvy34WtO6vkdArmigpqdm6Fu8Czlryu8s98xAen3xAXW4Z
+   MGh8WfKNpPltngTKKB+RsusgozWenPEuu7MvIyqYEK8S6F/6XXKErpA+r
+   X59hXhR+ARrLtO5YYqXyN4xeiLD/fcxE6s95bK+wuI6U/JilEWX1x0ZWC
+   6ClZnOna62IyfF3/4L2kJloSSFz3254zuqPV162nLMjd473o4/mAMEvR0
+   1t7dT//qmrP9rek+jSCvFLEnzSX/2PzVdxBnQ8mfdujvMUwC00OVag9Z6
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920218"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920218"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:28 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492294"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492294"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:28 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org
+Subject: [PATCH v5 12/12] tools/testing/cxl: Require CONFIG_DEBUG_FS
+Date: Sun, 26 Mar 2023 22:03:18 -0700
+Message-Id: <a9a8a99c4f106ba88ac839d391b83d662d5d2b92.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 823
+Lines: 25
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+The cxl_mem driver uses debugfs to support poison inject and clear.
+Add debugfs to the list of required symbols so that cxl_test can
+emulate those poison operations.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+---
+ tools/testing/cxl/config_check.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tools/testing/cxl/config_check.c b/tools/testing/cxl/config_check.c
+index 99b56b5f6edf..0902c5d6e410 100644
+--- a/tools/testing/cxl/config_check.c
++++ b/tools/testing/cxl/config_check.c
+@@ -13,4 +13,5 @@ void check(void)
+ 	BUILD_BUG_ON(!IS_MODULE(CONFIG_CXL_PMEM));
+ 	BUILD_BUG_ON(!IS_ENABLED(CONFIG_CXL_REGION_INVALIDATION_TEST));
+ 	BUILD_BUG_ON(!IS_ENABLED(CONFIG_NVDIMM_SECURITY_TEST));
++	BUILD_BUG_ON(!IS_ENABLED(CONFIG_DEBUG_FS));
+ }
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE8BEC77B6C
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:30 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230379AbjC0FD3 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50904 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230020AbjC0FD0 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:26 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFB9111A
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893405; x=1711429405;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=ySw8/GLL85kpC+W0xz+lZay3AUC3XnDwpCMTSxIlXxs=;
+  b=M+VHSMx9HidUxyiAhrs70Mm95x5/sH1buC6KA7Ri2oaN8apheY7TSnuA
+   4NSny6gEpHF/YvJD6mjL3LREt8wufvHXhxLRvL7XKlgMS7igBb6cmprfF
+   8wSD21iLebhaAuFSaCh6PHVd/zexzR1wbGMiJrzMqCffuciyL1PyZ3VMy
+   +krcMU1H6F+6ZWUwsC8hkN3Jj1DE2VnHPXoMGWjwXd7XihKNDYxQe8Pez
+   yJkOlhgocIP6HwCNIUetZFYwFLMxEZ7Klzyrn4I6ic5DBTNyH8KQmRP+8
+   /x7qr7pwlWNcGBCiZT0k4F/PH4ipkNSmTn9Uku6YJY4WZhPp5pmeSnAkt
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920200"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920200"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:25 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492275"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492275"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:24 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v5 07/12] cxl/mbox: Block inject and clear poison opcodes in raw mode
+Date: Sun, 26 Mar 2023 22:03:13 -0700
+Message-Id: <0ca99f94e976a776b5ab7af86b75a556354daab7.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 1522
+Lines: 44
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+Inject and clear poison are commands intended for debug environments,
+and can cause data corruption if issued without validation. They are
+kernel exclusive commands not available to userspace through ioctls,
+but could be submitted via the raw mode ioctl.
+
+Add inject and clear poison to the cxl_disabled_raw_commands[] list.
+Attempts by userspace to issue either command via the RAW ioctl fail
+with -EPERM.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ drivers/cxl/core/mbox.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+index a8369ef56f61..b380208f85c2 100644
+--- a/drivers/cxl/core/mbox.c
++++ b/drivers/cxl/core/mbox.c
+@@ -89,6 +89,9 @@ static struct cxl_mem_command cxl_mem_commands[CXL_MEM_COMMAND_ID_MAX] = {
+  *
+  * CXL_MBOX_OP_[GET_]SCAN_MEDIA: The kernel provides a native error list that
+  * is kept up to date with patrol notifications and error management.
++ *
++ * CXL_MBOX_OP_[INJECT|CLEAR]_POISON: The kernel provides a debugfs interface
++ * to these commands. See: Documentation/ABI/testing/debugfs-cxl
+  */
+ static u16 cxl_disabled_raw_commands[] = {
+ 	CXL_MBOX_OP_ACTIVATE_FW,
+@@ -97,6 +100,8 @@ static u16 cxl_disabled_raw_commands[] = {
+ 	CXL_MBOX_OP_SET_SHUTDOWN_STATE,
+ 	CXL_MBOX_OP_SCAN_MEDIA,
+ 	CXL_MBOX_OP_GET_SCAN_MEDIA,
++	CXL_MBOX_OP_INJECT_POISON,
++	CXL_MBOX_OP_CLEAR_POISON,
+ };
+ 
+ /*
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADB25C761AF
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:33 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230380AbjC0FDc (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50982 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229821AbjC0FD2 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:28 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E72784C3B
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893407; x=1711429407;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=nDk3pV3liVAh1iI8uSZxNz8iRJV5YRcR+k+NYvbbV/M=;
+  b=IG8qkKLTvHfIoA8vnPBjEXIbG/YJNruCUvvQe7p7Whw5kKhl6s+p97//
+   4iyL+kyY+Ah0UDPWRNh6+OEESOBK0duKfFaAU9q+ACJRh65H/J0IygA+5
+   46W6svfoSn1iDH/wQLGJbSnPGAH60FQ7yzuTLiA/eSjE4iLJclNsTfyXs
+   EVgijSUs5GQ+WDzFATW5UbKJqHRBw9SvlFaAy88EghYuxh315GFhSxW5l
+   wl5VMHJXJIn0pabwcTu3H/DgCC7r0HeyHboWO69eMxHaMZE445k07lFoC
+   D6ti3xDzhoykZVV0pAoKckBaWcodpRjP5hblo/Xr4gTJ8G5I2HDOIiVKM
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920210"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920210"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:27 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492288"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492288"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:27 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v5 10/12] tools/testing/cxl: Use injected poison for get poison list
+Date: Sun, 26 Mar 2023 22:03:16 -0700
+Message-Id: <ff7b560914fbb6e1a28705ad249cd40145832e3b.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 2899
+Lines: 96
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+Prior to poison inject support, the mock of 'Get Poison List'
+returned a poison list containing a single mocked error record.
+
+Following the addition of poison inject and clear support to the
+mock driver, use the mock_poison_list[], rather than faking an
+error record. Mock_poison_list[] list tracks the actual poison
+inject and clear requests issued by userspace.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ tools/testing/cxl/test/mem.c | 59 ++++++++++++++++++++++++------------
+ 1 file changed, 40 insertions(+), 19 deletions(-)
+
+diff --git a/tools/testing/cxl/test/mem.c b/tools/testing/cxl/test/mem.c
+index 720147c7cb2b..9658d95236b7 100644
+--- a/tools/testing/cxl/test/mem.c
++++ b/tools/testing/cxl/test/mem.c
+@@ -912,31 +912,52 @@ static struct mock_poison {
+ 	u64 dpa;
+ } mock_poison_list[MOCK_INJECT_TEST_MAX];
+ 
++static struct cxl_mbox_poison_payload_out
++*cxl_get_injected_po(struct cxl_dev_state *cxlds, u64 offset, u64 length)
++{
++	struct cxl_mbox_poison_payload_out *po;
++	int nr_records = 0;
++	u64 dpa;
++
++	po = kzalloc(struct_size(po, record, MOCK_INJECT_DEV_MAX), GFP_KERNEL);
++	if (!po)
++		return NULL;
++
++	for (int i = 0; i < MOCK_INJECT_TEST_MAX; i++) {
++		if (mock_poison_list[i].cxlds != cxlds)
++			continue;
++		if (mock_poison_list[i].dpa < offset ||
++		    mock_poison_list[i].dpa > offset + length - 1)
++			continue;
++
++		dpa = mock_poison_list[i].dpa + CXL_POISON_SOURCE_INJECTED;
++		po->record[nr_records].address = cpu_to_le64(dpa);
++		po->record[nr_records].length = cpu_to_le32(1);
++		nr_records++;
++		if (nr_records == MOCK_INJECT_DEV_MAX)
++			break;
++	}
++
++	/* Always return count, even when zero */
++	po->count = cpu_to_le16(nr_records);
++
++	return po;
++}
++
+ static int mock_get_poison(struct cxl_dev_state *cxlds,
+ 			   struct cxl_mbox_cmd *cmd)
+ {
+ 	struct cxl_mbox_poison_payload_in *pi = cmd->payload_in;
++	struct cxl_mbox_poison_payload_out *po;
++	u64 offset = le64_to_cpu(pi->offset);
++	u64 length = le64_to_cpu(pi->length);
++	int nr_records;
+ 
+-	/* Mock one poison record at pi.offset for 64 bytes */
+-	struct {
+-		struct cxl_mbox_poison_payload_out po;
+-		struct cxl_poison_record record;
+-	} __packed mock_plist = {
+-		.po = {
+-			.count = cpu_to_le16(1),
+-		},
+-		.record = {
+-			.length = cpu_to_le32(1),
+-			.address = cpu_to_le64(le64_to_cpu(pi->offset) +
+-					       CXL_POISON_SOURCE_INJECTED),
+-		},
+-	};
++	po = cxl_get_injected_po(cxlds, offset, length);
++	nr_records = le16_to_cpu(po->count);
++	memcpy(cmd->payload_out, po, struct_size(po, record, nr_records));
++	cmd->size_out = struct_size(po, record, nr_records);
+ 
+-	if (cmd->size_out < sizeof(mock_plist))
+-		return -EINVAL;
+-
+-	memcpy(cmd->payload_out, &mock_plist, sizeof(mock_plist));
+-	cmd->size_out = sizeof(mock_plist);
+ 	return 0;
+ }
+ 
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9635CC7619A
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:23 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229475AbjC0FDW (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50792 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229456AbjC0FDV (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:21 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A7CE34234
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893400; x=1711429400;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=+NJ0zBlsAPSXSaf4WuVWnDyhaGw7U+BUIclSYmPc+4c=;
+  b=MFkaxS0+XcVlGZgcpfUOo+X/wP8W0KHsK19LpIS9YcBYLvYZOY0AnI13
+   aSuDpIB8UKBYAC53sSJI6G5nAG3eBvgocKXZerHZhGfp/nLL0FsclpPnX
+   a5pKPthlbKwixbOBEesEK18xU4JBxmyi2T0iRbMURKLRNpGYufCoU17Jl
+   VybcclLthRLgu3vQE2Hce91CCTQG4jmn2mn1UIiiEqcvb4zd+m87b1wDe
+   559I66BGDg7D76cAhHCk/mL2uKicqhEOUP7A4uDR5OR7+K8JN/BbttG8Q
+   wEz8dpnB4VKmNSCIRjJ8RALe1RVAVv8rosv8/bhPvU5nz6XlHXd+cocmB
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920174"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920174"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:20 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492240"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492240"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:19 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org
+Subject: [PATCH v5 0/12] cxl: CXL Inject & Clear Poison
+Date: Sun, 26 Mar 2023 22:03:06 -0700
+Message-Id: <cover.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: RO
+Content-Length: 2888
+Lines: 62
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+Built on cxl/next plus [PATCH v11 0/6] CXL Poison List Retrieval & Tracing
+
+Changes in v5:
+- Move the inject & clear sysfs attrs to debugfs attrs (Dan)
+- Allow inject and clear to mapped DPAs and dev_warn_once() 
+- Add cxl_poison trace events for inject and clear (CXL Community Forum)
+- Add conditional compiles for CONFIG_DEBUG_FS
+- Conform to spacing in uapi header cxlmem.h (Jonathan)
+
+Tags: Kept Jonathans Reviewed-by on, what are now, patches 6-11
+Link to v4:
+https://lore.kernel.org/linux-cxl/cover.1677704994.git.alison.schofield@intel.com/
+
+Introducing Inject and Clear Poison support for CXL Devices.
+
+These are optional commands, meaning not all CXL devices must support
+them. The debugfs attributes, inject_poison and clear_poison, are only
+visible for devices reporting support of the capability.
+
+Example:
+# echo 0x40000000 > /sys/kernel/debug/cxl/mem1/inject_poison
+
+cxl_poison: memdev=mem1 pcidev=cxl_mem.1 trace_type=Inject region= region_uuid=00000000-0000-0000-0000-000000000000 hpa=0xffffffffffffffff dpa=0x40000000 length=0x40 source=Unknown flags= overflow_time=0
+
+Example in which the injected poison landed in region5:
+# echo 0x40000000 > /sys/kernel/debug/cxl/mem0/inject_poison
+
+cxl_poison: memdev=mem0 host=cxl_mem.0 serial=0 trace_type=Inject region=region5 region_uuid=cfcfc13a-5290-4983-aa74-4c8465c25f26 hpa=0xf110000000 dpa=0x40000000 dpa_length=0x40 source=Unknown flags= overflow_time=0
+
+Alison Schofield (12):
+  cxl/memdev: Add support for the Inject Poison mailbox command
+  cxl/memdev: Add support for the Clear Poison mailbox command
+  cxl/memdev: Warn of poison inject or clear to a mapped region
+  cxl/memdev: Trace inject and clear poison as cxl_poison events
+  cxl/mem: Add debugfs attributes for poison inject and clear
+  cxl/memdev: Make inject and clear poison cmds kernel exclusive
+  cxl/mbox: Block inject and clear poison opcodes in raw mode
+  tools/testing/cxl: Mock the Inject Poison mailbox command
+  tools/testing/cxl: Mock the Clear Poison mailbox command
+  tools/testing/cxl: Use injected poison for get poison list
+  tools/testing/cxl: Add a sysfs attr to test poison inject limits
+  tools/testing/cxl: Require CONFIG_DEBUG_FS
+
+ Documentation/ABI/testing/debugfs-cxl |  36 +++++
+ drivers/cxl/core/core.h               |   2 +
+ drivers/cxl/core/mbox.c               |   5 +
+ drivers/cxl/core/memdev.c             | 179 +++++++++++++++++++++
+ drivers/cxl/core/trace.h              |   8 +-
+ drivers/cxl/cxlmem.h                  |  13 ++
+ drivers/cxl/mem.c                     |  26 ++++
+ include/uapi/linux/cxl_mem.h          |  20 ++-
+ tools/testing/cxl/config_check.c      |   1 +
+ tools/testing/cxl/test/mem.c          | 216 +++++++++++++++++++++++---
+ 10 files changed, 479 insertions(+), 27 deletions(-)
+ create mode 100644 Documentation/ABI/testing/debugfs-cxl
+
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E6BFC76195
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:30 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229565AbjC0FD2 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50866 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229606AbjC0FDY (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:24 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41A9246AE
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893404; x=1711429404;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=CzgST/s0/JhDw8Blhkwfx/FBVhYxo3L1HmhsZIxRHxc=;
+  b=M9FP4ohErrAUPTA+1zPwT7c9PaEeTnQa+xv8h1kDoNzWD8LE6ikS4s9Q
+   CnalCkXd4Ps7qoLVvk3M6xnS7P0DjhcRF5jLZUKvGJqALl+ZQ7k2aqJjf
+   CcvI7AHSRBo7PgJV4xKrTgbNSDb0d6azMaCHvWD8nDibaCHBsWpkw59B1
+   iJTvrvU/wCJdt/tUh5bdy3oic/5gZeUuyNyNDQBcZ++D4V0V+Nl9pGUYB
+   CQxFbO6QewT1cpGJ4qhODirRzSbAGw56ofudEuZeQ6e7JTpZ2hQjveY5v
+   fQ38v6H2hrIXAXgnN2SSMrUZWNGxdmr7FzD08Ta3a1YelLV3gjO1tM7Fh
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920191"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920191"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:23 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492265"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492265"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:23 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org
+Subject: [PATCH v5 05/12] cxl/mem: Add debugfs attributes for poison inject and clear
+Date: Sun, 26 Mar 2023 22:03:11 -0700
+Message-Id: <b3844e5e940a100f32363f4a2e722ab6e415a96e.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 3972
+Lines: 105
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+Inject and Clear Poison commands are optionally supported by CXL
+memdev devices and are intended for use in debug environments only.
+Add debugfs attributes for user access.
+
+Documentation/ABI/testing/debugfs-cxl describes the usage.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+---
+ Documentation/ABI/testing/debugfs-cxl | 36 +++++++++++++++++++++++++++
+ drivers/cxl/mem.c                     | 26 +++++++++++++++++++
+ 2 files changed, 62 insertions(+)
+ create mode 100644 Documentation/ABI/testing/debugfs-cxl
+
+diff --git a/Documentation/ABI/testing/debugfs-cxl b/Documentation/ABI/testing/debugfs-cxl
+new file mode 100644
+index 000000000000..3f1624f95f11
+--- /dev/null
++++ b/Documentation/ABI/testing/debugfs-cxl
+@@ -0,0 +1,36 @@
++What:		/sys/kernel/debug/cxl/memX/inject_poison
++Date:		April, 2023
++KernelVersion:	v6.4
++Contact:	linux-cxl@vger.kernel.org
++Description:
++		(WO) When a Device Physical Address (DPA) is written to this
++		attribute, the memdev driver sends an inject poison command to
++		the device for the specified address. The DPA must be 64-byte
++		aligned and the length of the injected poison is 64-bytes. If
++		successful, the device returns poison when the address is
++		accessed through the CXL.mem bus. Injecting poison adds the
++		address to the device's Poison List and the error source is set
++		to Injected. In addition, the device adds a poison creation
++		event to its internal Informational Event log, updates the
++		Event Status register, and if configured, interrupts the host.
++		It is not an error to inject poison into an address that
++		already has poison present and no error is returned. The
++		inject_poison attribute is only visible for devices supporting
++		the capability.
++
++
++What:		/sys/kernel/debug/memX/clear_poison
++Date:		April, 2023
++KernelVersion:	v6.4
++Contact:	linux-cxl@vger.kernel.org
++Description:
++		(WO) When a Device Physical Address (DPA) is written to this
++		attribute, the memdev driver sends a clear poison command to
++		the device for the specified address. Clearing poison removes
++		the address from the device's Poison List and writes 0 (zero)
++		for 64 bytes starting at address. It is not an error to clear
++		poison from an address that does not have poison set, and if
++		poison was not set, the address is not overwritten. If the
++		device cannot clear poison from the address, -ENXIO is returned.
++		The clear_poison attribute is only visible for devices
++		supporting the capability.
+diff --git a/drivers/cxl/mem.c b/drivers/cxl/mem.c
+index 576f5b691589..ff67ecf07001 100644
+--- a/drivers/cxl/mem.c
++++ b/drivers/cxl/mem.c
+@@ -94,6 +94,22 @@ static int devm_cxl_add_endpoint(struct device *host, struct cxl_memdev *cxlmd,
+ 	return 0;
+ }
+ 
++static int cxl_debugfs_poison_inject(void *data, u64 dpa)
++{
++	return cxl_inject_poison(data, dpa);
++}
++
++DEFINE_DEBUGFS_ATTRIBUTE(cxl_poison_inject_fops, NULL,
++			 cxl_debugfs_poison_inject, "%llx\n");
++
++static int cxl_debugfs_poison_clear(void *data, u64 dpa)
++{
++	return cxl_clear_poison(data, dpa);
++}
++
++DEFINE_DEBUGFS_ATTRIBUTE(cxl_poison_clear_fops, NULL,
++			 cxl_debugfs_poison_clear, "%llx\n");
++
+ static int cxl_mem_probe(struct device *dev)
+ {
+ 	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
+@@ -117,6 +133,16 @@ static int cxl_mem_probe(struct device *dev)
+ 
+ 	dentry = cxl_debugfs_create_dir(dev_name(dev));
+ 	debugfs_create_devm_seqfile(dev, "dpamem", dentry, cxl_mem_dpa_show);
++
++	if (test_bit(CXL_MEM_COMMAND_ID_INJECT_POISON,
++		     to_cxl_memdev(dev)->cxlds->enabled_cmds))
++		debugfs_create_file("inject_poison", 0200, dentry, dev,
++				    &cxl_poison_inject_fops);
++	if (test_bit(CXL_MEM_COMMAND_ID_CLEAR_POISON,
++		     to_cxl_memdev(dev)->cxlds->enabled_cmds))
++		debugfs_create_file("clear_poison", 0200, dentry, dev,
++				    &cxl_poison_clear_fops);
++
+ 	rc = devm_add_action_or_reset(dev, remove_debugfs, dentry);
+ 	if (rc)
+ 		return rc;
+-- 
+2.37.3
+
+
+
+From git@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2411CC761AF
+	for <linux-cxl@archiver.kernel.org>; Mon, 27 Mar 2023 05:03:27 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230089AbjC0FD0 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 27 Mar 2023 01:03:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50828 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229456AbjC0FDW (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 27 Mar 2023 01:03:22 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE98111A
+        for <linux-cxl@vger.kernel.org>; Sun, 26 Mar 2023 22:03:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679893401; x=1711429401;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=jJPWku0KkXoiqr6ccOU6+JBs3IaavHOdrNuTrLyzHA8=;
+  b=jAzCf5R29Dk8XDsVd0SrD/RaUYKgArx3RD1GrRII8q9kK6MZ87I0afe3
+   0EAZ++5nWtUV1WdsLbfAMBD2RdpXJLiVXQF6fd/Lg4RNXlXj4EHzVCaXp
+   AxEpk8IIBpzctBAdSHxfOBvggow1CzN0gK6i3BEHeXJBw04f+mFhqgcdm
+   UIP38kJ9OYY4Xw+dEzIAoE7cZSSqh1nOgUqeS3veXBHQB9nwtcM+vyzTB
+   Lt1P04L6s4BwHnAO+zXPk57gJuJSmNbViy9VWcWJ5Y21U4TiiUK3oiBP5
+   Qzcm4UR4Y08rEUybkXAV2y/uG7zG7qzCD++fKn7b4+PUS5M88H76ATPZ+
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="367920179"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="367920179"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:21 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10661"; a="633492249"
+X-IronPort-AV: E=Sophos;i="5.98,293,1673942400"; 
+   d="scan'208";a="633492249"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO localhost) ([10.212.227.2])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Mar 2023 22:03:21 -0700
+From: alison.schofield@intel.com
+To: Dan Williams <dan.j.williams@intel.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Vishal Verma <vishal.l.verma@intel.com>,
+        Ben Widawsky <bwidawsk@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+        linux-cxl@vger.kernel.org
+Subject: [PATCH v5 02/12] cxl/memdev: Add support for the Clear Poison mailbox command
+Date: Sun, 26 Mar 2023 22:03:08 -0700
+Message-Id: <548e2a175a2f20cdc886297430102ee851d30f26.1679892337.git.alison.schofield@intel.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <cover.1679892337.git.alison.schofield@intel.com>
+References: <cover.1679892337.git.alison.schofield@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 3714
+Lines: 115
+
+From: Alison Schofield <alison.schofield@intel.com>
+
+CXL devices optionally support the CLEAR POISON mailbox command. Add
+memdev driver support for clearing poison.
+
+Per the CXL Specification (3.0 8.2.9.8.4.3), after receiving a valid
+clear poison request, the device removes the address from the device's
+Poison List and writes 0 (zero) for 64 bytes starting at address. If
+the device cannot clear poison from the address, it returns a permanent
+media error and -ENXIO is returned to the user.
+
+Additionally, and per the spec also, it is not an error to clear poison
+of an address that is not poisoned. In this case, the device does not
+overwrite the address and the device does not return an error.
+
+If the address is not contained in the device's dpa resource, or is
+not 64 byte aligned, return -EINVAL without issuing the mbox command.
+
+Poison clearing is intended for debug only and will be exposed to
+userspace through debugfs. Restrict compilation to CONFIG_DEBUG_FS.
+
+Implementation note: Although the CXL specification defines the clear
+command to accept 64 bytes of 'write-data' to be used when clearing
+the poisoned address, this implementation always uses 0 (zeros) for
+the write-data.
+
+Signed-off-by: Alison Schofield <alison.schofield@intel.com>
+---
+ drivers/cxl/core/memdev.c | 43 +++++++++++++++++++++++++++++++++++++++
+ drivers/cxl/cxlmem.h      |  7 +++++++
+ 2 files changed, 50 insertions(+)
+
+diff --git a/drivers/cxl/core/memdev.c b/drivers/cxl/core/memdev.c
+index 3b3ac2868848..0e39c3c3fb09 100644
+--- a/drivers/cxl/core/memdev.c
++++ b/drivers/cxl/core/memdev.c
+@@ -268,6 +268,49 @@ int cxl_inject_poison(struct device *dev, u64 dpa)
+ }
+ EXPORT_SYMBOL_NS_GPL(cxl_inject_poison, CXL);
+ 
++int cxl_clear_poison(struct device *dev, u64 dpa)
++{
++	struct cxl_memdev *cxlmd = to_cxl_memdev(dev);
++	struct cxl_mbox_clear_poison clear;
++	struct cxl_mbox_cmd mbox_cmd;
++	int rc;
++
++	if (!IS_ENABLED(CONFIG_DEBUG_FS))
++		return 0;
++
++	down_read(&cxl_dpa_rwsem);
++	rc = cxl_validate_poison_dpa(cxlmd, dpa);
++	if (rc)
++		goto out;
++
++	/*
++	 * In CXL 3.0 Spec 8.2.9.8.4.3, the Clear Poison mailbox command
++	 * is defined to accept 64 bytes of 'write-data', along with the
++	 * address to clear. The device writes the data into the address
++	 * atomically, while clearing poison if the location is marked as
++	 * being poisoned.
++	 *
++	 * Always use '0' for the write-data.
++	 */
++	clear = (struct cxl_mbox_clear_poison) {
++		.address = cpu_to_le64(dpa)
++	};
++
++	mbox_cmd = (struct cxl_mbox_cmd) {
++		.opcode = CXL_MBOX_OP_CLEAR_POISON,
++		.size_in = sizeof(clear),
++		.payload_in = &clear,
++	};
++
++	rc = cxl_internal_send_cmd(cxlmd->cxlds, &mbox_cmd);
++
++out:
++	up_read(&cxl_dpa_rwsem);
++
++	return rc;
++}
++EXPORT_SYMBOL_NS_GPL(cxl_clear_poison, CXL);
++
+ static struct attribute *cxl_memdev_attributes[] = {
+ 	&dev_attr_serial.attr,
+ 	&dev_attr_firmware_version.attr,
+diff --git a/drivers/cxl/cxlmem.h b/drivers/cxl/cxlmem.h
+index 527efef2d700..1d8677ab2306 100644
+--- a/drivers/cxl/cxlmem.h
++++ b/drivers/cxl/cxlmem.h
+@@ -607,6 +607,12 @@ struct cxl_mbox_inject_poison {
+ 	__le64 address;
+ };
+ 
++/* Clear Poison  CXL 3.0 Spec 8.2.9.8.4.3 */
++struct cxl_mbox_clear_poison {
++	__le64 address;
++	u8 write_data[CXL_POISON_LEN_MULT];
++} __packed;
++
+ /**
+  * struct cxl_mem_command - Driver representation of a memory device command
+  * @info: Command information as it exists for the UAPI
+@@ -684,6 +690,7 @@ ssize_t cxl_trigger_poison_list(struct device *dev,
+ 				struct device_attribute *attr, const char *buf,
+ 				size_t len);
+ int cxl_inject_poison(struct device *dev, u64 dpa);
++int cxl_clear_poison(struct device *dev, u64 dpa);
+ 
+ #ifdef CONFIG_CXL_SUSPEND
+ void cxl_mem_active_inc(void);
+-- 
+2.37.3
+
+
+

@@ -1,0 +1,71 @@
+From 271f9ba333e90050557b3d6f5bd44c769bc2bc39 Mon Sep 17 00:00:00 2001
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Sat, 8 Apr 2023 11:39:52 -0700
+Subject: [PATCH 4/7] cxl/memdev: Formalize endpoint port linkage
+
+Move the endpoint port that the cxl_mem driver establishes from drvdata
+to a first class attribute. This is in preparation for device-memory
+drivers reusing the CXL core for memory region management. Those drivers
+need a type-safe method to retrieve their CXL port linkage. Leave
+drvdata for private usage of the cxl_mem driver not external consumers
+of a 'struct cxl_memdev' object.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/cxl/core/port.c | 5 +++--
+ drivers/cxl/cxlmem.h    | 2 ++
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cxl/core/port.c b/drivers/cxl/core/port.c
+index 0e826ee77bec..4cb86bde20f6 100644
+--- a/drivers/cxl/core/port.c
++++ b/drivers/cxl/core/port.c
+@@ -1186,7 +1186,7 @@ static struct device *grandparent(struct device *dev)
+ static void delete_endpoint(void *data)
+ {
+ 	struct cxl_memdev *cxlmd = data;
+-	struct cxl_port *endpoint = dev_get_drvdata(&cxlmd->dev);
++	struct cxl_port *endpoint = cxlmd->endpoint;
+ 	struct cxl_port *parent_port;
+ 	struct device *parent;
+ 
+@@ -1201,6 +1201,7 @@ static void delete_endpoint(void *data)
+ 		devm_release_action(parent, cxl_unlink_uport, endpoint);
+ 		devm_release_action(parent, unregister_port, endpoint);
+ 	}
++	cxlmd->endpoint = NULL;
+ 	device_unlock(parent);
+ 	put_device(parent);
+ out:
+@@ -1212,7 +1213,7 @@ int cxl_endpoint_autoremove(struct cxl_memdev *cxlmd, struct cxl_port *endpoint)
+ 	struct device *dev = &cxlmd->dev;
+ 
+ 	get_device(&endpoint->dev);
+-	dev_set_drvdata(dev, endpoint);
++	cxlmd->endpoint = endpoint;
+ 	cxlmd->depth = endpoint->depth;
+ 	return devm_add_action_or_reset(dev, delete_endpoint, cxlmd);
+ }
+diff --git a/drivers/cxl/cxlmem.h b/drivers/cxl/cxlmem.h
+index 4c064c19f2df..d426994a7027 100644
+--- a/drivers/cxl/cxlmem.h
++++ b/drivers/cxl/cxlmem.h
+@@ -38,6 +38,7 @@
+  * @detach_work: active memdev lost a port in its ancestry
+  * @cxl_nvb: coordinate removal of @cxl_nvd if present
+  * @cxl_nvd: optional bridge to an nvdimm if the device supports pmem
++ * @endpoint: connection to the CXL port topology for this memory device
+  * @id: id number of this memdev instance.
+  * @depth: endpoint port depth
+  */
+@@ -48,6 +49,7 @@ struct cxl_memdev {
+ 	struct work_struct detach_work;
+ 	struct cxl_nvdimm_bridge *cxl_nvb;
+ 	struct cxl_nvdimm *cxl_nvd;
++	struct cxl_port *endpoint;
+ 	int id;
+ 	int depth;
+ };
+-- 
+2.25.1
+
