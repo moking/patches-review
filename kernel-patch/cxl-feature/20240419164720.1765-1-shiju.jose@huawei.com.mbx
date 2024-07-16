@@ -13361,3 +13361,2088 @@ Jonathan
 > 
 
 
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2090.outbound.protection.outlook.com [40.107.223.90])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E1301667D8;
+	Wed,  5 Jun 2024 21:33:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.223.90
+ARC-Seal: i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1717623188; cv=fail; b=RWkbskB9xIaT/ANKpRo1hGGF9pN7wSseD/TxpwjQroROcZx9lc6YyjMgjsOezil/hbp9+wTXExzOA4CAUZpRHMZIu+yasBYSEUXIfGvcHUhdM+wHTtJ+XgCKdYtGG8CQha+TwAEtgicfAy14l6kpjphAlBXOAziYbyhac6li3HI=
+ARC-Message-Signature: i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1717623188; c=relaxed/simple;
+	bh=T8V7PvlCh8SPErcaHSHLJ/Y/wRXqgLHr/l+syAqhlEg=;
+	h=Message-ID:Date:From:Subject:To:Cc:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=ZXCfV1oXH+mFvIuT/16OnDvI0No9aRGw7t77Nl0XwF+H78OenEGBiAAf5zLLAdZ7SVcQhdfvTh1DShKE9DRiBON4CyJnc1uMW5ExjWC4uLBa8IE0UCXtUB/3j3tGIM7L3oZPGT+Hu8fNYD7lII9aMyoffIbU4oAN3XOXcmC9mBs=
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=os.amperecomputing.com; spf=pass smtp.mailfrom=os.amperecomputing.com; dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b=l87mZ7g2; arc=fail smtp.client-ip=40.107.223.90
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=os.amperecomputing.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=os.amperecomputing.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b="l87mZ7g2"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=HNwFt8RVEKUX4XIfhuvuOye1fIzoHMKdlpFd1WESehbqz2fJ/hISi5fwOV4dxTcWA7q3InI5vm39G1mrodMANvKR/ugTETnz+O4MGsmuRGgodpTqMf2SAYEfEcgZCXozAHM5VvRM7V9dYtY4ExuNU/OQi7PetmGAWWlnXYyctMlI9HGXeDKVcgsmdbuXLd1glab494Hd6iaVoX+FpQqYIc6+7DYCBItwA3f0+4WCawkH0YX7hu0Y7yJ0cOoF9HmbQmmJIV1c+O2vAv2qR7rWiDVO5Zxmfw0hPkx0A1TBDBrAtiBHNfX1FXb+d94+Q+weZuZKLCFHAmyCpXsKNu5mhA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=JdVpxNo5LWawmLbsSeAfZhRkYDyrntsgTTS/HwrbKvU=;
+ b=VYqzi3d1UFfCCXLeU+mqQd+5Hi/MUCDkAeDcoBcb9LTa26IjeLl+uhBMA+Qwc+R3aQ7lV1EqpLRBrWlJwVHk8TTDWwC3hGu3OuYUCW4khC64I9v5sXsLec1gOOZi512vMzjjGPOpysND//Pphc25J4kvN9+YwCVqN3XwjHhVIz7FWySSnYhi7arOtzeWkJFgJeq97DEDIrorohnEJ0lrrOvrOdk5ycnIGW4xsszDAq8aD7xfvhXYR2zov3ty3d1QjYXPm2WHmlZ/DkTpn7sOwL+/eXJSdX0ssXn9qUHKftrY07DUp/wjXnUfg3omUyqsuMPMRRa5R12h6uBBtFrouQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=os.amperecomputing.com; dmarc=pass action=none
+ header.from=os.amperecomputing.com; dkim=pass
+ header.d=os.amperecomputing.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=os.amperecomputing.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=JdVpxNo5LWawmLbsSeAfZhRkYDyrntsgTTS/HwrbKvU=;
+ b=l87mZ7g2tSiGr6P29t3W1m9rmV/slHuBKPP6EPEb6Y6tEus2YEDJ5PJCpwLfdAEns+KLRKYiy8CsUq+4AE63hrdPG/t0WfZ1uYx4un0x03rkc2e/3IpgiBivbugUuAGqdReg40eDS6s6UN/LgHwaw5GEkm4YvofAZdwLXlkstqc=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=os.amperecomputing.com;
+Received: from CO1PR01MB7370.prod.exchangelabs.com (2603:10b6:303:159::16) by
+ LV3PR01MB8462.prod.exchangelabs.com (2603:10b6:408:1a7::14) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7633.27; Wed, 5 Jun 2024 21:33:01 +0000
+Received: from CO1PR01MB7370.prod.exchangelabs.com
+ ([fe80::6e98:87d1:5562:ad73]) by CO1PR01MB7370.prod.exchangelabs.com
+ ([fe80::6e98:87d1:5562:ad73%4]) with mapi id 15.20.7633.021; Wed, 5 Jun 2024
+ 21:33:01 +0000
+Message-ID: <fec6ba82-aef8-4ffe-a18b-20ac8e0a1a03@os.amperecomputing.com>
+Date: Wed, 5 Jun 2024 14:32:55 -0700
+User-Agent: Mozilla Thunderbird
+From: Daniel Ferguson <danielf@os.amperecomputing.com>
+Subject: Re: [RFC PATCH v8 08/10] ACPI:RAS2: Add ACPI RAS2 driver
+To: shiju.jose@huawei.com
+Cc: ira.weiny@intel.com, vishal.l.verma@intel.com,
+ alison.schofield@intel.com, dave.jiang@intel.com,
+ jonathan.cameron@huawei.com, dave@stgolabs.net, dan.j.williams@intel.com,
+ linux-mm@kvack.org, linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org,
+ linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, david@redhat.com,
+ Vilas.Sridharan@amd.com, leo.duran@amd.com, Yazen.Ghannam@amd.com,
+ rientjes@google.com, jiaqiyan@google.com, tony.luck@intel.com,
+ Jon.Grimm@amd.com, dave.hansen@linux.intel.com, rafael@kernel.org,
+ lenb@kernel.org, naoya.horiguchi@nec.com, james.morse@arm.com,
+ jthoughton@google.com, somasundaram.a@hpe.com, erdemaktas@google.com,
+ pgonda@google.com, duenwen@google.com, mike.malvestuto@intel.com,
+ gthelen@google.com, wschwartz@amperecomputing.com,
+ dferguson@amperecomputing.com, wbs@os.amperecomputing.com,
+ nifan.cxl@gmail.com, tanxiaofei@huawei.com, prime.zeng@hisilicon.com,
+ kangkang.shen@futurewei.com, wanghuiqiang@huawei.com, linuxarm@huawei.com
+References: <20240419164720.1765-1-shiju.jose@huawei.com>
+ <20240419164720.1765-9-shiju.jose@huawei.com>
+Content-Language: en-US
+In-Reply-To: <20240419164720.1765-9-shiju.jose@huawei.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MW4PR03CA0013.namprd03.prod.outlook.com
+ (2603:10b6:303:8f::18) To CO1PR01MB7370.prod.exchangelabs.com
+ (2603:10b6:303:159::16)
+Precedence: bulk
+X-Mailing-List: linux-acpi@vger.kernel.org
+List-Id: <linux-acpi.vger.kernel.org>
+List-Subscribe: <mailto:linux-acpi+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-acpi+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PR01MB7370:EE_|LV3PR01MB8462:EE_
+X-MS-Office365-Filtering-Correlation-Id: 60a3abb0-2605-4905-1787-08dc85a71390
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: 
+	BCL:0;ARA:13230031|376005|52116005|1800799015|7416005|366007|38350700005;
+X-Microsoft-Antispam-Message-Info: 
+	=?utf-8?B?SVdvQ1pjbHVCMEdnaUNzVW4yTnFKaDYzSG5oQzZpbmRuWmJhL2ZQLytWampE?=
+ =?utf-8?B?Z3REZWMydHFnMHlvMVpuYzVVeG5kSlc5WitEUHdaMUZKV3NjTjFSeEpGUXc4?=
+ =?utf-8?B?eDZqYzlnQzA1aXF1VXFmUXFEVWlRVjQ0dG1jMXdCK3BWMFIxVEJrV0NxVW45?=
+ =?utf-8?B?YWZYV1BwcXpIbkljOUNmbVhoTnpuOGNXRWNrZ3dpQlhXM2dyeDU2bUVqWDdl?=
+ =?utf-8?B?ak90em5BV2VtM2hJQ3J1b0VuaUFVdzQ2ZTBUMkZzUGh0a054STd5VmtIWkxS?=
+ =?utf-8?B?LzU4OUJRUDJ1ZStlV0k2aWNtcUhyaEx0ZERHb29Nd0NEcnY5cjZKMTJGMUpV?=
+ =?utf-8?B?emJyRXowYmRCYzBQdEw5N29Fa25RandvSXFzajNoVVZoN1ppT0wxcy8rRUtT?=
+ =?utf-8?B?ZTI5L2dVTGFLS1dPMTJpdy9qdURaVVNUaXhxTHJDbE85eG83MHNyQTNDaWNr?=
+ =?utf-8?B?TkVWNU8rRkhRczR4TTkySllMRXNtcXdIczN5T04wNzRqQW15Nm53cVh6RG5P?=
+ =?utf-8?B?N2w0WlJ4aCtTYXoxMVJIREdzdmt3blg3Vy9ScGxpOEF4MWtoMlo5UHV3cWxL?=
+ =?utf-8?B?L0d4KzlnN0dlRlRqSDNjYWg5WjRxOW5HWXp4dGxTMXg0STJTV0hwTmRGQytu?=
+ =?utf-8?B?L0NBQTZvQmFiaXU3TmNJMTVOcVV4Sm4xN2ltRWpjbkduaEtiMWZockRlVmY0?=
+ =?utf-8?B?YnRvcDhmeUFqQUhpYTBzZEcvcmdTTzk3anQrVmNaOXdtWmFGUzNRZEkwQldN?=
+ =?utf-8?B?Ti92WFVBMk1CTitPRkFvQnhaZ28yR0Z2YU1SeE9YaVR2U3Q0Ync2VFU4dHpX?=
+ =?utf-8?B?bTN4RkQ5MVVmTkdMUmp0d2xhMTNWRmN0OGhjM1I0b3ZVdGpCOW1hN1NVeGdh?=
+ =?utf-8?B?MXh2RXVXWW1XMFZqL1owblFEQTF5OFpRSWtNUlBWRTgvNjd2N2U5K1l1SFBT?=
+ =?utf-8?B?Q2pEbytRUHhwRkZyaFVEMEF0V2Z2enFVRWdrRWNpcHBSSDZseFJ6MjRsWHdL?=
+ =?utf-8?B?MTdkeU9sa2lmRjdZMFJ0V25NNFk2Y2Qza2dWd0NaMTViVi9WeTgvUHRxVi9E?=
+ =?utf-8?B?aDNYRnlLV3E3UDRuR0E0R3VRNHZjT3hhWnY5QUM5UExxM1d3eWQ5Rml4Zkxh?=
+ =?utf-8?B?cWVCak1tUmdvNUIwcTRRcm9Ea3JxM3QxdXVRY3FPeTRwSjZUR0krM1dSeEFZ?=
+ =?utf-8?B?UzFiTTIzOFlBNHZJeHc3ZEtYeHE2T1JsaUNmUlJwZ3BvU0F5SGN4Z0dHOTFQ?=
+ =?utf-8?B?bldDejBiZi8vL3hFMTB5dGdJOGo0MjRaTVI4N2hhNFEzL1RMa1hubUNOVEZC?=
+ =?utf-8?B?d1UwZmJyQkpwdVB5eTlrd0M0WWMwblhFcmZPclI3UTBSSW9oZEV6d2x3cStM?=
+ =?utf-8?B?YkFkN3E4Mk9sRjZ0M2M5WHVoVEFMR2U1M2Q3ZFNtYVlESTBkQm41b0FKWHow?=
+ =?utf-8?B?b29YU0dFOC9leVd1QjlhZFdlOE1uWStxSWhpWXdMNGFvR2VsR2xmUVJiejZL?=
+ =?utf-8?B?Rms1b2grbURXRVpuSVl2eWc2TSt2bkpPVUdkalNQaHp2VlpoUkEwTzZiN3BG?=
+ =?utf-8?B?TEd5MkhaTVB3R1lRdGwyZEpCQ2Y1OW90ek9Id1FHbFVWY013VnB1c2o3WFdD?=
+ =?utf-8?B?c0dDUXRxOVV3R0FjbzVSRnp1em00RktMeFZLTVN0cGdlZDRTR1FLenVQb0J3?=
+ =?utf-8?B?ejNoSFBMSmRlZnEzNmFxNWtVK2Y5VjloOThBLys2U2FyeEsrYTBuRHlaRzM0?=
+ =?utf-8?B?KzhEU0FzSFhNNG1KbUQ1REFDNWVUT0ttKzVPbjgyOC9GNkIrT09WVTkwL1pG?=
+ =?utf-8?B?T2VnSmJsQ3FxdFBpSDY4Zz09?=
+X-Forefront-Antispam-Report: 
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO1PR01MB7370.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(13230031)(376005)(52116005)(1800799015)(7416005)(366007)(38350700005);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 
+	=?utf-8?B?WEpMRXFBOSt6bnlHa0o5eTBhVnZkeU90a0VrUk4xRjhRTFdMR2NrTmJjeW1q?=
+ =?utf-8?B?cm40N0VWZ3htWnRGUFNMOUt1anZXWjAwY3B2QmRzRmFJSER1QkJlRUpTMFdr?=
+ =?utf-8?B?SmdBOEhHenJxQUxzSjNhVmlWRHJaeUR1Z1JPYTQzRmJWWlRBRWtWakFtM2ZJ?=
+ =?utf-8?B?d0F0UmZ2MFZYVEdDZjFWTUppb0R0VURRTUZiU2lvMlRiTTltMEtrY3hqeXdu?=
+ =?utf-8?B?Y2E4VUY4MXhtdjBXTE10WGxva1Zub0xvelBZcDZaOVV6ckZjZVZXU2lpVk1R?=
+ =?utf-8?B?T3BuZmpYUFN6bE1nalVrcSs2WDhobGErakw3NnVBbXFVNThCRU1DODgzYnFO?=
+ =?utf-8?B?Y2FFaUJvMm1IbkN1MTY3bGc3YUwxajVYRHdsSGF5YUJIbnlidGcxb1ZTOEY4?=
+ =?utf-8?B?dHcrb3ZHK0wxTGtXWjVKbnFzVzIwZm43Tm93bHV6UHpXUDd1c1BtODZWbnp3?=
+ =?utf-8?B?bVVkY0RDRW1QMG96TlFHNUtTeFJpTnBHTE84bVQyQjRDZUdVZndzcXRMaHpk?=
+ =?utf-8?B?WW9BZ0N2UlY5anExT0FXZnluRHlzYmxFWW9vNXpXUEZOQS8xajZ3enp1dFht?=
+ =?utf-8?B?K1YzMVN6WFYwM2pwckxIRnRlM2p6THBPK3NTZ0twNnU0UXFId3ovc1pVbmNm?=
+ =?utf-8?B?S01lS0VOdW9XTG92UjRSb3QxKzJPL1BPdlRDN1NXRmVhdTFKTWRqWFhwWFBp?=
+ =?utf-8?B?UjlBT3p2Y2ZNNm1SUENkL0RMNlRDaGdGQ3EzaGFxVTJlTkJ1WGtNRTQzOEV0?=
+ =?utf-8?B?ckNrbFN5MHVadktZT2NrZFkzZlVGZ1h1Mk9KRTZQLzVBdjRpbFprVGJHQTdX?=
+ =?utf-8?B?amd5Q0NFTHhsK3ZhTk9qYWZDekVoRkV1Mjk2YXRZUWE2cjFXZGpsRUhDbG5o?=
+ =?utf-8?B?SXRaWkUrUXZYMnduVGtqejRlK0N4SzcvMlEyT0NSN3NPcmp1a2NqS2VrRnB2?=
+ =?utf-8?B?OExTQWhJRkUrN2tUc0tlUmQ0SStUYmtDbHdqbUE5V01KUU05ODRqeEZ5Zk5i?=
+ =?utf-8?B?YnAzYmZLQWlJc2xDVUFTVFk4ZHFYb2g5cGVpaWIxdGpYZ0xSN1N4OVZWOVFn?=
+ =?utf-8?B?R05KVENrOWZZN3hQTUlyTVJvazBSVGcyRlQyTHhGTEF2UlN3U2M2V3Jtem00?=
+ =?utf-8?B?ODdSUGVxK0M5VzgrRXlrR3d0ajJsVVJCZW94bWx2UElsalBmY3RmRllPTCt3?=
+ =?utf-8?B?ZW4vUFZTVEQwcm9RRnNMSUF2S2x2Q0dxbEtZWlFNU0RDZERSQVdHdU5IdXd4?=
+ =?utf-8?B?azhmVDlSaVZSdmNXVkFpNDI1ZFRGbDNZcUNUZGxhYlBlQ2pUaS9QdVE4U1pW?=
+ =?utf-8?B?Y01iYUh0dnFodTE3TW8yMFpTTk10Y1RiOEY4RkM4RnBWdFBTekdCRzNuZi9z?=
+ =?utf-8?B?L3VTTTBqQU9jdTFaMlVVdEo4azlLY1BvWjNCSEpJU2ZLS0R5dWlwd0xGY3Jx?=
+ =?utf-8?B?YXMzdWV4M2laMUd5dFRTQ3c1aC90ZW9TZkVVQTNLT2dxeVZYNWlBQnpyVTFm?=
+ =?utf-8?B?VW92bit2VWk5NUFoL0xhKzkva0JiYVBRQkhTaUp5MnJaUUQ2d3VGMzVybExh?=
+ =?utf-8?B?U00xSXpoaEppWWd1bmM4bldEaDJXeTNzaFFHRzdQbW40eDJsejkvRTFUMzJ5?=
+ =?utf-8?B?UmVpb2JFSTNzRVpWdkc2N1paSHdWbFJyNmkzUlFJeXVSWkwydVRuem42TDNm?=
+ =?utf-8?B?WFBxb0o2YW8rbnEzMmY1YmxOWm1DUjVheCtHd3lRYVNxZUowTGhRajhHaWlk?=
+ =?utf-8?B?TGRVeUhiUVoyNGtnU2NRRnplazd5bHVidE5WNFMvRVFvNXk5OGRDOEtkUXVi?=
+ =?utf-8?B?R0xDZTBCazN4bitSa1VIeHdMczVHNllCV0p4dDVVcDJDSTBqbmtOa2xDZFJv?=
+ =?utf-8?B?SXNGUk1VZXd2NUNXQkJQaUNNcDJHaHhXa3RmWXF6R0FYWVQxSTVVQVExdUl0?=
+ =?utf-8?B?bGtNTkxORmdaQlpMU2xzM2xONTI0ajlJRlJaL2ttQWV6ZTdvNnozN282QVpt?=
+ =?utf-8?B?T0cvdzFDZEd3RUVjMHFoc0V2NVVhTHZKTnZvakhJdjRYaW0zUnFjZzVwTVFE?=
+ =?utf-8?B?OUJhMFhTZGpFb1VKZ1o5MjZSL05GZ2JoNFRoZzBydUdBbmU2OU84dHZ1L2U0?=
+ =?utf-8?B?ak02aE0zdVJqdjBlV3V1UHdjNzhPT005U3pDVU9pNGV5ancxREw5OEJlbFds?=
+ =?utf-8?Q?PeP2crEHQmXFDlDy2402tIg=3D?=
+X-OriginatorOrg: os.amperecomputing.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 60a3abb0-2605-4905-1787-08dc85a71390
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR01MB7370.prod.exchangelabs.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Jun 2024 21:33:01.6331
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3bc2b170-fd94-476d-b0ce-4229bdc904a7
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: KuAsfeDpHsllQ/s4ueeeor3nWxoMwljsZ4Svx7co1fF3AEDhvh4SxVuRsxIuwiuYLPaxtVtoFg+QlcSEk1OrNmfbxg3mNTlCrfCq5t+zA/MzGY2qSpKaOIjfjs+NbiN6
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR01MB8462
+
+> +static int ras2_check_pcc_chan(struct ras2_pcc_subspace *pcc_subspace)
+> +{
+> +	struct acpi_ras2_shared_memory __iomem *generic_comm_base =pcc_subspace->pcc_comm_addr;
+> +	ktime_t next_deadline = ktime_add(ktime_get(), pcc_subspace->deadline);
+> +	u16 status;
+> +
+> +	while (!ktime_after(ktime_get(), next_deadline)) {
+> +		/*
+> +		 * As per ACPI spec, the PCC space will be initialized by
+> +		 * platform and should have set the command completion bit when
+> +		 * PCC can be used by OSPM
+> +		 */
+> +		status = readw_relaxed(&generic_comm_base->status);
+> +		if (status & RAS2_PCC_CMD_ERROR)
+> +			return -EIO;
+
+We need to clear the error bit before reporting an error.
+Maybe the error was transient, or specific to the last transaction.
+So clearing it here, lets us try again later. Like This:
+		if (status & RAS2_PCC_CMD_ERROR) {
+			status &= ~RAS2_PCC_CMD_ERROR;
+			writew_relaxed(status, &generic_comm_base->status);
+			return -EIO;
+		}
+
+
+Also, we are thinking that using the "Set RAS Capability Status" as a
+way to communicate RAS2 Scrub specific error conditions is appropriate.
+If we agree on that idea, then we can additionally check the
+set_capabilities_status and return an appropriate error..
+for example, we can add a new error mapping function:
+static int report_cap_error(u32 cap_status)
+{
+	switch (cap_status) {
+		case 1:  /* Not Valid */
+		case 2:  /* Not Supported */
+			return -EPERM;
+		case 3:  /* Busy */
+			return -EBUSY;
+		case 4:  /* FailedF */
+		case 5:  /* Aborted */
+		case 6:  /* Invalid Data */
+			return -EINVAL;
+		default: /* 0 or other, Success */
+			return 0;
+	}
+}
+
+and then instead, modify ras2_check_pcc_chan in this way:
+		if (status & RAS2_PCC_CMD_ERROR) {
+			cap_status = readw_relaxed(&generic_comm_base->set_capabilities_status);
+			ret = report_cap_error(cap_status);
+
+			status &= ~RAS2_PCC_CMD_ERROR;
+			writew_relaxed(status, &generic_comm_base->status);
+			return ret;
+		}
+
+> +		if (status & RAS2_PCC_CMD_COMPLETE)
+> +			return 0;
+> +		/*
+> +		 * Reducing the bus traffic in case this loop takes longer than
+> +		 * a few retries.
+> +		 */
+> +		msleep(10);
+> +	}
+> +
+> +	return -EIO;
+> +}
+> +
+> +/**
+> + * ras2_send_pcc_cmd() - Send RAS2 command via PCC channel
+> + * @ras2_ctx:	pointer to the ras2 context structure
+> + * @cmd:	command to send
+> + *
+> + * Returns: 0 on success, an error otherwise
+> + */
+> +int ras2_send_pcc_cmd(struct ras2_scrub_ctx *ras2_ctx, u16 cmd)
+> +{
+> +	struct ras2_pcc_subspace *pcc_subspace = ras2_ctx->pcc_subspace;
+> +	struct acpi_ras2_shared_memory *generic_comm_base = pcc_subspace->pcc_comm_addr;
+> +	static ktime_t last_cmd_cmpl_time, last_mpar_reset;
+> +	struct mbox_chan *pcc_channel;
+> +	unsigned int time_delta;
+> +	static int mpar_count;
+> +	int ret;
+> +
+> +	guard(mutex)(&ras2_pcc_subspace_lock);
+> +	ret = ras2_check_pcc_chan(pcc_subspace);
+> +	if (ret)
+> +		return ret;
+> +	pcc_channel = pcc_subspace->pcc_chan->mchan;
+> +
+> +	/*
+> +	 * Handle the Minimum Request Turnaround Time(MRTT)
+> +	 * "The minimum amount of time that OSPM must wait after the completion
+> +	 * of a command before issuing the next command, in microseconds"
+> +	 */
+> +	if (pcc_subspace->pcc_mrtt) {
+> +		time_delta = ktime_us_delta(ktime_get(), last_cmd_cmpl_time);
+> +		if (pcc_subspace->pcc_mrtt > time_delta)
+> +			udelay(pcc_subspace->pcc_mrtt - time_delta);
+> +	}
+> +
+> +	/*
+> +	 * Handle the non-zero Maximum Periodic Access Rate(MPAR)
+> +	 * "The maximum number of periodic requests that the subspace channel can
+> +	 * support, reported in commands per minute. 0 indicates no limitation."
+> +	 *
+> +	 * This parameter should be ideally zero or large enough so that it can
+> +	 * handle maximum number of requests that all the cores in the system can
+> +	 * collectively generate. If it is not, we will follow the spec and just
+> +	 * not send the request to the platform after hitting the MPAR limit in
+> +	 * any 60s window
+> +	 */
+> +	if (pcc_subspace->pcc_mpar) {
+> +		if (mpar_count == 0) {
+> +			time_delta = ktime_ms_delta(ktime_get(), last_mpar_reset);
+> +			if (time_delta < 60 * MSEC_PER_SEC) {
+> +				dev_dbg(ras2_ctx->dev,
+> +					"PCC cmd not sent due to MPAR limit");
+> +				return -EIO;
+> +			}
+> +			last_mpar_reset = ktime_get();
+> +			mpar_count = pcc_subspace->pcc_mpar;
+> +		}
+> +		mpar_count--;
+> +	}
+> +
+> +	/* Write to the shared comm region. */
+> +	writew_relaxed(cmd, &generic_comm_base->command);
+> +
+> +	/* Flip CMD COMPLETE bit */
+> +	writew_relaxed(0, &generic_comm_base->status);
+> +
+> +	/* Ring doorbell */
+> +	ret = mbox_send_message(pcc_channel, &cmd);
+> +	if (ret < 0) {
+> +		dev_err(ras2_ctx->dev,
+> +			"Err sending PCC mbox message. cmd:%d, ret:%d\n",
+> +			cmd, ret);
+> +		return ret;
+> +	}
+> +
+> +	/*
+> +	 * If Minimum Request Turnaround Time is non-zero, we need
+> +	 * to record the completion time of both READ and WRITE
+> +	 * command for proper handling of MRTT, so we need to check
+> +	 * for pcc_mrtt in addition to CMD_READ
+> +	 */
+> +	if (cmd == RAS2_PCC_CMD_EXEC || pcc_subspace->pcc_mrtt) {
+> +		ret = ras2_check_pcc_chan(pcc_subspace);
+> +		if (pcc_subspace->pcc_mrtt)
+> +			last_cmd_cmpl_time = ktime_get();
+> +	}
+> +
+> +	if (pcc_channel->mbox->txdone_irq)
+> +		mbox_chan_txdone(pcc_channel, ret);
+> +	else
+> +		mbox_client_txdone(pcc_channel, ret);
+> +
+> +	return 0;
+
+
+As of now, this code doesn't consider errors occurring after the
+mbox_send_message.
+Checking errors is, probably, necessary to take appropriate action - such as
+reporting an error to the user.  Also, error or no, it is important to
+call the txdone bits.
+
+One simple solution that works is to modify the previous "return 0" to
+look like:
+	return ret >= 0 ? 0 : ret;
+
+> +}
+> +EXPORT_SYMBOL_GPL(ras2_send_pcc_cmd);
+
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2106.outbound.protection.outlook.com [40.107.223.106])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A02BA16E864;
+	Wed,  5 Jun 2024 21:33:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.223.106
+ARC-Seal: i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1717623209; cv=fail; b=CSJcT7qz0VXp+meoC8jnTX8GnP7fQjvs39jGgR8oAHMkwohDGHGWyR07vx5ZEFQSnYLT6WNpDqZX/oiJ3fBZb/o/JeCbaT7J89euhxs8TaPJwl/skw9fi4DPxrIhdv+sZi//bdGOSGSPJL5WMjazhFoL99Gbhwftjye+kYA/asQ=
+ARC-Message-Signature: i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1717623209; c=relaxed/simple;
+	bh=V3pYop5ocUZ+zKcpfYHejI6L2xxqghuLK9tnZ+b4QY4=;
+	h=Message-ID:Date:From:Subject:To:Cc:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=KVDQ2eI+ACNWp8PcMVdQp4sZqGx8xWi6ds2A5Zm3nluqcvS/6o0w+yMBHzdH1u36OWm15cxltH/+GVcqLIl7itfw2M/EHwElFI4DmcJcJyinQFL8tzpSqb+DV3yDP5tmiCPuHTEHhZeIf8I98MvPJofzoaednK8+4mnjjUaST3Y=
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=os.amperecomputing.com; spf=pass smtp.mailfrom=os.amperecomputing.com; dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b=oiMVDZgn; arc=fail smtp.client-ip=40.107.223.106
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=os.amperecomputing.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=os.amperecomputing.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b="oiMVDZgn"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Ijl2CDJYhyL7cllGN9W8w4Cp78fzZUHsQ+TMUTVGP+1ixL8h4B/h3zO3IAxtBJzw7P22Ucle1hsD0Rh0y51916huhmEPHwEY56EBmKpjbVSa0d0c0V1BN+sIbzYo8M/NkToW4j6jyvdBYtPsoWVtixP/aQMJYsM1FEvLEKRMiOfBniWBQ/5Vr2scsUlwmZHOWmOU9xI1ZkU+wEdTmC5Z9hA+hcXlj78HC0rd5aexPZ0nQN+Ofw9Ok2ER/YbeU9unLOD/03iDjIYPTArEfjoCtdvy0XRfYo6rzaBIxNBr3VMbDwq6n91w2a8tVLorFThH/2RGoBG3qD4Boz+iq270bg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=qPakuIFUQFQa4L3tBLRFi5uJaB/sqYalIbCcZrt7VZU=;
+ b=I2s5R0NB3s3WLaVuBnfDfA7gCEi7DoN+SzHvoo+xTOV/76sHOKztl6qPB5R6a48peLRwdfrjBBzj+NpNscmOvw0qKH4U53nAQE6R7ZO4CwnyS+i3Zp+fad1czAbDfyQJqFjnVa5pubvmo+2H4fnlHMbl+GhbSBTZb178Jguc2fReI1x5KYi+LOh91zp5B9uOKCjBmWOHjsliI+9Nzj9YQPCuEevDgDn8HOGYFasLWGuU0HuUrIopO3sqZe+m/i4dLrdaedwJN7ZnexWhMQw2QBFIZmI4ohhytla0oveS/1wMU3yqhaTzyy1BSQxWxSpj3x6wvfazZfNkYgtluB8+hA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=os.amperecomputing.com; dmarc=pass action=none
+ header.from=os.amperecomputing.com; dkim=pass
+ header.d=os.amperecomputing.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=os.amperecomputing.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=qPakuIFUQFQa4L3tBLRFi5uJaB/sqYalIbCcZrt7VZU=;
+ b=oiMVDZgnXBmkoGKikqMCCyub75qeYJi+lnM1DTuzz7AcPOWGoQWehIVNRDLARNA5oxu9hgCwFEfXM9TZ1dj3xrM8db7pkiGFmeSY+sXgwsuD4tid7i11MbsHUqgSYLDEHiWbC4CVEe00MN87G3D6Rs+y412RUrc0noapPDObdWM=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=os.amperecomputing.com;
+Received: from CO1PR01MB7370.prod.exchangelabs.com (2603:10b6:303:159::16) by
+ LV3PR01MB8462.prod.exchangelabs.com (2603:10b6:408:1a7::14) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7633.27; Wed, 5 Jun 2024 21:33:25 +0000
+Received: from CO1PR01MB7370.prod.exchangelabs.com
+ ([fe80::6e98:87d1:5562:ad73]) by CO1PR01MB7370.prod.exchangelabs.com
+ ([fe80::6e98:87d1:5562:ad73%4]) with mapi id 15.20.7633.021; Wed, 5 Jun 2024
+ 21:33:25 +0000
+Message-ID: <fcd0621b-dd68-4e0d-96e1-15c16a3278d0@os.amperecomputing.com>
+Date: Wed, 5 Jun 2024 14:33:22 -0700
+User-Agent: Mozilla Thunderbird
+From: Daniel Ferguson <danielf@os.amperecomputing.com>
+Subject: Re: [RFC PATCH v8 10/10] ras: scrub: ACPI RAS2: Add memory ACPI RAS2
+ driver
+To: shiju.jose@huawei.com
+Cc: linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
+ david@redhat.com, Vilas.Sridharan@amd.com, leo.duran@amd.com,
+ Yazen.Ghannam@amd.com, rientjes@google.com, jiaqiyan@google.com,
+ tony.luck@intel.com, Jon.Grimm@amd.com, dave.hansen@linux.intel.com,
+ rafael@kernel.org, lenb@kernel.org, naoya.horiguchi@nec.com,
+ james.morse@arm.com, jthoughton@google.com, somasundaram.a@hpe.com,
+ erdemaktas@google.com, pgonda@google.com, duenwen@google.com,
+ mike.malvestuto@intel.com, gthelen@google.com,
+ wschwartz@amperecomputing.com, dferguson@amperecomputing.com,
+ wbs@os.amperecomputing.com, nifan.cxl@gmail.com, tanxiaofei@huawei.com,
+ prime.zeng@hisilicon.com, kangkang.shen@futurewei.com,
+ wanghuiqiang@huawei.com, linuxarm@huawei.com, ira.weiny@intel.com,
+ vishal.l.verma@intel.com, alison.schofield@intel.com, dave.jiang@intel.com,
+ jonathan.cameron@huawei.com, dave@stgolabs.net, dan.j.williams@intel.com,
+ linux-mm@kvack.org, linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org
+References: <20240419164720.1765-1-shiju.jose@huawei.com>
+ <20240419164720.1765-11-shiju.jose@huawei.com>
+Content-Language: en-US
+In-Reply-To: <20240419164720.1765-11-shiju.jose@huawei.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MW4PR03CA0021.namprd03.prod.outlook.com
+ (2603:10b6:303:8f::26) To CO1PR01MB7370.prod.exchangelabs.com
+ (2603:10b6:303:159::16)
+Precedence: bulk
+X-Mailing-List: linux-acpi@vger.kernel.org
+List-Id: <linux-acpi.vger.kernel.org>
+List-Subscribe: <mailto:linux-acpi+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-acpi+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PR01MB7370:EE_|LV3PR01MB8462:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5d775375-8cb4-4fc9-def5-08dc85a721ad
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: 
+	BCL:0;ARA:13230031|376005|52116005|1800799015|7416005|366007|38350700005;
+X-Microsoft-Antispam-Message-Info: 
+	=?utf-8?B?bXQ0MnRqb0d6SEw3YUo4anU2K2t4Zm93Tno1VFM2R3NkL0ZHNTNVU3VvbVFS?=
+ =?utf-8?B?R01jUjZlbTQ2ZEloMDl6WVF0Z1JkWCtBY2xCL2Myd3VZOHhuSjVsb1RxZHha?=
+ =?utf-8?B?RlBtWkorNVdOa3k1dWZRMzd2WVgyTkV0dytrRW02OFBNdm10eHUzUVRxR2pP?=
+ =?utf-8?B?eTNnZTdQVGI5ejV2SGdZNHZSRjFVeE9UTlZNR1ArRit2Q21URXVndXVqSUth?=
+ =?utf-8?B?emtuZG5EbEZwSEJUSG5sNVJiajFZNmM2czIreFNmalN5c2hneU5VY0k4em5P?=
+ =?utf-8?B?azN1Z2pIUy9vdHNsNW15VWZ3dGxEd1hXdzJJais0VUEwTFp3eEFUQ1MvaEU0?=
+ =?utf-8?B?MUh1cExnYVhaZmRVWFRKR1pjeHFOYURnR2IzdHhsR0Z2WVA5V2JEWTlrbnJY?=
+ =?utf-8?B?WGpsdFRaS2VsQTQwV0ZyZThFNlNXWnp3ZXVBR2Nma3V1bnIySzJrZDF3Y2Fs?=
+ =?utf-8?B?OWZVNTdXampLVGlCVTdWa0Z1QzJtTVg0aWZBSkVWNkxlc3Y2UmtMODlYWVBT?=
+ =?utf-8?B?MlJ4ZlExTkVwNHRySXRiNXU1TllVL2RmZTlnanQxSlcwdU9sMU5lQkVUQ2tz?=
+ =?utf-8?B?OTRMLzMxN1UvNThLVEJkOThzMXhmWmhKSzJnY1ZDb2dKNjNsV0ZmZlBoaDdu?=
+ =?utf-8?B?VHZiRHJ6R2pPc0ZWSXc1dWFMbFgyYXNLTVFIVW9LMWc3d3V0ZHo2T0hNaWdT?=
+ =?utf-8?B?R3F2MUFRcUpFbmVHUTluN1FySVpmR1Arb1RiaysxdDBCTU8xSjBuam0rVncy?=
+ =?utf-8?B?QW5sZGQ4MGZ4MTFiVENLcXA0TUZJZEFQTE5sSml5Nmc0TVh5M1Zrd3pRdWxL?=
+ =?utf-8?B?c0cwQk1MYnErOHJXTlZncXNqS2lLbmh0NU5IcXZmWjZtVHJLMEVUMUt5TUhV?=
+ =?utf-8?B?bnNuZmU4NS9ORzFMcG5OWE1pSjBybXloQlV4eTY2MDVzSlgzczFHTFJOaC9i?=
+ =?utf-8?B?WnVXdDBOK0YxVDI1dFZVOG9lYVAwdXRkd0VXMXhYQm5SeXROamxpRnhldm1X?=
+ =?utf-8?B?d0tOdWN4eEZqdUdxcVFHREE5aklCSlNuaHFtbG1OQ1h0RWkweDlFVFQ0UWN1?=
+ =?utf-8?B?REZ4U1g4Q2RPTHdwTXhkL2ltVEJSU3BPWWFJVC9jUFJCNHp2clBHMFZQeGlI?=
+ =?utf-8?B?YXdFZnljRmRJNUVqZHg1VzNDaGttK0VUbWdFL1pRNHl6T2dyRzlkbFh2Y3hL?=
+ =?utf-8?B?blkrSS9GQkJ6UzVya2dLbHdmazZPR3ZKV0NXREhLTlc3VEg3dWtIcTNOOEpY?=
+ =?utf-8?B?NWRUU09JYzRQcmtPcmZ1Q1A5aXlSQWRWdWI5ZlBJdVZhMGNlclN0a3J6cXI0?=
+ =?utf-8?B?aXA2MGxBQ3BOUjk4ZXNINFB5NDVBUzJnZ2tOTEZkMmRHMFZDc09ZdGViVzJw?=
+ =?utf-8?B?WjdoNllyOWEwaVlhbEU2amoxVVVuSUFuUWZneXhsdjhmMWNYM2JaNFFvZXFV?=
+ =?utf-8?B?VTBxdFZDdmJYb21CRWp3WjNpNFd0QmhrVGRtY1VhQWdIYlQrZzR1cHltU0pE?=
+ =?utf-8?B?WGFNTFN1TW5pQ3d3eXQxOCtVaVYxQXdEdUFROHdCR0V1aWF2dGtNU1dSelBz?=
+ =?utf-8?B?ZmlGd1lPc1R5ckNQUFdoZit2WlJ3TktTd1NYZ0RicnF0ZXN1WTJ0L245NFJI?=
+ =?utf-8?B?SklwT1paNzVodCs4amNQeUpvT3ZjcXRwaGFMT2VHd2lSa05vbytwcVhLdkZS?=
+ =?utf-8?B?KzNQdHlzaXdkaGtVVlVHRktLbzhCOENtTVdGbGxORGYxZ2IyOU1aekx6bllr?=
+ =?utf-8?B?cFR3Qm5hRUY5bUE1Y1ZWdjlUdzU4YnQ2MTdYRUpHU2d2U0d1TUppUlVuNDRl?=
+ =?utf-8?B?ZGlQUUVBWGhSQkR6VHRmQT09?=
+X-Forefront-Antispam-Report: 
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO1PR01MB7370.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(13230031)(376005)(52116005)(1800799015)(7416005)(366007)(38350700005);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 
+	=?utf-8?B?cGlRb25rRDJuK3lRbWNDSE5GTktMMXhtdmRzVkU1U2MwT2cwc1hXckdTTk83?=
+ =?utf-8?B?U05Bd056Ylk4QW5HZkVnMStJQWRnU29MdkNhb3lGdWRWckZZOUR4OUNLNWtC?=
+ =?utf-8?B?aUJ4RDNtdlNSSUVVWTc1MzZtakVHcW00QTBOeHVRamtuUStHalovR2YweVdB?=
+ =?utf-8?B?R25NcVcvVktxMStNeTh0NE9Kd0I1VUlNSDN0bnhTWklpT3lSbXRZTW4rMEhz?=
+ =?utf-8?B?cElDa1RDZC9XUGxqc1hURnhEY0ZkVnpObzVTSlRKSEhHTGY3V1BHOE82eEs4?=
+ =?utf-8?B?b2RGbHR6SExrNVZVbzhsRC9zTW9KQmkrb3dPSU9vRGtRTmhZTEwyclB1UkpS?=
+ =?utf-8?B?cVQwdWlHTTd1NkI2SWZyM25ZNStZYXRYYnY5VzFwSXFYZ2sweHVGSG9LK25n?=
+ =?utf-8?B?WjFxbExvN3hqOUwrUmR5NXRjZzNMTHBiWWlFdWptWm1PY3lCNm8wYVRkclJy?=
+ =?utf-8?B?ejlVUkJnT2txaDdBM1Zua0RsNmVlb0xKaFR4ck0ydVpJODZnM09uZm9GMUIz?=
+ =?utf-8?B?Z010QTdhVHdVQ2NzMUtEcTQ2clNpQTFDSWNSd0s5YTh3TFdaN085c040QUtD?=
+ =?utf-8?B?VGZKckZHN3pJN3p6c01OeTk3ZlBTcFM2ajJNZDZ5eVdkQmx3dmdOclg5S05i?=
+ =?utf-8?B?K1o5K2VTUURFWjdWYjJ5eGUzeGFrQW9XN1RnOXpUY0N3L1Q1SXFtbmJ0UzJr?=
+ =?utf-8?B?T1ZRUUhvbGh1dUVraVlhYllIY2JvK3JZUnEvdDZkS21jWVBYeXcvWWlteUZq?=
+ =?utf-8?B?anJoRmdkOEE3S3grdyt1bHlvRFM3V1NtN2VjNjFYSHRiZnhNNWtPSmV6T1g0?=
+ =?utf-8?B?U0ppcnJFendaY3NrQTNvU3lQRXJVb3RCWEUyZmhLQWxQczdlNVlDWDlkSDlT?=
+ =?utf-8?B?WkNKWXdyV2VlQ3ZMMDVSR1hrRjBIQU9hSys4S2c1M09OMVNDRDRsa3JWL2V6?=
+ =?utf-8?B?ZktmcTh6UzlkSGQ5aG91K3VMNTlDSTQxbU1TZ0RmdWdYckZlMTU1SHBKSU1j?=
+ =?utf-8?B?QWRsOUxJZFFBU3pkOEQ5anM5a2wzMEFsaHlnUTkyL1dRUDdPWC90R3dta1pP?=
+ =?utf-8?B?Q1grc3VrNTJiaFRZdFhJU21seE9LM0c5QmlzVkxRVjJXa0dNUWE2TnZKZDFt?=
+ =?utf-8?B?dzA3Um5kWHZ5UFh0SFJGNWl6MndEZkFaVWY5ZjcwYThQVk9SakN5ZGthMGdp?=
+ =?utf-8?B?K0JQclBNR1lWam5NZzk3bC9kbU92TVdtRzVZczlnUStORXVVWE1hZGdXR2Vm?=
+ =?utf-8?B?amZWOTU5d3lISkowNUdQdkJoSXJEZThhWUJldDlRdWI1NFNsWXhvcGordU5R?=
+ =?utf-8?B?aEEzUGpEUFA5b0o0a1orMVdqYk1aWG83ZjE5TDJqd3hRcE5vN2NhSFNic0Qv?=
+ =?utf-8?B?M0FDcEpSUFVJN2x2cDM1WnpGZW5jbEhvY1llYWNPdW9Ca1NEaGR2VGFyMmJn?=
+ =?utf-8?B?TXNYcFVwWWlUVUU1Q3QwOU9OMkE0MDFwVk1ZS2xWWmNUTndYL3A4NW1WZnFt?=
+ =?utf-8?B?NCt5czU2YmRwamc3Vjc3ZW0vZlZ4R09kVnVlSkFlbEYxbmJNL3NqQlFUbWp1?=
+ =?utf-8?B?RFNLZkgwRGxTUjFadTk5ZFlHb0dFdXNQcW1CTitmRktrM00xcThwRlVNTlBa?=
+ =?utf-8?B?MUR6TU1qRUk5VE5NK0JxWUpNY1RKekMxbisxamZHMDhzR1libHZ5aUQ3Qlha?=
+ =?utf-8?B?ZHZHWnlJMXphNUJnWm1RTVMzc2ZKR3FPbng3TzROR0NydHZBOGZIV1ZuNlNN?=
+ =?utf-8?B?YndVUVRBZ2oweU9JTkVYbGZhd05CKzBxLy91WkV5ZmZ1QmMrNTdScElxVnBY?=
+ =?utf-8?B?ZUpvc2l4YXphcGx3UXpaNEhRdk83a2FyR0FRbUJnTWlvTVJpV1dKc3ZQNi9t?=
+ =?utf-8?B?TmJmUDRXdE4yOEMzSTVSYjd0VngyVmFLcDBiOHNId2VHME9OamUxcGNoZjIx?=
+ =?utf-8?B?MU1KNWcyQzRlZ1hvbERJeURlanpVb3ZMam5jRDM5cjJ1KzNJb25BY0FDbWxU?=
+ =?utf-8?B?c2hNbE0rSlU5b25keTVReWU2Z0xyNENGaU1rTVh0aitWcTl2anZJWG81QmxW?=
+ =?utf-8?B?ZkF6cXJ3cmtIdjJQaXhYMzF3TzUxQ1MrSm1OYjl0NWJlaFM5YlArbHlpR0NM?=
+ =?utf-8?B?VmFYSzE0cDlDN05sNHZPY25Vb1gvNGFLWFJtQW95VUd0aXFORmVvdVRwdkht?=
+ =?utf-8?Q?CYnz6wMPYc8KFkrHAkhCAIo=3D?=
+X-OriginatorOrg: os.amperecomputing.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5d775375-8cb4-4fc9-def5-08dc85a721ad
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR01MB7370.prod.exchangelabs.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Jun 2024 21:33:25.1594
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3bc2b170-fd94-476d-b0ce-4229bdc904a7
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: frie/ux3zzyMi1FMXLo2vFQeTygs9mH5WsFgI0QkQsjeMdqiF0I33B+fpdb3505h5Q8zhdYFKAqtqc3ZPoBuBH1DkEvSymAdVpU8dwfGjKnZgjUrMbP16PKxwNUyrdsc
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR01MB8462
+
+> +/* Context - lock must be held */
+> +static int ras2_get_patrol_scrub_running(struct ras2_scrub_ctx *ras2_ctx,
+> +					 bool *running)
+> +{
+> +	struct acpi_ras2_ps_shared_mem __iomem *ps_sm = (void *)
+> +					ras2_ctx->pcc_subspace->pcc_comm_addr;
+> +	int ret;
+> +
+> +	if (ras2_ctx->bg)
+> +		*running = true;
+> +
+> +	ps_sm->common.set_capabilities[0] = RAS2_SUPPORT_HW_PARTOL_SCRUB;
+> +	ps_sm->params.patrol_scrub_command = RAS2_GET_PATROL_PARAMETERS;
+
+Need to reset the address range (base and size). A user may have previously
+called "Enable Background" where the code zeros out these parameters.
+	ps_sm->params.requested_address_range[0] = ras2_ctx->base;
+	ps_sm->params.requested_address_range[1] = ras2_ctx->size;
+
+
+> +
+> +	ret = ras2_send_pcc_cmd(ras2_ctx, RAS2_PCC_CMD_EXEC);
+> +	if (ret) {
+> +		dev_err(ras2_ctx->dev, "failed to read parameters\n");
+> +		return ret;
+> +	}
+> +
+> +	*running = ps_sm->params.flags & RAS2_PATROL_SCRUB_FLAG_SCRUBBER_RUNNING;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ras2_hw_scrub_write_rate(struct device *dev, u64 rate)
+> +{
+> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+> +	bool running;
+> +	int ret;
+> +
+> +	guard(mutex)(&ras2_ctx->lock);
+> +	ret = ras2_get_patrol_scrub_running(ras2_ctx, &running);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (running)
+> +		return -EBUSY;
+
+
+I suggest we do not check if the patrol scrub is running when we are merely
+updating cached values. More importantly, if we had
+previously wrote an invalid value (that is only invalidated by firmware
+after
+executing a command), then when we try to write a correct value,
+this "ras2_get_patrol_scrub_running" check will always fail, therefore
+preventing us from correcting our error.
+
+> +
+> +	if (rate < ras2_ctx->rate_min || rate > ras2_ctx->rate_max)
+> +		return -EINVAL;
+> +
+> +	ras2_ctx->rate = rate;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ras2_hw_scrub_read_rate(struct device *dev, u64 *rate)
+> +{
+> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+> +
+> +	*rate = ras2_ctx->rate;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ras2_hw_scrub_read_rate_avail(struct device *dev, u64 *min, u64 *max)
+> +{
+> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+> +
+> +	*min = ras2_ctx->rate_min;
+> +	*max = ras2_ctx->rate_max;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ras2_hw_scrub_read_range(struct device *dev, u64 *base, u64 *size)
+> +{
+> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+> +
+> +	*base = ras2_ctx->base;
+> +	*size = ras2_ctx->size;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ras2_hw_scrub_write_range(struct device *dev, u64 base, u64 size)
+> +{
+> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+> +	bool running;
+> +	int ret;
+> +
+> +	guard(mutex)(&ras2_ctx->lock);
+> +	ret = ras2_get_patrol_scrub_running(ras2_ctx, &running);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (running)
+> +		return -EBUSY;
+
+I suggest we do not check if the patrol scrub is running. See previous
+comment above.
+
+> +
+> +	ras2_ctx->base = base;
+> +	ras2_ctx->size = size;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ras2_hw_scrub_set_enabled_bg(struct device *dev, bool enable)
+> +{
+> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+> +	struct acpi_ras2_ps_shared_mem __iomem *ps_sm = (void *)
+> +					ras2_ctx->pcc_subspace->pcc_comm_addr;
+> +	int ret;
+> +
+> +	guard(mutex)(&ras2_ctx->lock);
+> +	ps_sm->common.set_capabilities[0] = RAS2_SUPPORT_HW_PARTOL_SCRUB;
+> +	if (enable) {
+> +		ps_sm->params.requested_address_range[0] = 0;
+> +		ps_sm->params.requested_address_range[1] = 0;
+> +		ps_sm->params.scrub_params_in &= ~RAS2_PATROL_SCRUB_RATE_IN_MASK;
+> +		ps_sm->params.scrub_params_in |= FIELD_PREP(RAS2_PATROL_SCRUB_RATE_IN_MASK,
+> +							    ras2_ctx->rate);
+> +		ps_sm->params.patrol_scrub_command = RAS2_START_PATROL_SCRUBBER;
+> +	} else {
+> +		ps_sm->params.patrol_scrub_command = RAS2_STOP_PATROL_SCRUBBER;
+> +	}
+> +	ps_sm->params.scrub_params_in &= ~RAS2_PATROL_SCRUB_EN_BACKGROUND;
+> +	ps_sm->params.scrub_params_in |= FIELD_PREP(RAS2_PATROL_SCRUB_EN_BACKGROUND,
+> +						    enable);
+> +
+> +	ret = ras2_send_pcc_cmd(ras2_ctx, RAS2_PCC_CMD_EXEC);
+> +	if (ret) {
+> +		dev_err(ras2_ctx->dev, "%s: failed to enable(%d) background scrubbing\n",
+> +			__func__, enable);
+> +		return ret;
+> +	}
+> +	ras2_ctx->bg = true;
+> +
+> +	/* Update the cache to account for rounding of supplied parameters and similar */
+> +	return ras2_update_patrol_scrub_params_cache(ras2_ctx);
+> +}
+> +
+> +static int ras2_hw_scrub_get_enabled_bg(struct device *dev, bool *enabled)
+> +{
+> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+> +
+> +	*enabled = ras2_ctx->bg;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ras2_hw_scrub_set_enabled_od(struct device *dev, bool enable)
+> +{
+> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+> +	struct acpi_ras2_ps_shared_mem __iomem *ps_sm = (void *)
+> +					ras2_ctx->pcc_subspace->pcc_comm_addr;
+> +	bool enabled;
+> +	int ret;
+> +
+> +	guard(mutex)(&ras2_ctx->lock);
+> +	ps_sm->common.set_capabilities[0] = RAS2_SUPPORT_HW_PARTOL_SCRUB;
+> +	if (enable) {
+> +		if (!ras2_ctx->size) {
+> +			dev_warn(ras2_ctx->dev,
+> +				 "%s: Invalid requested address range, requested_address_range[0]=0x%llx "
+> +				 "requested_address_range[1]=0x%llx\n", __func__,
+> +				 ps_sm->params.requested_address_range[0],
+> +				 ps_sm->params.requested_address_range[1]);
+> +			return -ERANGE;
+> +		}
+> +		ret = ras2_get_patrol_scrub_running(ras2_ctx, &enabled);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (enabled)
+> +			return 0;
+> +
+> +		ps_sm->params.scrub_params_in &= ~RAS2_PATROL_SCRUB_RATE_IN_MASK;
+> +		ps_sm->params.scrub_params_in |= FIELD_PREP(RAS2_PATROL_SCRUB_RATE_IN_MASK,
+> +							    ras2_ctx->rate);
+> +		ps_sm->params.requested_address_range[0] = ras2_ctx->base;
+> +		ps_sm->params.requested_address_range[1] = ras2_ctx->size;
+
+
+We need to clear the RAS2_PATROL_SCRUB_EN_BACKGROUND bit in the input
+parameters.
+This is in case "Enable Background" was previously called, and this bit
+was set.
+
+		ps_sm->params.scrub_params_in &= ~RAS2_PATROL_SCRUB_EN_BACKGROUND;
+
+
+> +		ps_sm->params.patrol_scrub_command = RAS2_START_PATROL_SCRUBBER;
+> +	} else {
+> +		ps_sm->params.patrol_scrub_command = RAS2_STOP_PATROL_SCRUBBER;
+> +	}
+> +
+> +	ret = ras2_send_pcc_cmd(ras2_ctx, RAS2_PCC_CMD_EXEC);
+> +	if (ret) {
+> +		dev_err(ras2_ctx->dev, "failed to enable(%d) the demand scrubbing\n", enable);
+> +		return ret;
+> +	}
+> +	ras2_ctx->bg = false;
+> +
+> +	return ras2_update_patrol_scrub_params_cache(ras2_ctx);
+> +}
+
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DE36197A8A;
+	Thu,  6 Jun 2024 16:06:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.109.113.108
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1717689997; cv=none; b=n4DlXRTRnVIDppRkqPddYk69nPpA3+FjrpQrKmr3w3MzCVyfxVR342YO08yfj/xRJV2aOcXAHKBbTouFiCvtMd8GrOSBcvhiFD933ycZSIdZ7/wwU+UYe2tRF3/ZDJP3Hj7EbO24PMI9QkN5m4tASgLORmKtQIAZaiyDwGK6810=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1717689997; c=relaxed/simple;
+	bh=4pA/6KLDnT53+vx4qMnQiKe0VoIk3n8+GEHKApSPA7Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Bri7gFpl+8ivHF816pDPKfHMxa58pZcmXLcq7Y0+2bjD/QCY4QqtfOzPEZ8M1Qb+/bSkd+FCVfYaY0t2xULOWhf+p1VWwD8S4YkamYYQJ0XaLwmq1jfOfSuSzIrfmyhs3HCiPm4j7L3QFjjFt04CxR/SzO0FtQFRZquR5SiCuQE=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de; spf=pass smtp.mailfrom=alien8.de; dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b=hjXKW9Dx; arc=none smtp.client-ip=65.109.113.108
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alien8.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b="hjXKW9Dx"
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 59E0D40E0177;
+	Thu,  6 Jun 2024 16:06:32 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
+Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
+	header.d=alien8.de
+Received: from mail.alien8.de ([127.0.0.1])
+	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id 9oTyQaefmcS0; Thu,  6 Jun 2024 16:06:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
+	t=1717689985; bh=yNiIiUrsriudqclFjLXJzKQ4Ttub+OIs99LR3avItYs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=hjXKW9DxeUu9aYm5BTzAi4VUPIYgVK61PopErp2APevAYakJhr7CxNPIYBKp9jmbt
+	 iJ83j1nCVMNLyfCzKTC6tvsWhjeFOz4y+Nt8R9iOrHvBEAemf1jcSL6rnApKXwcuX7
+	 RCVpPSQWW5vvlDJ1+bHpKUuP2zLS8J++4Kqk1MBP9gq5JJKX+iPd8/K8DGizdE1Bu9
+	 2M3gUiSkCPJ7uYw1mTQ4AXs0Jwc0IJydwcPq4vzbz6Z+I1uc52Dts5X3+jKfFyGAAx
+	 Hm3U8Y3C47whcAX0yw0AZb/FNFqfkM+Nckf4gCaLIg9ufOuXD+YKe+l+4Ja3A/cVrc
+	 VSXevzhXxMMd5r2FFZDrlH7X+LOXPTdTvkyVa4bCzlf4N/C0KAfjLuKlnq8IUgrWY7
+	 KEs9cVxXvda/yssDlwzMrQhg9JguYckb8JwVzsZFg/eh9o0gqofKLA1y6u5HELj7fE
+	 SahSODA0/z1zHY/6o72zqI5eZLZVBf24/8JFUeQY+pEhMtQur3oN3tN1et52bONwnI
+	 NqHKhNrHI5OSHp5UkfKO0haHb/rFshLJNCGt5HyKxoUx8IoPa8ZkpnB5U/As1DTQX+
+	 v0u54Wp0hdNWX8zS+wcWOIK65Robm0iQ0TlboK1qzt8LYJCZ0IPIcAoD8eEzR1vVmt
+	 uM0W6E2TSQg6W6pgB/sdTUjQ=
+Received: from zn.tnic (p5de8ee85.dip0.t-ipconnect.de [93.232.238.133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
+	(No client certificate requested)
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id C995340E016A;
+	Thu,  6 Jun 2024 16:05:38 +0000 (UTC)
+Date: Thu, 6 Jun 2024 18:05:33 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Shiju Jose <shiju.jose@huawei.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	"linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+	"linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>,
+	"dave@stgolabs.net" <dave@stgolabs.net>,
+	"dave.jiang@intel.com" <dave.jiang@intel.com>,
+	"alison.schofield@intel.com" <alison.schofield@intel.com>,
+	"vishal.l.verma@intel.com" <vishal.l.verma@intel.com>,
+	"ira.weiny@intel.com" <ira.weiny@intel.com>,
+	"linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"david@redhat.com" <david@redhat.com>,
+	"Vilas.Sridharan@amd.com" <Vilas.Sridharan@amd.com>,
+	"leo.duran@amd.com" <leo.duran@amd.com>,
+	"Yazen.Ghannam@amd.com" <Yazen.Ghannam@amd.com>,
+	"rientjes@google.com" <rientjes@google.com>,
+	"jiaqiyan@google.com" <jiaqiyan@google.com>,
+	"tony.luck@intel.com" <tony.luck@intel.com>,
+	"Jon.Grimm@amd.com" <Jon.Grimm@amd.com>,
+	"dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+	"rafael@kernel.org" <rafael@kernel.org>,
+	"lenb@kernel.org" <lenb@kernel.org>,
+	"naoya.horiguchi@nec.com" <naoya.horiguchi@nec.com>,
+	"james.morse@arm.com" <james.morse@arm.com>,
+	"jthoughton@google.com" <jthoughton@google.com>,
+	"somasundaram.a@hpe.com" <somasundaram.a@hpe.com>,
+	"erdemaktas@google.com" <erdemaktas@google.com>,
+	"pgonda@google.com" <pgonda@google.com>,
+	"duenwen@google.com" <duenwen@google.com>,
+	"mike.malvestuto@intel.com" <mike.malvestuto@intel.com>,
+	"gthelen@google.com" <gthelen@google.com>,
+	"wschwartz@amperecomputing.com" <wschwartz@amperecomputing.com>,
+	"dferguson@amperecomputing.com" <dferguson@amperecomputing.com>,
+	"wbs@os.amperecomputing.com" <wbs@os.amperecomputing.com>,
+	"nifan.cxl@gmail.com" <nifan.cxl@gmail.com>,
+	tanxiaofei <tanxiaofei@huawei.com>,
+	"Zengtao (B)" <prime.zeng@hisilicon.com>,
+	"kangkang.shen@futurewei.com" <kangkang.shen@futurewei.com>,
+	wanghuiqiang <wanghuiqiang@huawei.com>,
+	Linuxarm <linuxarm@huawei.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jean Delvare <jdelvare@suse.com>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [RFC PATCH v8 01/10] ras: scrub: Add scrub subsystem
+Message-ID: <20240606160533.GDZmHeTbhCoJYKSsD2@fat_crate.local>
+References: <663d3e58a0f73_1c0a1929487@dwillia2-xfh.jf.intel.com.notmuch>
+ <20240509215147.GBZj1Fc06Ieg8EQfnR@fat_crate.local>
+ <663d55515a2d9_db82d2941e@dwillia2-xfh.jf.intel.com.notmuch>
+ <20240510092511.GBZj3n9ye_BCSepFZy@fat_crate.local>
+ <663e55c59d9d_3d7b429475@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+ <20240511101705.GAZj9FoVbThp7JUK16@fat_crate.local>
+ <6645f0738ead48a79f1baf753fc709c6@huawei.com>
+ <20240520125857.00007641@Huawei.com>
+ <20240527092131.GBZlRQmxwFTxxyR20q@fat_crate.local>
+ <20240528100645.00000765@Huawei.com>
+Precedence: bulk
+X-Mailing-List: linux-acpi@vger.kernel.org
+List-Id: <linux-acpi.vger.kernel.org>
+List-Subscribe: <mailto:linux-acpi+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-acpi+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20240528100645.00000765@Huawei.com>
+
+On Tue, May 28, 2024 at 10:06:45AM +0100, Jonathan Cameron wrote:
+> If dealing with disabling, I'd be surprised if it was a normal policy but
+> if it were udev script or boot script. If unusual event (i.e. someone is
+
+Yeah, I wouldn't disable it during boot but around my workload only. You
+want for automatic scrubs to still happen on the system.
+
+> trying to reduce jitter in a benchmark targetting something else) then
+> interface is simple enough that an admin can poke it directly.
+
+Right, for benchmarks direct poking is fine.
+
+When it is supposed to be something more involved like, dunno, HPC doing
+a heavy workload and it wants to squeeze all performance so I guess
+turning off the scrubbers would be part of the setup script. So yeah, if
+this is properly documented, scripting around it is easy.
+
+> To a certain extent this is bounded by what the hardware lets us
+> do but agreed we should make sure it 'works' for the usecases we know
+> about.  Starting point is some more documentation in the patch set
+> giving common flows (and maybe some example scripts).
+
+Yap, sounds good. As in: "These are the envisioned usages at the time of
+writing... " or so.
+
+> > Do you go and start a scrub cycle by hand?
+> 
+> Typically no, but the option would be there to support an admin who is
+> suspicious or who is trying to gather statistics or similar.
+
+Ok.
+
+> That definitely makes sense for NVDIMM scrub as the model there is
+> to only ever do it on a demand as a single scrub pass.
+> For a cyclic scrub we can spin a policy in rasdaemon or similar to
+> possibly crank up the frequency if we are getting lots of 'non scrub'
+> faults (i.e. correct error reported on demand accesses).
+
+I was going to suggest that: automating stuff with rasdaemon. It would
+definitely simplify talking to that API.
+
+> Shiju is our expert on this sort of userspace stats monitoring and
+> handling so I'll leave him to come back with a proposal / PoC for doing that.
+> 
+> I can see two motivations though:
+> a) Gather better stats on suspect device by ensuring more correctable
+>    error detections.
+> b) Increase scrubbing on a device which is on it's way out but not replacable
+>    yet for some reason.
+> 
+> I would suggest this will be PoC level only for now as it will need
+> a lot of testing on large fleets to do anything sophisticated.
+
+Yeah, sounds like a good start.
+
+> > Do you automate it? I wanna say yes because that's miles better than
+> > having to explain yet another set of knobs to users.
+> 
+> First instance, I'd expect an UDEV policy so when a new CXL memory
+> turns up we set a default value.  A cautious admin would have tweaked
+> that script to set the default to scrub more often, an admin who 
+> knows they don't care might turn it off. We can include an example of that
+> in next version I think.
+
+Yes, and then hook into rasdaemon the moment it logs an error in some
+component to go and increase scrubbing of that component. But yeah, you
+said that above already.
+
+> Absolutely.  One area that needs to improve (Dan raised it) is
+> association with HPA ranges so we at can correlate easily error reports
+> with which scrub engine.  That can be done with existing version but
+> it's fiddlier than it needs to be. This 'might' be a userspace script
+> example, or maybe making associations tighter in kernel.
+
+Right.
+
+Thx.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46E0343AB2;
+	Fri,  7 Jun 2024 15:46:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1717775168; cv=none; b=NDn4TXYCLxzo9Bv1hOJXOvElDKu3IedGyhHnHO/IX1+yQUNqB3g6k6yPzJ7rREPSlh4HowT50i2Tsf7n+8k9BqGuCIQK0QB9l0x6/UpJwnWq589TjyV2jTd2FQHxK1lktqBHUGkNO7RVBm7ufPIJwR2T9MTt91mmjchkkMoxf5g=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1717775168; c=relaxed/simple;
+	bh=/OHJPwafl7C7FRXAKQis5izcbAtMoVq94h5OfhgtxE8=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=UTbs3oMV7puAIA+WoszIrf85pZR4/VHPlEH+IlxELn3cXo5pNs6hvFjZn5Nc540n2XZxfHX70Ox/zkOQ+ed4M4XCSZdEn3S3ZgJaQAc6N+s4G5/pbNNw0TbFu92XE2+TN0h9zh2VSTth74BfnZfMFwU4xIE2sIQk46MdjisuPvA=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.231])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Vwlmf3kxYz6GCgr;
+	Fri,  7 Jun 2024 23:41:38 +0800 (CST)
+Received: from lhrpeml100005.china.huawei.com (unknown [7.191.160.25])
+	by mail.maildlp.com (Postfix) with ESMTPS id E1D911402CB;
+	Fri,  7 Jun 2024 23:46:02 +0800 (CST)
+Received: from lhrpeml500006.china.huawei.com (7.191.161.198) by
+ lhrpeml100005.china.huawei.com (7.191.160.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.39; Fri, 7 Jun 2024 16:46:02 +0100
+Received: from lhrpeml500006.china.huawei.com ([7.191.161.198]) by
+ lhrpeml500006.china.huawei.com ([7.191.161.198]) with mapi id 15.01.2507.039;
+ Fri, 7 Jun 2024 16:46:02 +0100
+From: Shiju Jose <shiju.jose@huawei.com>
+To: Daniel Ferguson <danielf@os.amperecomputing.com>
+CC: "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"david@redhat.com" <david@redhat.com>, "Vilas.Sridharan@amd.com"
+	<Vilas.Sridharan@amd.com>, "leo.duran@amd.com" <leo.duran@amd.com>,
+	"Yazen.Ghannam@amd.com" <Yazen.Ghannam@amd.com>, "rientjes@google.com"
+	<rientjes@google.com>, "jiaqiyan@google.com" <jiaqiyan@google.com>,
+	"tony.luck@intel.com" <tony.luck@intel.com>, "Jon.Grimm@amd.com"
+	<Jon.Grimm@amd.com>, "dave.hansen@linux.intel.com"
+	<dave.hansen@linux.intel.com>, "rafael@kernel.org" <rafael@kernel.org>,
+	"lenb@kernel.org" <lenb@kernel.org>, "naoya.horiguchi@nec.com"
+	<naoya.horiguchi@nec.com>, "james.morse@arm.com" <james.morse@arm.com>,
+	"jthoughton@google.com" <jthoughton@google.com>, "somasundaram.a@hpe.com"
+	<somasundaram.a@hpe.com>, "erdemaktas@google.com" <erdemaktas@google.com>,
+	"pgonda@google.com" <pgonda@google.com>, "duenwen@google.com"
+	<duenwen@google.com>, "mike.malvestuto@intel.com"
+	<mike.malvestuto@intel.com>, "gthelen@google.com" <gthelen@google.com>,
+	"wschwartz@amperecomputing.com" <wschwartz@amperecomputing.com>,
+	"dferguson@amperecomputing.com" <dferguson@amperecomputing.com>,
+	"wbs@os.amperecomputing.com" <wbs@os.amperecomputing.com>,
+	"nifan.cxl@gmail.com" <nifan.cxl@gmail.com>, tanxiaofei
+	<tanxiaofei@huawei.com>, "Zengtao (B)" <prime.zeng@hisilicon.com>,
+	"kangkang.shen@futurewei.com" <kangkang.shen@futurewei.com>, wanghuiqiang
+	<wanghuiqiang@huawei.com>, Linuxarm <linuxarm@huawei.com>,
+	"ira.weiny@intel.com" <ira.weiny@intel.com>, "vishal.l.verma@intel.com"
+	<vishal.l.verma@intel.com>, "alison.schofield@intel.com"
+	<alison.schofield@intel.com>, "dave.jiang@intel.com" <dave.jiang@intel.com>,
+	Jonathan Cameron <jonathan.cameron@huawei.com>, "dave@stgolabs.net"
+	<dave@stgolabs.net>, "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-acpi@vger.kernel.org"
+	<linux-acpi@vger.kernel.org>, "linux-cxl@vger.kernel.org"
+	<linux-cxl@vger.kernel.org>
+Subject: RE: [RFC PATCH v8 10/10] ras: scrub: ACPI RAS2: Add memory ACPI RAS2
+ driver
+Thread-Topic: [RFC PATCH v8 10/10] ras: scrub: ACPI RAS2: Add memory ACPI RAS2
+ driver
+Thread-Index: AQHaknlRNDQEUQ8LZ0WAYACoMfWy2bG56kQAgAJ2exA=
+Date: Fri, 7 Jun 2024 15:46:02 +0000
+Message-ID: <d1986e8e1d8549c588f7488dfd5dd374@huawei.com>
+References: <20240419164720.1765-1-shiju.jose@huawei.com>
+ <20240419164720.1765-11-shiju.jose@huawei.com>
+ <fcd0621b-dd68-4e0d-96e1-15c16a3278d0@os.amperecomputing.com>
+In-Reply-To: <fcd0621b-dd68-4e0d-96e1-15c16a3278d0@os.amperecomputing.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Precedence: bulk
+X-Mailing-List: linux-acpi@vger.kernel.org
+List-Id: <linux-acpi.vger.kernel.org>
+List-Subscribe: <mailto:linux-acpi+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-acpi+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+
+SGkgRGFuaWVsLA0KDQpUaGFua3MgZm9yIHRoZSBmZWVkYmFjay4NCg0KPi0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+RnJvbTogRGFuaWVsIEZlcmd1c29uIDxkYW5pZWxmQG9zLmFtcGVyZWNv
+bXB1dGluZy5jb20+DQo+U2VudDogMDUgSnVuZSAyMDI0IDIyOjMzDQo+VG86IFNoaWp1IEpvc2Ug
+PHNoaWp1Lmpvc2VAaHVhd2VpLmNvbT4NCj5DYzogbGludXgtZWRhY0B2Z2VyLmtlcm5lbC5vcmc7
+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ZGF2aWRAcmVkaGF0LmNvbTsgVmlsYXMu
+U3JpZGhhcmFuQGFtZC5jb207IGxlby5kdXJhbkBhbWQuY29tOw0KPllhemVuLkdoYW5uYW1AYW1k
+LmNvbTsgcmllbnRqZXNAZ29vZ2xlLmNvbTsgamlhcWl5YW5AZ29vZ2xlLmNvbTsNCj50b255Lmx1
+Y2tAaW50ZWwuY29tOyBKb24uR3JpbW1AYW1kLmNvbTsgZGF2ZS5oYW5zZW5AbGludXguaW50ZWwu
+Y29tOw0KPnJhZmFlbEBrZXJuZWwub3JnOyBsZW5iQGtlcm5lbC5vcmc7IG5hb3lhLmhvcmlndWNo
+aUBuZWMuY29tOw0KPmphbWVzLm1vcnNlQGFybS5jb207IGp0aG91Z2h0b25AZ29vZ2xlLmNvbTsg
+c29tYXN1bmRhcmFtLmFAaHBlLmNvbTsNCj5lcmRlbWFrdGFzQGdvb2dsZS5jb207IHBnb25kYUBn
+b29nbGUuY29tOyBkdWVud2VuQGdvb2dsZS5jb207DQo+bWlrZS5tYWx2ZXN0dXRvQGludGVsLmNv
+bTsgZ3RoZWxlbkBnb29nbGUuY29tOw0KPndzY2h3YXJ0ekBhbXBlcmVjb21wdXRpbmcuY29tOyBk
+ZmVyZ3Vzb25AYW1wZXJlY29tcHV0aW5nLmNvbTsNCj53YnNAb3MuYW1wZXJlY29tcHV0aW5nLmNv
+bTsgbmlmYW4uY3hsQGdtYWlsLmNvbTsgdGFueGlhb2ZlaQ0KPjx0YW54aWFvZmVpQGh1YXdlaS5j
+b20+OyBaZW5ndGFvIChCKSA8cHJpbWUuemVuZ0BoaXNpbGljb24uY29tPjsNCj5rYW5na2FuZy5z
+aGVuQGZ1dHVyZXdlaS5jb207IHdhbmdodWlxaWFuZyA8d2FuZ2h1aXFpYW5nQGh1YXdlaS5jb20+
+Ow0KPkxpbnV4YXJtIDxsaW51eGFybUBodWF3ZWkuY29tPjsgaXJhLndlaW55QGludGVsLmNvbTsN
+Cj52aXNoYWwubC52ZXJtYUBpbnRlbC5jb207IGFsaXNvbi5zY2hvZmllbGRAaW50ZWwuY29tOyBk
+YXZlLmppYW5nQGludGVsLmNvbTsNCj5Kb25hdGhhbiBDYW1lcm9uIDxqb25hdGhhbi5jYW1lcm9u
+QGh1YXdlaS5jb20+OyBkYXZlQHN0Z29sYWJzLm5ldDsNCj5kYW4uai53aWxsaWFtc0BpbnRlbC5j
+b207IGxpbnV4LW1tQGt2YWNrLm9yZzsgbGludXgtYWNwaUB2Z2VyLmtlcm5lbC5vcmc7DQo+bGlu
+dXgtY3hsQHZnZXIua2VybmVsLm9yZw0KPlN1YmplY3Q6IFJlOiBbUkZDIFBBVENIIHY4IDEwLzEw
+XSByYXM6IHNjcnViOiBBQ1BJIFJBUzI6IEFkZCBtZW1vcnkgQUNQSQ0KPlJBUzIgZHJpdmVyDQo+
+DQo+PiArLyogQ29udGV4dCAtIGxvY2sgbXVzdCBiZSBoZWxkICovDQo+PiArc3RhdGljIGludCBy
+YXMyX2dldF9wYXRyb2xfc2NydWJfcnVubmluZyhzdHJ1Y3QgcmFzMl9zY3J1Yl9jdHggKnJhczJf
+Y3R4LA0KPj4gKwkJCQkJIGJvb2wgKnJ1bm5pbmcpDQo+PiArew0KPj4gKwlzdHJ1Y3QgYWNwaV9y
+YXMyX3BzX3NoYXJlZF9tZW0gX19pb21lbSAqcHNfc20gPSAodm9pZCAqKQ0KPj4gKwkJCQkJcmFz
+Ml9jdHgtPnBjY19zdWJzcGFjZS0NCj4+cGNjX2NvbW1fYWRkcjsNCj4+ICsJaW50IHJldDsNCj4+
+ICsNCj4+ICsJaWYgKHJhczJfY3R4LT5iZykNCj4+ICsJCSpydW5uaW5nID0gdHJ1ZTsNCj4+ICsN
+Cj4+ICsJcHNfc20tPmNvbW1vbi5zZXRfY2FwYWJpbGl0aWVzWzBdID0NCj5SQVMyX1NVUFBPUlRf
+SFdfUEFSVE9MX1NDUlVCOw0KPj4gKwlwc19zbS0+cGFyYW1zLnBhdHJvbF9zY3J1Yl9jb21tYW5k
+ID0NCj5SQVMyX0dFVF9QQVRST0xfUEFSQU1FVEVSUzsNCj4NCj5OZWVkIHRvIHJlc2V0IHRoZSBh
+ZGRyZXNzIHJhbmdlIChiYXNlIGFuZCBzaXplKS4gQSB1c2VyIG1heSBoYXZlIHByZXZpb3VzbHkN
+Cj5jYWxsZWQgIkVuYWJsZSBCYWNrZ3JvdW5kIiB3aGVyZSB0aGUgY29kZSB6ZXJvcyBvdXQgdGhl
+c2UgcGFyYW1ldGVycy4NCj4JcHNfc20tPnBhcmFtcy5yZXF1ZXN0ZWRfYWRkcmVzc19yYW5nZVsw
+XSA9IHJhczJfY3R4LT5iYXNlOw0KPglwc19zbS0+cGFyYW1zLnJlcXVlc3RlZF9hZGRyZXNzX3Jh
+bmdlWzFdID0gcmFzMl9jdHgtPnNpemU7DQpUaGUgYWRkcmVzcyByYW5nZSBpcyBiZWluZyBzZXQg
+dG8gdGhlIGFib3ZlIGluIHRoZSByYXMyX2h3X3NjcnViX3NldF9lbmFibGVkX29kKCksIGJlY2F1
+c2UgdGhleSBhcmUNCnZhbGlkIGZvciBvbi1kZW1hbmQgc2NydWJiaW5nIG9ubHkuIA0KDQpIb3dl
+dmVyIHRoZSByYXMyX2N0eC0+YmFzZSBhbmQgcmFzMl9jdHgtPnNpemUgYXJlIHNldCB0byB0aGUg
+IA0KcmFzMl9jdHgtPmJhc2UgPSBwc19zbS0+cGFyYW1zLmFjdHVhbF9hZGRyZXNzX3JhbmdlWzBd
+Ow0KcmFzMl9jdHgtPnNpemUgPSBwc19zbS0+cGFyYW1zLmFjdHVhbF9hZGRyZXNzX3JhbmdlWzFd
+Ow0KaW4gdGhlIHJhczJfdXBkYXRlX3BhdHJvbF9zY3J1Yl9wYXJhbXNfY2FjaGUoKSwgd2hpY2gg
+aXMgY2FsbGVkIGFmdGVyIGVuYWJsaW5nIGJnIHNjcnViIGFuZCBvbi1kZW1hbmQgc2NydWIuIA0K
+VGh1cyByYXMyX2N0eC0+YmFzZSBhbmQgcmFzMl9jdHgtPnNpemUgbWF5IGhhdmUgYSAwIG9yIGdh
+cmJhZ2UgdmFsdWUgZm9yIGJnIHNjcnViIGJlY2F1c2UgYWRkcmVzcyByYW5nZSBpcyBub3QgdmFs
+aWQgZm9yIGJnIHNjcnViYmluZyBhcyBwZXJjIEFDUEkgc3BlY2lmaWNhdGlvbi4gSSB3aWxsIGFk
+ZCBjaGVja3MgdG8gcmV0YWluIHRoZSBjYWNoZWQgYWRkcmVzcyByYW5nZSBpZiBiZyBzY3J1YiBp
+cyBlbmFibGVkLiANCj4NCj4NCj4+ICsNCj4+ICsJcmV0ID0gcmFzMl9zZW5kX3BjY19jbWQocmFz
+Ml9jdHgsIFJBUzJfUENDX0NNRF9FWEVDKTsNCj4+ICsJaWYgKHJldCkgew0KPj4gKwkJZGV2X2Vy
+cihyYXMyX2N0eC0+ZGV2LCAiZmFpbGVkIHRvIHJlYWQgcGFyYW1ldGVyc1xuIik7DQo+PiArCQly
+ZXR1cm4gcmV0Ow0KPj4gKwl9DQo+PiArDQo+PiArCSpydW5uaW5nID0gcHNfc20tPnBhcmFtcy5m
+bGFncyAmDQo+PiArUkFTMl9QQVRST0xfU0NSVUJfRkxBR19TQ1JVQkJFUl9SVU5OSU5HOw0KPj4g
+Kw0KPj4gKwlyZXR1cm4gMDsNCj4+ICt9DQo+PiArDQo+PiArc3RhdGljIGludCByYXMyX2h3X3Nj
+cnViX3dyaXRlX3JhdGUoc3RydWN0IGRldmljZSAqZGV2LCB1NjQgcmF0ZSkgew0KPj4gKwlzdHJ1
+Y3QgcmFzMl9zY3J1Yl9jdHggKnJhczJfY3R4ID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+PiAr
+CWJvb2wgcnVubmluZzsNCj4+ICsJaW50IHJldDsNCj4+ICsNCj4+ICsJZ3VhcmQobXV0ZXgpKCZy
+YXMyX2N0eC0+bG9jayk7DQo+PiArCXJldCA9IHJhczJfZ2V0X3BhdHJvbF9zY3J1Yl9ydW5uaW5n
+KHJhczJfY3R4LCAmcnVubmluZyk7DQo+PiArCWlmIChyZXQpDQo+PiArCQlyZXR1cm4gcmV0Ow0K
+Pj4gKw0KPj4gKwlpZiAocnVubmluZykNCj4+ICsJCXJldHVybiAtRUJVU1k7DQo+DQo+DQo+SSBz
+dWdnZXN0IHdlIGRvIG5vdCBjaGVjayBpZiB0aGUgcGF0cm9sIHNjcnViIGlzIHJ1bm5pbmcgd2hl
+biB3ZSBhcmUgbWVyZWx5DQo+dXBkYXRpbmcgY2FjaGVkIHZhbHVlcy4gTW9yZSBpbXBvcnRhbnRs
+eSwgaWYgd2UgaGFkIHByZXZpb3VzbHkgd3JvdGUgYW4gaW52YWxpZA0KPnZhbHVlICh0aGF0IGlz
+IG9ubHkgaW52YWxpZGF0ZWQgYnkgZmlybXdhcmUgYWZ0ZXIgZXhlY3V0aW5nIGEgY29tbWFuZCks
+IHRoZW4NCj53aGVuIHdlIHRyeSB0byB3cml0ZSBhIGNvcnJlY3QgdmFsdWUsIHRoaXMgInJhczJf
+Z2V0X3BhdHJvbF9zY3J1Yl9ydW5uaW5nIg0KPmNoZWNrIHdpbGwgYWx3YXlzIGZhaWwsIHRoZXJl
+Zm9yZSBwcmV2ZW50aW5nIHVzIGZyb20gY29ycmVjdGluZyBvdXIgZXJyb3IuDQoNCkluIG91ciBv
+cGluaW9uLCB3cml0ZSB0aGUgcmF0ZSBhbmQgcmFuZ2UgZXRjLCB0aG91Z2ggdXBkYXRpbmcgdGhl
+IGNhY2hlZCB2YWx1ZXMsIHNob3VsZCBiZSBhbGxvd2VkIG9ubHkgd2hlbiB0aGUgc2NydWIgaXMg
+Tk9UIHJ1bm5pbmcgdG8gYXZvaWQgY29uZnVzaW9uIHRoaW5raW5nIHRoZXkgYXJlIGFjdHVhbGx5
+IHNldCBpbiB0aGUgcnVubmluZyBzY3J1YmJlciwgd2hlbiByZWFkIHRoZW0gYmFjayBpbiB0aGUg
+dXNlcnNwYWNlLg0KPg0KPj4gKw0KPj4gKwlpZiAocmF0ZSA8IHJhczJfY3R4LT5yYXRlX21pbiB8
+fCByYXRlID4gcmFzMl9jdHgtPnJhdGVfbWF4KQ0KPj4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+PiAr
+DQo+PiArCXJhczJfY3R4LT5yYXRlID0gcmF0ZTsNCj4+ICsNCj4+ICsJcmV0dXJuIDA7DQo+PiAr
+fQ0KPj4gKw0KPj4gK3N0YXRpYyBpbnQgcmFzMl9od19zY3J1Yl9yZWFkX3JhdGUoc3RydWN0IGRl
+dmljZSAqZGV2LCB1NjQgKnJhdGUpIHsNCj4+ICsJc3RydWN0IHJhczJfc2NydWJfY3R4ICpyYXMy
+X2N0eCA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPj4gKw0KPj4gKwkqcmF0ZSA9IHJhczJfY3R4
+LT5yYXRlOw0KPj4gKw0KPj4gKwlyZXR1cm4gMDsNCj4+ICt9DQo+PiArDQo+PiArc3RhdGljIGlu
+dCByYXMyX2h3X3NjcnViX3JlYWRfcmF0ZV9hdmFpbChzdHJ1Y3QgZGV2aWNlICpkZXYsIHU2NA0K
+Pj4gKyptaW4sIHU2NCAqbWF4KSB7DQo+PiArCXN0cnVjdCByYXMyX3NjcnViX2N0eCAqcmFzMl9j
+dHggPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4+ICsNCj4+ICsJKm1pbiA9IHJhczJfY3R4LT5y
+YXRlX21pbjsNCj4+ICsJKm1heCA9IHJhczJfY3R4LT5yYXRlX21heDsNCj4+ICsNCj4+ICsJcmV0
+dXJuIDA7DQo+PiArfQ0KPj4gKw0KPj4gK3N0YXRpYyBpbnQgcmFzMl9od19zY3J1Yl9yZWFkX3Jh
+bmdlKHN0cnVjdCBkZXZpY2UgKmRldiwgdTY0ICpiYXNlLA0KPj4gK3U2NCAqc2l6ZSkgew0KPj4g
+KwlzdHJ1Y3QgcmFzMl9zY3J1Yl9jdHggKnJhczJfY3R4ID0gZGV2X2dldF9kcnZkYXRhKGRldik7
+DQo+PiArDQo+PiArCSpiYXNlID0gcmFzMl9jdHgtPmJhc2U7DQo+PiArCSpzaXplID0gcmFzMl9j
+dHgtPnNpemU7DQo+PiArDQo+PiArCXJldHVybiAwOw0KPj4gK30NCj4+ICsNCj4+ICtzdGF0aWMg
+aW50IHJhczJfaHdfc2NydWJfd3JpdGVfcmFuZ2Uoc3RydWN0IGRldmljZSAqZGV2LCB1NjQgYmFz
+ZSwNCj4+ICt1NjQgc2l6ZSkgew0KPj4gKwlzdHJ1Y3QgcmFzMl9zY3J1Yl9jdHggKnJhczJfY3R4
+ID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+PiArCWJvb2wgcnVubmluZzsNCj4+ICsJaW50IHJl
+dDsNCj4+ICsNCj4+ICsJZ3VhcmQobXV0ZXgpKCZyYXMyX2N0eC0+bG9jayk7DQo+PiArCXJldCA9
+IHJhczJfZ2V0X3BhdHJvbF9zY3J1Yl9ydW5uaW5nKHJhczJfY3R4LCAmcnVubmluZyk7DQo+PiAr
+CWlmIChyZXQpDQo+PiArCQlyZXR1cm4gcmV0Ow0KPj4gKw0KPj4gKwlpZiAocnVubmluZykNCj4+
+ICsJCXJldHVybiAtRUJVU1k7DQo+DQo+SSBzdWdnZXN0IHdlIGRvIG5vdCBjaGVjayBpZiB0aGUg
+cGF0cm9sIHNjcnViIGlzIHJ1bm5pbmcuIFNlZSBwcmV2aW91cyBjb21tZW50DQo+YWJvdmUuDQpT
+YW1lIGFzIGFib3ZlLg0KDQo+DQo+PiArDQo+PiArCXJhczJfY3R4LT5iYXNlID0gYmFzZTsNCj4+
+ICsJcmFzMl9jdHgtPnNpemUgPSBzaXplOw0KPj4gKw0KPj4gKwlyZXR1cm4gMDsNCj4+ICt9DQo+
+PiArDQo+PiArc3RhdGljIGludCByYXMyX2h3X3NjcnViX3NldF9lbmFibGVkX2JnKHN0cnVjdCBk
+ZXZpY2UgKmRldiwgYm9vbA0KPj4gK2VuYWJsZSkgew0KPj4gKwlzdHJ1Y3QgcmFzMl9zY3J1Yl9j
+dHggKnJhczJfY3R4ID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+PiArCXN0cnVjdCBhY3BpX3Jh
+czJfcHNfc2hhcmVkX21lbSBfX2lvbWVtICpwc19zbSA9ICh2b2lkICopDQo+PiArCQkJCQlyYXMy
+X2N0eC0+cGNjX3N1YnNwYWNlLQ0KPj5wY2NfY29tbV9hZGRyOw0KPj4gKwlpbnQgcmV0Ow0KPj4g
+Kw0KPj4gKwlndWFyZChtdXRleCkoJnJhczJfY3R4LT5sb2NrKTsNCj4+ICsJcHNfc20tPmNvbW1v
+bi5zZXRfY2FwYWJpbGl0aWVzWzBdID0NCj5SQVMyX1NVUFBPUlRfSFdfUEFSVE9MX1NDUlVCOw0K
+Pj4gKwlpZiAoZW5hYmxlKSB7DQo+PiArCQlwc19zbS0+cGFyYW1zLnJlcXVlc3RlZF9hZGRyZXNz
+X3JhbmdlWzBdID0gMDsNCj4+ICsJCXBzX3NtLT5wYXJhbXMucmVxdWVzdGVkX2FkZHJlc3NfcmFu
+Z2VbMV0gPSAwOw0KPj4gKwkJcHNfc20tPnBhcmFtcy5zY3J1Yl9wYXJhbXNfaW4gJj0NCj5+UkFT
+Ml9QQVRST0xfU0NSVUJfUkFURV9JTl9NQVNLOw0KPj4gKwkJcHNfc20tPnBhcmFtcy5zY3J1Yl9w
+YXJhbXNfaW4gfD0NCj5GSUVMRF9QUkVQKFJBUzJfUEFUUk9MX1NDUlVCX1JBVEVfSU5fTUFTSywN
+Cj4+ICsJCQkJCQkJICAgIHJhczJfY3R4LT5yYXRlKTsNCj4+ICsJCXBzX3NtLT5wYXJhbXMucGF0
+cm9sX3NjcnViX2NvbW1hbmQgPQ0KPlJBUzJfU1RBUlRfUEFUUk9MX1NDUlVCQkVSOw0KPj4gKwl9
+IGVsc2Ugew0KPj4gKwkJcHNfc20tPnBhcmFtcy5wYXRyb2xfc2NydWJfY29tbWFuZCA9DQo+UkFT
+Ml9TVE9QX1BBVFJPTF9TQ1JVQkJFUjsNCj4+ICsJfQ0KPj4gKwlwc19zbS0+cGFyYW1zLnNjcnVi
+X3BhcmFtc19pbiAmPQ0KPn5SQVMyX1BBVFJPTF9TQ1JVQl9FTl9CQUNLR1JPVU5EOw0KPj4gKwlw
+c19zbS0+cGFyYW1zLnNjcnViX3BhcmFtc19pbiB8PQ0KPkZJRUxEX1BSRVAoUkFTMl9QQVRST0xf
+U0NSVUJfRU5fQkFDS0dST1VORCwNCj4+ICsJCQkJCQkgICAgZW5hYmxlKTsNCj4+ICsNCj4+ICsJ
+cmV0ID0gcmFzMl9zZW5kX3BjY19jbWQocmFzMl9jdHgsIFJBUzJfUENDX0NNRF9FWEVDKTsNCj4+
+ICsJaWYgKHJldCkgew0KPj4gKwkJZGV2X2VycihyYXMyX2N0eC0+ZGV2LCAiJXM6IGZhaWxlZCB0
+byBlbmFibGUoJWQpIGJhY2tncm91bmQNCj5zY3J1YmJpbmdcbiIsDQo+PiArCQkJX19mdW5jX18s
+IGVuYWJsZSk7DQo+PiArCQlyZXR1cm4gcmV0Ow0KPj4gKwl9DQo+PiArCXJhczJfY3R4LT5iZyA9
+IHRydWU7DQo+PiArDQo+PiArCS8qIFVwZGF0ZSB0aGUgY2FjaGUgdG8gYWNjb3VudCBmb3Igcm91
+bmRpbmcgb2Ygc3VwcGxpZWQgcGFyYW1ldGVycyBhbmQNCj5zaW1pbGFyICovDQo+PiArCXJldHVy
+biByYXMyX3VwZGF0ZV9wYXRyb2xfc2NydWJfcGFyYW1zX2NhY2hlKHJhczJfY3R4KTsNCj4+ICt9
+DQo+PiArDQo+PiArc3RhdGljIGludCByYXMyX2h3X3NjcnViX2dldF9lbmFibGVkX2JnKHN0cnVj
+dCBkZXZpY2UgKmRldiwgYm9vbA0KPj4gKyplbmFibGVkKSB7DQo+PiArCXN0cnVjdCByYXMyX3Nj
+cnViX2N0eCAqcmFzMl9jdHggPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4+ICsNCj4+ICsJKmVu
+YWJsZWQgPSByYXMyX2N0eC0+Ymc7DQo+PiArDQo+PiArCXJldHVybiAwOw0KPj4gK30NCj4+ICsN
+Cj4+ICtzdGF0aWMgaW50IHJhczJfaHdfc2NydWJfc2V0X2VuYWJsZWRfb2Qoc3RydWN0IGRldmlj
+ZSAqZGV2LCBib29sDQo+PiArZW5hYmxlKSB7DQo+PiArCXN0cnVjdCByYXMyX3NjcnViX2N0eCAq
+cmFzMl9jdHggPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4+ICsJc3RydWN0IGFjcGlfcmFzMl9w
+c19zaGFyZWRfbWVtIF9faW9tZW0gKnBzX3NtID0gKHZvaWQgKikNCj4+ICsJCQkJCXJhczJfY3R4
+LT5wY2Nfc3Vic3BhY2UtDQo+PnBjY19jb21tX2FkZHI7DQo+PiArCWJvb2wgZW5hYmxlZDsNCj4+
+ICsJaW50IHJldDsNCj4+ICsNCj4+ICsJZ3VhcmQobXV0ZXgpKCZyYXMyX2N0eC0+bG9jayk7DQo+
+PiArCXBzX3NtLT5jb21tb24uc2V0X2NhcGFiaWxpdGllc1swXSA9DQo+UkFTMl9TVVBQT1JUX0hX
+X1BBUlRPTF9TQ1JVQjsNCj4+ICsJaWYgKGVuYWJsZSkgew0KPj4gKwkJaWYgKCFyYXMyX2N0eC0+
+c2l6ZSkgew0KPj4gKwkJCWRldl93YXJuKHJhczJfY3R4LT5kZXYsDQo+PiArCQkJCSAiJXM6IElu
+dmFsaWQgcmVxdWVzdGVkIGFkZHJlc3MgcmFuZ2UsDQo+cmVxdWVzdGVkX2FkZHJlc3NfcmFuZ2Vb
+MF09MHglbGx4ICINCj4+ICsJCQkJICJyZXF1ZXN0ZWRfYWRkcmVzc19yYW5nZVsxXT0weCVsbHhc
+biIsDQo+X19mdW5jX18sDQo+PiArCQkJCSBwc19zbS0+cGFyYW1zLnJlcXVlc3RlZF9hZGRyZXNz
+X3JhbmdlWzBdLA0KPj4gKwkJCQkgcHNfc20tPnBhcmFtcy5yZXF1ZXN0ZWRfYWRkcmVzc19yYW5n
+ZVsxXSk7DQo+PiArCQkJcmV0dXJuIC1FUkFOR0U7DQo+PiArCQl9DQo+PiArCQlyZXQgPSByYXMy
+X2dldF9wYXRyb2xfc2NydWJfcnVubmluZyhyYXMyX2N0eCwgJmVuYWJsZWQpOw0KPj4gKwkJaWYg
+KHJldCkNCj4+ICsJCQlyZXR1cm4gcmV0Ow0KPj4gKw0KPj4gKwkJaWYgKGVuYWJsZWQpDQo+PiAr
+CQkJcmV0dXJuIDA7DQo+PiArDQo+PiArCQlwc19zbS0+cGFyYW1zLnNjcnViX3BhcmFtc19pbiAm
+PQ0KPn5SQVMyX1BBVFJPTF9TQ1JVQl9SQVRFX0lOX01BU0s7DQo+PiArCQlwc19zbS0+cGFyYW1z
+LnNjcnViX3BhcmFtc19pbiB8PQ0KPkZJRUxEX1BSRVAoUkFTMl9QQVRST0xfU0NSVUJfUkFURV9J
+Tl9NQVNLLA0KPj4gKwkJCQkJCQkgICAgcmFzMl9jdHgtPnJhdGUpOw0KPj4gKwkJcHNfc20tPnBh
+cmFtcy5yZXF1ZXN0ZWRfYWRkcmVzc19yYW5nZVswXSA9IHJhczJfY3R4LT5iYXNlOw0KPj4gKwkJ
+cHNfc20tPnBhcmFtcy5yZXF1ZXN0ZWRfYWRkcmVzc19yYW5nZVsxXSA9IHJhczJfY3R4LT5zaXpl
+Ow0KPg0KPg0KPldlIG5lZWQgdG8gY2xlYXIgdGhlIFJBUzJfUEFUUk9MX1NDUlVCX0VOX0JBQ0tH
+Uk9VTkQgYml0IGluIHRoZSBpbnB1dA0KPnBhcmFtZXRlcnMuDQo+VGhpcyBpcyBpbiBjYXNlICJF
+bmFibGUgQmFja2dyb3VuZCIgd2FzIHByZXZpb3VzbHkgY2FsbGVkLCBhbmQgdGhpcyBiaXQgd2Fz
+IHNldC4NCj4NCj4JCXBzX3NtLT5wYXJhbXMuc2NydWJfcGFyYW1zX2luICY9DQo+flJBUzJfUEFU
+Uk9MX1NDUlVCX0VOX0JBQ0tHUk9VTkQ7DQpXZSBuZWVkIHRvIHN0b3AgYmFja2dyb3VuZCBzY3J1
+YiBpZiBpdCBpcyBhbHJlYWR5IHJ1bm5pbmcgYmVmb3JlIHN0YXJ0IGFuIG9uLWRlbWFuZCBzY3J1
+YmJpbmcuIA0KVGhlIFJBUzJfUEFUUk9MX1NDUlVCX0VOX0JBQ0tHUk9VTkQgYml0IHdvdWxkIGJl
+IGNsZWFyZWQgd2l0aCBkaXNhYmxlICBiZyBzY3J1Yg0Kd2l0aCB0aGUgZm9sbG93aW5nIGNvZGUN
+CmluIHJhczJfaHdfc2NydWJfc2V0X2VuYWJsZWRfYmcoKSB3aGVuIGRpc2FibGUgYmFja2dyb3Vu
+ZCBzY3J1YignZW5hYmxlJyBpcyAwIGluIHRoaXMgY2FzZSkuDQpwc19zbS0+cGFyYW1zLnNjcnVi
+X3BhcmFtc19pbiAmPSB+UkFTMl9QQVRST0xfU0NSVUJfRU5fQkFDS0dST1VORDsNCnBzX3NtLT5w
+YXJhbXMuc2NydWJfcGFyYW1zX2luIHw9IEZJRUxEX1BSRVAoUkFTMl9QQVRST0xfU0NSVUJfRU5f
+QkFDS0dST1VORCwNCgkJCQkJCSAgICBlbmFibGUpOw0KSG9wZSBpdCBtYWtlIHNlbnNlPw0KPg0K
+Pg0KPj4gKwkJcHNfc20tPnBhcmFtcy5wYXRyb2xfc2NydWJfY29tbWFuZCA9DQo+UkFTMl9TVEFS
+VF9QQVRST0xfU0NSVUJCRVI7DQo+PiArCX0gZWxzZSB7DQo+PiArCQlwc19zbS0+cGFyYW1zLnBh
+dHJvbF9zY3J1Yl9jb21tYW5kID0NCj5SQVMyX1NUT1BfUEFUUk9MX1NDUlVCQkVSOw0KPj4gKwl9
+DQo+PiArDQo+PiArCXJldCA9IHJhczJfc2VuZF9wY2NfY21kKHJhczJfY3R4LCBSQVMyX1BDQ19D
+TURfRVhFQyk7DQo+PiArCWlmIChyZXQpIHsNCj4+ICsJCWRldl9lcnIocmFzMl9jdHgtPmRldiwg
+ImZhaWxlZCB0byBlbmFibGUoJWQpIHRoZSBkZW1hbmQNCj5zY3J1YmJpbmdcbiIsIGVuYWJsZSk7
+DQo+PiArCQlyZXR1cm4gcmV0Ow0KPj4gKwl9DQo+PiArCXJhczJfY3R4LT5iZyA9IGZhbHNlOw0K
+Pj4gKw0KPj4gKwlyZXR1cm4gcmFzMl91cGRhdGVfcGF0cm9sX3NjcnViX3BhcmFtc19jYWNoZShy
+YXMyX2N0eCk7DQo+PiArfQ0KPg0KPg0KVGhhbmtzLA0KU2hpanUNCg==
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2110.outbound.protection.outlook.com [40.107.93.110])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 011832E417;
+	Fri, 21 Jun 2024 18:06:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.93.110
+ARC-Seal: i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1718993206; cv=fail; b=kh5dJ5IGtRldS8B84cTL6omTfbRHGMSgQA4i6aJmrJzhoazCWNqS3wgQm0lFjWNwxObY7uJDMz+PdBzH355mKsfO2mS5bU/PW1vOLrUfrSfiNJ7SXOpo+AOnkA8ZChWi9yq57t7knDaKD3SEkIkzX8w8Wb21wMiSvyVDVRA264c=
+ARC-Message-Signature: i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1718993206; c=relaxed/simple;
+	bh=5TfGGsLAKo4fmwLj9Oygg5s+jMiMEah3Oamkr85k2xU=;
+	h=Message-ID:Date:From:Subject:To:Cc:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=NFa8o0wdWGDvKJ3FgSmvMc822hn526WYOg9up7LO/glBkC/AJv60LnJbKxuHtD83RZDYG0BMG9sgTM1/EFbSlqUQrO9FYZlBKQ3YGGg9ahjx+ekeJSe4qvkGvEDMqwbT4fTQBOg5MWEAL/SbaeQk3gGhZz3df/B4cke9vALJCIM=
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=os.amperecomputing.com; spf=pass smtp.mailfrom=os.amperecomputing.com; dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b=ogS24POi; arc=fail smtp.client-ip=40.107.93.110
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=os.amperecomputing.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=os.amperecomputing.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.b="ogS24POi"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ALwntIfMYf/f/Uedgzxvher2El+z9JJe4KF3MeEgQ47NVfEJPIH7ay2pxHqfGDa4tuuhtntEEOdIpaCTqOSFgpKfSA1PZRQ3BnJDs98niUcWiSAspwIcdbqvN8V0v+Py3/pizxoLALhP94Ypyuz+QIotLo6a/15gfltWXmeWacPH5Ovnv+4ogdUJdAJJUO56RZUQHyk00bl5H7TUqa2a9hdvhIoAxvEyS/GG35L8kg4A1nDk0sjCLQSY5RoQemDeTbh32zgSd6xZs6eLmyHxWe2hEtgTg26IExvSJgX6/dU7euH8hFnKRfJYqNl8y8ppDdGwSE+5gYbAu8RY1sZlvA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xBrPu+ke8gCbBJiNJ7wFwrpHG1FtOctEsNzRCF5KNx0=;
+ b=fP5UYlouLbViVcAdrh9uiQWGV3vEtCMUmF0fiOkabtPeeANM8qnCwbdyCMpNSqh6Cy+p7nwKeebWwTW4N7SykUYRLsXjG68ySoou8CaPxWmLB+2AZI75x8GM5DGviRzDaNZ0BJYQqPaPlJfdn07Wm9JqxYncnFdSkJg2YamFVwh90i3p1OfDMKVBQGdnxPiv5I8bHvUPbrFcJBmBesV/cm6Pk12AZ5NT+CdXHgZMTusSMnndvhbgHCfjQwTwmlipAr4+bdUeJET1oFNuwYvr535hHblKc5+3EnTncjBPGHGhqrz+6AZXATfE0A7X0HdRaVuo44u9KYsM83KC/Q4QmA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=os.amperecomputing.com; dmarc=pass action=none
+ header.from=os.amperecomputing.com; dkim=pass
+ header.d=os.amperecomputing.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=os.amperecomputing.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xBrPu+ke8gCbBJiNJ7wFwrpHG1FtOctEsNzRCF5KNx0=;
+ b=ogS24POiy9ljW3onowEvVDUuo96wLFsrlb6aiGAmZayuRhEAxMbF0k9QnFS2kk0+WDBPwbECP8js8/kwsnjVbRyBQfTyJ7cOozHO5hxHDtB1xzMVWEy5CMqqz2kpBiaq6ivrkt22und5nEEwb0Cjy/Yvj5jA0YL6wtJHT+LaLss=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=os.amperecomputing.com;
+Received: from CO1PR01MB7370.prod.exchangelabs.com (2603:10b6:303:159::16) by
+ CO1PR01MB6743.prod.exchangelabs.com (2603:10b6:303:d5::10) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7677.33; Fri, 21 Jun 2024 18:06:39 +0000
+Received: from CO1PR01MB7370.prod.exchangelabs.com
+ ([fe80::6e98:87d1:5562:ad73]) by CO1PR01MB7370.prod.exchangelabs.com
+ ([fe80::6e98:87d1:5562:ad73%3]) with mapi id 15.20.7698.017; Fri, 21 Jun 2024
+ 18:06:39 +0000
+Message-ID: <84e75542-026f-4c99-a8e0-f07dbf1695e8@os.amperecomputing.com>
+Date: Fri, 21 Jun 2024 11:06:36 -0700
+User-Agent: Mozilla Thunderbird
+From: Daniel Ferguson <danielf@os.amperecomputing.com>
+Subject: Re: [RFC PATCH v8 10/10] ras: scrub: ACPI RAS2: Add memory ACPI RAS2
+ driver
+To: Shiju Jose <shiju.jose@huawei.com>
+Cc: "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "david@redhat.com" <david@redhat.com>,
+ "Vilas.Sridharan@amd.com" <Vilas.Sridharan@amd.com>,
+ "leo.duran@amd.com" <leo.duran@amd.com>,
+ "Yazen.Ghannam@amd.com" <Yazen.Ghannam@amd.com>,
+ "rientjes@google.com" <rientjes@google.com>,
+ "jiaqiyan@google.com" <jiaqiyan@google.com>,
+ "tony.luck@intel.com" <tony.luck@intel.com>,
+ "Jon.Grimm@amd.com" <Jon.Grimm@amd.com>,
+ "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+ "rafael@kernel.org" <rafael@kernel.org>, "lenb@kernel.org"
+ <lenb@kernel.org>, "naoya.horiguchi@nec.com" <naoya.horiguchi@nec.com>,
+ "james.morse@arm.com" <james.morse@arm.com>,
+ "jthoughton@google.com" <jthoughton@google.com>,
+ "somasundaram.a@hpe.com" <somasundaram.a@hpe.com>,
+ "erdemaktas@google.com" <erdemaktas@google.com>,
+ "pgonda@google.com" <pgonda@google.com>,
+ "duenwen@google.com" <duenwen@google.com>,
+ "mike.malvestuto@intel.com" <mike.malvestuto@intel.com>,
+ "gthelen@google.com" <gthelen@google.com>,
+ "wschwartz@amperecomputing.com" <wschwartz@amperecomputing.com>,
+ "dferguson@amperecomputing.com" <dferguson@amperecomputing.com>,
+ "wbs@os.amperecomputing.com" <wbs@os.amperecomputing.com>,
+ "nifan.cxl@gmail.com" <nifan.cxl@gmail.com>,
+ tanxiaofei <tanxiaofei@huawei.com>, "Zengtao (B)"
+ <prime.zeng@hisilicon.com>,
+ "kangkang.shen@futurewei.com" <kangkang.shen@futurewei.com>,
+ wanghuiqiang <wanghuiqiang@huawei.com>, Linuxarm <linuxarm@huawei.com>,
+ "ira.weiny@intel.com" <ira.weiny@intel.com>,
+ "vishal.l.verma@intel.com" <vishal.l.verma@intel.com>,
+ "alison.schofield@intel.com" <alison.schofield@intel.com>,
+ "dave.jiang@intel.com" <dave.jiang@intel.com>,
+ Jonathan Cameron <jonathan.cameron@huawei.com>,
+ "dave@stgolabs.net" <dave@stgolabs.net>,
+ "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>
+References: <20240419164720.1765-1-shiju.jose@huawei.com>
+ <20240419164720.1765-11-shiju.jose@huawei.com>
+ <fcd0621b-dd68-4e0d-96e1-15c16a3278d0@os.amperecomputing.com>
+ <d1986e8e1d8549c588f7488dfd5dd374@huawei.com>
+Content-Language: en-US
+In-Reply-To: <d1986e8e1d8549c588f7488dfd5dd374@huawei.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MW4PR04CA0070.namprd04.prod.outlook.com
+ (2603:10b6:303:6b::15) To CO1PR01MB7370.prod.exchangelabs.com
+ (2603:10b6:303:159::16)
+Precedence: bulk
+X-Mailing-List: linux-acpi@vger.kernel.org
+List-Id: <linux-acpi.vger.kernel.org>
+List-Subscribe: <mailto:linux-acpi+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-acpi+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PR01MB7370:EE_|CO1PR01MB6743:EE_
+X-MS-Office365-Filtering-Correlation-Id: bd9d7b1d-c054-4531-2dba-08dc921ce5d9
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: 
+	BCL:0;ARA:13230037|366013|52116011|376011|7416011|1800799021|38350700011;
+X-Microsoft-Antispam-Message-Info: 
+	=?utf-8?B?WktsS1BGb1ZLaEZvSUhBU2RlL29yV0NsUG9BeWhnQm5WWHRXMmZPcXdmUDNY?=
+ =?utf-8?B?NWs0bno0ODE3UUJIZVhkWGlnT0JjZDdBamFFQXg4NTFvcWFtV1Q1dGxxZ051?=
+ =?utf-8?B?L1hZcFRWV01pZ1pSUU05aG9NM2l2elVIbjBkNlhVallBalltb0RsWHE3SWpn?=
+ =?utf-8?B?NFVGNGcyQ0NXK2hIWHBtWDl6LzlOK3M5KzVPRFVzdkYyMUlzWWxnc21LWUIz?=
+ =?utf-8?B?SFNYS1RXVit2VGgrOHVXL0cvd2tDUE5EcnVySFY4aUNtdHhsTTlrMlBteWVl?=
+ =?utf-8?B?VE1uanRoRDB3QjF0VnNtK3lSemlrbDMxVTZLTS9PRlhoKzJHbTU3RXArS2JK?=
+ =?utf-8?B?OGlZbDJwMVZDRDQ4bFhORno2ZzhaMkdpeEFqeUV2cDRjbkNjeUgra1FIU01o?=
+ =?utf-8?B?UWhkMXpCWnpSYUVxY3hmVkFCSFlqVk4rTGFwL1c5ZlZSSStqRSs3enhiSkpo?=
+ =?utf-8?B?c2ZwVHFWVC9LYU5zWHFFVGloTVBSNS9oMTNEYjlTd3pIUmV6Tnpkd2cvMlho?=
+ =?utf-8?B?Y3ZYZ1Jsa25LV09qb1BIM2V2ODhJN0FkUmpYdmFUMlZ2Ti9nV2k0OFhqV1lV?=
+ =?utf-8?B?V2dvRCs4N005djlXZ0I0d1dXYzNKN0FaQXpBamRNbEh4REVlbGJqTUxqZWdv?=
+ =?utf-8?B?VHRkVFVyNkNXbGFrMk5Lang2SkRHTWxCWER4MmdNYVhDU3JVQ1hsUUwvVTJL?=
+ =?utf-8?B?L1VsbG5GRW8wYUJXeTdzejJ2L0hqSFNOT1FNM2NMY0xmN1Bnc1U0VU1qSU5n?=
+ =?utf-8?B?eXNXbGFDbkM4K1cyaU1qQ1ViVnhGS1NsZUZrK3kvVGcrQTMza3JmWTZEa2ly?=
+ =?utf-8?B?T2pEMVdlcFozaER1T2lJM3JvTzhrWTZGMzdiVGdwUStIbW1SSnJ1YUpYZytH?=
+ =?utf-8?B?eU9ZN25BN0FlaW4rM2JIYVlSZCtHYWRFUlpFNmQrMzBuQWM5TEM3R2xCMUtz?=
+ =?utf-8?B?aWxTUlIycWRzQUY5R2syZ0pPOHk3S3dhRmRTaitiZFkvT1dvUFNTTzMzQ1h1?=
+ =?utf-8?B?WmI2SDZtbTVKKzJuOURuWVNQN25mb0JWWkxlaGVDbUFtLzdHTzUxNGdLczFL?=
+ =?utf-8?B?Wmc1SzBGeDhWck5yUmY2dEY5aEZuQmpPdlJBSVZPSStvaGMrN2NxelNoVm0v?=
+ =?utf-8?B?amVlN3c5eXVXNmNDRUR3eEFqZUUybnlUVlhVWEhFUHVFMjV5aHdnYUFFK2d1?=
+ =?utf-8?B?eUp5Z1V2N3pKTTgyNU1sSnRjRmpkdVNLcHVTUXA4d05hNWg0WWQ0RTlDV25x?=
+ =?utf-8?B?SGFWT2sxdE9yb2V3WkhUcENibVZrbGpRRWFobGU5Q1YxRm1YY0RnbkhMc1Bk?=
+ =?utf-8?B?aEdhK1ZLcE1Jc0xBSnNKTXBGNDlGcmt2eDErNkFlM3hSUDBXMUMzMlVoaFJJ?=
+ =?utf-8?B?YWhJZmJpRHZhS2swRWtxb040ODF0OWE2SUp2WXhrZXl0Q2FGNWJkREZDOHhp?=
+ =?utf-8?B?UUU5OGcvUVpsQTJ3WkxQWDJheHhYYVE2WSs4UnFrS25EcW83dnowS0dWSzkz?=
+ =?utf-8?B?bUFZdHVVaS8yQ3BPeVV2Lzl0ZGNwTG84d3VvYTZBd2xMekV6clUxTzRnSXhI?=
+ =?utf-8?B?UjNhWkRmUnpqdzBiYXg3RWhXTDZyWDhYSzhGMnl2WGdZdlRuUy9QWWVzMkZ3?=
+ =?utf-8?B?NjJweUQwZ3VtZDBNQ1U1eko2aDVJbnV0U09WZzg4NHRFWjV5ajEyNkZZbUlr?=
+ =?utf-8?B?eXVpM0ZtdmtIdzV2cTlBdUJtNUl4RmNTeTBkM1R3bkxROTVNcDM1N1hHdjNT?=
+ =?utf-8?B?TEZ3L2lNMHJqRGR4bHQzNVYxNExqbTBKOENEWllxWVBjV0NlK002ajFJTVVP?=
+ =?utf-8?Q?LNEQ6Sk2SNdN/o8W/qOXgWycsC337MXY08Of8=3D?=
+X-Forefront-Antispam-Report: 
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO1PR01MB7370.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(13230037)(366013)(52116011)(376011)(7416011)(1800799021)(38350700011);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 
+	=?utf-8?B?ek9CaWEzNnNuRHVkRi9yVmNmdEZ0Y0xBVlNsejhFUWdDakFDVXAvV095YUYy?=
+ =?utf-8?B?MEE3bC96cFdvaEhkYmtDajhNdGdYNSs2ZzdNVGtBRXRwZ1VMNUNyV1ZmQWUx?=
+ =?utf-8?B?cm1leDF6a3p2VW9HdHhyN1UrVHlYdllWYWFTUGJrUFhqdkFpaHBuQ2plVGVO?=
+ =?utf-8?B?RWhMZ1hXN29mSGtFZC8rSUNoL3piU1JrNzdBaUxCSU5xRTU0VzdBWUd1Z3RY?=
+ =?utf-8?B?SjF5SjB2d0xTTjZ6WDdnS08vL3g1dmpOZ3lHWFF4TjU5LzdiOVJobFFHZndP?=
+ =?utf-8?B?VjlHNXliTndMdzhqcm9IdDRZOEh6dHpRbG5zbDRNNncvNFgySjZuYUV3N3JK?=
+ =?utf-8?B?OWFZNWUyT3NBb2U1YUwyWnZCVWpDUyt6WS9YU3o1SE43bmk0L2hXeHFhMHVF?=
+ =?utf-8?B?cE8rcUFwNUhXU1hnYzZPbENwUnd4R1RBUUtJWFI4NlMyWkl2WVhyRmYrakta?=
+ =?utf-8?B?dlFJeE5ORDNLWmJoUnlEamRoTzRBLzRYTVB0N1lWZmxMbnFUTkJ4ZEZ1TXBW?=
+ =?utf-8?B?dkROR1RIYnpvQkcxeW1GQkZMc0tneXhXSE9sOWhYOWIwQkJwZVZpRks2dEkx?=
+ =?utf-8?B?UjhVUldFWVZLZGlTUy9tSnowelNJZnlRTlR2K3gzQ0kweEVhbE1IUDhWT3h1?=
+ =?utf-8?B?Ukhrb1VwaC9pVHY2bndMZ1BlZUJHRDNNWTUwZXRac09ZQjB3bEpkOGlvQ1dk?=
+ =?utf-8?B?aGV6ZnU4MnBIVkJ5Y0JNWkFsSUtXQUR6aHB6TDVYWXQ5SEk5Wms3RU5SbDBW?=
+ =?utf-8?B?ZEI5RWk5Zk5HblY3UVV4Vk51amU2MzRzeEhVOG5UWVRlT0NmaVkyb3ZCSEFz?=
+ =?utf-8?B?L3ZOdENYaUtPeFFRREtkMVV2cWFwM0JNcUc0LzV5L2VUenZuN05XWjY3aTBa?=
+ =?utf-8?B?UnU3ejFBSXBEWVF0eFA3UDF0emllckluNTdlaU5EeWxYVVgvUVhVTTNhU21K?=
+ =?utf-8?B?VTBmdVg0RmYyUmZVUTFvWmpucGdhcnBZbWlSazdwMEt4b3pMc3Rta3J0QUE2?=
+ =?utf-8?B?bHI0djU2VWpobjhHRVR0SnRONGlWdWI5ZUdwdFE4Rkp3LzRTSjgvcWN6Zldx?=
+ =?utf-8?B?eU9IZEZwN2tobzJ0d0ZENmZRKytBZ1g2VG1uUEUwU2l0Y3lRY2ZmcE14dXZO?=
+ =?utf-8?B?YXJXYWhuREpoZW13d3lMTWxteUFQb0NONldBd0U1N1hsYWRHUlhlajJlUkNE?=
+ =?utf-8?B?dHZCUlFKSXA1dlZ3V3JTUzRWMlpheE9CQy96d0dJMmYxZE5nRlBFYzFRSzRh?=
+ =?utf-8?B?NEZSeHhvYW9FeDNCdkM1RmRTL3pTUThnTzdSaDd4SXMyZEk3cEE4Z1BFM1ZY?=
+ =?utf-8?B?blNhYXRMckYzcHFpd01RbHhhYzVpeUxLWmVqK1RyWnVTRTBJMG9uaVVOUUtG?=
+ =?utf-8?B?ZXVJWGRDRis4SHNydHJBKzJFQ2wwTVJlREJFeGhpNU9jSU9KVHJoTm9MT2h5?=
+ =?utf-8?B?NzJJaVNwZy8vdEZiLzZ2MFFFaWk4UEtHeURMeXh3V0hqdEs2ZGU4UFRJNEZZ?=
+ =?utf-8?B?N2I5Y0FTNGhVRC8wczF6RWFQckZMSy9hcSszSUNHRU9sVWx2MjV1VUx4Ukph?=
+ =?utf-8?B?Nk92Q3hYQW5TalhKZ1NsQUJLMkw5d0F4eklLVlAwT2VWUldZd1hQc0NFc0x1?=
+ =?utf-8?B?aE0rK1d5c1R4N3ViTno4VmhLRldabVdoZFFjNktyRmhMTC92MDFxWGxCRUFp?=
+ =?utf-8?B?bnZodzFmQlRTSjY4UFo2R3U5SnFKYTFlOVhlSWFlZTRDZy9MZEdQcEkvdVN6?=
+ =?utf-8?B?QjduVWtlTjF6d2ZROVM1UFV3ZzZXVWVhajVSc2wvODhETmc0d2xadnJNN0ZQ?=
+ =?utf-8?B?QlpzUDkxemQvcXdUVVBHSnhpVjc3RUo4cGdZSy9Ib3dteWhZdFIyeDEzV0Ry?=
+ =?utf-8?B?Mmllc2o2b2FVdTVPem9heldjVlprY1BmSzVHM0Frc0RlbFVlL3dDdHkyL2o0?=
+ =?utf-8?B?T2RLamFuMzBYaEc3L3VIbjg4WDNKaWVVVlBkTDRNMldJNkFNZmNoaVI0V3dz?=
+ =?utf-8?B?NXpVbFlraDBLdWt4OHpTaHYxZ25iemNJNGhtY3Fxd3VEQ25tU28vVU05UWFP?=
+ =?utf-8?B?S3plOTJIemNwV2UwcGZQVVZ0TzJDU1ptUldTcENQekRaaDhJTHUvcndlWnRv?=
+ =?utf-8?B?N01SNTNNZER0VStnbHRQWmlvSVdHaU11TE5ya3JHOGg1THBrR3k4WGdQOFhF?=
+ =?utf-8?Q?h7UeyK4ol4bQQYC8wjGltHE=3D?=
+X-OriginatorOrg: os.amperecomputing.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bd9d7b1d-c054-4531-2dba-08dc921ce5d9
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR01MB7370.prod.exchangelabs.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jun 2024 18:06:39.5450
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3bc2b170-fd94-476d-b0ce-4229bdc904a7
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Hb9JCTaTD2sTF3kpSEJHDubv3Vp07BYc3tqVKTF4e+7H8PipkkDfStCwey8HHM0gntX3Xab4KJVZxZuBJ8b4Wc5tOIrRx1dbtqWRT7Vi4uoxS624slY4Yibe4qfA3PnT
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO1PR01MB6743
+
+
+
+On 6/7/2024 8:46 AM, Shiju Jose wrote:
+> Hi Daniel,
+> 
+> Thanks for the feedback.
+> 
+>> -----Original Message-----
+>> From: Daniel Ferguson <danielf@os.amperecomputing.com>
+>> Sent: 05 June 2024 22:33
+>> To: Shiju Jose <shiju.jose@huawei.com>
+>> Cc: linux-edac@vger.kernel.org; linux-kernel@vger.kernel.org;
+>> david@redhat.com; Vilas.Sridharan@amd.com; leo.duran@amd.com;
+>> Yazen.Ghannam@amd.com; rientjes@google.com; jiaqiyan@google.com;
+>> tony.luck@intel.com; Jon.Grimm@amd.com; dave.hansen@linux.intel.com;
+>> rafael@kernel.org; lenb@kernel.org; naoya.horiguchi@nec.com;
+>> james.morse@arm.com; jthoughton@google.com; somasundaram.a@hpe.com;
+>> erdemaktas@google.com; pgonda@google.com; duenwen@google.com;
+>> mike.malvestuto@intel.com; gthelen@google.com;
+>> wschwartz@amperecomputing.com; dferguson@amperecomputing.com;
+>> wbs@os.amperecomputing.com; nifan.cxl@gmail.com; tanxiaofei
+>> <tanxiaofei@huawei.com>; Zengtao (B) <prime.zeng@hisilicon.com>;
+>> kangkang.shen@futurewei.com; wanghuiqiang <wanghuiqiang@huawei.com>;
+>> Linuxarm <linuxarm@huawei.com>; ira.weiny@intel.com;
+>> vishal.l.verma@intel.com; alison.schofield@intel.com; dave.jiang@intel.com;
+>> Jonathan Cameron <jonathan.cameron@huawei.com>; dave@stgolabs.net;
+>> dan.j.williams@intel.com; linux-mm@kvack.org; linux-acpi@vger.kernel.org;
+>> linux-cxl@vger.kernel.org
+>> Subject: Re: [RFC PATCH v8 10/10] ras: scrub: ACPI RAS2: Add memory ACPI
+>> RAS2 driver
+>>
+>>> +/* Context - lock must be held */
+>>> +static int ras2_get_patrol_scrub_running(struct ras2_scrub_ctx *ras2_ctx,
+>>> +					 bool *running)
+>>> +{
+>>> +	struct acpi_ras2_ps_shared_mem __iomem *ps_sm = (void *)
+>>> +					ras2_ctx->pcc_subspace-
+>>> pcc_comm_addr;
+>>> +	int ret;
+>>> +
+>>> +	if (ras2_ctx->bg)
+>>> +		*running = true;
+>>> +
+>>> +	ps_sm->common.set_capabilities[0] =
+>> RAS2_SUPPORT_HW_PARTOL_SCRUB;
+>>> +	ps_sm->params.patrol_scrub_command =
+>> RAS2_GET_PATROL_PARAMETERS;
+>>
+>> Need to reset the address range (base and size). A user may have previously
+>> called "Enable Background" where the code zeros out these parameters.
+>> 	ps_sm->params.requested_address_range[0] = ras2_ctx->base;
+>> 	ps_sm->params.requested_address_range[1] = ras2_ctx->size;
+> The address range is being set to the above in the ras2_hw_scrub_set_enabled_od(), because they are
+> valid for on-demand scrubbing only. 
+> 
+> However the ras2_ctx->base and ras2_ctx->size are set to the  
+> ras2_ctx->base = ps_sm->params.actual_address_range[0];
+> ras2_ctx->size = ps_sm->params.actual_address_range[1];
+> in the ras2_update_patrol_scrub_params_cache(), which is called after enabling bg scrub and on-demand scrub. 
+> Thus ras2_ctx->base and ras2_ctx->size may have a 0 or garbage value for bg scrub because address range is not valid for bg scrubbing as perc ACPI specification. I will add checks to retain the cached address range if bg scrub is enabled. 
+>>
+>>
+>>> +
+>>> +	ret = ras2_send_pcc_cmd(ras2_ctx, RAS2_PCC_CMD_EXEC);
+>>> +	if (ret) {
+>>> +		dev_err(ras2_ctx->dev, "failed to read parameters\n");
+>>> +		return ret;
+>>> +	}
+>>> +
+>>> +	*running = ps_sm->params.flags &
+>>> +RAS2_PATROL_SCRUB_FLAG_SCRUBBER_RUNNING;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static int ras2_hw_scrub_write_rate(struct device *dev, u64 rate) {
+>>> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+>>> +	bool running;
+>>> +	int ret;
+>>> +
+>>> +	guard(mutex)(&ras2_ctx->lock);
+>>> +	ret = ras2_get_patrol_scrub_running(ras2_ctx, &running);
+>>> +	if (ret)
+>>> +		return ret;
+>>> +
+>>> +	if (running)
+>>> +		return -EBUSY;
+>>
+>>
+>> I suggest we do not check if the patrol scrub is running when we are merely
+>> updating cached values. More importantly, if we had previously wrote an invalid
+>> value (that is only invalidated by firmware after executing a command), then
+>> when we try to write a correct value, this "ras2_get_patrol_scrub_running"
+>> check will always fail, therefore preventing us from correcting our error.
+> 
+> In our opinion, write the rate and range etc, though updating the cached values, should be allowed only when the scrub is NOT running to avoid confusion thinking they are actually set in the running scrubber, when read them back in the userspace.
+
+
+It may be that I didn't explain myself properly last time. Let me try
+again.
+
+1) This driver code does not currently check to see if an
+'addr_range_base' is valid or not. Validation occurs in the platform
+firmware, when either GET_PATROL_PARAMETERS or START_PATROL_SCRUBBER is
+executed. If our platform firmware detects an invalid address, it raises
+an error.
+
+2) Therefore, a user can specify an invalid address, and the user will
+not know that the address is invalid until after the cached parameters
+(used to check if the patrol scrubber is running) are written to.
+
+3) Now, every time the user attempts to write a value to either base,
+size, or rate; the preceding call to ras2_get_patrol_scrub_running will
+result in an error, and the attempt to write a different value fails.
+
+To Conclude:
+If a user specifies an invalid address, the only way to correct the
+invalid address is to reboot or module reload. To me, that seems like a
+show-stopper.
+
+>>
+>>> +
+>>> +	if (rate < ras2_ctx->rate_min || rate > ras2_ctx->rate_max)
+>>> +		return -EINVAL;
+>>> +
+>>> +	ras2_ctx->rate = rate;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static int ras2_hw_scrub_read_rate(struct device *dev, u64 *rate) {
+>>> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+>>> +
+>>> +	*rate = ras2_ctx->rate;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static int ras2_hw_scrub_read_rate_avail(struct device *dev, u64
+>>> +*min, u64 *max) {
+>>> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+>>> +
+>>> +	*min = ras2_ctx->rate_min;
+>>> +	*max = ras2_ctx->rate_max;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static int ras2_hw_scrub_read_range(struct device *dev, u64 *base,
+>>> +u64 *size) {
+>>> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+>>> +
+>>> +	*base = ras2_ctx->base;
+>>> +	*size = ras2_ctx->size;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static int ras2_hw_scrub_write_range(struct device *dev, u64 base,
+>>> +u64 size) {
+>>> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+>>> +	bool running;
+>>> +	int ret;
+>>> +
+>>> +	guard(mutex)(&ras2_ctx->lock);
+>>> +	ret = ras2_get_patrol_scrub_running(ras2_ctx, &running);
+>>> +	if (ret)
+>>> +		return ret;
+>>> +
+>>> +	if (running)
+>>> +		return -EBUSY;
+>>
+>> I suggest we do not check if the patrol scrub is running. See previous comment
+>> above.
+> Same as above.
+> 
+>>
+>>> +
+>>> +	ras2_ctx->base = base;
+>>> +	ras2_ctx->size = size;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static int ras2_hw_scrub_set_enabled_bg(struct device *dev, bool
+>>> +enable) {
+>>> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+>>> +	struct acpi_ras2_ps_shared_mem __iomem *ps_sm = (void *)
+>>> +					ras2_ctx->pcc_subspace-
+>>> pcc_comm_addr;
+>>> +	int ret;
+>>> +
+>>> +	guard(mutex)(&ras2_ctx->lock);
+>>> +	ps_sm->common.set_capabilities[0] =
+>> RAS2_SUPPORT_HW_PARTOL_SCRUB;
+>>> +	if (enable) {
+>>> +		ps_sm->params.requested_address_range[0] = 0;
+>>> +		ps_sm->params.requested_address_range[1] = 0;
+>>> +		ps_sm->params.scrub_params_in &=
+>> ~RAS2_PATROL_SCRUB_RATE_IN_MASK;
+>>> +		ps_sm->params.scrub_params_in |=
+>> FIELD_PREP(RAS2_PATROL_SCRUB_RATE_IN_MASK,
+>>> +							    ras2_ctx->rate);
+>>> +		ps_sm->params.patrol_scrub_command =
+>> RAS2_START_PATROL_SCRUBBER;
+>>> +	} else {
+>>> +		ps_sm->params.patrol_scrub_command =
+>> RAS2_STOP_PATROL_SCRUBBER;
+>>> +	}
+>>> +	ps_sm->params.scrub_params_in &=
+>> ~RAS2_PATROL_SCRUB_EN_BACKGROUND;
+>>> +	ps_sm->params.scrub_params_in |=
+>> FIELD_PREP(RAS2_PATROL_SCRUB_EN_BACKGROUND,
+>>> +						    enable);
+>>> +
+>>> +	ret = ras2_send_pcc_cmd(ras2_ctx, RAS2_PCC_CMD_EXEC);
+>>> +	if (ret) {
+>>> +		dev_err(ras2_ctx->dev, "%s: failed to enable(%d) background
+>> scrubbing\n",
+>>> +			__func__, enable);
+>>> +		return ret;
+>>> +	}
+>>> +	ras2_ctx->bg = true;
+>>> +
+>>> +	/* Update the cache to account for rounding of supplied parameters and
+>> similar */
+>>> +	return ras2_update_patrol_scrub_params_cache(ras2_ctx);
+>>> +}
+>>> +
+>>> +static int ras2_hw_scrub_get_enabled_bg(struct device *dev, bool
+>>> +*enabled) {
+>>> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+>>> +
+>>> +	*enabled = ras2_ctx->bg;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static int ras2_hw_scrub_set_enabled_od(struct device *dev, bool
+>>> +enable) {
+>>> +	struct ras2_scrub_ctx *ras2_ctx = dev_get_drvdata(dev);
+>>> +	struct acpi_ras2_ps_shared_mem __iomem *ps_sm = (void *)
+>>> +					ras2_ctx->pcc_subspace-
+>>> pcc_comm_addr;
+>>> +	bool enabled;
+>>> +	int ret;
+>>> +
+>>> +	guard(mutex)(&ras2_ctx->lock);
+>>> +	ps_sm->common.set_capabilities[0] =
+>> RAS2_SUPPORT_HW_PARTOL_SCRUB;
+>>> +	if (enable) {
+>>> +		if (!ras2_ctx->size) {
+>>> +			dev_warn(ras2_ctx->dev,
+>>> +				 "%s: Invalid requested address range,
+>> requested_address_range[0]=0x%llx "
+>>> +				 "requested_address_range[1]=0x%llx\n",
+>> __func__,
+>>> +				 ps_sm->params.requested_address_range[0],
+>>> +				 ps_sm->params.requested_address_range[1]);
+>>> +			return -ERANGE;
+>>> +		}
+>>> +		ret = ras2_get_patrol_scrub_running(ras2_ctx, &enabled);
+>>> +		if (ret)
+>>> +			return ret;
+>>> +
+>>> +		if (enabled)
+>>> +			return 0;
+>>> +
+>>> +		ps_sm->params.scrub_params_in &=
+>> ~RAS2_PATROL_SCRUB_RATE_IN_MASK;
+>>> +		ps_sm->params.scrub_params_in |=
+>> FIELD_PREP(RAS2_PATROL_SCRUB_RATE_IN_MASK,
+>>> +							    ras2_ctx->rate);
+>>> +		ps_sm->params.requested_address_range[0] = ras2_ctx->base;
+>>> +		ps_sm->params.requested_address_range[1] = ras2_ctx->size;
+>>
+>>
+>> We need to clear the RAS2_PATROL_SCRUB_EN_BACKGROUND bit in the input
+>> parameters.
+>> This is in case "Enable Background" was previously called, and this bit was set.
+>>
+>> 		ps_sm->params.scrub_params_in &=
+>> ~RAS2_PATROL_SCRUB_EN_BACKGROUND;
+> We need to stop background scrub if it is already running before start an on-demand scrubbing. 
+> The RAS2_PATROL_SCRUB_EN_BACKGROUND bit would be cleared with disable  bg scrub
+> with the following code
+> in ras2_hw_scrub_set_enabled_bg() when disable background scrub('enable' is 0 in this case).
+> ps_sm->params.scrub_params_in &= ~RAS2_PATROL_SCRUB_EN_BACKGROUND;
+> ps_sm->params.scrub_params_in |= FIELD_PREP(RAS2_PATROL_SCRUB_EN_BACKGROUND,
+> 						    enable);
+> Hope it make sense?
+
+
+Yes, this makes sense. But, on our platform, we automatically enable
+background when on-demand finishes(or is stopped). Similarly, if we
+enable on-demand then we automatically disable background. So, some sort
+of patrol is always on-going. The user is unable to turn them both off
+at the same time.
+
+Due to our implementation choices, this causes some weirdness with how
+the driver represents enable_background and enable_on_demand
+independently, since our scrubbers are not independent.
+
+I'm going to leave this conversation here for now, because on different
+platforms, maybe having independent control for background and on-demand
+is desired.
+
+>>
+>>
+>>> +		ps_sm->params.patrol_scrub_command =
+>> RAS2_START_PATROL_SCRUBBER;
+>>> +	} else {
+>>> +		ps_sm->params.patrol_scrub_command =
+>> RAS2_STOP_PATROL_SCRUBBER;
+>>> +	}
+>>> +
+>>> +	ret = ras2_send_pcc_cmd(ras2_ctx, RAS2_PCC_CMD_EXEC);
+>>> +	if (ret) {
+>>> +		dev_err(ras2_ctx->dev, "failed to enable(%d) the demand
+>> scrubbing\n", enable);
+>>> +		return ret;
+>>> +	}
+>>> +	ras2_ctx->bg = false;
+>>> +
+>>> +	return ras2_update_patrol_scrub_params_cache(ras2_ctx);
+>>> +}
+>>
+>>
+> Thanks,
+> Shiju
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26DC617E911;
+	Wed, 26 Jun 2024 12:23:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1719404609; cv=none; b=hWMQz6TlCi5B73me+gf7Pd6ivzSGGmQm/AqAWi4ClvMg8PY3QAJfcTSJK0TjpSgfUfBPEcTOp+Fhv2Jg8jvCGO7pKVosIz3iKrK6jt7hfJA3yvK+UrK19IcFDWOYvaTMJVsxGvMMjtrxIsmwqMVdeOTNtQQs2ywrU7yZkboDLhY=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1719404609; c=relaxed/simple;
+	bh=7SzP88P+F97F6/iCIkpL90oHDWlCFi+93fmOdJzhGUc=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=dy8WgMzzIjx7DZ3HWnHy+8gvbHjZ6i/Kn760/hV98dm8lQf7UNwr77ch/DPxikLToMi/FJG8EUIGuhvPPuJUbNWoDrKJK0df6Bw+d5nZAkJI+6Mozn31PFUpP83tttl6orEIP6NUX5xR4AujpsDS8LO+SuM9x3XqqL0qo8XIYHU=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4W8LSH0l3nz6K6Lg;
+	Wed, 26 Jun 2024 20:22:39 +0800 (CST)
+Received: from lhrpeml500006.china.huawei.com (unknown [7.191.161.198])
+	by mail.maildlp.com (Postfix) with ESMTPS id ED3EB140C98;
+	Wed, 26 Jun 2024 20:23:20 +0800 (CST)
+Received: from lhrpeml500006.china.huawei.com (7.191.161.198) by
+ lhrpeml500006.china.huawei.com (7.191.161.198) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.39; Wed, 26 Jun 2024 13:23:20 +0100
+Received: from lhrpeml500006.china.huawei.com ([7.191.161.198]) by
+ lhrpeml500006.china.huawei.com ([7.191.161.198]) with mapi id 15.01.2507.039;
+ Wed, 26 Jun 2024 13:23:20 +0100
+From: Shiju Jose <shiju.jose@huawei.com>
+To: Daniel Ferguson <danielf@os.amperecomputing.com>
+CC: "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"david@redhat.com" <david@redhat.com>, "Vilas.Sridharan@amd.com"
+	<Vilas.Sridharan@amd.com>, "leo.duran@amd.com" <leo.duran@amd.com>,
+	"Yazen.Ghannam@amd.com" <Yazen.Ghannam@amd.com>, "rientjes@google.com"
+	<rientjes@google.com>, "jiaqiyan@google.com" <jiaqiyan@google.com>,
+	"tony.luck@intel.com" <tony.luck@intel.com>, "Jon.Grimm@amd.com"
+	<Jon.Grimm@amd.com>, "dave.hansen@linux.intel.com"
+	<dave.hansen@linux.intel.com>, "rafael@kernel.org" <rafael@kernel.org>,
+	"lenb@kernel.org" <lenb@kernel.org>, "naoya.horiguchi@nec.com"
+	<naoya.horiguchi@nec.com>, "james.morse@arm.com" <james.morse@arm.com>,
+	"jthoughton@google.com" <jthoughton@google.com>, "somasundaram.a@hpe.com"
+	<somasundaram.a@hpe.com>, "erdemaktas@google.com" <erdemaktas@google.com>,
+	"pgonda@google.com" <pgonda@google.com>, "duenwen@google.com"
+	<duenwen@google.com>, "mike.malvestuto@intel.com"
+	<mike.malvestuto@intel.com>, "gthelen@google.com" <gthelen@google.com>,
+	"wschwartz@amperecomputing.com" <wschwartz@amperecomputing.com>,
+	"dferguson@amperecomputing.com" <dferguson@amperecomputing.com>,
+	"wbs@os.amperecomputing.com" <wbs@os.amperecomputing.com>,
+	"nifan.cxl@gmail.com" <nifan.cxl@gmail.com>, tanxiaofei
+	<tanxiaofei@huawei.com>, "Zengtao (B)" <prime.zeng@hisilicon.com>,
+	"kangkang.shen@futurewei.com" <kangkang.shen@futurewei.com>, wanghuiqiang
+	<wanghuiqiang@huawei.com>, Linuxarm <linuxarm@huawei.com>,
+	"ira.weiny@intel.com" <ira.weiny@intel.com>, "vishal.l.verma@intel.com"
+	<vishal.l.verma@intel.com>, "alison.schofield@intel.com"
+	<alison.schofield@intel.com>, "dave.jiang@intel.com" <dave.jiang@intel.com>,
+	Jonathan Cameron <jonathan.cameron@huawei.com>, "dave@stgolabs.net"
+	<dave@stgolabs.net>, "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-acpi@vger.kernel.org"
+	<linux-acpi@vger.kernel.org>, "linux-cxl@vger.kernel.org"
+	<linux-cxl@vger.kernel.org>
+Subject: RE: [RFC PATCH v8 10/10] ras: scrub: ACPI RAS2: Add memory ACPI RAS2
+ driver
+Thread-Topic: [RFC PATCH v8 10/10] ras: scrub: ACPI RAS2: Add memory ACPI RAS2
+ driver
+Thread-Index: AQHaknlRNDQEUQ8LZ0WAYACoMfWy2bG56kQAgAJ2exCAFnUNAIAHcQjg
+Date: Wed, 26 Jun 2024 12:23:20 +0000
+Message-ID: <b62f22fc3d544dcfb5cdadd80983e7dd@huawei.com>
+References: <20240419164720.1765-1-shiju.jose@huawei.com>
+ <20240419164720.1765-11-shiju.jose@huawei.com>
+ <fcd0621b-dd68-4e0d-96e1-15c16a3278d0@os.amperecomputing.com>
+ <d1986e8e1d8549c588f7488dfd5dd374@huawei.com>
+ <84e75542-026f-4c99-a8e0-f07dbf1695e8@os.amperecomputing.com>
+In-Reply-To: <84e75542-026f-4c99-a8e0-f07dbf1695e8@os.amperecomputing.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Precedence: bulk
+X-Mailing-List: linux-acpi@vger.kernel.org
+List-Id: <linux-acpi.vger.kernel.org>
+List-Subscribe: <mailto:linux-acpi+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-acpi+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+
+Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogRGFuaWVsIEZlcmd1c29uIDxkYW5p
+ZWxmQG9zLmFtcGVyZWNvbXB1dGluZy5jb20+DQo+U2VudDogMjEgSnVuZSAyMDI0IDE5OjA3DQo+
+VG86IFNoaWp1IEpvc2UgPHNoaWp1Lmpvc2VAaHVhd2VpLmNvbT4NCj5DYzogbGludXgtZWRhY0B2
+Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ZGF2aWRAcmVk
+aGF0LmNvbTsgVmlsYXMuU3JpZGhhcmFuQGFtZC5jb207IGxlby5kdXJhbkBhbWQuY29tOw0KPllh
+emVuLkdoYW5uYW1AYW1kLmNvbTsgcmllbnRqZXNAZ29vZ2xlLmNvbTsgamlhcWl5YW5AZ29vZ2xl
+LmNvbTsNCj50b255Lmx1Y2tAaW50ZWwuY29tOyBKb24uR3JpbW1AYW1kLmNvbTsgZGF2ZS5oYW5z
+ZW5AbGludXguaW50ZWwuY29tOw0KPnJhZmFlbEBrZXJuZWwub3JnOyBsZW5iQGtlcm5lbC5vcmc7
+IG5hb3lhLmhvcmlndWNoaUBuZWMuY29tOw0KPmphbWVzLm1vcnNlQGFybS5jb207IGp0aG91Z2h0
+b25AZ29vZ2xlLmNvbTsgc29tYXN1bmRhcmFtLmFAaHBlLmNvbTsNCj5lcmRlbWFrdGFzQGdvb2ds
+ZS5jb207IHBnb25kYUBnb29nbGUuY29tOyBkdWVud2VuQGdvb2dsZS5jb207DQo+bWlrZS5tYWx2
+ZXN0dXRvQGludGVsLmNvbTsgZ3RoZWxlbkBnb29nbGUuY29tOw0KPndzY2h3YXJ0ekBhbXBlcmVj
+b21wdXRpbmcuY29tOyBkZmVyZ3Vzb25AYW1wZXJlY29tcHV0aW5nLmNvbTsNCj53YnNAb3MuYW1w
+ZXJlY29tcHV0aW5nLmNvbTsgbmlmYW4uY3hsQGdtYWlsLmNvbTsgdGFueGlhb2ZlaQ0KPjx0YW54
+aWFvZmVpQGh1YXdlaS5jb20+OyBaZW5ndGFvIChCKSA8cHJpbWUuemVuZ0BoaXNpbGljb24uY29t
+PjsNCj5rYW5na2FuZy5zaGVuQGZ1dHVyZXdlaS5jb207IHdhbmdodWlxaWFuZyA8d2FuZ2h1aXFp
+YW5nQGh1YXdlaS5jb20+Ow0KPkxpbnV4YXJtIDxsaW51eGFybUBodWF3ZWkuY29tPjsgaXJhLndl
+aW55QGludGVsLmNvbTsNCj52aXNoYWwubC52ZXJtYUBpbnRlbC5jb207IGFsaXNvbi5zY2hvZmll
+bGRAaW50ZWwuY29tOyBkYXZlLmppYW5nQGludGVsLmNvbTsNCj5Kb25hdGhhbiBDYW1lcm9uIDxq
+b25hdGhhbi5jYW1lcm9uQGh1YXdlaS5jb20+OyBkYXZlQHN0Z29sYWJzLm5ldDsNCj5kYW4uai53
+aWxsaWFtc0BpbnRlbC5jb207IGxpbnV4LW1tQGt2YWNrLm9yZzsgbGludXgtYWNwaUB2Z2VyLmtl
+cm5lbC5vcmc7DQo+bGludXgtY3hsQHZnZXIua2VybmVsLm9yZw0KPlN1YmplY3Q6IFJlOiBbUkZD
+IFBBVENIIHY4IDEwLzEwXSByYXM6IHNjcnViOiBBQ1BJIFJBUzI6IEFkZCBtZW1vcnkgQUNQSQ0K
+PlJBUzIgZHJpdmVyDQo+DQo+DQo+DQo+T24gNi83LzIwMjQgODo0NiBBTSwgU2hpanUgSm9zZSB3
+cm90ZToNCj4+IEhpIERhbmllbCwNCj4+DQo+PiBUaGFua3MgZm9yIHRoZSBmZWVkYmFjay4NCj4+
+DQo+Pj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4+PiBGcm9tOiBEYW5pZWwgRmVyZ3Vz
+b24gPGRhbmllbGZAb3MuYW1wZXJlY29tcHV0aW5nLmNvbT4NCj4+PiBTZW50OiAwNSBKdW5lIDIw
+MjQgMjI6MzMNCj4+PiBUbzogU2hpanUgSm9zZSA8c2hpanUuam9zZUBodWF3ZWkuY29tPg0KPj4+
+IENjOiBsaW51eC1lZGFjQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVs
+Lm9yZzsNCj4+PiBkYXZpZEByZWRoYXQuY29tOyBWaWxhcy5TcmlkaGFyYW5AYW1kLmNvbTsgbGVv
+LmR1cmFuQGFtZC5jb207DQo+Pj4gWWF6ZW4uR2hhbm5hbUBhbWQuY29tOyByaWVudGplc0Bnb29n
+bGUuY29tOyBqaWFxaXlhbkBnb29nbGUuY29tOw0KPj4+IHRvbnkubHVja0BpbnRlbC5jb207IEpv
+bi5HcmltbUBhbWQuY29tOyBkYXZlLmhhbnNlbkBsaW51eC5pbnRlbC5jb207DQo+Pj4gcmFmYWVs
+QGtlcm5lbC5vcmc7IGxlbmJAa2VybmVsLm9yZzsgbmFveWEuaG9yaWd1Y2hpQG5lYy5jb207DQo+
+Pj4gamFtZXMubW9yc2VAYXJtLmNvbTsganRob3VnaHRvbkBnb29nbGUuY29tOw0KPnNvbWFzdW5k
+YXJhbS5hQGhwZS5jb207DQo+Pj4gZXJkZW1ha3Rhc0Bnb29nbGUuY29tOyBwZ29uZGFAZ29vZ2xl
+LmNvbTsgZHVlbndlbkBnb29nbGUuY29tOw0KPj4+IG1pa2UubWFsdmVzdHV0b0BpbnRlbC5jb207
+IGd0aGVsZW5AZ29vZ2xlLmNvbTsNCj4+PiB3c2Nod2FydHpAYW1wZXJlY29tcHV0aW5nLmNvbTsg
+ZGZlcmd1c29uQGFtcGVyZWNvbXB1dGluZy5jb207DQo+Pj4gd2JzQG9zLmFtcGVyZWNvbXB1dGlu
+Zy5jb207IG5pZmFuLmN4bEBnbWFpbC5jb207IHRhbnhpYW9mZWkNCj4+PiA8dGFueGlhb2ZlaUBo
+dWF3ZWkuY29tPjsgWmVuZ3RhbyAoQikgPHByaW1lLnplbmdAaGlzaWxpY29uLmNvbT47DQo+Pj4g
+a2FuZ2thbmcuc2hlbkBmdXR1cmV3ZWkuY29tOyB3YW5naHVpcWlhbmcNCj48d2FuZ2h1aXFpYW5n
+QGh1YXdlaS5jb20+Ow0KPj4+IExpbnV4YXJtIDxsaW51eGFybUBodWF3ZWkuY29tPjsgaXJhLndl
+aW55QGludGVsLmNvbTsNCj4+PiB2aXNoYWwubC52ZXJtYUBpbnRlbC5jb207IGFsaXNvbi5zY2hv
+ZmllbGRAaW50ZWwuY29tOw0KPj4+IGRhdmUuamlhbmdAaW50ZWwuY29tOyBKb25hdGhhbiBDYW1l
+cm9uDQo+PGpvbmF0aGFuLmNhbWVyb25AaHVhd2VpLmNvbT47DQo+Pj4gZGF2ZUBzdGdvbGFicy5u
+ZXQ7IGRhbi5qLndpbGxpYW1zQGludGVsLmNvbTsgbGludXgtbW1Aa3ZhY2sub3JnOw0KPj4+IGxp
+bnV4LWFjcGlAdmdlci5rZXJuZWwub3JnOyBsaW51eC1jeGxAdmdlci5rZXJuZWwub3JnDQo+Pj4g
+U3ViamVjdDogUmU6IFtSRkMgUEFUQ0ggdjggMTAvMTBdIHJhczogc2NydWI6IEFDUEkgUkFTMjog
+QWRkIG1lbW9yeQ0KPj4+IEFDUEkNCj4+PiBSQVMyIGRyaXZlcg0KPj4+DQo+Pj4+ICsvKiBDb250
+ZXh0IC0gbG9jayBtdXN0IGJlIGhlbGQgKi8NCj4+Pj4gK3N0YXRpYyBpbnQgcmFzMl9nZXRfcGF0
+cm9sX3NjcnViX3J1bm5pbmcoc3RydWN0IHJhczJfc2NydWJfY3R4ICpyYXMyX2N0eCwNCj4+Pj4g
+KwkJCQkJIGJvb2wgKnJ1bm5pbmcpDQo+Pj4+ICt7DQo+Pj4+ICsJc3RydWN0IGFjcGlfcmFzMl9w
+c19zaGFyZWRfbWVtIF9faW9tZW0gKnBzX3NtID0gKHZvaWQgKikNCj4+Pj4gKwkJCQkJcmFzMl9j
+dHgtPnBjY19zdWJzcGFjZS0NCj4+Pj4gcGNjX2NvbW1fYWRkcjsNCj4+Pj4gKwlpbnQgcmV0Ow0K
+Pj4+PiArDQo+Pj4+ICsJaWYgKHJhczJfY3R4LT5iZykNCj4+Pj4gKwkJKnJ1bm5pbmcgPSB0cnVl
+Ow0KPj4+PiArDQo+Pj4+ICsJcHNfc20tPmNvbW1vbi5zZXRfY2FwYWJpbGl0aWVzWzBdID0NCj4+
+PiBSQVMyX1NVUFBPUlRfSFdfUEFSVE9MX1NDUlVCOw0KPj4+PiArCXBzX3NtLT5wYXJhbXMucGF0
+cm9sX3NjcnViX2NvbW1hbmQgPQ0KPj4+IFJBUzJfR0VUX1BBVFJPTF9QQVJBTUVURVJTOw0KPj4+
+DQo+Pj4gTmVlZCB0byByZXNldCB0aGUgYWRkcmVzcyByYW5nZSAoYmFzZSBhbmQgc2l6ZSkuIEEg
+dXNlciBtYXkgaGF2ZQ0KPj4+IHByZXZpb3VzbHkgY2FsbGVkICJFbmFibGUgQmFja2dyb3VuZCIg
+d2hlcmUgdGhlIGNvZGUgemVyb3Mgb3V0IHRoZXNlDQo+cGFyYW1ldGVycy4NCj4+PiAJcHNfc20t
+PnBhcmFtcy5yZXF1ZXN0ZWRfYWRkcmVzc19yYW5nZVswXSA9IHJhczJfY3R4LT5iYXNlOw0KPj4+
+IAlwc19zbS0+cGFyYW1zLnJlcXVlc3RlZF9hZGRyZXNzX3JhbmdlWzFdID0gcmFzMl9jdHgtPnNp
+emU7DQo+PiBUaGUgYWRkcmVzcyByYW5nZSBpcyBiZWluZyBzZXQgdG8gdGhlIGFib3ZlIGluIHRo
+ZQ0KPj4gcmFzMl9od19zY3J1Yl9zZXRfZW5hYmxlZF9vZCgpLCBiZWNhdXNlIHRoZXkgYXJlIHZh
+bGlkIGZvciBvbi1kZW1hbmQNCj5zY3J1YmJpbmcgb25seS4NCj4+DQo+PiBIb3dldmVyIHRoZSBy
+YXMyX2N0eC0+YmFzZSBhbmQgcmFzMl9jdHgtPnNpemUgYXJlIHNldCB0byB0aGUNCj4+IHJhczJf
+Y3R4LT5iYXNlID0gcHNfc20tPnBhcmFtcy5hY3R1YWxfYWRkcmVzc19yYW5nZVswXTsNCj4+IHJh
+czJfY3R4LT5zaXplID0gcHNfc20tPnBhcmFtcy5hY3R1YWxfYWRkcmVzc19yYW5nZVsxXTsNCj4+
+IGluIHRoZSByYXMyX3VwZGF0ZV9wYXRyb2xfc2NydWJfcGFyYW1zX2NhY2hlKCksIHdoaWNoIGlz
+IGNhbGxlZCBhZnRlcg0KPmVuYWJsaW5nIGJnIHNjcnViIGFuZCBvbi1kZW1hbmQgc2NydWIuDQo+
+PiBUaHVzIHJhczJfY3R4LT5iYXNlIGFuZCByYXMyX2N0eC0+c2l6ZSBtYXkgaGF2ZSBhIDAgb3Ig
+Z2FyYmFnZSB2YWx1ZSBmb3IgYmcNCj5zY3J1YiBiZWNhdXNlIGFkZHJlc3MgcmFuZ2UgaXMgbm90
+IHZhbGlkIGZvciBiZyBzY3J1YmJpbmcgYXMgcGVyYyBBQ1BJDQo+c3BlY2lmaWNhdGlvbi4gSSB3
+aWxsIGFkZCBjaGVja3MgdG8gcmV0YWluIHRoZSBjYWNoZWQgYWRkcmVzcyByYW5nZSBpZiBiZyBz
+Y3J1YiBpcw0KPmVuYWJsZWQuDQo+Pj4NCj4+Pg0KPj4+PiArDQo+Pj4+ICsJcmV0ID0gcmFzMl9z
+ZW5kX3BjY19jbWQocmFzMl9jdHgsIFJBUzJfUENDX0NNRF9FWEVDKTsNCj4+Pj4gKwlpZiAocmV0
+KSB7DQo+Pj4+ICsJCWRldl9lcnIocmFzMl9jdHgtPmRldiwgImZhaWxlZCB0byByZWFkIHBhcmFt
+ZXRlcnNcbiIpOw0KPj4+PiArCQlyZXR1cm4gcmV0Ow0KPj4+PiArCX0NCj4+Pj4gKw0KPj4+PiAr
+CSpydW5uaW5nID0gcHNfc20tPnBhcmFtcy5mbGFncyAmDQo+Pj4+ICtSQVMyX1BBVFJPTF9TQ1JV
+Ql9GTEFHX1NDUlVCQkVSX1JVTk5JTkc7DQo+Pj4+ICsNCj4+Pj4gKwlyZXR1cm4gMDsNCj4+Pj4g
+K30NCj4+Pj4gKw0KPj4+PiArc3RhdGljIGludCByYXMyX2h3X3NjcnViX3dyaXRlX3JhdGUoc3Ry
+dWN0IGRldmljZSAqZGV2LCB1NjQgcmF0ZSkgew0KPj4+PiArCXN0cnVjdCByYXMyX3NjcnViX2N0
+eCAqcmFzMl9jdHggPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4+Pj4gKwlib29sIHJ1bm5pbmc7
+DQo+Pj4+ICsJaW50IHJldDsNCj4+Pj4gKw0KPj4+PiArCWd1YXJkKG11dGV4KSgmcmFzMl9jdHgt
+PmxvY2spOw0KPj4+PiArCXJldCA9IHJhczJfZ2V0X3BhdHJvbF9zY3J1Yl9ydW5uaW5nKHJhczJf
+Y3R4LCAmcnVubmluZyk7DQo+Pj4+ICsJaWYgKHJldCkNCj4+Pj4gKwkJcmV0dXJuIHJldDsNCj4+
+Pj4gKw0KPj4+PiArCWlmIChydW5uaW5nKQ0KPj4+PiArCQlyZXR1cm4gLUVCVVNZOw0KPj4+DQo+
+Pj4NCj4+PiBJIHN1Z2dlc3Qgd2UgZG8gbm90IGNoZWNrIGlmIHRoZSBwYXRyb2wgc2NydWIgaXMg
+cnVubmluZyB3aGVuIHdlIGFyZQ0KPj4+IG1lcmVseSB1cGRhdGluZyBjYWNoZWQgdmFsdWVzLiBN
+b3JlIGltcG9ydGFudGx5LCBpZiB3ZSBoYWQgcHJldmlvdXNseQ0KPj4+IHdyb3RlIGFuIGludmFs
+aWQgdmFsdWUgKHRoYXQgaXMgb25seSBpbnZhbGlkYXRlZCBieSBmaXJtd2FyZSBhZnRlcg0KPj4+
+IGV4ZWN1dGluZyBhIGNvbW1hbmQpLCB0aGVuIHdoZW4gd2UgdHJ5IHRvIHdyaXRlIGEgY29ycmVj
+dCB2YWx1ZSwgdGhpcw0KPiJyYXMyX2dldF9wYXRyb2xfc2NydWJfcnVubmluZyINCj4+PiBjaGVj
+ayB3aWxsIGFsd2F5cyBmYWlsLCB0aGVyZWZvcmUgcHJldmVudGluZyB1cyBmcm9tIGNvcnJlY3Rp
+bmcgb3VyIGVycm9yLg0KPj4NCj4+IEluIG91ciBvcGluaW9uLCB3cml0ZSB0aGUgcmF0ZSBhbmQg
+cmFuZ2UgZXRjLCB0aG91Z2ggdXBkYXRpbmcgdGhlIGNhY2hlZA0KPnZhbHVlcywgc2hvdWxkIGJl
+IGFsbG93ZWQgb25seSB3aGVuIHRoZSBzY3J1YiBpcyBOT1QgcnVubmluZyB0byBhdm9pZCBjb25m
+dXNpb24NCj50aGlua2luZyB0aGV5IGFyZSBhY3R1YWxseSBzZXQgaW4gdGhlIHJ1bm5pbmcgc2Ny
+dWJiZXIsIHdoZW4gcmVhZCB0aGVtIGJhY2sgaW4NCj50aGUgdXNlcnNwYWNlLg0KPg0KPg0KPkl0
+IG1heSBiZSB0aGF0IEkgZGlkbid0IGV4cGxhaW4gbXlzZWxmIHByb3Blcmx5IGxhc3QgdGltZS4g
+TGV0IG1lIHRyeSBhZ2Fpbi4NCj4NCj4xKSBUaGlzIGRyaXZlciBjb2RlIGRvZXMgbm90IGN1cnJl
+bnRseSBjaGVjayB0byBzZWUgaWYgYW4gJ2FkZHJfcmFuZ2VfYmFzZScgaXMNCj52YWxpZCBvciBu
+b3QuIFZhbGlkYXRpb24gb2NjdXJzIGluIHRoZSBwbGF0Zm9ybSBmaXJtd2FyZSwgd2hlbiBlaXRo
+ZXINCj5HRVRfUEFUUk9MX1BBUkFNRVRFUlMgb3IgU1RBUlRfUEFUUk9MX1NDUlVCQkVSIGlzIGV4
+ZWN1dGVkLiBJZiBvdXINCj5wbGF0Zm9ybSBmaXJtd2FyZSBkZXRlY3RzIGFuIGludmFsaWQgYWRk
+cmVzcywgaXQgcmFpc2VzIGFuIGVycm9yLiANClRoYW5rcyBmb3IgZ2l2aW5nIG1vcmUgZGV0YWls
+cy4NCj4NCj4yKSBUaGVyZWZvcmUsIGEgdXNlciBjYW4gc3BlY2lmeSBhbiBpbnZhbGlkIGFkZHJl
+c3MsIGFuZCB0aGUgdXNlciB3aWxsIG5vdCBrbm93DQo+dGhhdCB0aGUgYWRkcmVzcyBpcyBpbnZh
+bGlkIHVudGlsIGFmdGVyIHRoZSBjYWNoZWQgcGFyYW1ldGVycyAodXNlZCB0byBjaGVjayBpZiB0
+aGUNCj5wYXRyb2wgc2NydWJiZXIgaXMgcnVubmluZykgYXJlIHdyaXR0ZW4gdG8uDQo+DQo+Mykg
+Tm93LCBldmVyeSB0aW1lIHRoZSB1c2VyIGF0dGVtcHRzIHRvIHdyaXRlIGEgdmFsdWUgdG8gZWl0
+aGVyIGJhc2UsIHNpemUsIG9yDQo+cmF0ZTsgdGhlIHByZWNlZGluZyBjYWxsIHRvIHJhczJfZ2V0
+X3BhdHJvbF9zY3J1Yl9ydW5uaW5nIHdpbGwgcmVzdWx0IGluIGFuIGVycm9yLA0KPmFuZCB0aGUg
+YXR0ZW1wdCB0byB3cml0ZSBhIGRpZmZlcmVudCB2YWx1ZSBmYWlscy4NCg0KVGhhbmtzIGZvciBn
+aXZpbmcgbW9yZSBkZXRhaWxzLg0KMS4gSW4gd3JpdGVfcmFuZ2UgZnVuY3Rpb24sIEkgYWRkZWQg
+YmFzaWMgY2hlY2tzIHRvIG1ha2Ugc3VyZSB0aGUgYWRkcmVzcyByYW5nZSBiYXNlIG9yIHNpemUN
+CnRvIHNldCBhcmUgbm9uLXplcm8gYW5kIHJldHVybiBlcnJvciB0byB0aGUgdXNlciBpZiBzby4g
+IEJ1dCB1bmFibGUgdG8gY2hlY2sgdGhvc2UgYWRkcmVzcyBwYXJhbWV0ZXJzDQp0byBzZXQgYXJl
+IGluIHRoZSBzdXBwb3J0ZWQgYWRkcmVzcyByYW5nZSBvZiBhIHNjcnViIGRldmljZSBiZWNhdXNl
+IEFDUEkgUkFTMiBUYWJsZSA1Ljg3OiBQYXJhbWV0ZXIgQmxvY2sNClN0cnVjdHVyZSBmb3IgUEFU
+Uk9MX1NDUlVCIGRvZXMgaGF2ZSBmaWVsZHMgdG8gcHVibGlzaCBzdXBwb3J0ZWQgYWRkcmVzcyBy
+YW5nZSBmb3IgYSBwYXRyb2wNCnNjcnViYmVyLiBUaGUgZmllbGQgICJBY3R1YWwgQWRkcmVzcyBS
+YW5nZSAoT1VUUFVUKSIgc2VlbXMgbm90IHN1aXRhYmxlIGZvciB0aGlzIHB1cnBvc2UgYmVjYXVz
+ZQ0KIiBUaGUgcGxhdGZvcm0gY2FsY3VsYXRlcyB0aGUgbmVhcmVzdCBwYXRyb2wgc2NydWIgYm91
+bmRhcnkgYWRkcmVzcyBmcm9tIHdoZXJlIGl0IGNhbiBzdGFydC4gVGhpcyByYW5nZQ0Kc2hvdWxk
+IGJlIGEgc3VwZXJzZXQgb2YgdGhlIFJlcXVlc3RlZCBBZGRyZXNzIFJhbmdlLiIgYXMgZGVzY3Jp
+YmVkICBpbiB0aGUgQUNQSSBzcGVjPw0KDQpJbiByYXMyX2h3X3NjcnViX3dyaXRlX3JhdGUoKSAs
+IHdlIGFscmVhZHkgaGF2ZSBjaGVjayBmb3Igc2NydWIgcmF0ZSB0byBzZXQgaXMgd2l0aGluDQpz
+dXBwb3J0ZWQgbWluIGFuZCBtYXggc2NydWIgcmF0ZXMsIHNldCBieSB0aGUgZmlybXdhcmUgaW4g
+dGhlIGFib3ZlIHRhYmxlIGluIHJlc3BvbnNlIHRvDQpHRVRfUEFUUk9MX1BBUkFNRVRFUlMuDQoN
+CjIuIFlvdSBtZW50aW9uZWQgdGhhdCAiSWYgb3VyIHBsYXRmb3JtIGZpcm13YXJlIGRldGVjdHMg
+YW4gaW52YWxpZCBhZGRyZXNzLCBpdCByYWlzZXMgYW4gZXJyb3IuIg0KICAgSW4gdGhpcyBjYXNl
+IG15IHVuZGVyc3RhbmRpbmcgaXMgdGhhdCB0aGUgc2NydWJiaW5nIHNob3VsZCBub3QgaGF2ZSBz
+dGFydGVkIGFuZCB0aHVzIHRoZSBrZXJuZWwgd2lsbA0KICAgZ2V0IHRoZSBzY3J1YiBOT1QgcnVu
+bmluZyBzdGF0dXMgYW5kIHRoZSB1c2VyIHdpbGwgYmUgYWJsZSB0byBjb3JyZWN0IHRoZSBhZGRy
+ZXNzPw0KDQo+DQo+VG8gQ29uY2x1ZGU6DQo+SWYgYSB1c2VyIHNwZWNpZmllcyBhbiBpbnZhbGlk
+IGFkZHJlc3MsIHRoZSBvbmx5IHdheSB0byBjb3JyZWN0IHRoZSBpbnZhbGlkIGFkZHJlc3MNCj5p
+cyB0byByZWJvb3Qgb3IgbW9kdWxlIHJlbG9hZC4gVG8gbWUsIHRoYXQgc2VlbXMgbGlrZSBhIHNo
+b3ctc3RvcHBlci4NCj4NCj4+Pg0KPj4+PiArDQo+Pj4+ICsJaWYgKHJhdGUgPCByYXMyX2N0eC0+
+cmF0ZV9taW4gfHwgcmF0ZSA+IHJhczJfY3R4LT5yYXRlX21heCkNCj4+Pj4gKwkJcmV0dXJuIC1F
+SU5WQUw7DQo+Pj4+ICsNCj4+Pj4gKwlyYXMyX2N0eC0+cmF0ZSA9IHJhdGU7DQo+Pj4+ICsNCj4+
+Pj4gKwlyZXR1cm4gMDsNCj4+Pj4gK30NCj4+Pj4gKw0KPj4+PiArc3RhdGljIGludCByYXMyX2h3
+X3NjcnViX3JlYWRfcmF0ZShzdHJ1Y3QgZGV2aWNlICpkZXYsIHU2NCAqcmF0ZSkgew0KPj4+PiAr
+CXN0cnVjdCByYXMyX3NjcnViX2N0eCAqcmFzMl9jdHggPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsN
+Cj4+Pj4gKw0KPj4+PiArCSpyYXRlID0gcmFzMl9jdHgtPnJhdGU7DQo+Pj4+ICsNCj4+Pj4gKwly
+ZXR1cm4gMDsNCj4+Pj4gK30NCj4+Pj4gKw0KPj4+PiArc3RhdGljIGludCByYXMyX2h3X3NjcnVi
+X3JlYWRfcmF0ZV9hdmFpbChzdHJ1Y3QgZGV2aWNlICpkZXYsIHU2NA0KPj4+PiArKm1pbiwgdTY0
+ICptYXgpIHsNCj4+Pj4gKwlzdHJ1Y3QgcmFzMl9zY3J1Yl9jdHggKnJhczJfY3R4ID0gZGV2X2dl
+dF9kcnZkYXRhKGRldik7DQo+Pj4+ICsNCj4+Pj4gKwkqbWluID0gcmFzMl9jdHgtPnJhdGVfbWlu
+Ow0KPj4+PiArCSptYXggPSByYXMyX2N0eC0+cmF0ZV9tYXg7DQo+Pj4+ICsNCj4+Pj4gKwlyZXR1
+cm4gMDsNCj4+Pj4gK30NCj4+Pj4gKw0KPj4+PiArc3RhdGljIGludCByYXMyX2h3X3NjcnViX3Jl
+YWRfcmFuZ2Uoc3RydWN0IGRldmljZSAqZGV2LCB1NjQgKmJhc2UsDQo+Pj4+ICt1NjQgKnNpemUp
+IHsNCj4+Pj4gKwlzdHJ1Y3QgcmFzMl9zY3J1Yl9jdHggKnJhczJfY3R4ID0gZGV2X2dldF9kcnZk
+YXRhKGRldik7DQo+Pj4+ICsNCj4+Pj4gKwkqYmFzZSA9IHJhczJfY3R4LT5iYXNlOw0KPj4+PiAr
+CSpzaXplID0gcmFzMl9jdHgtPnNpemU7DQo+Pj4+ICsNCj4+Pj4gKwlyZXR1cm4gMDsNCj4+Pj4g
+K30NCj4+Pj4gKw0KPj4+PiArc3RhdGljIGludCByYXMyX2h3X3NjcnViX3dyaXRlX3JhbmdlKHN0
+cnVjdCBkZXZpY2UgKmRldiwgdTY0IGJhc2UsDQo+Pj4+ICt1NjQgc2l6ZSkgew0KPj4+PiArCXN0
+cnVjdCByYXMyX3NjcnViX2N0eCAqcmFzMl9jdHggPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4+
+Pj4gKwlib29sIHJ1bm5pbmc7DQo+Pj4+ICsJaW50IHJldDsNCj4+Pj4gKw0KPj4+PiArCWd1YXJk
+KG11dGV4KSgmcmFzMl9jdHgtPmxvY2spOw0KPj4+PiArCXJldCA9IHJhczJfZ2V0X3BhdHJvbF9z
+Y3J1Yl9ydW5uaW5nKHJhczJfY3R4LCAmcnVubmluZyk7DQo+Pj4+ICsJaWYgKHJldCkNCj4+Pj4g
+KwkJcmV0dXJuIHJldDsNCj4+Pj4gKw0KPj4+PiArCWlmIChydW5uaW5nKQ0KPj4+PiArCQlyZXR1
+cm4gLUVCVVNZOw0KPj4+DQo+Pj4gSSBzdWdnZXN0IHdlIGRvIG5vdCBjaGVjayBpZiB0aGUgcGF0
+cm9sIHNjcnViIGlzIHJ1bm5pbmcuIFNlZQ0KPj4+IHByZXZpb3VzIGNvbW1lbnQgYWJvdmUuDQo+
+PiBTYW1lIGFzIGFib3ZlLg0KPj4NCj4+Pg0KPj4+PiArDQo+Pj4+ICsJcmFzMl9jdHgtPmJhc2Ug
+PSBiYXNlOw0KPj4+PiArCXJhczJfY3R4LT5zaXplID0gc2l6ZTsNCj4+Pj4gKw0KPj4+PiArCXJl
+dHVybiAwOw0KPj4+PiArfQ0KPj4+PiArDQo+Pj4+ICtzdGF0aWMgaW50IHJhczJfaHdfc2NydWJf
+c2V0X2VuYWJsZWRfYmcoc3RydWN0IGRldmljZSAqZGV2LCBib29sDQo+Pj4+ICtlbmFibGUpIHsN
+Cj4+Pj4gKwlzdHJ1Y3QgcmFzMl9zY3J1Yl9jdHggKnJhczJfY3R4ID0gZGV2X2dldF9kcnZkYXRh
+KGRldik7DQo+Pj4+ICsJc3RydWN0IGFjcGlfcmFzMl9wc19zaGFyZWRfbWVtIF9faW9tZW0gKnBz
+X3NtID0gKHZvaWQgKikNCj4+Pj4gKwkJCQkJcmFzMl9jdHgtPnBjY19zdWJzcGFjZS0NCj4+Pj4g
+cGNjX2NvbW1fYWRkcjsNCj4+Pj4gKwlpbnQgcmV0Ow0KPj4+PiArDQo+Pj4+ICsJZ3VhcmQobXV0
+ZXgpKCZyYXMyX2N0eC0+bG9jayk7DQo+Pj4+ICsJcHNfc20tPmNvbW1vbi5zZXRfY2FwYWJpbGl0
+aWVzWzBdID0NCj4+PiBSQVMyX1NVUFBPUlRfSFdfUEFSVE9MX1NDUlVCOw0KPj4+PiArCWlmIChl
+bmFibGUpIHsNCj4+Pj4gKwkJcHNfc20tPnBhcmFtcy5yZXF1ZXN0ZWRfYWRkcmVzc19yYW5nZVsw
+XSA9IDA7DQo+Pj4+ICsJCXBzX3NtLT5wYXJhbXMucmVxdWVzdGVkX2FkZHJlc3NfcmFuZ2VbMV0g
+PSAwOw0KPj4+PiArCQlwc19zbS0+cGFyYW1zLnNjcnViX3BhcmFtc19pbiAmPQ0KPj4+IH5SQVMy
+X1BBVFJPTF9TQ1JVQl9SQVRFX0lOX01BU0s7DQo+Pj4+ICsJCXBzX3NtLT5wYXJhbXMuc2NydWJf
+cGFyYW1zX2luIHw9DQo+Pj4gRklFTERfUFJFUChSQVMyX1BBVFJPTF9TQ1JVQl9SQVRFX0lOX01B
+U0ssDQo+Pj4+ICsJCQkJCQkJICAgIHJhczJfY3R4LT5yYXRlKTsNCj4+Pj4gKwkJcHNfc20tPnBh
+cmFtcy5wYXRyb2xfc2NydWJfY29tbWFuZCA9DQo+Pj4gUkFTMl9TVEFSVF9QQVRST0xfU0NSVUJC
+RVI7DQo+Pj4+ICsJfSBlbHNlIHsNCj4+Pj4gKwkJcHNfc20tPnBhcmFtcy5wYXRyb2xfc2NydWJf
+Y29tbWFuZCA9DQo+Pj4gUkFTMl9TVE9QX1BBVFJPTF9TQ1JVQkJFUjsNCj4+Pj4gKwl9DQo+Pj4+
+ICsJcHNfc20tPnBhcmFtcy5zY3J1Yl9wYXJhbXNfaW4gJj0NCj4+PiB+UkFTMl9QQVRST0xfU0NS
+VUJfRU5fQkFDS0dST1VORDsNCj4+Pj4gKwlwc19zbS0+cGFyYW1zLnNjcnViX3BhcmFtc19pbiB8
+PQ0KPj4+IEZJRUxEX1BSRVAoUkFTMl9QQVRST0xfU0NSVUJfRU5fQkFDS0dST1VORCwNCj4+Pj4g
+KwkJCQkJCSAgICBlbmFibGUpOw0KPj4+PiArDQo+Pj4+ICsJcmV0ID0gcmFzMl9zZW5kX3BjY19j
+bWQocmFzMl9jdHgsIFJBUzJfUENDX0NNRF9FWEVDKTsNCj4+Pj4gKwlpZiAocmV0KSB7DQo+Pj4+
+ICsJCWRldl9lcnIocmFzMl9jdHgtPmRldiwgIiVzOiBmYWlsZWQgdG8gZW5hYmxlKCVkKSBiYWNr
+Z3JvdW5kDQo+Pj4gc2NydWJiaW5nXG4iLA0KPj4+PiArCQkJX19mdW5jX18sIGVuYWJsZSk7DQo+
+Pj4+ICsJCXJldHVybiByZXQ7DQo+Pj4+ICsJfQ0KPj4+PiArCXJhczJfY3R4LT5iZyA9IHRydWU7
+DQo+Pj4+ICsNCj4+Pj4gKwkvKiBVcGRhdGUgdGhlIGNhY2hlIHRvIGFjY291bnQgZm9yIHJvdW5k
+aW5nIG9mIHN1cHBsaWVkIHBhcmFtZXRlcnMNCj4+Pj4gK2FuZA0KPj4+IHNpbWlsYXIgKi8NCj4+
+Pj4gKwlyZXR1cm4gcmFzMl91cGRhdGVfcGF0cm9sX3NjcnViX3BhcmFtc19jYWNoZShyYXMyX2N0
+eCk7DQo+Pj4+ICt9DQo+Pj4+ICsNCj4+Pj4gK3N0YXRpYyBpbnQgcmFzMl9od19zY3J1Yl9nZXRf
+ZW5hYmxlZF9iZyhzdHJ1Y3QgZGV2aWNlICpkZXYsIGJvb2wNCj4+Pj4gKyplbmFibGVkKSB7DQo+
+Pj4+ICsJc3RydWN0IHJhczJfc2NydWJfY3R4ICpyYXMyX2N0eCA9IGRldl9nZXRfZHJ2ZGF0YShk
+ZXYpOw0KPj4+PiArDQo+Pj4+ICsJKmVuYWJsZWQgPSByYXMyX2N0eC0+Ymc7DQo+Pj4+ICsNCj4+
+Pj4gKwlyZXR1cm4gMDsNCj4+Pj4gK30NCj4+Pj4gKw0KPj4+PiArc3RhdGljIGludCByYXMyX2h3
+X3NjcnViX3NldF9lbmFibGVkX29kKHN0cnVjdCBkZXZpY2UgKmRldiwgYm9vbA0KPj4+PiArZW5h
+YmxlKSB7DQo+Pj4+ICsJc3RydWN0IHJhczJfc2NydWJfY3R4ICpyYXMyX2N0eCA9IGRldl9nZXRf
+ZHJ2ZGF0YShkZXYpOw0KPj4+PiArCXN0cnVjdCBhY3BpX3JhczJfcHNfc2hhcmVkX21lbSBfX2lv
+bWVtICpwc19zbSA9ICh2b2lkICopDQo+Pj4+ICsJCQkJCXJhczJfY3R4LT5wY2Nfc3Vic3BhY2Ut
+DQo+Pj4+IHBjY19jb21tX2FkZHI7DQo+Pj4+ICsJYm9vbCBlbmFibGVkOw0KPj4+PiArCWludCBy
+ZXQ7DQo+Pj4+ICsNCj4+Pj4gKwlndWFyZChtdXRleCkoJnJhczJfY3R4LT5sb2NrKTsNCj4+Pj4g
+Kwlwc19zbS0+Y29tbW9uLnNldF9jYXBhYmlsaXRpZXNbMF0gPQ0KPj4+IFJBUzJfU1VQUE9SVF9I
+V19QQVJUT0xfU0NSVUI7DQo+Pj4+ICsJaWYgKGVuYWJsZSkgew0KPj4+PiArCQlpZiAoIXJhczJf
+Y3R4LT5zaXplKSB7DQo+Pj4+ICsJCQlkZXZfd2FybihyYXMyX2N0eC0+ZGV2LA0KPj4+PiArCQkJ
+CSAiJXM6IEludmFsaWQgcmVxdWVzdGVkIGFkZHJlc3MgcmFuZ2UsDQo+Pj4gcmVxdWVzdGVkX2Fk
+ZHJlc3NfcmFuZ2VbMF09MHglbGx4ICINCj4+Pj4gKwkJCQkgInJlcXVlc3RlZF9hZGRyZXNzX3Jh
+bmdlWzFdPTB4JWxseFxuIiwNCj4+PiBfX2Z1bmNfXywNCj4+Pj4gKwkJCQkgcHNfc20tPnBhcmFt
+cy5yZXF1ZXN0ZWRfYWRkcmVzc19yYW5nZVswXSwNCj4+Pj4gKwkJCQkgcHNfc20tPnBhcmFtcy5y
+ZXF1ZXN0ZWRfYWRkcmVzc19yYW5nZVsxXSk7DQo+Pj4+ICsJCQlyZXR1cm4gLUVSQU5HRTsNCj4+
+Pj4gKwkJfQ0KPj4+PiArCQlyZXQgPSByYXMyX2dldF9wYXRyb2xfc2NydWJfcnVubmluZyhyYXMy
+X2N0eCwgJmVuYWJsZWQpOw0KPj4+PiArCQlpZiAocmV0KQ0KPj4+PiArCQkJcmV0dXJuIHJldDsN
+Cj4+Pj4gKw0KPj4+PiArCQlpZiAoZW5hYmxlZCkNCj4+Pj4gKwkJCXJldHVybiAwOw0KPj4+PiAr
+DQo+Pj4+ICsJCXBzX3NtLT5wYXJhbXMuc2NydWJfcGFyYW1zX2luICY9DQo+Pj4gflJBUzJfUEFU
+Uk9MX1NDUlVCX1JBVEVfSU5fTUFTSzsNCj4+Pj4gKwkJcHNfc20tPnBhcmFtcy5zY3J1Yl9wYXJh
+bXNfaW4gfD0NCj4+PiBGSUVMRF9QUkVQKFJBUzJfUEFUUk9MX1NDUlVCX1JBVEVfSU5fTUFTSywN
+Cj4+Pj4gKwkJCQkJCQkgICAgcmFzMl9jdHgtPnJhdGUpOw0KPj4+PiArCQlwc19zbS0+cGFyYW1z
+LnJlcXVlc3RlZF9hZGRyZXNzX3JhbmdlWzBdID0gcmFzMl9jdHgtPmJhc2U7DQo+Pj4+ICsJCXBz
+X3NtLT5wYXJhbXMucmVxdWVzdGVkX2FkZHJlc3NfcmFuZ2VbMV0gPSByYXMyX2N0eC0+c2l6ZTsN
+Cj4+Pg0KPj4+DQo+Pj4gV2UgbmVlZCB0byBjbGVhciB0aGUgUkFTMl9QQVRST0xfU0NSVUJfRU5f
+QkFDS0dST1VORCBiaXQgaW4gdGhlDQo+aW5wdXQNCj4+PiBwYXJhbWV0ZXJzLg0KPj4+IFRoaXMg
+aXMgaW4gY2FzZSAiRW5hYmxlIEJhY2tncm91bmQiIHdhcyBwcmV2aW91c2x5IGNhbGxlZCwgYW5k
+IHRoaXMgYml0IHdhcw0KPnNldC4NCj4+Pg0KPj4+IAkJcHNfc20tPnBhcmFtcy5zY3J1Yl9wYXJh
+bXNfaW4gJj0NCj4+PiB+UkFTMl9QQVRST0xfU0NSVUJfRU5fQkFDS0dST1VORDsNCj4+IFdlIG5l
+ZWQgdG8gc3RvcCBiYWNrZ3JvdW5kIHNjcnViIGlmIGl0IGlzIGFscmVhZHkgcnVubmluZyBiZWZv
+cmUgc3RhcnQgYW4gb24tDQo+ZGVtYW5kIHNjcnViYmluZy4NCj4+IFRoZSBSQVMyX1BBVFJPTF9T
+Q1JVQl9FTl9CQUNLR1JPVU5EIGJpdCB3b3VsZCBiZSBjbGVhcmVkIHdpdGgNCj5kaXNhYmxlDQo+
+PiBiZyBzY3J1YiB3aXRoIHRoZSBmb2xsb3dpbmcgY29kZSBpbiByYXMyX2h3X3NjcnViX3NldF9l
+bmFibGVkX2JnKCkNCj4+IHdoZW4gZGlzYWJsZSBiYWNrZ3JvdW5kIHNjcnViKCdlbmFibGUnIGlz
+IDAgaW4gdGhpcyBjYXNlKS4NCj4+IHBzX3NtLT5wYXJhbXMuc2NydWJfcGFyYW1zX2luICY9DQo+
+flJBUzJfUEFUUk9MX1NDUlVCX0VOX0JBQ0tHUk9VTkQ7DQo+PiBwc19zbS0+cGFyYW1zLnNjcnVi
+X3BhcmFtc19pbiB8PQ0KPkZJRUxEX1BSRVAoUkFTMl9QQVRST0xfU0NSVUJfRU5fQkFDS0dST1VO
+RCwNCj4+IAkJCQkJCSAgICBlbmFibGUpOw0KPj4gSG9wZSBpdCBtYWtlIHNlbnNlPw0KPg0KPg0K
+PlllcywgdGhpcyBtYWtlcyBzZW5zZS4gQnV0LCBvbiBvdXIgcGxhdGZvcm0sIHdlIGF1dG9tYXRp
+Y2FsbHkgZW5hYmxlDQo+YmFja2dyb3VuZCB3aGVuIG9uLWRlbWFuZCBmaW5pc2hlcyhvciBpcyBz
+dG9wcGVkKS4gU2ltaWxhcmx5LCBpZiB3ZSBlbmFibGUgb24tDQo+ZGVtYW5kIHRoZW4gd2UgYXV0
+b21hdGljYWxseSBkaXNhYmxlIGJhY2tncm91bmQuIFNvLCBzb21lIHNvcnQgb2YgcGF0cm9sIGlz
+DQo+YWx3YXlzIG9uLWdvaW5nLiBUaGUgdXNlciBpcyB1bmFibGUgdG8gdHVybiB0aGVtIGJvdGgg
+b2ZmIGF0IHRoZSBzYW1lIHRpbWUuDQo+DQo+RHVlIHRvIG91ciBpbXBsZW1lbnRhdGlvbiBjaG9p
+Y2VzLCB0aGlzIGNhdXNlcyBzb21lIHdlaXJkbmVzcyB3aXRoIGhvdyB0aGUNCj5kcml2ZXIgcmVw
+cmVzZW50cyBlbmFibGVfYmFja2dyb3VuZCBhbmQgZW5hYmxlX29uX2RlbWFuZCBpbmRlcGVuZGVu
+dGx5LA0KPnNpbmNlIG91ciBzY3J1YmJlcnMgYXJlIG5vdCBpbmRlcGVuZGVudC4NCj4NCj5JJ20g
+Z29pbmcgdG8gbGVhdmUgdGhpcyBjb252ZXJzYXRpb24gaGVyZSBmb3Igbm93LCBiZWNhdXNlIG9u
+IGRpZmZlcmVudA0KPnBsYXRmb3JtcywgbWF5YmUgaGF2aW5nIGluZGVwZW5kZW50IGNvbnRyb2wg
+Zm9yIGJhY2tncm91bmQgYW5kIG9uLWRlbWFuZCBpcw0KPmRlc2lyZWQuDQoNCk9rLiBJIGFkZGVk
+IGNsZWFyaW5nIHRoZSBSQVMyX1BBVFJPTF9TQ1JVQl9FTl9CQUNLR1JPVU5EIGJpdCBpbiB0aGUg
+aW5wdXQNCnBhcmFtZXRlcnMgaW4gcmFzMl9od19zY3J1Yl9zZXRfZW5hYmxlZF9vZCAoKSBhcyB5
+b3UgcmVxdWVzdGVkIHNvIHRoYXQgaXQgd2lsbCB3b3JrDQppbiB5b3VyIHBsYXRmb3Jtcy4NCj4N
+Cj4+Pg0KPj4+DQo+Pj4+ICsJCXBzX3NtLT5wYXJhbXMucGF0cm9sX3NjcnViX2NvbW1hbmQgPQ0K
+Pj4+IFJBUzJfU1RBUlRfUEFUUk9MX1NDUlVCQkVSOw0KDQpUaGFua3MsDQpTaGlqdQ0K
+
