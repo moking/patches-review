@@ -1,0 +1,29 @@
+The patch series add test workflow for CXL dynamic capacity
+device (DCD) in Qemu.
+
+Patch 1: add new options in kconfig to enable qmp interface for qemu so qemu
+can be launched with qmp interface enabled, which is needed for CXL test like
+error injection, dynamic capacity extent add/release.
+Patch 2: add a new cxl topology where a DCD device is directly attached to the
+root port of a host bridge.  For the device itself, it has no static volatile
+or non-volatile capacity but only dynamic regions with no DC extents added yet.
+Path 3: add a new make command "cxl-create-dc-region" to create DC
+region for dynamic capacity, which is needed before dc extents can be
+added. We also fixed "make cxl" command as the regular cxl-mem-setup
+worklfow does not work for dcd device.
+Patch 4: add a new make command "cxl-dcd-setup" to add dc extents, and
+convert dynamic capacity to system ram and online it.
+
+With the patch series, we can play with DCD device in two ways,
+First workflow:
+After system bringup, run "make cxl"  which will create DC region, create dax
+device and convert it to system ram.
+
+The other workflow:
+After system bringup, and if ndctl is already available in the guest,
+perform the following two steps:
+1) make cxl-create-dc-region: create a DC region;
+2) make cxl-dcd-setup: add dc extents, create dax device and convert it to
+system ram.
+
+

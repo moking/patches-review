@@ -1,0 +1,2599 @@
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0B23C001DB
+	for <linux-cxl@archiver.kernel.org>; Thu, 10 Aug 2023 10:35:17 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231336AbjHJKfR (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 10 Aug 2023 06:35:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36724 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230114AbjHJKfQ (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 10 Aug 2023 06:35:16 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B609EF2
+        for <linux-cxl@vger.kernel.org>; Thu, 10 Aug 2023 03:35:15 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4RM3B91FWcz6J6lG;
+        Thu, 10 Aug 2023 18:31:29 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Thu, 10 Aug
+ 2023 11:35:12 +0100
+Date: Thu, 10 Aug 2023 11:35:12 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Maverickk 78 <maverickk1778@gmail.com>
+CC: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        <linux-cxl@vger.kernel.org>
+Subject: Re: CXL volatile memory is not listed
+Message-ID: <20230810113512.00000516@Huawei.com>
+In-Reply-To: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Wed, 9 Aug 2023 04:21:47 +0530
+Maverickk 78 <maverickk1778@gmail.com> wrote:
+
+> Hello,
+> 
+> I am running qemu-system-x86_64
+> 
+> qemu-system-x86_64 --version
+> QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+>
++Cc linux-cxl as the answer is more todo with linux than qemu.
+ 
+> qemu-system-x86_64 \
+> -m 2G,slots=4,maxmem=4G \
+> -smp 4 \
+> -machine type=q35,accel=kvm,cxl=on \
+> -enable-kvm \
+> -nographic \
+> -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G
+
+There are some problems upstream at the moment (probably not cxl related but
+I'm digging). So today I can't boot an x86 machine. (goody)
+
+
+More generally for the flow that would bring the memory up as system ram
+you would typically need the bios to have done the CXL enumeration or
+a bunch of scripts in the kernel to have done it.  In general it can't
+be fully automated, because there are policy decisions to make on things like
+interleaving.
+
+I'm not aware of any open source BIOSs that do it yet.  So you have
+to rely on the same kernel paths as for persistent memory - manual configuration
+etc in the kernel. 
+
+There is support in ndctl for those enabling flows, so I'd look there
+for more information
+
+Jonathan
+
+
+> 
+> 
+> I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> shows only 2G memory which is System RAM, it's not listing the CXL
+> memory.
+> 
+> Do I need to pass any particular parameter in the kernel command line?
+> 
+> Is there any documentation available? I followed the inputs provided in
+> 
+> https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> 
+> Is there any documentation/blog listed?
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2193FC001B0
+	for <qemu-devel@archiver.kernel.org>; Thu, 10 Aug 2023 11:00:26 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qU3OC-0000LL-Cl; Thu, 10 Aug 2023 06:59:36 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <philmd@linaro.org>) id 1qU3OA-0000L6-Cx
+ for qemu-devel@nongnu.org; Thu, 10 Aug 2023 06:59:34 -0400
+Received: from mail-wr1-x434.google.com ([2a00:1450:4864:20::434])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+ (Exim 4.90_1) (envelope-from <philmd@linaro.org>) id 1qU3O8-00037I-2P
+ for qemu-devel@nongnu.org; Thu, 10 Aug 2023 06:59:34 -0400
+Received: by mail-wr1-x434.google.com with SMTP id
+ ffacd0b85a97d-317dcdae365so712278f8f.1
+ for <qemu-devel@nongnu.org>; Thu, 10 Aug 2023 03:59:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linaro.org; s=google; t=1691665170; x=1692269970;
+ h=content-transfer-encoding:in-reply-to:from:cc:references:to
+ :content-language:subject:user-agent:mime-version:date:message-id
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=2HvHCP70ZHroKOL6EwLKWvMZd+U+3ZMYzGi0DXS7wFM=;
+ b=Q377VuwZ/wWM+jdBkTgV98fdZAZp5YvodZLphvBMkKSF1ss0bqTCVYDz3n6aYrdqVL
+ EPBrzR/9FbiZvpeEeVlZ3pcUDn7/NTnWtxRA/KClNy/4oNd7JIVRGknNQ7yX4+bGg5yh
+ guOKnAHdqnCOnm77Wf00v4/GcD+C/0oBFzQUW9nudEN7EDptyReWTVn7vrlNS0PEXLlk
+ +72dqA0y/JXyKLpEgVXgataG5/Dw0RjuLPVVLP414d454sSvz4yKCQCdZPmNKy5apEtk
+ 9q/hyOFOVvCsVkLEaZNq3lRGNBDj9sirpSdK96X/FsyjgcGtNIBHIFb7VV0SW7oFn4I7
+ aIGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1691665170; x=1692269970;
+ h=content-transfer-encoding:in-reply-to:from:cc:references:to
+ :content-language:subject:user-agent:mime-version:date:message-id
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=2HvHCP70ZHroKOL6EwLKWvMZd+U+3ZMYzGi0DXS7wFM=;
+ b=K+YPO1IeNukaNcu8uAEIdHlJvlLVR25fVI2C64HQWdvp6RHbBW4p4aByna6VnyAh8/
+ ObRJPiHcEWkGQwIBLxNKcZJMXF+MFOHQQVM5C1G7X7+FFT6fDdsndXGnmP556c2H1fHl
+ J0AcGBCymJc9fMCW06X582LlpeRmfmfX7g5s+AnUpoDB8nzrhe6U/PEqvKXv6ft+DI69
+ s3FZ53ulWiTwfw3Ek6yINnfyF7TG0X2r1oNdRVsI9nEK0Jak+pxPC3kppAzFaoRp5hdS
+ vsp4DD6j0Y7FQpxsCtAvYzmXmyE9RtfUN9qjnQnIJvmtn3nzYNyXOrmKGqZtq0tv2Apy
+ adwg==
+X-Gm-Message-State: AOJu0YwieJzZSZgaayLcAtWv7Qm3h1K4Wjt28aL0IEC9HdQDwqXsPmwY
+ /kV3U9bwjp+j1iKB0thZ7BPEWfnCKczUSOIJQUQ=
+X-Google-Smtp-Source: AGHT+IFWbfY0XhDgZxv91Mz/b9gzUqHht1jv83opgM0TyXcEvS/V6MrGrPJ7vV6aK1rNaMGBcOMSyQ==
+X-Received: by 2002:a5d:6889:0:b0:317:ef6:89a7 with SMTP id
+ h9-20020a5d6889000000b003170ef689a7mr1679131wru.27.1691665170536; 
+ Thu, 10 Aug 2023 03:59:30 -0700 (PDT)
+Received: from [192.168.69.115] ([176.176.158.65])
+ by smtp.gmail.com with ESMTPSA id
+ k7-20020adfe3c7000000b003176c6e87b1sm1797361wrm.81.2023.08.10.03.59.29
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 10 Aug 2023 03:59:30 -0700 (PDT)
+Message-ID: <f64d5006-ae77-cc10-270a-0c0fc6e3a0ef@linaro.org>
+Date: Thu, 10 Aug 2023 12:59:28 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.13.0
+Subject: Re: CXL volatile memory is not listed
+Content-Language: en-US
+To: Maverickk 78 <maverickk1778@gmail.com>,
+ Igor Mammedov <imammedo@redhat.com>, David Hildenbrand <david@redhat.com>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+Cc: QEMU Developers <qemu-devel@nongnu.org>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>
+From: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>
+In-Reply-To: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Received-SPF: pass client-ip=2a00:1450:4864:20::434;
+ envelope-from=philmd@linaro.org; helo=mail-wr1-x434.google.com
+X-Spam_score_int: -42
+X-Spam_score: -4.3
+X-Spam_bar: ----
+X-Spam_report: (-4.3 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1, NICE_REPLY_A=-2.156,
+ RCVD_IN_DNSWL_NONE=-0.0001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+
+Hi,
+
+Cc'ing Igor and David.
+
+On 9/8/23 00:51, Maverickk 78 wrote:
+> Hello,
+> 
+> I am running qemu-system-x86_64
+> 
+> qemu-system-x86_64 --version
+> QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> 
+> qemu-system-x86_64 \
+> -m 2G,slots=4,maxmem=4G \
+> -smp 4 \
+> -machine type=q35,accel=kvm,cxl=on \
+> -enable-kvm \
+> -nographic \
+> -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G
+> 
+> 
+> I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> shows only 2G memory which is System RAM, it's not listing the CXL
+> memory.
+
+Sounds like a bug. Do you mind reporting at
+https://gitlab.com/qemu-project/qemu/-/issues?
+
+Thanks,
+
+Phil.
+
+> Do I need to pass any particular parameter in the kernel command line?
+> 
+> Is there any documentation available? I followed the inputs provided in
+> 
+> https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> 
+> Is there any documentation/blog listed?
+> 
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EF87C04A94
+	for <qemu-devel@archiver.kernel.org>; Thu, 10 Aug 2023 11:19:58 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qU3hC-0007j0-0v; Thu, 10 Aug 2023 07:19:14 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <david@redhat.com>) id 1qU3h4-0007iJ-AC
+ for qemu-devel@nongnu.org; Thu, 10 Aug 2023 07:19:07 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <david@redhat.com>) id 1qU3h0-00085J-Cz
+ for qemu-devel@nongnu.org; Thu, 10 Aug 2023 07:19:03 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1691666340;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=pp+EZx2Jtbnhm6RJgieq1zEP7WiMD8qk35ak2B53/xY=;
+ b=fMgcDaYP1gEn3qNWnYWu6L6iHf8MISloqdW8BCNlACMvrU/D2PHDKa9vIW4fOglGCBhB/b
+ jx23AAo2FVZdHzc7lBBd2N6xl173NwretCvqTSCI9RtbDaXzCSxmchDRDQbNT/n0+8IghR
+ 4RBAywW8S9I+UYY5142jYqhrY4APwSo=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-153-6D33pO0SMqayj4JqFiC9aQ-1; Thu, 10 Aug 2023 07:18:59 -0400
+X-MC-Unique: 6D33pO0SMqayj4JqFiC9aQ-1
+Received: by mail-wm1-f69.google.com with SMTP id
+ 5b1f17b1804b1-3fe216798e9so5393805e9.3
+ for <qemu-devel@nongnu.org>; Thu, 10 Aug 2023 04:18:58 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1691666338; x=1692271138;
+ h=content-transfer-encoding:in-reply-to:organization:from:references
+ :cc:to:content-language:subject:user-agent:mime-version:date
+ :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=pp+EZx2Jtbnhm6RJgieq1zEP7WiMD8qk35ak2B53/xY=;
+ b=kDvhKnNgLfpszRDwV6tcm7TIqkLPm5I548GkGNfpjrTh4lloucbef3YroWoWhFII1h
+ N5BFJ1F6hN7YW8d/D39MX5EyCrP7icurVKOnJiwgMTZ/7saHkQiT6GDgEoqjsaSVqxQM
+ vC1/3iQbrrcbssS3bSJlX+MKQh7R52USJmqAy9v/4deaIi9oICI46PB+11jyzEAUdItP
+ x3zOQJuYHrnsBTVxe0cqWfRVCF0aEGun3lKXf7DZWaDKp4KqexsDrCzZ317FIOl7QKNR
+ BpqFcwmMmkaYACH4OLVZeWa9uJqjMeN/0SwfdcEmKnM9A0CM/fWdJtBYi2lijpPLuefA
+ dyuQ==
+X-Gm-Message-State: AOJu0YzDnsekjpCNfSmZaU7PNmoi/bREaI20wxuXEsse2QOQsr3WHFqW
+ Hi+1jwtTCCirem24lJK0nsgI8knoeRBCYt6CPB3N/d4WkzjIMpeUFKSXHxkcx9+0p+lS6WLeP6A
+ UmtQkVkZaevZ2rt8=
+X-Received: by 2002:a05:600c:2110:b0:3fe:22a9:910 with SMTP id
+ u16-20020a05600c211000b003fe22a90910mr1761715wml.14.1691666337886; 
+ Thu, 10 Aug 2023 04:18:57 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEqqLYrhI1TLVlMgqRxwE6UMmFmmJCD2RU7DuOMU6qfaU+z/Yc6vZq/oj7pb2lTeyFRbjgyyA==
+X-Received: by 2002:a05:600c:2110:b0:3fe:22a9:910 with SMTP id
+ u16-20020a05600c211000b003fe22a90910mr1761696wml.14.1691666337468; 
+ Thu, 10 Aug 2023 04:18:57 -0700 (PDT)
+Received: from ?IPV6:2a09:80c0:192:0:5dac:bf3d:c41:c3e7?
+ ([2a09:80c0:192:0:5dac:bf3d:c41:c3e7])
+ by smtp.gmail.com with ESMTPSA id
+ f21-20020a1c6a15000000b003fc02218d6csm4657610wmc.25.2023.08.10.04.18.56
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 10 Aug 2023 04:18:57 -0700 (PDT)
+Message-ID: <41f42c91-bcbe-cba6-c987-ae34d0879a9d@redhat.com>
+Date: Thu, 10 Aug 2023 13:18:56 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: CXL volatile memory is not listed
+Content-Language: en-US
+To: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>,
+ Maverickk 78 <maverickk1778@gmail.com>, Igor Mammedov <imammedo@redhat.com>
+Cc: QEMU Developers <qemu-devel@nongnu.org>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+ <f64d5006-ae77-cc10-270a-0c0fc6e3a0ef@linaro.org>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat
+In-Reply-To: <f64d5006-ae77-cc10-270a-0c0fc6e3a0ef@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Received-SPF: pass client-ip=170.10.129.124; envelope-from=david@redhat.com;
+ helo=us-smtp-delivery-124.mimecast.com
+X-Spam_score_int: -42
+X-Spam_score: -4.3
+X-Spam_bar: ----
+X-Spam_report: (-4.3 / 5.0 requ) BAYES_00=-1.9, DKIMWL_WL_HIGH=-0.001,
+ DKIM_SIGNED=0.1, DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1,
+ NICE_REPLY_A=-2.156, RCVD_IN_DNSWL_NONE=-0.0001, RCVD_IN_MSPIKE_H4=0.001,
+ RCVD_IN_MSPIKE_WL=0.001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+
+On 10.08.23 12:59, Philippe Mathieu-Daudé wrote:
+> Hi,
+> 
+> Cc'ing Igor and David.
+> 
+> On 9/8/23 00:51, Maverickk 78 wrote:
+>> Hello,
+>>
+>> I am running qemu-system-x86_64
+>>
+>> qemu-system-x86_64 --version
+>> QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+>>
+>> qemu-system-x86_64 \
+>> -m 2G,slots=4,maxmem=4G \
+>> -smp 4 \
+>> -machine type=q35,accel=kvm,cxl=on \
+>> -enable-kvm \
+>> -nographic \
+>> -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+>> -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+>> -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+>> -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+>> -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G
+>>
+>>
+>> I was expecting the CXL memory to be listed in "System Ram", the lsmem
+>> shows only 2G memory which is System RAM, it's not listing the CXL
+>> memory.
+
+We are talking about the memory via inside the guest, right?
+
+In the guest, that memory most probably has to be added as "System RAM" 
+explicitly using the dax/kmem driver.
+
+https://lwn.net/Articles/922944/
+
+Contains some details on how to use "daxctl reconfigure-device".
+
+-- 
+Cheers,
+
+David / dhildenb
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14F9BC001E0
+	for <linux-cxl@archiver.kernel.org>; Thu, 10 Aug 2023 16:33:28 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229732AbjHJQd1 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 10 Aug 2023 12:33:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35460 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233911AbjHJQd0 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 10 Aug 2023 12:33:26 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D63090
+        for <linux-cxl@vger.kernel.org>; Thu, 10 Aug 2023 09:33:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.us;
+ s=s31663417; t=1691685188; x=1692289988; i=fan.ni@gmx.us;
+ bh=Ic34E1rhStu5oBJ08gz/o3kbUbXuZnUVTlGULk/Q6ks=;
+ h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=dytzl3366sQQ9n/9D6wuVdYhzCHBBE6CgQB7eD4Y/nUiObxr1PUaDaQpySEFhSpZvVPcEU0
+ jEy1eAdRZ6Cv5Jv60gcp5+AyC67dpL4fY3RfHMBFDRzi3dbW3O5QJCLjqzghzSHj/8kta+6DP
+ SrdAogyL45Na7k1w5NEbD5g2ORqiCSbCvL0dXV4H/3b7kC6W+6+iKFTw+HbmK7ZJrre461/79
+ gsyg12b7bkP0+lBYifqtJ/NXxbqYbAIs0bMHJipXGnst61rMeW5GNLREqyQJLBl1tE9vyeSAA
+ ddRBux/5didM9hM9qUdX+O92dsg5KIRyn/4KjcZ316SA8RWi/wVA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from debian ([99.13.228.231]) by mail.gmx.net (mrgmx104
+ [212.227.17.174]) with ESMTPSA (Nemesis) id 1MJE6F-1qF5ke1eB9-00KiTo; Thu, 10
+ Aug 2023 18:33:08 +0200
+Date: Thu, 10 Aug 2023 09:32:55 -0700
+From: Fan Ni <fan.ni@gmx.us>
+To: Maverickk 78 <maverickk1778@gmail.com>
+Cc: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        linux-cxl@vger.kernel.org
+Subject: Re: CXL volatile memory is not listed
+Message-ID: <ZNURN6Zzf2hJfmt/@debian>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+X-Provags-ID: V03:K1:34c3h0X1GoGb6w3tlWtZc4NsiTaDJ4S1HgxAVUBpatoGVB55JX3
+ HtRJskZ0coaxwKVJgE/MarNgvBazmvKfa9j+CAKPLqDLiGFPVf/PbmbZJZa87sbIQxeZ0ja
+ CZ92rV2XS5APrNxQHJVoPawZRuajTM4+5n4PO1zgCaHMky9aqPACczDan5rDVdHPAJ5Vaal
+ uq5d7tsa4/WL9gfTd1Q5w==
+UI-OutboundReport: notjunk:1;M01:P0:0gRq4+nxu1k=;XzOB6oQ5IH2ZLKstESxah76vVh5
+ +Ful1GMetCckoAsTwzWweA2e3f/Qi7H0EuHZhv52+lmtIuO+GVSNZ1Q4lTdEbX/UFREfnCL+Z
+ /EuKMy3zDxxDQJ07qeLHhOX956OBg/aaE5V13ty273E2qHEZgfAO+j55PTa2XFT5yf2ma5MaU
+ Ixu1e8/vwkPfLTtkeWHbndUTNeiBywWI65D/r9tZQIhQLIKmY6K3+oKXHh2PMrd7gMAjV1Mef
+ drInTjZTd6rP7CIkqvYn/s/LHBj63eMOhs8PMpmNPvu6Q6NzatpJgqSbm2yXfqDi00Z+ZP3uX
+ N3Mw+GgszJEXmyMj4pXkMooGXnW2nk2VPJzzJit+eIF+paZeLl8T7ZLii60Xr+XOBhxO10l4K
+ Pe4x4mLBrq3HXNalVNrCTL+0oAwZWZ4Z/CUSrO28CbGvLrcADrDdWYuyG8tFedhq9pUsIcbEO
+ KNFfWWMmRnQQSAgsm1JHGy9Y0wrGBR34X90HgPwMvknGGlluVfFeef4CE1OTG3AkC9xv3bk+l
+ KR+ORV2kbomimA2ufg8Ah+/YPUhceavk3sLlxIEBCj9tc1ntbHRkhi81gN09scY0PVgg4Ldvi
+ K0PVaNml9SUruFdTw6w8t+EPqcrx30hneD9tUphve+QtnLIqhD/LrVyZLvHBkVUvq97KmyKP6
+ kpI29IhN9B2TLxWZFk7QU+OQSv7zACxpyJf2QOYZHeYbSHdRHiE+K1l0u8UBYuDBzjAQAn2XT
+ KB+03R+NpX6ot4dM87vd5PnDrkT7CLf9oLMIFjN1j4Ke9li8nlKZtQchO2VhoC8wDeBpAYGIb
+ J+z4RcjbUz9CUzjIsLsIcPiG0UCyC8EE2wxIjTGh23I7CmD5Aiz6fAPwWxeAQSE/4L4qkiBmv
+ pB7vr4ANlQOzNshcdFAIySzo7AhGzdCFZa2wLX84Pe9pGXt/8EnZiZ5dCeIYYxAUYjzCn0v2u
+ 2f+mxzXte2tqmlUIcYL2da6I2SM=
+Content-Transfer-Encoding: quoted-printable
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Wed, Aug 09, 2023 at 04:21:47AM +0530, Maverickk 78 wrote:
+> Hello,
+>
+> I am running qemu-system-x86_64
+>
+> qemu-system-x86_64 --version
+> QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+>
+> qemu-system-x86_64 \
+> -m 2G,slots=3D4,maxmem=3D4G \
+> -smp 4 \
+> -machine type=3Dq35,accel=3Dkvm,cxl=3Don \
+> -enable-kvm \
+> -nographic \
+> -device pxb-cxl,id=3Dcxl.0,bus=3Dpcie.0,bus_nr=3D52 \
+> -device cxl-rp,id=3Drp0,bus=3Dcxl.0,chassis=3D0,port=3D0,slot=3D0 \
+> -object memory-backend-file,id=3Dmem0,mem-path=3D/tmp/mem0,size=3D1G,sha=
+re=3Dtrue \
+> -device cxl-type3,bus=3Drp0,volatile-memdev=3Dmem0,id=3Dcxl-mem0 \
+> -M cxl-fmw.0.targets.0=3Dcxl.0,cxl-fmw.0.size=3D1G
+>
+>
+> I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> shows only 2G memory which is System RAM, it's not listing the CXL
+> memory.
+>
+> Do I need to pass any particular parameter in the kernel command line?
+>
+> Is there any documentation available? I followed the inputs provided in
+>
+> https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+>
+> Is there any documentation/blog listed?
+
+If I remember it correctly, for volatile cxl memory, we need to create a
+region and then it will be discovered as system memory and shows up.
+
+Try to create a region with "cxl create-region".
+
+Fan
+>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DFB5C001B0
+	for <linux-cxl@archiver.kernel.org>; Fri, 11 Aug 2023 02:22:39 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229954AbjHKCWi (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 10 Aug 2023 22:22:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33988 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229475AbjHKCWh (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 10 Aug 2023 22:22:37 -0400
+Received: from mail-il1-x12e.google.com (mail-il1-x12e.google.com [IPv6:2607:f8b0:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B8D12727
+        for <linux-cxl@vger.kernel.org>; Thu, 10 Aug 2023 19:22:37 -0700 (PDT)
+Received: by mail-il1-x12e.google.com with SMTP id e9e14a558f8ab-34914684b62so5646725ab.3
+        for <linux-cxl@vger.kernel.org>; Thu, 10 Aug 2023 19:22:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1691720557; x=1692325357;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=XbbCx49wRpP4DxUXKnhwVZHka1TPFZPDIatFvbZ4Jug=;
+        b=YEUdjllhtxycgD6IrlkShVoS8icFqsXRe9CcGz9/FpruV/EetUADiuAw/HHt3bgjVf
+         SO/IeQCGMqVNj/KoRggxjNy9bNjFr/DWoAQLS6SsPrs27td/rRqxv6/Gu86ByYyw4KEY
+         Y+L/Wq5HewHpPMROUFaiJFTyZhsqvknVdlqdpErpw35gF3oCd8I1IknxLDJxaoASM2RZ
+         rWhuzTedKhrnVsvBDM5X9jAcirlxs4Ljl0KLl4gdUlIe84djSx023hDIpqYFP0Pygscn
+         s0mLM2sMCZJ6wX1WoX0HBafa+F1cUnuEJL1VSrW51hMonHMB66x9ffeY8CcbdHieDiLb
+         mCBg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691720557; x=1692325357;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=XbbCx49wRpP4DxUXKnhwVZHka1TPFZPDIatFvbZ4Jug=;
+        b=YIJNrPk5/O8DEZ7kviMszhr8iMxn9wtvNbRjQ2J+XhNCUBAgmPZn4El0AhCGabCRCA
+         kvD2nykN/eXBCoGSW4bRcXVFADn6Rx1gIQNLdYaXUXHHeVByv2YUVmswER/5ivMe4Zzc
+         MLZkaR35eHcTWu5aTyrOm9MOqvG//z1fk8NDEAJCB/hZCfXQHLggmvgzDcx3CazVTRFk
+         uGPCBY+FVef1TEJxh5O18cHhUPbzjuX1Pdka8j70acSmR7ky34DFxGzrL7EvEYa5+tjk
+         ACvxORVG8GiYpZunAJlNQE6va7ZOEIbt8KiO5f2v4QyXSc5koVoGX/qhGPr6PpQM6xJ4
+         AG8Q==
+X-Gm-Message-State: AOJu0YzBMcdbYUuwr/WizhbFCKRnn+aZu+HfYcWysespZLRS04qOm+9/
+        SSqH0VCmbvJmoWo+9Pa+nBiCoICUhwtUSEf0X8Z/iWvO
+X-Google-Smtp-Source: AGHT+IHjqUSZ3i7Fjwy9A3JxZl5rrWF0bAn3QNc5pbA8T/p6nOJcvtBFCa0gr2CX3ROLjxdbLWJXLubuKjQJeGm7MgI=
+X-Received: by 2002:a05:6e02:1be2:b0:348:1a1d:79a5 with SMTP id
+ y2-20020a056e021be200b003481a1d79a5mr773169ilv.15.1691720556754; Thu, 10 Aug
+ 2023 19:22:36 -0700 (PDT)
+MIME-Version: 1.0
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+ <ZNURN6Zzf2hJfmt/@debian>
+In-Reply-To: <ZNURN6Zzf2hJfmt/@debian>
+From: Maverickk 78 <maverickk1778@gmail.com>
+Date: Fri, 11 Aug 2023 07:52:25 +0530
+Message-ID: <CALfBBTuRdwCcc-A88kMN7iub9BHx2xfFkfP8Lbrc+oSwfCS2nw@mail.gmail.com>
+Subject: Re: CXL volatile memory is not listed
+To: Fan Ni <fan.ni@gmx.us>
+Cc: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        linux-cxl@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Thanks Fan,
+
+cxl create-region works like a charm :)
+
+Since this gets listed as "System Ram(kmem)", I guess the kernel
+treats it as regular memory and
+allocates it to the applications when needed?
+or is there an extra effort needed to make it available for
+applications on the host?
+
+On Thu, 10 Aug 2023 at 22:03, Fan Ni <fan.ni@gmx.us> wrote:
+>
+> On Wed, Aug 09, 2023 at 04:21:47AM +0530, Maverickk 78 wrote:
+> > Hello,
+> >
+> > I am running qemu-system-x86_64
+> >
+> > qemu-system-x86_64 --version
+> > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> >
+> > qemu-system-x86_64 \
+> > -m 2G,slots=4,maxmem=4G \
+> > -smp 4 \
+> > -machine type=q35,accel=kvm,cxl=on \
+> > -enable-kvm \
+> > -nographic \
+> > -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> > -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> > -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> > -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> > -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G
+> >
+> >
+> > I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> > shows only 2G memory which is System RAM, it's not listing the CXL
+> > memory.
+> >
+> > Do I need to pass any particular parameter in the kernel command line?
+> >
+> > Is there any documentation available? I followed the inputs provided in
+> >
+> > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> >
+> > Is there any documentation/blog listed?
+>
+> If I remember it correctly, for volatile cxl memory, we need to create a
+> region and then it will be discovered as system memory and shows up.
+>
+> Try to create a region with "cxl create-region".
+>
+> Fan
+> >
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0B3AC001E0
+	for <linux-cxl@archiver.kernel.org>; Fri, 11 Aug 2023 02:34:40 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229751AbjHKCek (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 10 Aug 2023 22:34:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33422 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232214AbjHKCej (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 10 Aug 2023 22:34:39 -0400
+Received: from mail-il1-x134.google.com (mail-il1-x134.google.com [IPv6:2607:f8b0:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD66C2D6A
+        for <linux-cxl@vger.kernel.org>; Thu, 10 Aug 2023 19:34:37 -0700 (PDT)
+Received: by mail-il1-x134.google.com with SMTP id e9e14a558f8ab-3490eacf4d5so5787695ab.0
+        for <linux-cxl@vger.kernel.org>; Thu, 10 Aug 2023 19:34:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1691721277; x=1692326077;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=7RczCAEfFlIDjbcm6CEP7Zo7Rw49GxpIvtdn+ukP/+o=;
+        b=LEBN+RQzOrBJ3NTt+QN+ma1T54nWv94ArqaMwmmUy4hTYmtMcxOejO9GFC3MKGwxeF
+         8/QLGL39sZuUkQB9ntY5ibxI2QOT4LX8JTKxL6UhjSufJT3WTQ/KjG1bypW+Hvce5jEI
+         4Gvh8y2bLi/appa3A/DH3hQxmsHiN7wHFJ70zTHhap14kl4WzJZHpqTnVAOULZOXNQgo
+         2lJ8EXG/sUI0AIM4qTldvPcvhSZhDDA+tZ2ukOwcOvmJVTOj0Pr3a/nCnqAtCq8uTaTC
+         fxQVDLL1kOKnb8FixGBl7TFIAFvVPyFp8CG+IyREdD0qPBu0KNRtd7IXmXX70xnQnM39
+         JSiw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691721277; x=1692326077;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=7RczCAEfFlIDjbcm6CEP7Zo7Rw49GxpIvtdn+ukP/+o=;
+        b=lupslkvVm5Hw8rh/oRPV0tss+HQNZ3AOSG9nfFmNUIPvdsqxnBECdOMPFyGeDY/ZVN
+         n1dYUMwNE50cBXkUVRohX2frCu4gxW9FV4dFq4ujmydrgfpKA11mo+7daMWZZwoZ8Nk+
+         5WautClY9DsQHNJ3Qdv8H2vOELo7rBTrkKDMm5Cx+lPPI9xPlEes3KxvR/Rb4YEgNjxZ
+         GbScLR5h7har4uKktqD9GN5lnGJzBkiVHDLv9ClaLh1GiBJmbVHjdOw5aNSZuJ61F+Cw
+         bb+UnOhSDXGqVN1fcnWcoXNlnmoi4nhQ6oVLTywntcHw5Ht0Fyw5cLZyPyxsaYQbQm8Y
+         lS0Q==
+X-Gm-Message-State: AOJu0Yy0d44B1FrisxBpswQWploSCU5/e3Oj6bjdkPyWw2WbFHM/g5QN
+        4MTKrX2OLPnrflg5HWpiCRbJAyx7UuwqS30vDXo=
+X-Google-Smtp-Source: AGHT+IGjdTEMWT5dDZzHB7sl1DeRZKElA98jt/FYICjlSj2Icg9K7JbNqm2/OqZ/qR3A9bAqoQ9sX0yTlVBXvRMDKC8=
+X-Received: by 2002:a92:c5d0:0:b0:345:df7f:efc4 with SMTP id
+ s16-20020a92c5d0000000b00345df7fefc4mr741425ilt.27.1691721277269; Thu, 10 Aug
+ 2023 19:34:37 -0700 (PDT)
+MIME-Version: 1.0
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+ <20230810113512.00000516@Huawei.com>
+In-Reply-To: <20230810113512.00000516@Huawei.com>
+From: Maverickk 78 <maverickk1778@gmail.com>
+Date: Fri, 11 Aug 2023 08:04:26 +0530
+Message-ID: <CALfBBTud4Y7qxKB8nkZ5Lo5sQs-7-F9Rkso+iQGvLO07VyRcDA@mail.gmail.com>
+Subject: Re: CXL volatile memory is not listed
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        linux-cxl@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Jonathan,
+
+> More generally for the flow that would bring the memory up as system ram
+> you would typically need the bios to have done the CXL enumeration or
+> a bunch of scripts in the kernel to have done it.  In general it can't
+> be fully automated, because there are policy decisions to make on things like
+> interleaving.
+
+BIOS CXL enumeration? is CEDT not enough? or BIOS further needs to
+create an entry
+in the e820 table?
+
+>
+> I'm not aware of any open source BIOSs that do it yet.  So you have
+> to rely on the same kernel paths as for persistent memory - manual configuration
+> etc in the kernel.
+>
+Manual works with "cxl create regiton"  :)
+
+On Thu, 10 Aug 2023 at 16:05, Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
+>
+> On Wed, 9 Aug 2023 04:21:47 +0530
+> Maverickk 78 <maverickk1778@gmail.com> wrote:
+>
+> > Hello,
+> >
+> > I am running qemu-system-x86_64
+> >
+> > qemu-system-x86_64 --version
+> > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> >
+> +Cc linux-cxl as the answer is more todo with linux than qemu.
+>
+> > qemu-system-x86_64 \
+> > -m 2G,slots=4,maxmem=4G \
+> > -smp 4 \
+> > -machine type=q35,accel=kvm,cxl=on \
+> > -enable-kvm \
+> > -nographic \
+> > -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> > -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> > -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> > -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> > -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G
+>
+> There are some problems upstream at the moment (probably not cxl related but
+> I'm digging). So today I can't boot an x86 machine. (goody)
+>
+>
+> More generally for the flow that would bring the memory up as system ram
+> you would typically need the bios to have done the CXL enumeration or
+> a bunch of scripts in the kernel to have done it.  In general it can't
+> be fully automated, because there are policy decisions to make on things like
+> interleaving.
+>
+> I'm not aware of any open source BIOSs that do it yet.  So you have
+> to rely on the same kernel paths as for persistent memory - manual configuration
+> etc in the kernel.
+>
+> There is support in ndctl for those enabling flows, so I'd look there
+> for more information
+>
+> Jonathan
+>
+>
+> >
+> >
+> > I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> > shows only 2G memory which is System RAM, it's not listing the CXL
+> > memory.
+> >
+> > Do I need to pass any particular parameter in the kernel command line?
+> >
+> > Is there any documentation available? I followed the inputs provided in
+> >
+> > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> >
+> > Is there any documentation/blog listed?
+>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD0C9C001DE
+	for <qemu-devel@archiver.kernel.org>; Fri, 11 Aug 2023 02:43:55 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qUI7F-0006tH-TO; Thu, 10 Aug 2023 22:43:05 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <maverickk1778@gmail.com>)
+ id 1qUI7E-0006t9-Mv
+ for qemu-devel@nongnu.org; Thu, 10 Aug 2023 22:43:04 -0400
+Received: from mail-io1-xd35.google.com ([2607:f8b0:4864:20::d35])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+ (Exim 4.90_1) (envelope-from <maverickk1778@gmail.com>)
+ id 1qUI7D-0004Jf-0l
+ for qemu-devel@nongnu.org; Thu, 10 Aug 2023 22:43:04 -0400
+Received: by mail-io1-xd35.google.com with SMTP id
+ ca18e2360f4ac-790b080f2a0so53283139f.3
+ for <qemu-devel@nongnu.org>; Thu, 10 Aug 2023 19:43:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1691721781; x=1692326581;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=njuKOggsh5ZuBe2MY5qsFN4kGwCJ+yONnPm00uk5Ofk=;
+ b=pC7TMlb/4YJ0hBmz49SMSK79G8l0lDjq87mkr3kXFPPUP4G8ZpWSzagPpHGhfU60Ck
+ olvbeTdP43Pz41mzve9JDbFvm7YdENaejs51JZYfaAfOx5m7EoRl0VbSNq04K5dcPG21
+ i2N4/uGtuMoTOGAw3YhlutY20DGCwnfKLzHud3UAreUVkp3tPBLDQjQgQOqw3mXkej1m
+ LDC8qPCMBnhS040NxSVTYUMc6JYFIVmAuK7WQ3VC05H8d2NOKoT9qYl5wYFhEgFDcGMI
+ VKl0bZ58IQi6OPmzPpN1Gg+KfoSYCLusJfriMKvi9vKCyQVxmkZvgvyJHFH+YGC9R0HT
+ M1IQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1691721781; x=1692326581;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=njuKOggsh5ZuBe2MY5qsFN4kGwCJ+yONnPm00uk5Ofk=;
+ b=RXeA0cilGlYj6gOPpUc1RYWA2Uf/q2Rgrfz4LgYpx8NciNU6X8dpxeIyTcsndMIwUT
+ Kr32+vOYTYg5D0aID9ffesW3Adwy04DedF2BWhgQ0rY2cW92VLl6R8BYrLregVNTA8xv
+ K0dKZvogUqZb2PUx8HxHBjfkgZUAOXGzfpAVaG6QEYmj8DYTKN9sGor3O8Ku+yvUjhN7
+ JRL2sqZ4tPYm2QH77nRWyADokH8x3fNA2GcsBgb60w6MUxLxs60wI9R042xwO8qjc14K
+ 8edUcR4h1AXCgqsnSxG2B/PZHjnW41YgZxp1rOmsqhmTP3NE0rb9Dw+puSZwrXGE00sS
+ 6jgw==
+X-Gm-Message-State: AOJu0YymigRYzbjq1TksKQ4p+q4Xdo+m1dCVh/WNp5y9GhTvE/HwpDz6
+ 7KoQTkEsBYMikb+IT+qvYx32Inl4AcnspOtzdnY=
+X-Google-Smtp-Source: AGHT+IHitFVbdAFCcci0AYPXJTO+gptwEaQ3+sD1KRqNFruLRVJUzj9sNM5CtF+qus0IFjaFXdZGpOWMJa0+5XNgBL4=
+X-Received: by 2002:a05:6e02:1113:b0:345:3378:4251 with SMTP id
+ u19-20020a056e02111300b0034533784251mr596876ilk.23.1691721781528; Thu, 10 Aug
+ 2023 19:43:01 -0700 (PDT)
+MIME-Version: 1.0
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+ <f64d5006-ae77-cc10-270a-0c0fc6e3a0ef@linaro.org>
+In-Reply-To: <f64d5006-ae77-cc10-270a-0c0fc6e3a0ef@linaro.org>
+From: Maverickk 78 <maverickk1778@gmail.com>
+Date: Fri, 11 Aug 2023 08:12:50 +0530
+Message-ID: <CALfBBTs=FRN4cGUCtVAyoVZPjT88SKwUPhF_m+sJkUBFbwH9QQ@mail.gmail.com>
+Subject: Re: CXL volatile memory is not listed
+To: =?UTF-8?Q?Philippe_Mathieu=2DDaud=C3=A9?= <philmd@linaro.org>
+Cc: Igor Mammedov <imammedo@redhat.com>, David Hildenbrand <david@redhat.com>, 
+ QEMU Developers <qemu-devel@nongnu.org>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Received-SPF: pass client-ip=2607:f8b0:4864:20::d35;
+ envelope-from=maverickk1778@gmail.com; helo=mail-io1-xd35.google.com
+X-Spam_score_int: -17
+X-Spam_score: -1.8
+X-Spam_bar: -
+X-Spam_report: (-1.8 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1,
+ FREEMAIL_ENVFROM_END_DIGIT=0.25, FREEMAIL_FROM=0.001,
+ RCVD_IN_DNSWL_NONE=-0.0001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+
+Thanks Phil, David and Fan
+
+Looks like it was an error from my side due to lack of information
+cxl create-region works :)
+
+
+On Thu, 10 Aug 2023 at 16:29, Philippe Mathieu-Daud=C3=A9 <philmd@linaro.or=
+g> wrote:
+>
+> Hi,
+>
+> Cc'ing Igor and David.
+>
+> On 9/8/23 00:51, Maverickk 78 wrote:
+> > Hello,
+> >
+> > I am running qemu-system-x86_64
+> >
+> > qemu-system-x86_64 --version
+> > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> >
+> > qemu-system-x86_64 \
+> > -m 2G,slots=3D4,maxmem=3D4G \
+> > -smp 4 \
+> > -machine type=3Dq35,accel=3Dkvm,cxl=3Don \
+> > -enable-kvm \
+> > -nographic \
+> > -device pxb-cxl,id=3Dcxl.0,bus=3Dpcie.0,bus_nr=3D52 \
+> > -device cxl-rp,id=3Drp0,bus=3Dcxl.0,chassis=3D0,port=3D0,slot=3D0 \
+> > -object memory-backend-file,id=3Dmem0,mem-path=3D/tmp/mem0,size=3D1G,sh=
+are=3Dtrue \
+> > -device cxl-type3,bus=3Drp0,volatile-memdev=3Dmem0,id=3Dcxl-mem0 \
+> > -M cxl-fmw.0.targets.0=3Dcxl.0,cxl-fmw.0.size=3D1G
+> >
+> >
+> > I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> > shows only 2G memory which is System RAM, it's not listing the CXL
+> > memory.
+>
+> Sounds like a bug. Do you mind reporting at
+> https://gitlab.com/qemu-project/qemu/-/issues?
+>
+> Thanks,
+>
+> Phil.
+>
+> > Do I need to pass any particular parameter in the kernel command line?
+> >
+> > Is there any documentation available? I followed the inputs provided in
+> >
+> > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> >
+> > Is there any documentation/blog listed?
+> >
+>
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CF99C41513
+	for <linux-cxl@archiver.kernel.org>; Fri, 11 Aug 2023 13:55:22 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S233241AbjHKNzV (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 11 Aug 2023 09:55:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57668 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235295AbjHKNzD (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 11 Aug 2023 09:55:03 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BEFE1994
+        for <linux-cxl@vger.kernel.org>; Fri, 11 Aug 2023 06:55:01 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4RMlfM5ppYz6HJTd;
+        Fri, 11 Aug 2023 21:54:51 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Fri, 11 Aug
+ 2023 14:54:59 +0100
+Date: Fri, 11 Aug 2023 14:54:58 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Maverickk 78 <maverickk1778@gmail.com>
+CC: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        <linux-cxl@vger.kernel.org>
+Subject: Re: CXL volatile memory is not listed
+Message-ID: <20230811145458.000029c7@Huawei.com>
+In-Reply-To: <CALfBBTud4Y7qxKB8nkZ5Lo5sQs-7-F9Rkso+iQGvLO07VyRcDA@mail.gmail.com>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+        <20230810113512.00000516@Huawei.com>
+        <CALfBBTud4Y7qxKB8nkZ5Lo5sQs-7-F9Rkso+iQGvLO07VyRcDA@mail.gmail.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, 11 Aug 2023 08:04:26 +0530
+Maverickk 78 <maverickk1778@gmail.com> wrote:
+
+> Jonathan,
+> 
+> > More generally for the flow that would bring the memory up as system ram
+> > you would typically need the bios to have done the CXL enumeration or
+> > a bunch of scripts in the kernel to have done it.  In general it can't
+> > be fully automated, because there are policy decisions to make on things like
+> > interleaving.  
+> 
+> BIOS CXL enumeration? is CEDT not enough? or BIOS further needs to
+> create an entry
+> in the e820 table?
+On intel platforms 'maybe' :)  I know how it works on those that just
+use the nice standard EFI tables - less familiar with the e820 stuff :)
+
+CEDT says where to find the the various bits of system related CXL stuff.
+Nothing in there on the configuration that should be used such as interleaving
+as that depends on what the administrator wants. Or on what the BIOS has
+decided the users should have.
+
+> 
+> >
+> > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > to rely on the same kernel paths as for persistent memory - manual configuration
+> > etc in the kernel.
+> >  
+> Manual works with "cxl create regiton"  :)
+Great.
+
+Jonathan
+
+> 
+> On Thu, 10 Aug 2023 at 16:05, Jonathan Cameron
+> <Jonathan.Cameron@huawei.com> wrote:
+> >
+> > On Wed, 9 Aug 2023 04:21:47 +0530
+> > Maverickk 78 <maverickk1778@gmail.com> wrote:
+> >  
+> > > Hello,
+> > >
+> > > I am running qemu-system-x86_64
+> > >
+> > > qemu-system-x86_64 --version
+> > > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> > >  
+> > +Cc linux-cxl as the answer is more todo with linux than qemu.
+> >  
+> > > qemu-system-x86_64 \
+> > > -m 2G,slots=4,maxmem=4G \
+> > > -smp 4 \
+> > > -machine type=q35,accel=kvm,cxl=on \
+> > > -enable-kvm \
+> > > -nographic \
+> > > -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> > > -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> > > -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> > > -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> > > -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G  
+> >
+> > There are some problems upstream at the moment (probably not cxl related but
+> > I'm digging). So today I can't boot an x86 machine. (goody)
+> >
+> >
+> > More generally for the flow that would bring the memory up as system ram
+> > you would typically need the bios to have done the CXL enumeration or
+> > a bunch of scripts in the kernel to have done it.  In general it can't
+> > be fully automated, because there are policy decisions to make on things like
+> > interleaving.
+> >
+> > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > to rely on the same kernel paths as for persistent memory - manual configuration
+> > etc in the kernel.
+> >
+> > There is support in ndctl for those enabling flows, so I'd look there
+> > for more information
+> >
+> > Jonathan
+> >
+> >  
+> > >
+> > >
+> > > I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> > > shows only 2G memory which is System RAM, it's not listing the CXL
+> > > memory.
+> > >
+> > > Do I need to pass any particular parameter in the kernel command line?
+> > >
+> > > Is there any documentation available? I followed the inputs provided in
+> > >
+> > > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> > >
+> > > Is there any documentation/blog listed?  
+> >  
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56E3CC001B0
+	for <linux-cxl@archiver.kernel.org>; Fri, 11 Aug 2023 16:49:20 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229994AbjHKQtS (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 11 Aug 2023 12:49:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43962 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233464AbjHKQtS (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 11 Aug 2023 12:49:18 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00FE230C4
+        for <linux-cxl@vger.kernel.org>; Fri, 11 Aug 2023 09:49:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.us;
+ s=s31663417; t=1691772539; x=1692377339; i=fan.ni@gmx.us;
+ bh=A6M2hI18RBeWnhFAQRhVZSf9RInDyT+PXldHCI+QUUI=;
+ h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=W5Zd1Pi+/NrFLPrPIKxknGbIsNAalVJptPcYMTfW4ov28xf4UcnvhdFVPnlGpK62lypxJUp
+ 6i46MsbJkmG6K7v+kZJXpDajXl7tlCm86F8+pBvpOJDipXl3q9vvkygGdG/VPD9dzmcm/aXCi
+ X0NZrOrjz1WDGbwHsf9XFIf7sPGEiHtUqt5W0SJKLgCKtyrH7qpLiqfqdKtAjWT7bSkZgSnj9
+ GEb2S4cuj4qRVI6vjE1bljV8/8KHZBIDwhlfD3cVRAvpoEP4+ArS24Pta7sY/usj+k+QM2Xu3
+ xWtM8dwEp+EovJxvzAJODuFeesa6W8nfmKGMoNuwDLT3WC9B2LJQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from debian ([172.56.208.115]) by mail.gmx.net (mrgmx005
+ [212.227.17.184]) with ESMTPSA (Nemesis) id 1MgNcz-1prtEz3xiZ-00htYT; Fri, 11
+ Aug 2023 18:48:59 +0200
+Date: Fri, 11 Aug 2023 09:48:46 -0700
+From: Fan Ni <fan.ni@gmx.us>
+To: Maverickk 78 <maverickk1778@gmail.com>
+Cc: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        linux-cxl@vger.kernel.org
+Subject: Re: CXL volatile memory is not listed
+Message-ID: <ZNZmbkx4A58CEl/i@debian>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+ <ZNURN6Zzf2hJfmt/@debian>
+ <CALfBBTuRdwCcc-A88kMN7iub9BHx2xfFkfP8Lbrc+oSwfCS2nw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CALfBBTuRdwCcc-A88kMN7iub9BHx2xfFkfP8Lbrc+oSwfCS2nw@mail.gmail.com>
+X-Provags-ID: V03:K1:Yy8qN3fEG+BVpiWgTnMrDPWSegn9up43HgU3mlQRVw5a46ISt6Z
+ sSVmZFflpBzNHCoHzbdWOWOhTg9RnMvzsYciNph//0XFBdw6ui+U7v+4QBV4hrsW1MtHgk1
+ FTuwVvRcc0rc99U171aLHbqdXINrCZzR7V7oyk9GUBEx2IqQqMeEln/3/E6JWewahGw7JUI
+ M+LdUktDND9dL+tnPrdgA==
+UI-OutboundReport: notjunk:1;M01:P0:8ErlSrVnU+w=;dXbu97I9r4m0nQqGcyzcM7rrhFJ
+ IwB6POt3I3iuY+TndoQ1I4wOYKbJEZ3jiU1OIquZvElLuKTzXFvue7nXO2GEdgptYCBBK7VNc
+ eSgK/YhxQU2fUPUaHsxE/5XgceCX7K34PPivbZ1rd1d2IxFhwsDOfnwGTUoFFWGnwTKCXlN/p
+ rykTMYMuYwd7DKgna44DjVXlHFtIFyosXirkVsPxuhE1tVO5exjR0v+WaHjqBBfkRPpY/gF6P
+ CU4LCXno+RB9fubiPPeL78zYdeKvkSBl/7MEsVGp279bvBn6gyI1bSEmg9J3jXwRh6Sus6cnm
+ Ki9xKggv5F1myj283YqAUvWus9J+ObHA6smyNzzr5ebCj5sqVfsVkbOQGelqlP0E+H0Tk3slG
+ vWMW33cLmUBeSPbHatKpWQwg+bnKJ9Ym8r8c+ib/51TuE91ZdJa0n/Sr60TICwCzx3cZ6OGpx
+ nL0ITzEiu+kzF7EHHTqd4BwI6ggzQ3OdQS7Ig4vFatkRiXyMsj9wti6rNyBXZ2JfEIOEMankb
+ scDU56VabcYmy5i+eHz70ziBl5nHUlsmn9GmW22jMbYux3gN8uNVrYfQlxOQsuVzXp2byDA+F
+ BC25bPs8+67g3tj6mho6QCR3pihl/fOuH14gF7SaZeOUvtPcd83naMdgnRJhD+MfyNEzqkbGv
+ qbqCgfZijr9aI4+Zw5ovXgYhRm7b8SJPMX+xLNQyD1+ozev+atI2Uy1AykDolOD/+3KvOLbLz
+ dI+aFpg1/2s5K89AibXwCvheaZdCUTooEb5Yr/pj6/TABKHZqPyLIF2wqVB6vWzhoHZ5iAHoz
+ YffjcP83hH0lsrTEg6+x/O6+fyJqtsfW9e6t0bPPGWlytrqB9yGwuqNFYI4DIq21N6jEkqa01
+ 7oS8+QSQptc6Hmsu/BRh4qcIMwvZVrgumw2xXAJUU6c3ef/W6kgWdA8N+5hZLWUqZ1s5nXKS9
+ yLf70Tm70bGGWpOrp6yJ7fC9cyg=
+Content-Transfer-Encoding: quoted-printable
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, Aug 11, 2023 at 07:52:25AM +0530, Maverickk 78 wrote:
+> Thanks Fan,
+>
+> cxl create-region works like a charm :)
+>
+> Since this gets listed as "System Ram(kmem)", I guess the kernel
+> treats it as regular memory and
+> allocates it to the applications when needed?
+> or is there an extra effort needed to make it available for
+> applications on the host?
+>
+
+Yes. Once it is onlined, you can use it as regular memory.
+CXL memory will serve as a zero-CPU memory-only NUMA node.
+You can check it with numactl -H.
+
+To use the cxl memory with an app, you can use
+numactl --membind=3Dnuma_id app_name
+#numa_id is the dedicated numa node where cxl memory sits.
+
+One thing to notes, kvm will not work correctly with Qemu emulation when
+you try to use cxl memory for an application, so do not enable kvm.
+
+Fan
+
+> On Thu, 10 Aug 2023 at 22:03, Fan Ni <fan.ni@gmx.us> wrote:
+> >
+> > On Wed, Aug 09, 2023 at 04:21:47AM +0530, Maverickk 78 wrote:
+> > > Hello,
+> > >
+> > > I am running qemu-system-x86_64
+> > >
+> > > qemu-system-x86_64 --version
+> > > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> > >
+> > > qemu-system-x86_64 \
+> > > -m 2G,slots=3D4,maxmem=3D4G \
+> > > -smp 4 \
+> > > -machine type=3Dq35,accel=3Dkvm,cxl=3Don \
+> > > -enable-kvm \
+> > > -nographic \
+> > > -device pxb-cxl,id=3Dcxl.0,bus=3Dpcie.0,bus_nr=3D52 \
+> > > -device cxl-rp,id=3Drp0,bus=3Dcxl.0,chassis=3D0,port=3D0,slot=3D0 \
+> > > -object memory-backend-file,id=3Dmem0,mem-path=3D/tmp/mem0,size=3D1G=
+,share=3Dtrue \
+> > > -device cxl-type3,bus=3Drp0,volatile-memdev=3Dmem0,id=3Dcxl-mem0 \
+> > > -M cxl-fmw.0.targets.0=3Dcxl.0,cxl-fmw.0.size=3D1G
+> > >
+> > >
+> > > I was expecting the CXL memory to be listed in "System Ram", the lsm=
+em
+> > > shows only 2G memory which is System RAM, it's not listing the CXL
+> > > memory.
+> > >
+> > > Do I need to pass any particular parameter in the kernel command lin=
+e?
+> > >
+> > > Is there any documentation available? I followed the inputs provided=
+ in
+> > >
+> > > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> > >
+> > > Is there any documentation/blog listed?
+> >
+> > If I remember it correctly, for volatile cxl memory, we need to create=
+ a
+> > region and then it will be discovered as system memory and shows up.
+> >
+> > Try to create a region with "cxl create-region".
+> >
+> > Fan
+> > >
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39B4BC001DE
+	for <linux-cxl@archiver.kernel.org>; Fri, 18 Aug 2023 05:06:47 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1357971AbjHRFGQ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 18 Aug 2023 01:06:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52412 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1357977AbjHRFGI (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 18 Aug 2023 01:06:08 -0400
+Received: from mail-io1-xd32.google.com (mail-io1-xd32.google.com [IPv6:2607:f8b0:4864:20::d32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7814335BD
+        for <linux-cxl@vger.kernel.org>; Thu, 17 Aug 2023 22:06:07 -0700 (PDT)
+Received: by mail-io1-xd32.google.com with SMTP id ca18e2360f4ac-77ac14ff51bso17427139f.3
+        for <linux-cxl@vger.kernel.org>; Thu, 17 Aug 2023 22:06:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1692335167; x=1692939967;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=NboQbtQRE5XDdhMnkEM71ABQBV691NoP08bDIdh5BUw=;
+        b=LjzSKfzEf+EOM1nAfCjWlqmRO+D/qogIq2AMcQZRftaMiPmPPBiwQ8/G5LFvIFV21e
+         34SSuQXwvPTMbhl/9gLwoOa0QlNlfg4qMYAs5K5uxJVy+0OwwffYS0yZ83DvzoD1S/Z0
+         QxJpeqhDW0ch/8sDoje4YW55FB+lGAj8tMD9XpdEDOHWlCVtJHuLX/yIs1HUABJigv9t
+         E4rrp0UWrJYWivuPzXfkoMytUeuDDnkaS+WEYisCtrbJPJInYcKZoz7xvXG5Zx1n/sYO
+         itBrdoecDYd9UvUEmQmEdQf46d5tmrzOUHot2CaUgrebQibu2UlqAesdIj7aepnnHH5O
+         LMjg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692335167; x=1692939967;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=NboQbtQRE5XDdhMnkEM71ABQBV691NoP08bDIdh5BUw=;
+        b=dMz/ewnHe3XAKxwqeeeuyx2dHLmlx9rS/L5XccRkLTsQ8UAaL6zEnnOqtEPQ4i2UjL
+         BAB6p2RaEEE7aiCNh1VbH79axXcXzfXHHFy1HlMZ96jbpK724bpDCibsI3oM+zpNxd3F
+         oCgITGrKT7wBjLT67QUzyNEclMgomeiw5FpWIFIKcilxhtOzf5HcgFxn/ARz7ji30NrO
+         h7Q98TB6+uGybW2xXCeYuWO61BApauZwq75EMNkSCzGg7troCyim/mK/6MPs3rej+CXY
+         Y/k6qP0NSb81kVic4dqgqOUwHpgBSyRy/8hBjWOOsgnCeyjaec4BYLK6nLFVg8GY5w2b
+         1Xww==
+X-Gm-Message-State: AOJu0YyfVuH234dv86+7bK10f4lMrDV/Ih9tnD9bPesGmIYGg6l3rz2X
+        0QZ5NxJ9zPyssjaOyzTkc+n4qUwZUWzmCRlYuDOw2THa
+X-Google-Smtp-Source: AGHT+IEzTgQtlRE9ME3SFdyvKzpiw7CK/lAvGURrLFbtIgLbDE2hCAWegGqfz/NCGExhSY+l5AwL3a2CBK0p5BpKUL4=
+X-Received: by 2002:a5e:8516:0:b0:790:aedd:3e81 with SMTP id
+ i22-20020a5e8516000000b00790aedd3e81mr2027859ioj.8.1692335166798; Thu, 17 Aug
+ 2023 22:06:06 -0700 (PDT)
+MIME-Version: 1.0
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+ <ZNURN6Zzf2hJfmt/@debian> <CALfBBTuRdwCcc-A88kMN7iub9BHx2xfFkfP8Lbrc+oSwfCS2nw@mail.gmail.com>
+ <ZNZmbkx4A58CEl/i@debian>
+In-Reply-To: <ZNZmbkx4A58CEl/i@debian>
+From: Maverickk 78 <maverickk1778@gmail.com>
+Date: Fri, 18 Aug 2023 10:35:55 +0530
+Message-ID: <CALfBBTvQJ8-zpyNyt9zXzd22XoRu+seQkff8t5w_gZps+aNr9w@mail.gmail.com>
+Subject: Re: CXL volatile memory is not listed
+To: Fan Ni <fan.ni@gmx.us>
+Cc: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        linux-cxl@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Hi Fan
+
+Awesome, thanks for the info!
+
+On Fri, 11 Aug 2023 at 22:19, Fan Ni <fan.ni@gmx.us> wrote:
+>
+> On Fri, Aug 11, 2023 at 07:52:25AM +0530, Maverickk 78 wrote:
+> > Thanks Fan,
+> >
+> > cxl create-region works like a charm :)
+> >
+> > Since this gets listed as "System Ram(kmem)", I guess the kernel
+> > treats it as regular memory and
+> > allocates it to the applications when needed?
+> > or is there an extra effort needed to make it available for
+> > applications on the host?
+> >
+>
+> Yes. Once it is onlined, you can use it as regular memory.
+> CXL memory will serve as a zero-CPU memory-only NUMA node.
+> You can check it with numactl -H.
+>
+> To use the cxl memory with an app, you can use
+> numactl --membind=numa_id app_name
+> #numa_id is the dedicated numa node where cxl memory sits.
+>
+> One thing to notes, kvm will not work correctly with Qemu emulation when
+> you try to use cxl memory for an application, so do not enable kvm.
+>
+> Fan
+>
+> > On Thu, 10 Aug 2023 at 22:03, Fan Ni <fan.ni@gmx.us> wrote:
+> > >
+> > > On Wed, Aug 09, 2023 at 04:21:47AM +0530, Maverickk 78 wrote:
+> > > > Hello,
+> > > >
+> > > > I am running qemu-system-x86_64
+> > > >
+> > > > qemu-system-x86_64 --version
+> > > > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> > > >
+> > > > qemu-system-x86_64 \
+> > > > -m 2G,slots=4,maxmem=4G \
+> > > > -smp 4 \
+> > > > -machine type=q35,accel=kvm,cxl=on \
+> > > > -enable-kvm \
+> > > > -nographic \
+> > > > -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> > > > -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> > > > -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> > > > -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> > > > -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G
+> > > >
+> > > >
+> > > > I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> > > > shows only 2G memory which is System RAM, it's not listing the CXL
+> > > > memory.
+> > > >
+> > > > Do I need to pass any particular parameter in the kernel command line?
+> > > >
+> > > > Is there any documentation available? I followed the inputs provided in
+> > > >
+> > > > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> > > >
+> > > > Is there any documentation/blog listed?
+> > >
+> > > If I remember it correctly, for volatile cxl memory, we need to create a
+> > > region and then it will be discovered as system memory and shows up.
+> > >
+> > > Try to create a region with "cxl create-region".
+> > >
+> > > Fan
+> > > >
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2DB8C71136
+	for <linux-cxl@archiver.kernel.org>; Fri, 18 Aug 2023 05:23:07 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1357449AbjHRFWg (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 18 Aug 2023 01:22:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51336 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1357997AbjHRFVc (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 18 Aug 2023 01:21:32 -0400
+Received: from mail-io1-xd2f.google.com (mail-io1-xd2f.google.com [IPv6:2607:f8b0:4864:20::d2f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6AFA49FF
+        for <linux-cxl@vger.kernel.org>; Thu, 17 Aug 2023 22:20:00 -0700 (PDT)
+Received: by mail-io1-xd2f.google.com with SMTP id ca18e2360f4ac-790970a8706so18126339f.2
+        for <linux-cxl@vger.kernel.org>; Thu, 17 Aug 2023 22:20:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1692335926; x=1692940726;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=JK+gBhk7ou2vM8OJCNjC7ow3npc46slZN3uDwrJ33U8=;
+        b=M/wbtaAA0yxSO/92hYgcrte3WLiq90mtzLpuT2dSafTCaQQAXAdYl4EFNDOJ4FzpKs
+         D5ihTLwHLX2HyLdGMU/hECD3rZQiIl7RgFTgkOlhr+d31fMi//8PgYQZRfjISz8Q51Nh
+         CfX9dGPifirF6Iv3mCrTgMzNeZ6HmgZs986BlEXfuNmZZ4h+9vzvUbpFGsXeWUJyyoFC
+         aBLwx5OCzCfPFmR9rg7MGkR8KOCpNh8YTiD5i+xeZNEd1t3lbDEBROliO5dYMp5r7Vwf
+         JEN760aIrq8tjk9ohEfEkTW3BP6ODjoX64ioYUBnIGt7VAIr7oHi+3QEPNwadH9JYrrn
+         nY1g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692335926; x=1692940726;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=JK+gBhk7ou2vM8OJCNjC7ow3npc46slZN3uDwrJ33U8=;
+        b=c77f0jVYq18Sucut7cAvJ3NQV6WHX0C1hWQP7K80OEv1/AFfz/TwDrNEbZ5lAxNkZl
+         N/jmoS3INcR8PuGng3fdXAj6XZ/YUiK0g3EkV+OK1rIlYJU9Lzs9VAK2N9MzeLEg60Ny
+         advLgsvcMEtDDzJ8/Xk4zeo6XrR1rQ4/d+e374DifByFoS4mNVRByFS0+EmYRoSbani8
+         n03EDoHvbhMAKlP+jyLKyLGb0qrtTVCuur0YnvhDl6f6CAi7gChUjfzc56mVx3pjC1+G
+         iTrVbpPoqJYCv7L6chY9kFm+omK7OK7Jo+yoeVpm3NgU2yZzCT0KW5MVUK9HwBdRTbJB
+         4c0g==
+X-Gm-Message-State: AOJu0YyGMFwygvpk59hMWjzOq+Dbvx9VLnn1haWSH1/VHn5LK5rtRtFJ
+        Gt/1LBBJWQ5CtlEJ49QuSH7ysDmuu4lxws9+3WSVr7eQFdM=
+X-Google-Smtp-Source: AGHT+IEjKTA8YlfWuuFj1c3pLILaXVZg8U9xsCvi+zdw25t8MAf7/uLYvNBu1iEb+FXIGHL0omy4dh4eYefjZg0ccMI=
+X-Received: by 2002:a6b:701a:0:b0:791:1028:2dcf with SMTP id
+ l26-20020a6b701a000000b0079110282dcfmr1894092ioc.10.1692335925901; Thu, 17
+ Aug 2023 22:18:45 -0700 (PDT)
+MIME-Version: 1.0
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+ <20230810113512.00000516@Huawei.com> <CALfBBTud4Y7qxKB8nkZ5Lo5sQs-7-F9Rkso+iQGvLO07VyRcDA@mail.gmail.com>
+ <20230811145458.000029c7@Huawei.com>
+In-Reply-To: <20230811145458.000029c7@Huawei.com>
+From: Maverickk 78 <maverickk1778@gmail.com>
+Date: Fri, 18 Aug 2023 10:48:35 +0530
+Message-ID: <CALfBBTsMLP8_eTfmFt5mB+ywF1D0WTR7m=PBqUVzhhvcwC+zYA@mail.gmail.com>
+Subject: Re: CXL volatile memory is not listed
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        linux-cxl@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Hi Jonathan,
+
+The use case of CXL switch will always need some sort of management
+agent + FM configuring the available CXL memory connected.
+
+In most cases it would be bmc controller configuring MLD/MHD's to
+host, and in very rare scenarios it may be one of the host interacting
+with FM firmware inside the switch which would do the trick.
+
+Another use case is static hardcoding between CXL memory & host in
+built in cxl switch
+
+There is no scenario where one of the host BIOS can push the select
+CXL memory to itself.
+
+
+Is my understanding correct?
+
+
+
+On Fri, 11 Aug 2023 at 19:25, Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
+>
+> On Fri, 11 Aug 2023 08:04:26 +0530
+> Maverickk 78 <maverickk1778@gmail.com> wrote:
+>
+> > Jonathan,
+> >
+> > > More generally for the flow that would bring the memory up as system ram
+> > > you would typically need the bios to have done the CXL enumeration or
+> > > a bunch of scripts in the kernel to have done it.  In general it can't
+> > > be fully automated, because there are policy decisions to make on things like
+> > > interleaving.
+> >
+> > BIOS CXL enumeration? is CEDT not enough? or BIOS further needs to
+> > create an entry
+> > in the e820 table?
+> On intel platforms 'maybe' :)  I know how it works on those that just
+> use the nice standard EFI tables - less familiar with the e820 stuff :)
+>
+> CEDT says where to find the the various bits of system related CXL stuff.
+> Nothing in there on the configuration that should be used such as interleaving
+> as that depends on what the administrator wants. Or on what the BIOS has
+> decided the users should have.
+>
+> >
+> > >
+> > > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > > to rely on the same kernel paths as for persistent memory - manual configuration
+> > > etc in the kernel.
+> > >
+> > Manual works with "cxl create regiton"  :)
+> Great.
+>
+> Jonathan
+>
+> >
+> > On Thu, 10 Aug 2023 at 16:05, Jonathan Cameron
+> > <Jonathan.Cameron@huawei.com> wrote:
+> > >
+> > > On Wed, 9 Aug 2023 04:21:47 +0530
+> > > Maverickk 78 <maverickk1778@gmail.com> wrote:
+> > >
+> > > > Hello,
+> > > >
+> > > > I am running qemu-system-x86_64
+> > > >
+> > > > qemu-system-x86_64 --version
+> > > > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> > > >
+> > > +Cc linux-cxl as the answer is more todo with linux than qemu.
+> > >
+> > > > qemu-system-x86_64 \
+> > > > -m 2G,slots=4,maxmem=4G \
+> > > > -smp 4 \
+> > > > -machine type=q35,accel=kvm,cxl=on \
+> > > > -enable-kvm \
+> > > > -nographic \
+> > > > -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> > > > -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> > > > -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> > > > -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> > > > -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G
+> > >
+> > > There are some problems upstream at the moment (probably not cxl related but
+> > > I'm digging). So today I can't boot an x86 machine. (goody)
+> > >
+> > >
+> > > More generally for the flow that would bring the memory up as system ram
+> > > you would typically need the bios to have done the CXL enumeration or
+> > > a bunch of scripts in the kernel to have done it.  In general it can't
+> > > be fully automated, because there are policy decisions to make on things like
+> > > interleaving.
+> > >
+> > > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > > to rely on the same kernel paths as for persistent memory - manual configuration
+> > > etc in the kernel.
+> > >
+> > > There is support in ndctl for those enabling flows, so I'd look there
+> > > for more information
+> > >
+> > > Jonathan
+> > >
+> > >
+> > > >
+> > > >
+> > > > I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> > > > shows only 2G memory which is System RAM, it's not listing the CXL
+> > > > memory.
+> > > >
+> > > > Do I need to pass any particular parameter in the kernel command line?
+> > > >
+> > > > Is there any documentation available? I followed the inputs provided in
+> > > >
+> > > > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> > > >
+> > > > Is there any documentation/blog listed?
+> > >
+>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4122BC7113C
+	for <qemu-devel@archiver.kernel.org>; Fri, 18 Aug 2023 14:13:31 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qX05l-0004x3-Ft; Fri, 18 Aug 2023 10:04:45 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <shreyas.shah@elastics.cloud>)
+ id 1qWxm0-0006gn-MC
+ for qemu-devel@nongnu.org; Fri, 18 Aug 2023 07:36:12 -0400
+Received: from mail-mw2nam10on2091.outbound.protection.outlook.com
+ ([40.107.94.91] helo=NAM10-MW2-obe.outbound.protection.outlook.com)
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <shreyas.shah@elastics.cloud>)
+ id 1qWxlx-0000A0-71
+ for qemu-devel@nongnu.org; Fri, 18 Aug 2023 07:36:12 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=AoXL2fir3/lYM1Eslp2qDdYSi7tJjjha98TfPnMB5Gk4PcnrEPcyXsf34sh/FQyFEj9UfRvuuxwi+Esxjz2lWglCsdLazt5KTI+d3VI6ES3wZpV1jJNN7UuPVfCS02+m57Vz9FZs1UEd0NKbrBTOCwls39xtMN/FG4T6e/ephD3LcxqZTPYxyDD728S6Cex+A0sZEmumWIULP6nS+QIn4ijIOScjDk5p9WgL6JDR+jHbvnpfNBYIosgcIrjSj0LP3mC7QTlPz/MRrQbQnrRKpLk/7eX3lHwHOVd77RrakMX3by6tbbI0Pi0kXwAMNHHT9wOnmr04VFZtmVC0WvfCwA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=VhJvmXOG82T7B5Lym9qfj84o+7NOQf3KBTSIVQErosY=;
+ b=P8Crvj3ZA+H3Rb0ZGHV3I8fYH/DZ0oBqvIOc1kR/LvytYxyizPCHm2eAC63gPJvWqcafJszHXrfo81xBxZ/HWaeSQqgVo7IhoQYrPkh1P9b2ak8j9U71Ofcgz3qm1Y2K22fGTiz1NmCtbDhhR8v9HlR+8f79526xHxI/3LgAwV0ELMfiBTeGaXbECdy9AqHHmMmlpRpWRnOnVjxipQFC61EYkPZvcP9sIiMQe7o9606hDKdvfoOEJYxSusKAnwYqs8uok8GNS2EAkBjynzL1vYjispoSLQRR6/oxYeTAxWATN6ktu/p/ggJ8Em8m+yIkrzelpFEkl2nUL+whNRZzog==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=elastics.cloud; dmarc=pass action=none
+ header.from=elastics.cloud; dkim=pass header.d=elastics.cloud; arc=none
+Received: from IA1PR12MB6236.namprd12.prod.outlook.com (2603:10b6:208:3e4::19)
+ by SJ2PR12MB7962.namprd12.prod.outlook.com (2603:10b6:a03:4c2::14)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6678.31; Fri, 18 Aug
+ 2023 11:30:56 +0000
+Received: from IA1PR12MB6236.namprd12.prod.outlook.com
+ ([fe80::4d96:7f43:3c9e:3798]) by IA1PR12MB6236.namprd12.prod.outlook.com
+ ([fe80::4d96:7f43:3c9e:3798%4]) with mapi id 15.20.6678.031; Fri, 18 Aug 2023
+ 11:30:55 +0000
+To: Maverickk 78 <maverickk1778@gmail.com>, Jonathan Cameron
+ <Jonathan.Cameron@Huawei.com>
+CC: Jonathan Cameron via <qemu-devel@nongnu.org>, "linux-cxl@vger.kernel.org"
+ <linux-cxl@vger.kernel.org>
+Subject: Re: CXL volatile memory is not listed
+Thread-Topic: CXL volatile memory is not listed
+Thread-Index: AQHZy3ZeSnNACG9B5EyNjhi3Zdx1ja/kYcQAgAC+IwCACnALgIAAZzJG
+Date: Fri, 18 Aug 2023 11:30:55 +0000
+Message-ID: <IA1PR12MB6236E18350FFCB8916E32E86E81BA@IA1PR12MB6236.namprd12.prod.outlook.com>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+ <20230810113512.00000516@Huawei.com>
+ <CALfBBTud4Y7qxKB8nkZ5Lo5sQs-7-F9Rkso+iQGvLO07VyRcDA@mail.gmail.com>
+ <20230811145458.000029c7@Huawei.com>
+ <CALfBBTsMLP8_eTfmFt5mB+ywF1D0WTR7m=PBqUVzhhvcwC+zYA@mail.gmail.com>
+In-Reply-To: <CALfBBTsMLP8_eTfmFt5mB+ywF1D0WTR7m=PBqUVzhhvcwC+zYA@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=elastics.cloud;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: IA1PR12MB6236:EE_|SJ2PR12MB7962:EE_
+x-ms-office365-filtering-correlation-id: 82f06bec-7a94-4fdc-b360-08db9fde9663
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: AMoDkQlHUCQEoXhpLxyfkBZu4GJpG9IudO0vTLa2RmNNbfjvBwlMqS/XY/YJqF8xoelwanYn4Aei0XT8tmz4kZGKkbwjLIiTBm85thdb9YIHiIJxrKAi1PA7XllIQ5nzlRmWynyag3CbRFNBCKvnOfla/FZO37fcj5aF2E90BSFJz1jhrNzRQN8UHfZFwuYkO/OolWPaJQnuOm49Eqf2OyWhOqrxHmZfvrK9pc8Ro8lJQNgJoYsQxpDr/Lhc2O+iqh7o8dKIuIXYb1nqFMAHl3VJbvuM0Y6CKLB5BQ87Twh17x25FKy022kLij07eqGHnwhSaHQAs4hjJpgJJ9xaT+/cuFt+o2EtJ0kFE3mLssTBZQYEVOcReQn2bbtjN7zxxkkXZUJaFocgjcqsUCTmh/4iDBJ1LEBtAVrcS0a+qT1yRpwF4sBqLivKp7ONkJXgvrT3cae0RCDsRtmYqsJp+2JrpmemJZu+aR5SjrspG3W0mJ3DIuEYh+j4jnoL+qXevX3CoR/ihZboMn/6GMsUihcdCUwSTwdIRtGa7WQZzZuhHd45gGvHKbpXuIeKtSualH+5h6I3E4CUpaEnHfR/2oH9a9nB/POdCtjEDc5xiq2PkAljBTlWbKbnH+hlUq3vJhve85HPxczrwTedhkiF/w==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:IA1PR12MB6236.namprd12.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230031)(346002)(376002)(136003)(366004)(396003)(39830400003)(451199024)(1690799017)(1800799009)(186009)(40140700001)(86362001)(33656002)(122000001)(38070700005)(38100700002)(55016003)(52536014)(76116006)(966005)(5660300002)(44832011)(110136005)(66556008)(478600001)(6506007)(66946007)(66446008)(66476007)(7696005)(91956017)(53546011)(54906003)(71200400001)(64756008)(316002)(9686003)(4326008)(8676002)(8936002)(41300700001)(166002)(83380400001)(2906002)(71440200002);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?V02QIUfGalrKR8bIx+7T4ySAW152NxzOmavvnBxQ5DOkvwyfJKb0uYHfpJhX?=
+ =?us-ascii?Q?8b/Pg8fRZSbo5VD8aQnYL5MBDWpjtTpgD/WAgodfBhGNXKw1i2sRHoO0XUSm?=
+ =?us-ascii?Q?jBJna0h4RFQHcGf78NyI1viZqqRPOF4PgjVxPak44VcG+cZUMBvSLLS0jjd0?=
+ =?us-ascii?Q?9R06OXVGGzEWY3g6NxEW6YZku311GoJ8Cf3wHEwdd1s1LlRLlEMNqZuDGKe+?=
+ =?us-ascii?Q?UrzoQXAGdEm1fjwhPZg9ScSRqNXpF+95ice78MeTkq702/m3hXSDBsseER+u?=
+ =?us-ascii?Q?HWYS+jFkTiR8DQFP7Ky8BeqTTpeVL+dYP0B6MgbP1itcMHUW2pRDqrugAK2q?=
+ =?us-ascii?Q?Re2X/+82g+xhIlUEhRjpNTO2flC6mNaXbz8WR3D7mJewvzHOYoGo08BIR9SD?=
+ =?us-ascii?Q?Cd23Gr3kb8m+HMSDXHRHrDF7VmrDiITSj4fR5IOoOsj9aOWerdd1LTA46Qrb?=
+ =?us-ascii?Q?XiNNiaLuWw32r0zsaqH/cp8eNuGacJbrjziI3XkjTMERNBBL/vPrdab5R1Xn?=
+ =?us-ascii?Q?ADQcRzZ3YTuAWyo9HxOH0KCHidD1JEPtbfwd/qHRjceQlk0PDwnCQi3mAcgc?=
+ =?us-ascii?Q?5oNuwQlCsjE9wmMWzOHAiCm6q0aJa5Jzel0eelKJ2PsJ7LfqfrWt8Pi41zyL?=
+ =?us-ascii?Q?Y24/JLrt8z3KjQz2A2fkvw3tm5PF+Q9z7WC4K02sd9vVoxBoVUvTDlV6DzxM?=
+ =?us-ascii?Q?aNCjNpHhrzFGGcafmJ0EV7ocnfdaa/jP2c27JODok1t364nOUezWy2X8Qux6?=
+ =?us-ascii?Q?3it9MSS9hSwLtmTMsLgjXq0xdx+5ZadB0MwQdOYJbp23xkuvXwsQqJa5Z3kI?=
+ =?us-ascii?Q?9R1m5JK0LrV4KzH4DtnCXJClgmKkORmkMKr5F0zfihDNo/sH1qS/bsu+5HDS?=
+ =?us-ascii?Q?v1m3ZaLjC1uC5rFESG8uNjoratSlxf1HiYaHlUZQ2BScavNIqLdXmFlBhHh1?=
+ =?us-ascii?Q?+65QIQt7wSRB4RXH3cVU+1LAui9eXZFNwxKh1V/EoxtWF0eCvFI3TLWc+Lhq?=
+ =?us-ascii?Q?qS0tvGlGyeuwM/y7vUpHnrLyTs5tDOpoJop9oHfOXL0YFPBGLoqrdPWiCDSr?=
+ =?us-ascii?Q?CnVYZZ/hlUZ1LTQquqk7wsYiO8jyjb+0pBGji/4ciSSSH4pTvTxCX+2YLs79?=
+ =?us-ascii?Q?vwzkH411skNzuk8S9DxiNleZAuS2W+9jwYsffvZH6/CUihDqJWGcPPB/WW0D?=
+ =?us-ascii?Q?hFznJ1M8MLt+cuGbgxT5276i1b4PWj/YPTijsd1D/Ykub8JQoo2hXoWdX2cj?=
+ =?us-ascii?Q?hLxE+iR5OCmh0md4bBiNt5NBXLBU6IZ/rE0xQdW1joAKGEfWps4FyN7kxSsL?=
+ =?us-ascii?Q?qZf5Smljqk23kuMGmndEaqPtK+R50TmMvBV73Tz7H+zZYz5VuoT8Whkkf9YZ?=
+ =?us-ascii?Q?8uj15ygidx1zwQJBgzVpmbslxPCwkY/JWYpp613KH3dlkjRVwSYJT55CT7nZ?=
+ =?us-ascii?Q?hHs4wWW2YwF8rJnQHB0Hb+ZktTvJhatgRnQn7aN5Pu0bVo3p+h1bztG0cBNd?=
+ =?us-ascii?Q?o8t1FkybbOOisAmOMZydyDft5PGx00LTG9fk+ULuhanyDw4KObwXoxsOh9CV?=
+ =?us-ascii?Q?wlNgDXnFWVihPNZIvds1pq0O83Cit0yb93oQRBIsVnta2XmXEzR/m0W3Mv4C?=
+ =?us-ascii?Q?96AtL0qGon6RvXHUFNsz2ojkLEU7vhJN33DszM0xU1N93hS/8eeoQuTU5c36?=
+ =?us-ascii?Q?v2YxRA=3D=3D?=
+Content-Type: multipart/alternative;
+ boundary="_000_IA1PR12MB6236E18350FFCB8916E32E86E81BAIA1PR12MB6236namp_"
+MIME-Version: 1.0
+X-OriginatorOrg: elastics.cloud
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: IA1PR12MB6236.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 82f06bec-7a94-4fdc-b360-08db9fde9663
+X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Aug 2023 11:30:55.7687 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 28558b47-528a-463d-9ef1-81068bcc77f9
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: ZiDNWZJVFlzBfvZE+QCmj09bcxNJrK8fqtAlQN9muiNr65EXBlHlqpd2zlA7kSfiCDCI3kpEwnbN9+sFq3Clyz8GjRqZVXNI9J/vGKRA3SM=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB7962
+Received-SPF: pass client-ip=40.107.94.91;
+ envelope-from=shreyas.shah@elastics.cloud;
+ helo=NAM10-MW2-obe.outbound.protection.outlook.com
+X-Spam_score_int: -18
+X-Spam_score: -1.9
+X-Spam_bar: -
+X-Spam_report: (-1.9 / 5.0 requ) BAYES_00=-1.9, HTML_MESSAGE=0.001,
+ RCVD_IN_DNSWL_NONE=-0.0001, RCVD_IN_MSPIKE_H2=-0.001, SPF_HELO_PASS=-0.001,
+ SPF_PASS=-0.001, T_REMOTE_IMAGE=0.01 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Reply-to: Shreyas Shah <shreyas.shah@elastics.cloud>
+From: Shreyas Shah via <qemu-devel@nongnu.org>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+
+--_000_IA1PR12MB6236E18350FFCB8916E32E86E81BAIA1PR12MB6236namp_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+Once the cxl memory is online, how does Operating system know whether to ma=
+lloc in the cxl memory or socket attached DDR memory?
+
+
+
+[https://static1.squarespace.com/static/60dbbd6d597c966b91a3b27b/t/6104415e=
+6177af1589fb05e4/1627668830393/elastics-cloud-logo-120.png]<https://www.ela=
+stics.cloud/>
+Shreyas Shah
+Founder, CTO and Chief Scientist, Elastics.cloud, Inc.
+1730 North First Street, 5th Floor, San Jose, CA 95112
+t: 408 476 3100<tel:408%20476%203100> | e: email: shreyas.shah@elastics.clo=
+ud
+
+________________________________
+From: Maverickk 78 <maverickk1778@gmail.com>
+Sent: Thursday, August 17, 2023 10:18 PM
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Jonathan Cameron via <qemu-devel@nongnu.org>; linux-cxl@vger.kernel.org=
+ <linux-cxl@vger.kernel.org>
+Subject: Re: CXL volatile memory is not listed
+
+Hi Jonathan,
+
+The use case of CXL switch will always need some sort of management
+agent + FM configuring the available CXL memory connected.
+
+In most cases it would be bmc controller configuring MLD/MHD's to
+host, and in very rare scenarios it may be one of the host interacting
+with FM firmware inside the switch which would do the trick.
+
+Another use case is static hardcoding between CXL memory & host in
+built in cxl switch
+
+There is no scenario where one of the host BIOS can push the select
+CXL memory to itself.
+
+
+Is my understanding correct?
+
+
+
+On Fri, 11 Aug 2023 at 19:25, Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
+>
+> On Fri, 11 Aug 2023 08:04:26 +0530
+> Maverickk 78 <maverickk1778@gmail.com> wrote:
+>
+> > Jonathan,
+> >
+> > > More generally for the flow that would bring the memory up as system =
+ram
+> > > you would typically need the bios to have done the CXL enumeration or
+> > > a bunch of scripts in the kernel to have done it.  In general it can'=
+t
+> > > be fully automated, because there are policy decisions to make on thi=
+ngs like
+> > > interleaving.
+> >
+> > BIOS CXL enumeration? is CEDT not enough? or BIOS further needs to
+> > create an entry
+> > in the e820 table?
+> On intel platforms 'maybe' :)  I know how it works on those that just
+> use the nice standard EFI tables - less familiar with the e820 stuff :)
+>
+> CEDT says where to find the the various bits of system related CXL stuff.
+> Nothing in there on the configuration that should be used such as interle=
+aving
+> as that depends on what the administrator wants. Or on what the BIOS has
+> decided the users should have.
+>
+> >
+> > >
+> > > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > > to rely on the same kernel paths as for persistent memory - manual co=
+nfiguration
+> > > etc in the kernel.
+> > >
+> > Manual works with "cxl create regiton"  :)
+> Great.
+>
+> Jonathan
+>
+> >
+> > On Thu, 10 Aug 2023 at 16:05, Jonathan Cameron
+> > <Jonathan.Cameron@huawei.com> wrote:
+> > >
+> > > On Wed, 9 Aug 2023 04:21:47 +0530
+> > > Maverickk 78 <maverickk1778@gmail.com> wrote:
+> > >
+> > > > Hello,
+> > > >
+> > > > I am running qemu-system-x86_64
+> > > >
+> > > > qemu-system-x86_64 --version
+> > > > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> > > >
+> > > +Cc linux-cxl as the answer is more todo with linux than qemu.
+> > >
+> > > > qemu-system-x86_64 \
+> > > > -m 2G,slots=3D4,maxmem=3D4G \
+> > > > -smp 4 \
+> > > > -machine type=3Dq35,accel=3Dkvm,cxl=3Don \
+> > > > -enable-kvm \
+> > > > -nographic \
+> > > > -device pxb-cxl,id=3Dcxl.0,bus=3Dpcie.0,bus_nr=3D52 \
+> > > > -device cxl-rp,id=3Drp0,bus=3Dcxl.0,chassis=3D0,port=3D0,slot=3D0 \
+> > > > -object memory-backend-file,id=3Dmem0,mem-path=3D/tmp/mem0,size=3D1=
+G,share=3Dtrue \
+> > > > -device cxl-type3,bus=3Drp0,volatile-memdev=3Dmem0,id=3Dcxl-mem0 \
+> > > > -M cxl-fmw.0.targets.0=3Dcxl.0,cxl-fmw.0.size=3D1G
+> > >
+> > > There are some problems upstream at the moment (probably not cxl rela=
+ted but
+> > > I'm digging). So today I can't boot an x86 machine. (goody)
+> > >
+> > >
+> > > More generally for the flow that would bring the memory up as system =
+ram
+> > > you would typically need the bios to have done the CXL enumeration or
+> > > a bunch of scripts in the kernel to have done it.  In general it can'=
+t
+> > > be fully automated, because there are policy decisions to make on thi=
+ngs like
+> > > interleaving.
+> > >
+> > > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > > to rely on the same kernel paths as for persistent memory - manual co=
+nfiguration
+> > > etc in the kernel.
+> > >
+> > > There is support in ndctl for those enabling flows, so I'd look there
+> > > for more information
+> > >
+> > > Jonathan
+> > >
+> > >
+> > > >
+> > > >
+> > > > I was expecting the CXL memory to be listed in "System Ram", the ls=
+mem
+> > > > shows only 2G memory which is System RAM, it's not listing the CXL
+> > > > memory.
+> > > >
+> > > > Do I need to pass any particular parameter in the kernel command li=
+ne?
+> > > >
+> > > > Is there any documentation available? I followed the inputs provide=
+d in
+> > > >
+> > > > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> > > >
+> > > > Is there any documentation/blog listed?
+> > >
+>
+
+--_000_IA1PR12MB6236E18350FFCB8916E32E86E81BAIA1PR12MB6236namp_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+</head>
+<body>
+<div style=3D"font-family: inherit; font-size: inherit; color: inherit; bac=
+kground-color: transparent;">
+</div>
+<div>Once the cxl memory is online, how does Operating system know whether =
+to malloc in the cxl memory or socket attached DDR memory?&nbsp;</div>
+<div><br>
+</div>
+<div><br>
+</div>
+<div><br>
+</div>
+<div>
+<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:12p=
+t; color:rgb(0,0,0)">
+<div style=3D"height:auto; padding:0px 17px 17px; clear:none; font-family:&=
+quot;Titillium Web&quot;; font-size:17.8432px; letter-spacing:0.356864px; t=
+ext-align:start; background-color:rgb(255,255,255)">
+<div style=3D"outline:none">
+<h4 style=3D"font-family:&quot;Titillium Web&quot;!important; letter-spacin=
+g:0em; line-height:1.3664; margin:0px">
+<table width=3D"600" style=3D"color:inherit; letter-spacing:0.356864px; bor=
+der-collapse:collapse; border-spacing:0px">
+<tbody>
+<tr>
+<td width=3D"150" align=3D"center"><a href=3D"https://www.elastics.cloud/" =
+target=3D"_blank" style=3D"background:transparent"><img width=3D"119" heigh=
+t=3D"55" style=3D"max-width:100%" src=3D"https://static1.squarespace.com/st=
+atic/60dbbd6d597c966b91a3b27b/t/6104415e6177af1589fb05e4/1627668830393/elas=
+tics-cloud-logo-120.png"></a></td>
+<td width=3D"2"></td>
+<td width=3D"30"></td>
+<td width=3D"418">
+<div style=3D"line-height:20px">
+<div style=3D"font-family:arial; font-size:18px; color:rgb(0,72,255)"><stro=
+ng>Shreyas Shah</strong></div>
+<div style=3D"font-family:arial; font-size:12px"><span style=3D"color:rgb(0=
+,14,62)">Founder, CTO and Chief Scientist</span><font color=3D"#cccccc">,&n=
+bsp;</font><span style=3D"color:rgb(0,14,62); font-family:arial; font-size:=
+12px; letter-spacing:0.356864px">Elastics.cloud,
+ Inc.</span></div>
+<div style=3D"font-family:arial; font-size:12px; color:rgb(0,14,62)">1730 N=
+orth First Street, 5th Floor, San Jose, CA 95112</div>
+<span style=3D"font-family:arial; font-size:12px; color:rgb(0,14,62)"><stro=
+ng style=3D"color:rgb(0,72,255)">t:</strong>&nbsp;<a href=3D"tel:408 476 31=
+00">408 476 3100</a>&nbsp;<span style=3D"color:rgb(204,204,204)">|</span>&n=
+bsp;<strong style=3D"color:rgb(0,72,255)">e:</strong>&nbsp;email:
+ shreyas.shah@elastics.cloud</span></div>
+</td>
+</tr>
+</tbody>
+</table>
+</h4>
+</div>
+</div>
+<br>
+</div>
+</div>
+<hr style=3D"display:inline-block;width:98%" tabindex=3D"-1">
+<div id=3D"divRplyFwdMsg" dir=3D"ltr"><font face=3D"Calibri, sans-serif" st=
+yle=3D"font-size:11pt" color=3D"#000000"><b>From:</b> Maverickk 78 &lt;mave=
+rickk1778@gmail.com&gt;<br>
+<b>Sent:</b> Thursday, August 17, 2023 10:18 PM<br>
+<b>To:</b> Jonathan Cameron &lt;Jonathan.Cameron@huawei.com&gt;<br>
+<b>Cc:</b> Jonathan Cameron via &lt;qemu-devel@nongnu.org&gt;; linux-cxl@vg=
+er.kernel.org &lt;linux-cxl@vger.kernel.org&gt;<br>
+<b>Subject:</b> Re: CXL volatile memory is not listed</font>
+<div>&nbsp;</div>
+</div>
+<div class=3D"BodyFragment"><font size=3D"2"><span style=3D"font-size:11pt;=
+">
+<div class=3D"PlainText">Hi Jonathan,<br>
+<br>
+The use case of CXL switch will always need some sort of management<br>
+agent + FM configuring the available CXL memory connected.<br>
+<br>
+In most cases it would be bmc controller configuring MLD/MHD's to<br>
+host, and in very rare scenarios it may be one of the host interacting<br>
+with FM firmware inside the switch which would do the trick.<br>
+<br>
+Another use case is static hardcoding between CXL memory &amp; host in<br>
+built in cxl switch<br>
+<br>
+There is no scenario where one of the host BIOS can push the select<br>
+CXL memory to itself.<br>
+<br>
+<br>
+Is my understanding correct?<br>
+<br>
+<br>
+<br>
+On Fri, 11 Aug 2023 at 19:25, Jonathan Cameron<br>
+&lt;Jonathan.Cameron@huawei.com&gt; wrote:<br>
+&gt;<br>
+&gt; On Fri, 11 Aug 2023 08:04:26 +0530<br>
+&gt; Maverickk 78 &lt;maverickk1778@gmail.com&gt; wrote:<br>
+&gt;<br>
+&gt; &gt; Jonathan,<br>
+&gt; &gt;<br>
+&gt; &gt; &gt; More generally for the flow that would bring the memory up a=
+s system ram<br>
+&gt; &gt; &gt; you would typically need the bios to have done the CXL enume=
+ration or<br>
+&gt; &gt; &gt; a bunch of scripts in the kernel to have done it.&nbsp; In g=
+eneral it can't<br>
+&gt; &gt; &gt; be fully automated, because there are policy decisions to ma=
+ke on things like<br>
+&gt; &gt; &gt; interleaving.<br>
+&gt; &gt;<br>
+&gt; &gt; BIOS CXL enumeration? is CEDT not enough? or BIOS further needs t=
+o<br>
+&gt; &gt; create an entry<br>
+&gt; &gt; in the e820 table?<br>
+&gt; On intel platforms 'maybe' :)&nbsp; I know how it works on those that =
+just<br>
+&gt; use the nice standard EFI tables - less familiar with the e820 stuff :=
+)<br>
+&gt;<br>
+&gt; CEDT says where to find the the various bits of system related CXL stu=
+ff.<br>
+&gt; Nothing in there on the configuration that should be used such as inte=
+rleaving<br>
+&gt; as that depends on what the administrator wants. Or on what the BIOS h=
+as<br>
+&gt; decided the users should have.<br>
+&gt;<br>
+&gt; &gt;<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; I'm not aware of any open source BIOSs that do it yet.&nbsp;=
+ So you have<br>
+&gt; &gt; &gt; to rely on the same kernel paths as for persistent memory - =
+manual configuration<br>
+&gt; &gt; &gt; etc in the kernel.<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; Manual works with &quot;cxl create regiton&quot;&nbsp; :)<br>
+&gt; Great.<br>
+&gt;<br>
+&gt; Jonathan<br>
+&gt;<br>
+&gt; &gt;<br>
+&gt; &gt; On Thu, 10 Aug 2023 at 16:05, Jonathan Cameron<br>
+&gt; &gt; &lt;Jonathan.Cameron@huawei.com&gt; wrote:<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; On Wed, 9 Aug 2023 04:21:47 +0530<br>
+&gt; &gt; &gt; Maverickk 78 &lt;maverickk1778@gmail.com&gt; wrote:<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; Hello,<br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; I am running qemu-system-x86_64<br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; qemu-system-x86_64 --version<br>
+&gt; &gt; &gt; &gt; QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897=
+)<br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; +Cc linux-cxl as the answer is more todo with linux than qem=
+u.<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; qemu-system-x86_64 \<br>
+&gt; &gt; &gt; &gt; -m 2G,slots=3D4,maxmem=3D4G \<br>
+&gt; &gt; &gt; &gt; -smp 4 \<br>
+&gt; &gt; &gt; &gt; -machine type=3Dq35,accel=3Dkvm,cxl=3Don \<br>
+&gt; &gt; &gt; &gt; -enable-kvm \<br>
+&gt; &gt; &gt; &gt; -nographic \<br>
+&gt; &gt; &gt; &gt; -device pxb-cxl,id=3Dcxl.0,bus=3Dpcie.0,bus_nr=3D52 \<b=
+r>
+&gt; &gt; &gt; &gt; -device cxl-rp,id=3Drp0,bus=3Dcxl.0,chassis=3D0,port=3D=
+0,slot=3D0 \<br>
+&gt; &gt; &gt; &gt; -object memory-backend-file,id=3Dmem0,mem-path=3D/tmp/m=
+em0,size=3D1G,share=3Dtrue \<br>
+&gt; &gt; &gt; &gt; -device cxl-type3,bus=3Drp0,volatile-memdev=3Dmem0,id=
+=3Dcxl-mem0 \<br>
+&gt; &gt; &gt; &gt; -M cxl-fmw.0.targets.0=3Dcxl.0,cxl-fmw.0.size=3D1G<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; There are some problems upstream at the moment (probably not=
+ cxl related but<br>
+&gt; &gt; &gt; I'm digging). So today I can't boot an x86 machine. (goody)<=
+br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; More generally for the flow that would bring the memory up a=
+s system ram<br>
+&gt; &gt; &gt; you would typically need the bios to have done the CXL enume=
+ration or<br>
+&gt; &gt; &gt; a bunch of scripts in the kernel to have done it.&nbsp; In g=
+eneral it can't<br>
+&gt; &gt; &gt; be fully automated, because there are policy decisions to ma=
+ke on things like<br>
+&gt; &gt; &gt; interleaving.<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; I'm not aware of any open source BIOSs that do it yet.&nbsp;=
+ So you have<br>
+&gt; &gt; &gt; to rely on the same kernel paths as for persistent memory - =
+manual configuration<br>
+&gt; &gt; &gt; etc in the kernel.<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; There is support in ndctl for those enabling flows, so I'd l=
+ook there<br>
+&gt; &gt; &gt; for more information<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; Jonathan<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; I was expecting the CXL memory to be listed in &quot;Sy=
+stem Ram&quot;, the lsmem<br>
+&gt; &gt; &gt; &gt; shows only 2G memory which is System RAM, it's not list=
+ing the CXL<br>
+&gt; &gt; &gt; &gt; memory.<br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; Do I need to pass any particular parameter in the kerne=
+l command line?<br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; Is there any documentation available? I followed the in=
+puts provided in<br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; <a href=3D"https://lore.kernel.org/linux-mm/Y+CSOeHVLKu=
+dN0A6@kroah.com/T/">
+https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/</a><br>
+&gt; &gt; &gt; &gt;<br>
+&gt; &gt; &gt; &gt; Is there any documentation/blog listed?<br>
+&gt; &gt; &gt;<br>
+&gt;<br>
+</div>
+</span></font></div>
+</body>
+</html>
+
+--_000_IA1PR12MB6236E18350FFCB8916E32E86E81BAIA1PR12MB6236namp_--
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8C12C3DA6F
+	for <linux-cxl@archiver.kernel.org>; Wed, 23 Aug 2023 16:59:15 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230317AbjHWQ7Q (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Wed, 23 Aug 2023 12:59:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37704 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229518AbjHWQ7P (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 23 Aug 2023 12:59:15 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 91BA2E68
+        for <linux-cxl@vger.kernel.org>; Wed, 23 Aug 2023 09:59:13 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4RWC4k1FDMz67XMQ;
+        Thu, 24 Aug 2023 00:55:02 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Wed, 23 Aug
+ 2023 17:59:11 +0100
+Date: Wed, 23 Aug 2023 17:59:10 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Shreyas Shah <shreyas.shah@elastics.cloud>
+CC: Maverickk 78 <maverickk1778@gmail.com>,
+        Jonathan Cameron via <qemu-devel@nongnu.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>
+Subject: Re: CXL volatile memory is not listed
+Message-ID: <20230823175910.00001b81@Huawei.com>
+In-Reply-To: <IA1PR12MB6236E18350FFCB8916E32E86E81BA@IA1PR12MB6236.namprd12.prod.outlook.com>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+        <20230810113512.00000516@Huawei.com>
+        <CALfBBTud4Y7qxKB8nkZ5Lo5sQs-7-F9Rkso+iQGvLO07VyRcDA@mail.gmail.com>
+        <20230811145458.000029c7@Huawei.com>
+        <CALfBBTsMLP8_eTfmFt5mB+ywF1D0WTR7m=PBqUVzhhvcwC+zYA@mail.gmail.com>
+        <IA1PR12MB6236E18350FFCB8916E32E86E81BA@IA1PR12MB6236.namprd12.prod.outlook.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, 18 Aug 2023 11:30:55 +0000
+Shreyas Shah <shreyas.shah@elastics.cloud> wrote:
+
+> Once the cxl memory is online, how does Operating system know whether to malloc in the cxl memory or socket attached DDR memory?
+
+If you've brought the memory up as 'normal memory' via kmem rather than the other dax options
+then it'll be a separate NUMA node.  Hence you can control allocations using same tools
+used on multiple numa node systems.
+
+Jonathan
+
+> 
+> 
+> 
+> [https://static1.squarespace.com/static/60dbbd6d597c966b91a3b27b/t/6104415e6177af1589fb05e4/1627668830393/elastics-cloud-logo-120.png]<https://www.elastics.cloud/>
+> Shreyas Shah
+> Founder, CTO and Chief Scientist, Elastics.cloud, Inc.
+> 1730 North First Street, 5th Floor, San Jose, CA 95112
+> t: 408 476 3100<tel:408%20476%203100> | e: email: shreyas.shah@elastics.cloud
+> 
+> ________________________________
+> From: Maverickk 78 <maverickk1778@gmail.com>
+> Sent: Thursday, August 17, 2023 10:18 PM
+> To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Cc: Jonathan Cameron via <qemu-devel@nongnu.org>; linux-cxl@vger.kernel.org <linux-cxl@vger.kernel.org>
+> Subject: Re: CXL volatile memory is not listed
+> 
+> Hi Jonathan,
+> 
+> The use case of CXL switch will always need some sort of management
+> agent + FM configuring the available CXL memory connected.
+> 
+> In most cases it would be bmc controller configuring MLD/MHD's to
+> host, and in very rare scenarios it may be one of the host interacting
+> with FM firmware inside the switch which would do the trick.
+> 
+> Another use case is static hardcoding between CXL memory & host in
+> built in cxl switch
+> 
+> There is no scenario where one of the host BIOS can push the select
+> CXL memory to itself.
+> 
+> 
+> Is my understanding correct?
+> 
+> 
+> 
+> On Fri, 11 Aug 2023 at 19:25, Jonathan Cameron
+> <Jonathan.Cameron@huawei.com> wrote:
+> >
+> > On Fri, 11 Aug 2023 08:04:26 +0530
+> > Maverickk 78 <maverickk1778@gmail.com> wrote:
+> >  
+> > > Jonathan,
+> > >  
+> > > > More generally for the flow that would bring the memory up as system ram
+> > > > you would typically need the bios to have done the CXL enumeration or
+> > > > a bunch of scripts in the kernel to have done it.  In general it can't
+> > > > be fully automated, because there are policy decisions to make on things like
+> > > > interleaving.  
+> > >
+> > > BIOS CXL enumeration? is CEDT not enough? or BIOS further needs to
+> > > create an entry
+> > > in the e820 table?  
+> > On intel platforms 'maybe' :)  I know how it works on those that just
+> > use the nice standard EFI tables - less familiar with the e820 stuff :)
+> >
+> > CEDT says where to find the the various bits of system related CXL stuff.
+> > Nothing in there on the configuration that should be used such as interleaving
+> > as that depends on what the administrator wants. Or on what the BIOS has
+> > decided the users should have.
+> >  
+> > >  
+> > > >
+> > > > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > > > to rely on the same kernel paths as for persistent memory - manual configuration
+> > > > etc in the kernel.
+> > > >  
+> > > Manual works with "cxl create regiton"  :)  
+> > Great.
+> >
+> > Jonathan
+> >  
+> > >
+> > > On Thu, 10 Aug 2023 at 16:05, Jonathan Cameron
+> > > <Jonathan.Cameron@huawei.com> wrote:  
+> > > >
+> > > > On Wed, 9 Aug 2023 04:21:47 +0530
+> > > > Maverickk 78 <maverickk1778@gmail.com> wrote:
+> > > >  
+> > > > > Hello,
+> > > > >
+> > > > > I am running qemu-system-x86_64
+> > > > >
+> > > > > qemu-system-x86_64 --version
+> > > > > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> > > > >  
+> > > > +Cc linux-cxl as the answer is more todo with linux than qemu.
+> > > >  
+> > > > > qemu-system-x86_64 \
+> > > > > -m 2G,slots=4,maxmem=4G \
+> > > > > -smp 4 \
+> > > > > -machine type=q35,accel=kvm,cxl=on \
+> > > > > -enable-kvm \
+> > > > > -nographic \
+> > > > > -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> > > > > -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> > > > > -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> > > > > -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> > > > > -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G  
+> > > >
+> > > > There are some problems upstream at the moment (probably not cxl related but
+> > > > I'm digging). So today I can't boot an x86 machine. (goody)
+> > > >
+> > > >
+> > > > More generally for the flow that would bring the memory up as system ram
+> > > > you would typically need the bios to have done the CXL enumeration or
+> > > > a bunch of scripts in the kernel to have done it.  In general it can't
+> > > > be fully automated, because there are policy decisions to make on things like
+> > > > interleaving.
+> > > >
+> > > > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > > > to rely on the same kernel paths as for persistent memory - manual configuration
+> > > > etc in the kernel.
+> > > >
+> > > > There is support in ndctl for those enabling flows, so I'd look there
+> > > > for more information
+> > > >
+> > > > Jonathan
+> > > >
+> > > >  
+> > > > >
+> > > > >
+> > > > > I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> > > > > shows only 2G memory which is System RAM, it's not listing the CXL
+> > > > > memory.
+> > > > >
+> > > > > Do I need to pass any particular parameter in the kernel command line?
+> > > > >
+> > > > > Is there any documentation available? I followed the inputs provided in
+> > > > >
+> > > > > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> > > > >
+> > > > > Is there any documentation/blog listed?  
+> > > >  
+> >  
+> 
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FCD4C3DA6F
+	for <linux-cxl@archiver.kernel.org>; Wed, 23 Aug 2023 17:02:41 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S233797AbjHWRCl (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Wed, 23 Aug 2023 13:02:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40368 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229518AbjHWRCk (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 23 Aug 2023 13:02:40 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E1C0E52
+        for <linux-cxl@vger.kernel.org>; Wed, 23 Aug 2023 10:02:38 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4RWC8L0C0fz6K6Kp;
+        Thu, 24 Aug 2023 00:58:10 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Wed, 23 Aug
+ 2023 18:02:35 +0100
+Date: Wed, 23 Aug 2023 18:02:34 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Maverickk 78 <maverickk1778@gmail.com>
+CC: Jonathan Cameron via <qemu-devel@nongnu.org>,
+        <linux-cxl@vger.kernel.org>
+Subject: Re: CXL volatile memory is not listed
+Message-ID: <20230823180234.00005fa2@Huawei.com>
+In-Reply-To: <CALfBBTsMLP8_eTfmFt5mB+ywF1D0WTR7m=PBqUVzhhvcwC+zYA@mail.gmail.com>
+References: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+        <20230810113512.00000516@Huawei.com>
+        <CALfBBTud4Y7qxKB8nkZ5Lo5sQs-7-F9Rkso+iQGvLO07VyRcDA@mail.gmail.com>
+        <20230811145458.000029c7@Huawei.com>
+        <CALfBBTsMLP8_eTfmFt5mB+ywF1D0WTR7m=PBqUVzhhvcwC+zYA@mail.gmail.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, 18 Aug 2023 10:48:35 +0530
+Maverickk 78 <maverickk1778@gmail.com> wrote:
+
+> Hi Jonathan,
+> 
+> The use case of CXL switch will always need some sort of management
+> agent + FM configuring the available CXL memory connected.
+> 
+> In most cases it would be bmc controller configuring MLD/MHD's to
+> host, and in very rare scenarios it may be one of the host interacting
+> with FM firmware inside the switch which would do the trick.
+> 
+> Another use case is static hardcoding between CXL memory & host in
+> built in cxl switch
+> 
+> There is no scenario where one of the host BIOS can push the select
+> CXL memory to itself.
+> 
+> 
+> Is my understanding correct?
+
+It's possible that a particular set of systems work on the basis
+of the FM (BMC) in a memory appliance etc having already set up the
+memory before the hosts using it are booted.  This would be done for
+legacy systems / unaware operating systems for instances.
+In those cases the BIOS could enumerate and configure everything present
+when it starts and provide that info the the OS running on the host as
+EFI (and/or e820) and SRAT etc.
+
+If doing more dynamic memory pooling, I'd expect the OS to do all the
+hard work.  Note a common case in real systems is likely to be Multi Head
+devices for memory pooling, but they also require configuration before the
+memory is available to the host, so the points above are the same.
+
+Jonathan
+
+> 
+> 
+> 
+> On Fri, 11 Aug 2023 at 19:25, Jonathan Cameron
+> <Jonathan.Cameron@huawei.com> wrote:
+> >
+> > On Fri, 11 Aug 2023 08:04:26 +0530
+> > Maverickk 78 <maverickk1778@gmail.com> wrote:
+> >  
+> > > Jonathan,
+> > >  
+> > > > More generally for the flow that would bring the memory up as system ram
+> > > > you would typically need the bios to have done the CXL enumeration or
+> > > > a bunch of scripts in the kernel to have done it.  In general it can't
+> > > > be fully automated, because there are policy decisions to make on things like
+> > > > interleaving.  
+> > >
+> > > BIOS CXL enumeration? is CEDT not enough? or BIOS further needs to
+> > > create an entry
+> > > in the e820 table?  
+> > On intel platforms 'maybe' :)  I know how it works on those that just
+> > use the nice standard EFI tables - less familiar with the e820 stuff :)
+> >
+> > CEDT says where to find the the various bits of system related CXL stuff.
+> > Nothing in there on the configuration that should be used such as interleaving
+> > as that depends on what the administrator wants. Or on what the BIOS has
+> > decided the users should have.
+> >  
+> > >  
+> > > >
+> > > > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > > > to rely on the same kernel paths as for persistent memory - manual configuration
+> > > > etc in the kernel.
+> > > >  
+> > > Manual works with "cxl create regiton"  :)  
+> > Great.
+> >
+> > Jonathan
+> >  
+> > >
+> > > On Thu, 10 Aug 2023 at 16:05, Jonathan Cameron
+> > > <Jonathan.Cameron@huawei.com> wrote:  
+> > > >
+> > > > On Wed, 9 Aug 2023 04:21:47 +0530
+> > > > Maverickk 78 <maverickk1778@gmail.com> wrote:
+> > > >  
+> > > > > Hello,
+> > > > >
+> > > > > I am running qemu-system-x86_64
+> > > > >
+> > > > > qemu-system-x86_64 --version
+> > > > > QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+> > > > >  
+> > > > +Cc linux-cxl as the answer is more todo with linux than qemu.
+> > > >  
+> > > > > qemu-system-x86_64 \
+> > > > > -m 2G,slots=4,maxmem=4G \
+> > > > > -smp 4 \
+> > > > > -machine type=q35,accel=kvm,cxl=on \
+> > > > > -enable-kvm \
+> > > > > -nographic \
+> > > > > -device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+> > > > > -device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+> > > > > -object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+> > > > > -device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+> > > > > -M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G  
+> > > >
+> > > > There are some problems upstream at the moment (probably not cxl related but
+> > > > I'm digging). So today I can't boot an x86 machine. (goody)
+> > > >
+> > > >
+> > > > More generally for the flow that would bring the memory up as system ram
+> > > > you would typically need the bios to have done the CXL enumeration or
+> > > > a bunch of scripts in the kernel to have done it.  In general it can't
+> > > > be fully automated, because there are policy decisions to make on things like
+> > > > interleaving.
+> > > >
+> > > > I'm not aware of any open source BIOSs that do it yet.  So you have
+> > > > to rely on the same kernel paths as for persistent memory - manual configuration
+> > > > etc in the kernel.
+> > > >
+> > > > There is support in ndctl for those enabling flows, so I'd look there
+> > > > for more information
+> > > >
+> > > > Jonathan
+> > > >
+> > > >  
+> > > > >
+> > > > >
+> > > > > I was expecting the CXL memory to be listed in "System Ram", the lsmem
+> > > > > shows only 2G memory which is System RAM, it's not listing the CXL
+> > > > > memory.
+> > > > >
+> > > > > Do I need to pass any particular parameter in the kernel command line?
+> > > > >
+> > > > > Is there any documentation available? I followed the inputs provided in
+> > > > >
+> > > > > https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+> > > > >
+> > > > > Is there any documentation/blog listed?  
+> > > >  
+> >  
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87133C001B0
+	for <qemu-devel@archiver.kernel.org>; Tue,  8 Aug 2023 22:52:32 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qTVYa-0003lh-Hm; Tue, 08 Aug 2023 18:52:04 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <maverickk1778@gmail.com>)
+ id 1qTVYY-0003lU-GS
+ for qemu-devel@nongnu.org; Tue, 08 Aug 2023 18:52:02 -0400
+Received: from mail-io1-xd2b.google.com ([2607:f8b0:4864:20::d2b])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+ (Exim 4.90_1) (envelope-from <maverickk1778@gmail.com>)
+ id 1qTVYW-0006sG-OE
+ for qemu-devel@nongnu.org; Tue, 08 Aug 2023 18:52:02 -0400
+Received: by mail-io1-xd2b.google.com with SMTP id
+ ca18e2360f4ac-790ab117bd5so212886439f.0
+ for <qemu-devel@nongnu.org>; Tue, 08 Aug 2023 15:51:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1691535118; x=1692139918;
+ h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+ :date:message-id:reply-to;
+ bh=B7EKwglenhakd2igRLrP6qwv65F4gW6aaRMaw2PLT40=;
+ b=c6HGs5NkpTF2DDv+9cqnHyh30YOi4fjlDCZN7ekgywxAaFrTwxLJooK0FIzD0IFekJ
+ ckNwlk6YldOibWJvaAsFa6kaKjWh/lZNuLtLoVlLjKaleGGuZdKns/6Hd2Y5nrYj/2Ta
+ mfF4b4+imcRb+PMSuFdCwzJYh5OuUvH4e+il8txgezxTZs/ZDJ+Je6/p0sBxE60hWQKy
+ qtt+1uPSK49RR0JHeizbHrMwn4U56VzbHRfbZYBUXQ3fLI/ooU2njCDt9eANdUhhrZEI
+ uo2iyFdKCqZN57nzNfLgRzy76a6p2VEWUupUomfbfjLlTLcmA/nxOu0D1yroqVIFuptx
+ hLZg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1691535118; x=1692139918;
+ h=to:subject:message-id:date:from:mime-version:x-gm-message-state
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=B7EKwglenhakd2igRLrP6qwv65F4gW6aaRMaw2PLT40=;
+ b=lk+c3PVJXHtXceF8Jmb0KhmOQHHbdS1dFiC/45+r6FObxVmovnqJ2mOoQF1OJSfHIs
+ GCGgLgtxDIH31TqduooUOYlSpDsKs7ecFGSWxZShzX3+g++XNE/t7zfxe9gGOYtv/On2
+ Qv3ZBMesBLkNGodFKOYVfThtXcjwjWs35zsjJV5PA3CHBxPXlcI4XElnCrk+MGC0Bhno
+ gaOZZk+IPPBswfl/YdA8J4J7GIdPzM5y+TM0SF90AdrcPRpFIc9CGkkCFbWl0oU5gVKq
+ CYp10VZRq0T2sj7fI838qoBqahvrQd6hPQJOr/94B571smUmC3KIsMr4v6a63wvfeHs9
+ G1og==
+X-Gm-Message-State: AOJu0YxgguDnJXneMH/MoPBbBQgfJj6Qs0cR3cGcWkNSzzDd8qe/q3q5
+ B9cBiVZA4+ZxmKiNLn3OIj5No9jMzgq1HFph1OFNvBVRW4Q=
+X-Google-Smtp-Source: AGHT+IGqeEnysR4NPTO42DgksaCikePByfC1aM8L1y3y3kaqWwbohdq+vDq6cPhsKNzaAZsa9ADroD3U5tsQXWohDGA=
+X-Received: by 2002:a6b:5c12:0:b0:790:fab3:2052 with SMTP id
+ z18-20020a6b5c12000000b00790fab32052mr1138792ioh.5.1691535117767; Tue, 08 Aug
+ 2023 15:51:57 -0700 (PDT)
+MIME-Version: 1.0
+From: Maverickk 78 <maverickk1778@gmail.com>
+Date: Wed, 9 Aug 2023 04:21:47 +0530
+Message-ID: <CALfBBTtUtydebmJuh6JZ5RAXZfx5OgJ+RCug1apbZa4mm17rJQ@mail.gmail.com>
+Subject: CXL volatile memory is not listed
+To: Jonathan Cameron via <qemu-devel@nongnu.org>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Received-SPF: pass client-ip=2607:f8b0:4864:20::d2b;
+ envelope-from=maverickk1778@gmail.com; helo=mail-io1-xd2b.google.com
+X-Spam_score_int: -17
+X-Spam_score: -1.8
+X-Spam_bar: -
+X-Spam_report: (-1.8 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1,
+ FREEMAIL_ENVFROM_END_DIGIT=0.25, FREEMAIL_FROM=0.001,
+ RCVD_IN_DNSWL_NONE=-0.0001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+
+Hello,
+
+I am running qemu-system-x86_64
+
+qemu-system-x86_64 --version
+QEMU emulator version 8.0.92 (v8.1.0-rc2-80-g0450cf0897)
+
+qemu-system-x86_64 \
+-m 2G,slots=4,maxmem=4G \
+-smp 4 \
+-machine type=q35,accel=kvm,cxl=on \
+-enable-kvm \
+-nographic \
+-device pxb-cxl,id=cxl.0,bus=pcie.0,bus_nr=52 \
+-device cxl-rp,id=rp0,bus=cxl.0,chassis=0,port=0,slot=0 \
+-object memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=1G,share=true \
+-device cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0 \
+-M cxl-fmw.0.targets.0=cxl.0,cxl-fmw.0.size=1G
+
+
+I was expecting the CXL memory to be listed in "System Ram", the lsmem
+shows only 2G memory which is System RAM, it's not listing the CXL
+memory.
+
+Do I need to pass any particular parameter in the kernel command line?
+
+Is there any documentation available? I followed the inputs provided in
+
+https://lore.kernel.org/linux-mm/Y+CSOeHVLKudN0A6@kroah.com/T/
+
+Is there any documentation/blog listed?
+
+

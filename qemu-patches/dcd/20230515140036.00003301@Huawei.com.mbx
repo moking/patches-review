@@ -53,10 +53,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-X-Status: A
-Content-Length: 9897
-Lines: 253
 
 On Thu, 11 May 2023 17:56:40 +0000
 Fan Ni <fan.ni@samsung.com> wrote:
@@ -369,9 +365,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 1918
-Lines: 56
 
 On Thu, 11 May 2023 17:56:40 +0000
 Fan Ni <fan.ni@samsung.com> wrote:
@@ -487,9 +480,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 5648
-Lines: 171
 
 On Thu, 11 May 2023 17:56:40 +0000
 Fan Ni <fan.ni@samsung.com> wrote:
@@ -722,10 +712,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-X-Status: A
-Content-Length: 6057
-Lines: 173
 
 On Thu, 11 May 2023 16:53:23 -0500
 Nathan Fontenot <nafonten@amd.com> wrote:
@@ -958,9 +944,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 2901
-Lines: 88
 
 On Thu, 11 May 2023 17:56:40 +0000
 Fan Ni <fan.ni@samsung.com> wrote:
@@ -1108,9 +1091,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 6580
-Lines: 212
 
 On Thu, 11 May 2023 17:56:40 +0000
 Fan Ni <fan.ni@samsung.com> wrote:
@@ -1382,10 +1362,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-X-Status: A
-Content-Length: 10309
-Lines: 340
 
 On Thu, 11 May 2023 17:56:40 +0000
 Fan Ni <fan.ni@samsung.com> wrote:
@@ -1785,9 +1761,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 9026
-Lines: 307
 
 On Thu, 11 May 2023 17:56:40 +0000
 Fan Ni <fan.ni@samsung.com> wrote:
@@ -2154,9 +2127,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 23744
-Lines: 704
 
 On Thu, 11 May 2023 17:56:40 +0000
 Fan Ni <fan.ni@samsung.com> wrote:
@@ -3022,8 +2992,6 @@ X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Content-Length: 11012
-Lines: 288
 
 
 
@@ -3470,9 +3438,6 @@ X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 9621
-Lines: 247
 
 Fan Ni wrote:
 > Since the early draft of DCD support in kernel is out
@@ -3843,9 +3808,6 @@ References: <CGME20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c@uscas1p2
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 11142
-Lines: 295
 
 On Mon, Jun 05, 2023 at 10:35:48AM -0700, Ira Weiny wrote:
 > Fan Ni wrote:
@@ -4267,9 +4229,6 @@ References: <CGME20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c@uscas1p2
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 16007
-Lines: 380
 
 On Wed, Jun 07, 2023 at 06:13:01PM +0000, Shesha Bhushan Sreenivasamurthy w=
 rote:
@@ -4795,9 +4754,6 @@ X-Proofpoint-Virus-Version: vendor=baseguard
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 15956
-Lines: 368
 
 Hi Fan,=0A=
    I am implementing DCD FMAPI commands and planning to start pushing chang=
@@ -5313,9 +5269,6 @@ X-Proofpoint-Virus-Version: vendor=baseguard
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 18123
-Lines: 411
 
 =0A=
 =0A=
@@ -5791,9 +5744,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 15820
-Lines: 310
 
 On Wed, 7 Jun 2023 18:52:14 +0000
 Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com> wrote:
@@ -6253,9 +6203,6 @@ X-Proofpoint-Virus-Version: vendor=baseguard
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 20549
-Lines: 455
 
 =0A=
 =0A=
@@ -6872,9 +6819,6 @@ X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 363
-Lines: 10
 
 Shesha Bhushan Sreenivasamurthy wrote:
 > Hi Fan,
@@ -7035,9 +6979,6 @@ X-Proofpoint-Virus-Version: vendor=baseguard
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 21515
-Lines: 474
 
 Here is the repo where I am committing my changes=0A=
 =0A=
@@ -7632,9 +7573,6 @@ X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PR06MB5290
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 795
-Lines: 23
 
 The 06/08/2023 08:43, Ira Weiny wrote:
 > Shesha Bhushan Sreenivasamurthy wrote:
@@ -7821,9 +7759,6 @@ X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 5549
-Lines: 142
 
 nifan@outlook.com wrote:
 > The 06/08/2023 08:43, Ira Weiny wrote:
@@ -8115,9 +8050,6 @@ X-Proofpoint-Virus-Version: vendor=baseguard
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 8901
-Lines: 208
 
 =0A=
 =0A=
@@ -8333,6 +8265,2898 @@ Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2694EB64DC
+	for <linux-cxl@archiver.kernel.org>; Tue, 27 Jun 2023 20:53:00 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231740AbjF0Uw7 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 27 Jun 2023 16:52:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56024 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231748AbjF0Uwz (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 27 Jun 2023 16:52:55 -0400
+Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01olkn2071.outbound.protection.outlook.com [40.92.107.71])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF7ED2D53
+        for <linux-cxl@vger.kernel.org>; Tue, 27 Jun 2023 13:52:47 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=TmWkxzWlJRLl7c344STgd/oA42XFYUIi86tJzQjLiaZE1L5ob8vKb9fBTuLlOfgLbLBA69rCtxLfph6VXSuxsJz4uNIW+L5jIoCn83HpwPoT/uGHWrSTrzGersvgKoLghyeiR5djcEfSe1GbHsWi93fOYhHOCXRjhQVMirr0zXj6KIhusMWrJzvmoqg9T433gpayLcJzWDizpm2YOV51FAL16Eua/iIDGJewv3FQ34j75L/WuM/JA8AeWiBxdfbTG4K6iW1nAZzgOEk2Wr1sSDTAbMp/f9ASL2HgpGrbAeWgqcXcmYFxuQ0STr+NOAIhwmYtnn0f5gTF/6591Y8AWA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=NkK52er+SV68jxT7K1+niT1C6qy93CapmraJbO4fHB8=;
+ b=PK2igGtxWI2eJxUo2eIe5Obhb2ovsUjp7Sw1gWUZ8qsprT56uu3xaswnvrcBGKTuCtdsLljq/MCx9B2skEKfcOkqjt6pNKu3Eca0lGVWWqf3USoHSJU+0+c+lz3BuHE/BoCMZ/vCPVm5Qgp531GdZH5YiY5p0j3PrcDrwwUoi+Wcgmvsw1/7VLPy7tUVNMYSSDbKm9WQMdLauWGShsLlTpzRbAEpjL46RDs7pW3aMlDPl6HkzBDPMAFWHni5KIXM3tmVgGKQ1yDqnMEaX3XCrM8EBNg048lTCesybYotLgM0Y0HpIo66xVGRo2tw3F1aJR40X/ftZYilmeMtlEdnag==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=NkK52er+SV68jxT7K1+niT1C6qy93CapmraJbO4fHB8=;
+ b=gIdxgsAR6FpNfy55P47XK7k8kUkDf4V2uBNWVv5Vt2aeQ7hXg9UQi7bSVOqdIvugp7SmOPSqQ/OrVq+uIYjg1c0GGjFgrEy6rzXWOBm1UhRYANWLlrrSPl9mxN2o2zBdhylSXYT2LDH5u0NCmpPmXAtN0YrkeXRF0TdXpvoOS+4t516PX8jpHHuCxwb3x+nq0N4RmBLGLDz/N8e0Q7z7jDZE5gek5DqaLJ/gti64thWaBg7ZgLhyH5jJ+kWoSOtKEOf90pVr759u68FlQ4lqrFMAR3dry1mUpkG4Wno/hHdFgOHVmxW8nqu1xAFdwBC4SAUrzRKiJgRYzNBp6z+lXA==
+Received: from SG2PR06MB3397.apcprd06.prod.outlook.com (2603:1096:4:7a::17) by
+ TY0PR06MB5777.apcprd06.prod.outlook.com (2603:1096:400:270::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6521.23; Tue, 27 Jun
+ 2023 20:52:43 +0000
+Received: from SG2PR06MB3397.apcprd06.prod.outlook.com
+ ([fe80::33a7:c9e1:75ae:3227]) by SG2PR06MB3397.apcprd06.prod.outlook.com
+ ([fe80::33a7:c9e1:75ae:3227%4]) with mapi id 15.20.6521.026; Tue, 27 Jun 2023
+ 20:52:43 +0000
+Date: Tue, 27 Jun 2023 13:52:25 -0700
+From: "nifan@outlook.com" <nifan@outlook.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Fan Ni <fan.ni@samsung.com>,
+        "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "gregory.price@memverge.com" <gregory.price@memverge.com>,
+        "hchkuo@avery-design.com.tw" <hchkuo@avery-design.com.tw>,
+        "cbrowy@avery-design.com" <cbrowy@avery-design.com>,
+        "ira.weiny@intel.com" <ira.weiny@intel.com>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>,
+        "nmtadam.samsung@gmail.com" <nmtadam.samsung@gmail.com>,
+        navneet.singh@intel.com
+Subject: Re: [Qemu RFC 0/7] Early enabling of DCD emulation in Qemu
+Message-ID: <SG2PR06MB33970B719515271CBD0303E5B227A@SG2PR06MB3397.apcprd06.prod.outlook.com>
+References: <CGME20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c@uscas1p2.samsung.com>
+ <20230511175609.2091136-1-fan.ni@samsung.com>
+ <20230515140036.00003301@Huawei.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230515140036.00003301@Huawei.com>
+X-TMN: [zmaMoHEcKn88ne3C8Ry6azTK7V8N6grK]
+X-ClientProxiedBy: CH2PR08CA0001.namprd08.prod.outlook.com
+ (2603:10b6:610:5a::11) To SG2PR06MB3397.apcprd06.prod.outlook.com
+ (2603:1096:4:7a::17)
+X-Microsoft-Original-Message-ID: <ZJtMCRxJCuFmmS/d@outlook.com>
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SG2PR06MB3397:EE_|TY0PR06MB5777:EE_
+X-MS-Office365-Filtering-Correlation-Id: b3ac0abd-5852-4835-ae38-08db775073c1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: S0thiMGx7a2vjkNnLCsEZh8v5pq1Zzbb9wKIsY1sCGbWf3o+PVqPkhDu08OLPfXneV1g0bAUTqqMDnqlYEpveTtjIE+nRgzqLtJQjx/i426nZRe7KT7xbDOY3NqM8kx7ddUiX+7HNxJnolG4uoX0dA0KfV1C7pZxogmJ9+EapqX2zvAlDLNDSxEO5ULaIULzTLrfYMLGIZEgVC0zmpAG+tM5fy3mnGvOI4Ttg5lzymNd45pfwHzMtyYkVK7TZA+beeedr7ioZXnkXrw3DN+kUrv6QrpbR5Yx1uNFkbfhlpkC5rVA6aXCZGsNFrpzaAzuOg5wZP4g+rnhqGvG44wr85wZfN9I3dyLusmSmqjfWd9Vs5vv5wcUOEM46xBZpAfgMrHKmZZRFK2DR260yxDZKogYq+hntuOHY7B6WweUL14K/KmDMhHWE3pU6yY7em68QYyAhDvjCSvpcqsh0WHmxOZLdDFoU7pyyPlswnj712Ig3VMa6yN8zPXaoU/xnABd+zwybf8RXpBsUtcxpQMyk8Tnnoev6hYiSjqgMm2THA4fF0fJXJR9x+5qcrnGrd4KSG07IqDnBevsKwrx+cVtVg==
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eE1CVWVHdE0rMDJvZm9ESkVnOHBxZ2lFM1hBUHEvU2lYbVZRcDNkMVduL1Vn?=
+ =?utf-8?B?ZWVxRkp5aTllMTNPRCtac3VleEswVElNdXY1bGtCb2dtRUM1ZE1PL0F4OWVB?=
+ =?utf-8?B?R2lzVzlLVEg1Vm95NjliVzR1cDMzQks3US9BVFhJL2JuRFJqMWlSbUo5eWFm?=
+ =?utf-8?B?VkhmeFQ0K2tTdmVIYnNRclNrOXhhcDhKM1VHdVRDOWx4MTUySDJZSVJFclo0?=
+ =?utf-8?B?cUNtd3hVYUJTRk8yWk9JN3kxeE5tcmFFQUVTaGthdzV3U3p1d1dyRkpEZHp5?=
+ =?utf-8?B?U1FIWlVtRjcxTnBHcUk4ZlRqNVRnM1gzMmM1WnEweFluTmxhSXZrVVpackg2?=
+ =?utf-8?B?SXlydjhsSzM5V2kvdm9ROXV5dHF4cm04L1VBcWhtQ0VWSHZPS01wK0lxOUox?=
+ =?utf-8?B?Q0NXSkt4NVQrVW9SOWxvQUdERDBkUHErOElsTW1nblp0aVhnWldhTERHSWRq?=
+ =?utf-8?B?Z2FGYnRXWDdrYkMzbFg4Ym5aQWpVUnl2a1pUR2xXUklUdDBjaFpJTmpHMU5m?=
+ =?utf-8?B?Q0huT053WWhManhHb0o2VHhnUzl5SEUrTjRpOHgrM3psQmpXaXhqeFRQZFdl?=
+ =?utf-8?B?ZlU5Wnc1NzVuZy9WWkUwTE9sR01JZTBzYlMrV0QwYlhXcXNoeUtZQ29ZOGNY?=
+ =?utf-8?B?aGNKZHJSNHFuWm5aUmQwSzhzSllNZmVhbjAyZDNDeDdNaEVpempEMElqQUJL?=
+ =?utf-8?B?RkNOdVJad1VOelNHSjljbEF6Z0lnVHhDbHJFOGJZU0gxUjBUU0ppMXVDSE9y?=
+ =?utf-8?B?M2JqREk4UTFEYkxNbVMvV1luZFRGTWRPd3l6WDBmVGlCYzhtcHJsUm5iWXJl?=
+ =?utf-8?B?T3BUeUYrK2I4Mlo0aFgrRE80TWp6c0RZRCtPaDg0aVZQaUMxTFhDaVZuWHRy?=
+ =?utf-8?B?UVdoSXdrU2JneTEzbUwvVHd6cUVnMGl3YlpOU0Jra0tOQ1JGclI1cmJ3V0tL?=
+ =?utf-8?B?R29iOThiR2ZuVFJ3R1M2aFh1ZmRCMjllOTEralVHOUw4ekw5dlJGTHMvY0RX?=
+ =?utf-8?B?d25rTGtVZTkydFdjYWRNN2g2dkE1bktCbmZQZXZMcENkNzU1NlNMMXdCUnUy?=
+ =?utf-8?B?QmJqTFlSckRVbEN0UE5rQ2RjcVB4WFJaWHA1bW0xbGswZGZSNENyNDhrZXJt?=
+ =?utf-8?B?SEpwZ3poME5HNWNURFRDWjNHazVyYm9mUmp0TFNjRE1YL3VmRWt1QzZoTzRB?=
+ =?utf-8?B?elp2YkcrclBBTndVMDl3cjRBMVJJZDJldnRzaVFWRkdHM2ppRFZEU1hlUnV0?=
+ =?utf-8?B?V2ZQTTl1OTgyNjdtWVRZa01qd1U0UEdSVHI0OUNRT0V5Sk8yV0NGMnlKREZE?=
+ =?utf-8?B?QjJYeHFwa0tTTWJPT0J1VGxUT2EvYlY2dWlIOGxIM1IvSnFOdFRrK1YvMXMz?=
+ =?utf-8?B?c1RjZmFMVmdlVTBqN3RoOWZvMUdiRTJXRDl6TnNzZXBFNUlJR2lnZXRoV0hN?=
+ =?utf-8?B?Qkh4L1NRVjQ2ejZxak4vYUhCU1dhTU1ocVBRWG5JclJ2aTM0RDhkMWl1Tytn?=
+ =?utf-8?B?MUpPa2pWOHMwbWx6NGFnYlJCM2tIL2I0SlB0VmlLeitYbDJFY2FJSTV0MnBN?=
+ =?utf-8?B?ZDZ3UmprcW5haWRLT0poQjlUR3NWRElreldLaCtjSEdqUlRSajdIdjY1NWV1?=
+ =?utf-8?B?UzJuTGdIbWUzK2NjRm9xMmtCajZvbnc9PQ==?=
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b3ac0abd-5852-4835-ae38-08db775073c1
+X-MS-Exchange-CrossTenant-AuthSource: SG2PR06MB3397.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jun 2023 20:52:43.2035
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY0PR06MB5777
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+The 05/15/2023 14:00, Jonathan Cameron wrote:
+> On Thu, 11 May 2023 17:56:40 +0000
+> Fan Ni <fan.ni@samsung.com> wrote:
+> 
+> > Since the early draft of DCD support in kernel is out
+> > (https://lore.kernel.org/linux-cxl/20230417164126.GA1904906@bgt-140510-bm03/T/#t),
+> > this patch series provide dcd emulation in qemu so people who are interested
+> > can have an early try. It is noted that the patch series may need to be updated
+> > accordingly if the kernel side implementation changes.
+> > 
+> > To support DCD emulation, the patch series add DCD related mailbox command
+> > support (CXL Spec 3.0: 8.2.9.8.9), and extend the cxl type3 memory device
+> > with dynamic capacity extent and region representative.
+> > To support read/write to the dynamic capacity of the device, a host backend
+> > is provided and necessary check mechnism is added to ensure the dynamic
+> > capacity accessed is backed with active dc extents.
+> > Currently FM related mailbox commands (cxl spec 3.0: 7.6.7.6) is not supported
+> > , but we add two qmp interfaces for adding/releasing dynamic capacity extents.
+> > Also, the support for multiple hosts sharing the same DCD case is missing.
+> > 
+> > Things we can try with the patch series together with kernel dcd code:
+> > 1. Create DC regions to cover the address range of the dynamic capacity
+> > regions.
+> > 2. Add/release dynamic capacity extents to the device and notify the
+> > kernel.
+> > 3. Test kernel side code to accept added dc extents and create dax devices,
+> > and release dc extents and notify the device
+> > 4. Online the memory range backed with dc extents and let application use
+> > them.
+> > 
+> > The patch series is based on Jonathan's local qemu branch:
+> > https://gitlab.com/jic23/qemu/-/tree/cxl-2023-02-28
+> > 
+> > Simple tests peformed with the patch series:
+> > 1 Install cxl modules:
+> > 
+> > modprobe -a cxl_acpi cxl_core cxl_pci cxl_port cxl_mem
+> > 
+> > 2 Create dc regions:
+> > 
+> > region=$(cat /sys/bus/cxl/devices/decoder0.0/create_dc_region)
+> > echo $region> /sys/bus/cxl/devices/decoder0.0/create_dc_region
+> > echo 256 > /sys/bus/cxl/devices/$region/interleave_granularity
+> > echo 1 > /sys/bus/cxl/devices/$region/interleave_ways
+> > echo "dc" >/sys/bus/cxl/devices/decoder2.0/mode
+> > echo 0x10000000 >/sys/bus/cxl/devices/decoder2.0/dpa_size
+> > echo 0x10000000 > /sys/bus/cxl/devices/$region/size
+> > echo  "decoder2.0" > /sys/bus/cxl/devices/$region/target0
+> > echo 1 > /sys/bus/cxl/devices/$region/commit
+> > echo $region > /sys/bus/cxl/drivers/cxl_region/bind
+> > 
+> > /home/fan/cxl/tools-and-scripts# cxl list
+> > [
+> >   {
+> >     "memdevs":[
+> >       {
+> >         "memdev":"mem0",
+> >         "pmem_size":536870912,
+> >         "ram_size":0,
+> >         "serial":0,
+> >         "host":"0000:0d:00.0"
+> >       }
+> >     ]
+> >   },
+> >   {
+> >     "regions":[
+> >       {
+> >         "region":"region0",
+> >         "resource":45365592064,
+> >         "size":268435456,
+> >         "interleave_ways":1,
+> >         "interleave_granularity":256,
+> >         "decode_state":"commit"
+> >       }
+> >     ]
+> >   }
+> > ]
+> > 
+> > 3 Add two dc extents (128MB each) through qmp interface
+> > 
+> > { "execute": "qmp_capabilities" }
+> > 
+> > { "execute": "cxl-add-dynamic-capacity-event",
+> > 	"arguments": {
+> > 		 "path": "/machine/peripheral/cxl-pmem0",
+> > 		"region-id" : 0,
+> > 		 "num-extent": 2,
+> > 		"dpa":0,
+> > 		"extent-len": 128
+> > 	}
+> > }
+> > 
+> > /home/fan/cxl/tools-and-scripts# lsmem
+> > RANGE                                  SIZE   STATE REMOVABLE   BLOCK
+> > 0x0000000000000000-0x000000007fffffff    2G  online       yes    0-15
+> > 0x0000000100000000-0x000000027fffffff    6G  online       yes   32-79
+> > 0x0000000a90000000-0x0000000a9fffffff  256M offline           338-339
+> > 
+> > Memory block size:       128M
+> > Total online memory:       8G
+> > Total offline memory:    256M
+> > 
+> > 
+> > 4.Online the momory with 'daxctl online-memory dax0.0' to online the memory
+> > 
+> > /home/fan/cxl/ndctl# ./build/daxctl/daxctl online-memory dax0.0
+> > [  230.730553] Fallback order for Node 0: 0 1
+> > [  230.730825] Fallback order for Node 1: 1 0
+> > [  230.730953] Built 2 zonelists, mobility grouping on.  Total pages: 2042541
+> > [  230.731110] Policy zone: Normal
+> > onlined memory for 1 device
+> > 
+> > root@bgt-140510-bm03:/home/fan/cxl/ndctl# lsmem
+> > RANGE                                  SIZE   STATE REMOVABLE BLOCK
+> > 0x0000000000000000-0x000000007fffffff    2G  online       yes  0-15
+> > 0x0000000100000000-0x000000027fffffff    6G  online       yes 32-79
+> > 0x0000000a90000000-0x0000000a97ffffff  128M  online       yes   338
+> > 0x0000000a98000000-0x0000000a9fffffff  128M offline             339
+> > 
+> > Memory block size:       128M
+> > Total online memory:     8.1G
+> > Total offline memory:    128M
+> > 
+> > 5 using dc extents as regular memory
+> > 
+> > /home/fan/cxl/ndctl# numactl --membind=1 ls
+> > CONTRIBUTING.md  README.md  clean_config.sh  cscope.out   git-version-gen
+> > ndctl	       scripts	test.h      version.h.in COPYING		 acpi.h
+> > config.h.meson   cxl	  make-git-snapshot.sh	ndctl.spec.in  sles	tools
+> > Documentation	 build	    contrib	     daxctl	  meson.build		rhel
+> > tags	topology.png LICENSES	 ccan	    cscope.files
+> > git-version  meson_options.txt	rpmbuild.sh    test	util
+> > 
+> > 
+> > QEMU command line cxl configuration:
+> > 
+> > RP1="-object memory-backend-file,id=cxl-mem1,share=on,mem-path=/tmp/cxltest.raw,size=512M \
+> > -object memory-backend-file,id=cxl-mem2,share=on,mem-path=/tmp/cxltest2.raw,size=512M \
+> > -object memory-backend-file,id=cxl-lsa1,share=on,mem-path=/tmp/lsa.raw,size=512M \
+> > -device pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1 \
+> > -device cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2 \
+> > -device cxl-type3,bus=root_port13,memdev=cxl-mem1,lsa=cxl-lsa1,dc-memdev=cxl-mem2,id=cxl-pmem0,num-dc-regions=1\
+> > -M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G,cxl-fmw.0.interleave-granularity=8k"
+> > 
+> > 
+> > Kernel DCD support used to test the changes
+> > 
+> > The code is tested with the posted kernel dcd support:
+> > https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=for-6.5/dcd-preview
+> > 
+> 
+> Very nice!  +CC Navneet who may want to comment on the below (and the
+> emulation as well)
+> 
+> I've not had a chance to look at the code on the kernel side yet.
+
+Thanks Jonathan for all the comments for the series, will reflect them
+in the next version.
+
+Fan
+
+> 
+> 
+> > commit: f425bc34c600e2a3721d6560202962ec41622815
+> > 
+> > To make the test work, we have made the following changes to the above kernel commit:
+> > 
+> > diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+> > index 5f04bbc18af5..5f421d3c5cef 100644
+> > --- a/drivers/cxl/core/mbox.c
+> > +++ b/drivers/cxl/core/mbox.c
+> > @@ -68,6 +68,7 @@ static struct cxl_mem_command cxl_mem_commands[CXL_MEM_COMMAND_ID_MAX] = {
+> >  	CXL_CMD(SCAN_MEDIA, 0x11, 0, 0),
+> >  	CXL_CMD(GET_SCAN_MEDIA, 0, CXL_VARIABLE_PAYLOAD, 0),
+> >  	CXL_CMD(GET_DC_EXTENT_LIST, 0x8, CXL_VARIABLE_PAYLOAD, 0),
+> > +	CXL_CMD(GET_DC_CONFIG, 0x2, CXL_VARIABLE_PAYLOAD, 0),
+> >  };
+> >  
+> >  /*
+> > diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
+> > index 291c716abd49..ae10e3cf43a1 100644
+> > --- a/drivers/cxl/core/region.c
+> > +++ b/drivers/cxl/core/region.c
+> > @@ -194,7 +194,7 @@ static int cxl_region_manage_dc(struct cxl_region *cxlr)
+> >  		}
+> >  		cxlds->dc_list_gen_num = extent_gen_num;
+> >  		dev_dbg(cxlds->dev, "No of preallocated extents :%d\n", rc);
+> > -		enable_irq(cxlds->cxl_irq[CXL_EVENT_TYPE_DCD]);
+> > +		/*enable_irq(cxlds->cxl_irq[CXL_EVENT_TYPE_DCD]);*/
+> 
+> Some race condition that means we need to enable the DCD event earlier?
+> 
+> >  	}
+> >  	return 0;
+> >  err:
+> > @@ -2810,7 +2810,8 @@ int cxl_add_dc_extent(struct cxl_dev_state *cxlds, struct resource *alloc_dpa_re
+> >  				dev_dax->align, memremap_compat_align()))) {
+> >  		rc = alloc_dev_dax_range(dev_dax, hpa,
+> >  					resource_size(alloc_dpa_res));
+> > -		return rc;
+> > +		if (rc)
+> > +			return rc;
+> 
+> No idea on this one as it's in the code I haven't looked at yet!
+> 
+> >  	}
+> >  
+> >  	rc = xa_insert(&cxlr_dc->dax_dev_list, hpa, dev_dax, GFP_KERNEL);
+> > diff --git a/drivers/cxl/pci.c b/drivers/cxl/pci.c
+> > index 9e45b1056022..653bec203838 100644
+> > --- a/drivers/cxl/pci.c
+> > +++ b/drivers/cxl/pci.c
+> > @@ -659,7 +659,7 @@ static int cxl_event_irqsetup(struct cxl_dev_state *cxlds)
+> >  
+> >  	/* Driver enables DCD interrupt after creating the dc cxl_region */
+> >  	rc = cxl_event_req_irq(cxlds, policy.dyncap_settings, CXL_EVENT_TYPE_DCD,
+> > -					IRQF_SHARED | IRQF_ONESHOT | IRQF_NO_AUTOEN);
+> > +					IRQF_SHARED | IRQF_ONESHOT);
+> 
+> This will be otherside of the removal of the enable above.
+> 
+> >  	if (rc) {
+> >  		dev_err(cxlds->dev, "Failed to get interrupt for event dc log\n");
+> >  		return rc;
+> > diff --git a/include/uapi/linux/cxl_mem.h b/include/uapi/linux/cxl_mem.h
+> > index 6ca85861750c..910a48259239 100644
+> > --- a/include/uapi/linux/cxl_mem.h
+> > +++ b/include/uapi/linux/cxl_mem.h
+> > @@ -47,6 +47,7 @@
+> >  	___C(SCAN_MEDIA, "Scan Media"),                                   \
+> >  	___C(GET_SCAN_MEDIA, "Get Scan Media Results"),                   \
+> >  	___C(GET_DC_EXTENT_LIST, "Get dynamic capacity extents"),         \
+> > +	___C(GET_DC_CONFIG, "Get dynamic capacity configuration"),         \
+> >  	___C(MAX, "invalid / last command")
+> >  
+> >  #define ___C(a, b) CXL_MEM_COMMAND_ID_##a
+> > 
+> > 
+> > 
+> > Fan Ni (7):
+> >   hw/cxl/cxl-mailbox-utils: Add dc_event_log_size field to output
+> >     payload of identify memory device command
+> >   hw/cxl/cxl-mailbox-utils: Add dynamic capacity region representative
+> >     and mailbox command support
+> >   hw/mem/cxl_type3: Add a parameter to pass number of DC regions the
+> >     device supports in qemu command line
+> >   hw/mem/cxl_type3: Add DC extent representative to cxl type3 device
+> >   hw/cxl/cxl-mailbox-utils: Add mailbox commands to support add/release
+> >     dynamic capacity response
+> >   Add qmp interfaces to add/release dynamic capacity extents
+> >   hw/mem/cxl_type3: add read/write support to dynamic capacity
+> > 
+> >  hw/cxl/cxl-mailbox-utils.c  | 389 +++++++++++++++++++++++++++-
+> >  hw/mem/cxl_type3.c          | 492 +++++++++++++++++++++++++++++++-----
+> >  include/hw/cxl/cxl_device.h |  50 +++-
+> >  include/hw/cxl/cxl_events.h |  16 ++
+> >  qapi/cxl.json               |  44 ++++
+> >  5 files changed, 924 insertions(+), 67 deletions(-)
+> > 
+> 
+
+-- 
+Fan Ni <nifan@outlook.com>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 741C2C0015E
+	for <linux-cxl@archiver.kernel.org>; Tue, 27 Jun 2023 21:13:39 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229488AbjF0VNi (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 27 Jun 2023 17:13:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33630 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229481AbjF0VNh (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 27 Jun 2023 17:13:37 -0400
+Received: from APC01-SG2-obe.outbound.protection.outlook.com (mail-sgaapc01olkn2077.outbound.protection.outlook.com [40.92.53.77])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E3711727
+        for <linux-cxl@vger.kernel.org>; Tue, 27 Jun 2023 14:13:35 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Nv+eRzDK+TO8zNrmGPl3kkvq8YPf5Di+bk2E8dSvmyd5vwpkIztvmFZWdQCQ0x2wnuFq7NQRA54skHrdkSJYLcqYyunOpyjz8J5G9hk6QX034EVDeq/7UwjP5T1eXbS8waZKJs6uxyU2LlIKXW7qqwprc4G1FeS3JHCzmvpuDY9nKT7QDhW2S0Napzljf7I65NoJu+YXH0X1k/MzjB8oLg1WwXzIo5N9reabw4j8v76kILPwEFpO41bXDg3FZPZKE/bnLei6eewjkkWybES2vFNLLYoFNNsJGyxEputaWLg1oHKcicAqflyD7XzRVj1qrPVKgvELV7sFthrmqM0x6g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=UPY0i+3Ql9GaudCLSxnhBBbxj3eUUJ6eSyTLn3A1tlc=;
+ b=FyZP43oPMDRqohGhGuQuwBWopk4t4hX4kCG+XB0Zx06snHwo3/TyCyyZ3IxyQWJ8TU1lPATwu+j/Jn+86yLt9O5+5/1DN8y+dN9FcAfehRJurEF2/bulPHR+gviDVLl25WfwgQD51B+POzgf8T2/533xKRI0C9UOQdUCFuCpDx5+8gvzLJavu+oya40kRuvbXm/+KIBQuBrLP/JB+8LDoDGnjkg+Fj1//Z8+QCsQWA/ww5nsHAgmpkPbQde2Q1sZnT6IEL0sVNQ0RlDhlPEVRwaNFctjxG+N/1gLkg5l8ScWr+rYuQ1kTbqden9wo1Vyun08v1tvno3CF802QMc/Ow==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=UPY0i+3Ql9GaudCLSxnhBBbxj3eUUJ6eSyTLn3A1tlc=;
+ b=Phni0p21qBk3sehoD2KD0rBN6RWXDySZuxKtY1BW6d4PDUWqugg5pT32rzKfG7IM+mz4uzAhUo/zXF5EndyCYt9SFBXbq69rGv0r4Jc17HI9wk3wDt9ic8QBEPw22L/Hs1VtUqFzT87Hm+oYFApeq1EEIeejks0ixOBon4Nwd0Pf22Q+AC62NXnqBOO8IzZL9qkWSHKScpGZSBFAjZv0MK+mvInMcKJygoDHr966H56FrrhRdmw7moIH9Wb+cRNMSWOALbRfrbqo7dqS3mXxF8vxMLPZmBLYDTvJZsolMru3EBiw9T4daaF0TeQ/Mjw9umB5dz7fXEQDMvPgATAveg==
+Received: from SG2PR06MB3397.apcprd06.prod.outlook.com (2603:1096:4:7a::17) by
+ SI2PR06MB4266.apcprd06.prod.outlook.com (2603:1096:4:154::6) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6521.24; Tue, 27 Jun 2023 21:13:29 +0000
+Received: from SG2PR06MB3397.apcprd06.prod.outlook.com
+ ([fe80::33a7:c9e1:75ae:3227]) by SG2PR06MB3397.apcprd06.prod.outlook.com
+ ([fe80::33a7:c9e1:75ae:3227%4]) with mapi id 15.20.6521.026; Tue, 27 Jun 2023
+ 21:13:29 +0000
+Date: Tue, 27 Jun 2023 14:13:17 -0700
+From: "nifan@outlook.com" <nifan@outlook.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Nathan Fontenot <nafonten@amd.com>, Fan Ni <fan.ni@samsung.com>,
+        "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "gregory.price@memverge.com" <gregory.price@memverge.com>,
+        "hchkuo@avery-design.com.tw" <hchkuo@avery-design.com.tw>,
+        "cbrowy@avery-design.com" <cbrowy@avery-design.com>,
+        "ira.weiny@intel.com" <ira.weiny@intel.com>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>,
+        "nmtadam.samsung@gmail.com" <nmtadam.samsung@gmail.com>
+Subject: Re: [RFC 2/7] hw/cxl/cxl-mailbox-utils: Add dynamic capacity region
+ representative and mailbox command support
+Message-ID: <SG2PR06MB339789E75307E3B63C5EA83EB227A@SG2PR06MB3397.apcprd06.prod.outlook.com>
+References: <20230511175609.2091136-1-fan.ni@samsung.com>
+ <CGME20230511175641uscas1p165a19a1416facf6603bf1a417121f0dc@uscas1p1.samsung.com>
+ <20230511175609.2091136-3-fan.ni@samsung.com>
+ <5cf2a93d-1a20-c87b-5276-69feb5056e72@amd.com>
+ <20230515145835.000076b9@Huawei.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230515145835.000076b9@Huawei.com>
+X-TMN: [NcAQuERlHtMXeXdFbng+oQWVzDWefKIE]
+X-ClientProxiedBy: CH2PR03CA0024.namprd03.prod.outlook.com
+ (2603:10b6:610:59::34) To SG2PR06MB3397.apcprd06.prod.outlook.com
+ (2603:1096:4:7a::17)
+X-Microsoft-Original-Message-ID: <ZJtQ7cP9/KBYNCy2@outlook.com>
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SG2PR06MB3397:EE_|SI2PR06MB4266:EE_
+X-MS-Office365-Filtering-Correlation-Id: f1f7bf8f-0381-4bfa-2244-08db77535a99
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: ONHsVujR0+Cf+nInIyhxB+NsuqzKXKR2EO0/6hjfV5B083tdh0QWD1oWkRFkLNa+ym23lpHk5Jvw1spSCstN5jtz4+KFyQZ8OZeCWRz7OOwUVJHhyjaT16p0Gl5ihrlAQxloqyJOb55Yny39fI5BSA4kVqQJPdcoRYqRY/GhpnjNK/+WwBJwRTNVTU3VbK9tVn6NvZaiaIMyS3P+ZJNrDbLP1WdfDdiTHmzTgdnoZbk0qjGMo4XsJvoWPGFZ+Lngr42O8uWAeVhPIdadWTMTFca3f99rdZvrbdf31smMCqB4Sy3JqtOVrCYWk+dNpQzMnrE3jA/mK+7Fa9EUWGQCcoVjQ5x32i8BtSBqVHgTj9JUglb9v6FBV/Dnb0mR2oBu/JJzXNn/8xbklG/GLyVmm+t114h4pL/gmP/X8xQybD8jbQoGQhh60ybQS6wWifKMCZV5r6TlJ9HIOurSX+m75QcOzY+dbhyDJssrc7lASRErT7BPoxvF3s+xv1O0Bml+WVLxSHGwFMRJzukHOBE4Qd45TDbhApum7GOAOmxLF9/gMmb+ffC4FbEvPUIKtdIX
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?N2ZQY2V2emNObThNWmYzWGJtUlgxWDdEWHc0OGR1QWhOZFVrRzhQbjA5S0V5?=
+ =?utf-8?B?UjZNaks1Y0o2N3diaTQyVTlFeWlPQklBTVBNRXQ5dS9YeDQrRkhmNDVWVVhD?=
+ =?utf-8?B?M3VQQXIzcVJpQmlXTHBDOTdNRThoTEw2OENNMGsyQm9BbzdZK3pwdnA3Qmxk?=
+ =?utf-8?B?UDNyMi94V0g2UzMxNE5vUXV0TFBNalBVQ0J3MnZiMDNBWGN6dTR6NUtxUGR3?=
+ =?utf-8?B?VlpIbEdHRmVwcW9WZGtLbmRSQnVId0VodGh3eWRMeUE5cHh3NnZoVW8rZTIz?=
+ =?utf-8?B?YmVsdnhtc0t6alBCNGhUOU9GQlNBK2VIY0xOOVNsSlhWQ0N5dzBNV0RHdll0?=
+ =?utf-8?B?Y2dGTWFoZ2JpSG9UN2hlTXdZQWZPcS9vb2N6MGpjSFkxNzBPRldydC93ZFFy?=
+ =?utf-8?B?TW1mQW0xRXdvci9saE40Q01aTVZBOU5udzM0U2NEZ0s3dUdlbHBIZ0xXN3Jy?=
+ =?utf-8?B?MjhGQ0d6dVI3aHZzTlpRRSs1U1pyWnVxcXliSUZsT2tsVXdwZUhsS0xsVExK?=
+ =?utf-8?B?SytobW9LWld5bVVYem1RUGt3VWVyY3NZMVR0Zk5taGZpa041bHBxczVua0VF?=
+ =?utf-8?B?c3dBOGxDOWZWZVBxcEVZRjVIVlljem9BN2J6cjlpb2haSEtHUkRHeEo1dmVW?=
+ =?utf-8?B?SDFqMk05V2NUTFpXZzlldk9WMVhnWEZjZ3RDdGZEcitVVWJZS3NYeWhoM1Bn?=
+ =?utf-8?B?eEVUSHBZazAyZG9ZR0pxcXdyWis4a0VEQXVCdnlOdGF2SHFMYkxTY2ZMNWV1?=
+ =?utf-8?B?TTByL1EyVUZITWVzcWpYNE00TGJWMzMwT2N3eTc3NkUyUXpmY1NiSU13OHBz?=
+ =?utf-8?B?blJmWWN4MUQ1eVBqK3kvZHprc1ZKc0dwMTF1TXEvMEp3eFB1U3B6SmRBVUtq?=
+ =?utf-8?B?SWZrc3pVVmRUVnV4S09aSmZMenRrcjhEbkRhODd2SWxFc0lQUUJqM1ZjZ0pE?=
+ =?utf-8?B?ZERDZGxGazdDWjl0NzdpeFQ0Nlp0QXZGNk5LaFc3RzVPU05GQkFJNlJFWXMv?=
+ =?utf-8?B?TXYrVkNwQlBUKzRWRmlQNTIyZkNQZEF4MStlNHlxOG5oN1lYbXNCcm83bEM2?=
+ =?utf-8?B?S1BLOW9ZR3lDajhCS2hYVkI3MTlUN2YyTmRuOTFZTTdWYm9uSTJrMkpmbUw2?=
+ =?utf-8?B?VmZYd3NlbFU5OFdmVkZrbWNwZkpmcHpiMi85WHpaMVRvNjVYdWpMeSs5anZJ?=
+ =?utf-8?B?SkhHRFc3WEI1aHNqN09nUUxKazRzd3FVUnZCSXNSdUJVcDJPbDY4VjJpVmc1?=
+ =?utf-8?B?MDc5bFc0em1yTnNMcnc4Yk5ONW95RVY5RFhYZGxXcVk4alRXZzF0eXJJSU1t?=
+ =?utf-8?B?ME9TWDZray9YSU5qblRBZkFrMDRNQlI4KzZiRmtxVWJRZTlScEY2dElKNXY4?=
+ =?utf-8?B?a2l4bWNOUWgrMWJZQlp1dnEzWEVTRElLSlE1VmdsOFAvVzF3bWpPL05lQUFY?=
+ =?utf-8?B?UmhRYTdyQkJEUWtTS3NnOWx5QjZSck1teGFlZmpYMW51elhTRFNZT2M4cllL?=
+ =?utf-8?B?ekU2N0F6YkwyTGZ5Q01wc3BrWW9IMDhSNUgzSHRpVEtteW1FNUFSSHp4d25L?=
+ =?utf-8?B?emRVL2cya2wxOElKUFBpNkI2aWFpWmlYMFhmelFQSjZnWnVsK2I2OWs3c1NZ?=
+ =?utf-8?B?cndmdS8ydzk4b0J0U1ErVm54L2NqK0E9PQ==?=
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f1f7bf8f-0381-4bfa-2244-08db77535a99
+X-MS-Exchange-CrossTenant-AuthSource: SG2PR06MB3397.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jun 2023 21:13:29.4858
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PR06MB4266
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+The 05/15/2023 14:58, Jonathan Cameron wrote:
+> On Thu, 11 May 2023 16:53:23 -0500
+> Nathan Fontenot <nafonten@amd.com> wrote:
+> 
+> > On 5/11/23 12:56, Fan Ni wrote:
+> > > From: Fan Ni <nifan@outlook.com>
+> > > 
+> > > Per cxl spec 3.0, add dynamic capacity region representative based on
+> > > Table 8-126 and extend the cxl type3 device definition to include dc region
+> > > information. Also, based on info in 8.2.9.8.9.1, add 'Get Dynamic Capacity
+> > > Configuration' mailbox support.
+> > > 
+> > > Signed-off-by: Fan Ni <fan.ni@samsung.com>
+> > > ---
+> > >  hw/cxl/cxl-mailbox-utils.c  | 68 +++++++++++++++++++++++++++++++++++++
+> > >  include/hw/cxl/cxl_device.h | 16 +++++++++
+> > >  2 files changed, 84 insertions(+)
+> > > 
+> > > diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+> > > index 7ff4fbdf22..61c77e52d8 100644
+> > > --- a/hw/cxl/cxl-mailbox-utils.c
+> > > +++ b/hw/cxl/cxl-mailbox-utils.c
+> > > @@ -81,6 +81,8 @@ enum {
+> > >          #define GET_POISON_LIST        0x0
+> > >          #define INJECT_POISON          0x1
+> > >          #define CLEAR_POISON           0x2
+> > > +	DCD_CONFIG = 0x48, /*8.2.9.8.9*/
+> > > +		#define GET_DC_REGION_CONFIG   0x0
+> > >      PHYSICAL_SWITCH = 0x51
+> > >          #define IDENTIFY_SWITCH_DEVICE      0x0
+> > >  };
+> > > @@ -935,6 +937,70 @@ static CXLRetCode cmd_media_clear_poison(struct cxl_cmd *cmd,
+> > >      return CXL_MBOX_SUCCESS;
+> > >  }
+> > >  
+> > > +/*
+> > > + * cxl spec 3.0: 8.2.9.8.9.2
+> > > + * Get Dynamic Capacity Configuration
+> > > + **/
+> > > +static CXLRetCode cmd_dcd_get_dyn_cap_config(struct cxl_cmd *cmd,
+> > > +		CXLDeviceState *cxl_dstate,
+> > > +		uint16_t *len)
+> > > +{
+> > > +	struct get_dyn_cap_config_in_pl {
+> > > +		uint8_t region_cnt;
+> > > +		uint8_t start_region_id;
+> > > +	} QEMU_PACKED;
+> > > +
+> > > +    struct get_dyn_cap_config_out_pl {
+> > > +		uint8_t num_regions;
+> > > +		uint8_t rsvd1[7];
+> > > +		struct {
+> > > +			uint64_t base;
+> > > +			uint64_t decode_len;
+> > > +			uint64_t region_len;
+> > > +			uint64_t block_size;
+> > > +			uint32_t dsmadhandle;
+> > > +			uint8_t flags;
+> > > +			uint8_t rsvd2[3];
+> > > +		} QEMU_PACKED records[];  
+> > 
+> > Could you declare CXLDCD_Region as QEMU_PACKED and use it here instead of
+> > re-defining the region structure?
+> 
+> Could be done, but care needed on the endian conversions.  I wouldn't
+> mind seeing this always held as little endian state though. We'd have
+> done that anyway if it was a memory mapped command set rather than read
+> via the mailbox so there is plenty of precedence.
+> 
+> Jonathan
+
+I will leave it as it is for now.
+> 
+> > 
+> > > +	} QEMU_PACKED;
+> > > +
+> > > +	struct get_dyn_cap_config_in_pl *in = (void *)cmd->payload;
+> > > +	struct get_dyn_cap_config_out_pl *out = (void *)cmd->payload;
+> > > +	struct CXLType3Dev *ct3d = container_of(cxl_dstate, CXLType3Dev, cxl_dstate);
+> > > +	uint16_t record_count = 0, i = 0;
+> > > +	uint16_t out_pl_len;
+> > > +
+> > > +	if (in->start_region_id >= ct3d->dc.num_regions)
+> > > +		record_count = 0;
+> > > +	else if (ct3d->dc.num_regions - in->start_region_id < in->region_cnt)
+> > > +		record_count = ct3d->dc.num_regions - in->start_region_id;
+> > > +	else
+> > > +		record_count = in->region_cnt;
+> > > +
+> > > +	out_pl_len = sizeof(*out) + record_count * sizeof(out->records[0]);
+> > > +	assert(out_pl_len <= CXL_MAILBOX_MAX_PAYLOAD_SIZE);
+> > > +
+> > > +	memset(out, 0, out_pl_len);
+> > > +	out->num_regions = record_count;
+> > > +	for (; i < record_count; i++) {
+> > > +		stq_le_p(&out->records[i].base,
+> > > +			ct3d->dc.regions[in->start_region_id+i].base);
+> > > +		stq_le_p(&out->records[i].decode_len,
+> > > +			ct3d->dc.regions[in->start_region_id+i].decode_len);
+> > > +		stq_le_p(&out->records[i].region_len,
+> > > +			ct3d->dc.regions[in->start_region_id+i].len);
+> > > +		stq_le_p(&out->records[i].block_size,
+> > > +			ct3d->dc.regions[in->start_region_id+i].block_size);
+> > > +		stl_le_p(&out->records[i].dsmadhandle,
+> > > +			ct3d->dc.regions[in->start_region_id+i].dsmadhandle);
+> > > +		out->records[i].flags
+> > > +			= ct3d->dc.regions[in->start_region_id+i].flags;  
+> > 
+> > In this loop your reading from 'in' and writing to 'out' where in and out both
+> > point to the same payload buffer. It works because of the structure layouts but
+> > feels like a bug waiting to happen. Perhaps saving start_region to a local variable
+> > and using that for the loop?
+> 
+> Does it work?  There is a memset of out above.
+> Definitely need a local copy of start_region_id before that.
+> This might only be working because of good fortune / compilers being 'clever'.
+> 
+> Jonathan
+
+Yes. We need a local variable to record the start_region_id.
+
+Thanks Nathan for catching the issue.
+
+Fan
+> 
+> 
+> > 
+> > -Nathan
+> > 
+> > > +	}
+> > > +
+> > > +	*len = out_pl_len;
+> > > +	return CXL_MBOX_SUCCESS;
+> > > +}
+> > > +
+> > >  #define IMMEDIATE_CONFIG_CHANGE (1 << 1)
+> > >  #define IMMEDIATE_DATA_CHANGE (1 << 2)
+> > >  #define IMMEDIATE_POLICY_CHANGE (1 << 3)
+> > > @@ -973,6 +1039,8 @@ static struct cxl_cmd cxl_cmd_set[256][256] = {
+> > >          cmd_media_inject_poison, 8, 0 },
+> > >      [MEDIA_AND_POISON][CLEAR_POISON] = { "MEDIA_AND_POISON_CLEAR_POISON",
+> > >          cmd_media_clear_poison, 72, 0 },
+> > > +	[DCD_CONFIG][GET_DC_REGION_CONFIG] = { "DCD_GET_DC_REGION_CONFIG",
+> > > +		cmd_dcd_get_dyn_cap_config, 2, 0 },
+> > >  };
+> > >  
+> > >  static struct cxl_cmd cxl_cmd_set_sw[256][256] = {
+> > > diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+> > > index e285369693..8a04e53e90 100644
+> > > --- a/include/hw/cxl/cxl_device.h
+> > > +++ b/include/hw/cxl/cxl_device.h
+> > > @@ -383,6 +383,17 @@ typedef struct CXLPoison {
+> > >  typedef QLIST_HEAD(, CXLPoison) CXLPoisonList;
+> > >  #define CXL_POISON_LIST_LIMIT 256
+> > >  
+> > > +#define DCD_MAX_REGION_NUM 8
+> > > +
+> > > +typedef struct CXLDCD_Region {
+> > > +	uint64_t base;
+> > > +	uint64_t decode_len; /* in multiples of 256MB */
+> > > +	uint64_t len;
+> > > +	uint64_t block_size;
+> > > +	uint32_t dsmadhandle;
+> > > +	uint8_t flags;
+> > > +} CXLDCD_Region;
+> > > +
+> > >  struct CXLType3Dev {
+> > >      /* Private */
+> > >      PCIDevice parent_obj;
+> > > @@ -414,6 +425,11 @@ struct CXLType3Dev {
+> > >      unsigned int poison_list_cnt;
+> > >      bool poison_list_overflowed;
+> > >      uint64_t poison_list_overflow_ts;
+> > > +
+> > > +	struct dynamic_capacity {
+> > > +		uint8_t num_regions; // 1-8
+> > > +		struct CXLDCD_Region regions[DCD_MAX_REGION_NUM];
+> > > +	} dc;
+> > >  };
+> > >  
+> > >  #define TYPE_CXL_TYPE3 "cxl-type3"  
+> 
+
+-- 
+Fan Ni <nifan@outlook.com>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 768A6EB64DA
+	for <linux-cxl@archiver.kernel.org>; Wed, 28 Jun 2023 17:10:16 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231355AbjF1RKO (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Wed, 28 Jun 2023 13:10:14 -0400
+Received: from mail-psaapc01olkn2076.outbound.protection.outlook.com ([40.92.52.76]:20192
+        "EHLO APC01-PSA-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S231126AbjF1RKN (ORCPT <rfc822;linux-cxl@vger.kernel.org>);
+        Wed, 28 Jun 2023 13:10:13 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=SZ8ufDGe55VY7ogVgElAb1rvSP/31Cw3FjuddsrnJqAsx6YFW9GZw/FvGsxIiwzHMPxxlV9UtJ2K8HVwh2lMvFWAKqI2F0s+XVa9zc1sL8vgb6EI1xISY+zNFa5eVdR8uIDU5afgCl7wG/h3GwHTvSb0zPzPeFR590NNn8vlwSxmoKecJ7iJseozdMA9hSz7flAOK38sILtkSiNXFepwj/MxWUAvnjqTJn+qV5bTFFFQ5fhOVLthcTI2iwGIAb0nADQW1Akoybjgtd0e482fNvFuZKJsF26rZWQ7sB2zPdd4a3G97Tf5vCJT/+i1NR96Ss6bzgnMNRkJO9htvlpYEw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9aVLa9SWona+msS0bV2ShblW4ig6QAxEiyLmKNkEjbs=;
+ b=k7z+I83aINoz+hd2VCCkD+Y4ISbO4IFpRWLY+lM1T6HnJf0GkOjw3wIpkbKbnp4Ndjz04H66U4j26tBgQ6Kp1yp0TGY93yYf6Cz6JKoNdQl0wvSDoejfpeMsROSfujACJH29vLsckI0JWMxwS9G/x74oyrg1+q1VgX5yOnpjLTdRdgT/WO0csVbR+H1zIwtih/sHHSR+eYBgka8KMl4TuQyMin1klHl4HTVYvEJNjn1IjfiFGL72SR3DD30A7MHAlZkOx9vkYdz+CfIgSBgGwRvbC8tZO7afBS76dbE1wGL3KvtRk3nLI726GgJzM4AjhksvVpVkRhN9Y0YPUrg4SQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9aVLa9SWona+msS0bV2ShblW4ig6QAxEiyLmKNkEjbs=;
+ b=jpcHtA5wtpEv9WZ/K1770m3a/BSRloY3QehZ9zZM976EUBXDcdTZEo4Hc8cvcjunheLUBORPcryyt3tg5fu+IyDvsLOzs/VZOhNGRdh0bJUsRJF94SnZ5EBwIZO3brqOIFDsWBxWl2tl5zdC2M8FkdwDLS9CON9CAfZ15V3QV9917p8d7ingb6tnczwCLoemg0HO4V4oHUXojRaD/dpc2g/iWzublsqC/VKwDzlPHuEJ4/lSyPRqkJXqmBxpwhFc3m7aVgNeVXIBoYDh2rc0EtydEjBVwOd0dVyBwNrSfiuCaJDWwKSZ0V48Mt0g3CUZENMUsKl6GYm8heXmN4TBmw==
+Received: from SG2PR06MB3397.apcprd06.prod.outlook.com (2603:1096:4:7a::17) by
+ SEYPR06MB6729.apcprd06.prod.outlook.com (2603:1096:101:16b::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6521.23; Wed, 28 Jun
+ 2023 17:10:08 +0000
+Received: from SG2PR06MB3397.apcprd06.prod.outlook.com
+ ([fe80::33a7:c9e1:75ae:3227]) by SG2PR06MB3397.apcprd06.prod.outlook.com
+ ([fe80::33a7:c9e1:75ae:3227%4]) with mapi id 15.20.6521.026; Wed, 28 Jun 2023
+ 17:10:06 +0000
+Date: Wed, 28 Jun 2023 10:09:47 -0700
+From: "nifan@outlook.com" <nifan@outlook.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Fan Ni <fan.ni@samsung.com>,
+        "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "gregory.price@memverge.com" <gregory.price@memverge.com>,
+        "hchkuo@avery-design.com.tw" <hchkuo@avery-design.com.tw>,
+        "cbrowy@avery-design.com" <cbrowy@avery-design.com>,
+        "ira.weiny@intel.com" <ira.weiny@intel.com>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>,
+        "nmtadam.samsung@gmail.com" <nmtadam.samsung@gmail.com>
+Subject: Re: [RFC 7/7] hw/mem/cxl_type3: add read/write support to dynamic
+ capacity
+Message-ID: <SG2PR06MB33973100A036493C2A644C6BB224A@SG2PR06MB3397.apcprd06.prod.outlook.com>
+References: <20230511175609.2091136-1-fan.ni@samsung.com>
+ <CGME20230511175642uscas1p2c037608a1dd26b19cf970f97ce434c6d@uscas1p2.samsung.com>
+ <20230511175609.2091136-8-fan.ni@samsung.com>
+ <20230515162212.0000275c@Huawei.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230515162212.0000275c@Huawei.com>
+X-TMN: [PDf+9tt11R5yfgT1XXHIDPNjsJScDGZ2dA3c9oF+vYX+0fdM5LrPnPRqvY4huKW+]
+X-ClientProxiedBy: BY3PR05CA0059.namprd05.prod.outlook.com
+ (2603:10b6:a03:39b::34) To SG2PR06MB3397.apcprd06.prod.outlook.com
+ (2603:1096:4:7a::17)
+X-Microsoft-Original-Message-ID: <ZJxpW3ZAMbUS3rTJ@outlook.com>
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SG2PR06MB3397:EE_|SEYPR06MB6729:EE_
+X-MS-Office365-Filtering-Correlation-Id: ca43b053-bcc8-42e3-8bde-08db77fa84ad
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: SGEbmAijX3xJWyYUvaTX33y8zq3Q5Va5pFzl+VDHeR+hHdWMRGQGoRl8dNJGZZbtJNZrSWgc/1tDyFGw/Rpp8Y1SmBAzcsxJAHmnpR37x5sXWaT0hJPLWttaBfGhFeGPjiwYAYidqyrgPrl9A9UNa6Z8imYkdIRZcq3Lya1xCD/8T2TYjXJcM+pZCT+9UxwZVvd248093rui9E2ccPvrpc3WMHKHHnXHzsSJtk6PMKhJeVRF4rGKoQxuoeYCnQGYXBmagqUHuhS6TT76e31pDMV2UI+gMn32LinZeIfNbAE3WJZcpnK4djG2A3iawsvdEituwcJI+yvUDDRgy3/0lskwPBd8drHTkFUJWP6p19o/dcqtX6oRyy17RdmVVUfV8CjyJjY/49AmYzZYOekBQoQ429mxSoOQkhqyZZO6LKppT0Wxanptwppj0yF6U3821K/m8BHMDGwZecuh7jAWr3ZAAN58UuOaZPtTwUAdG65k9FiCst4KXqdbakosClAl3Jup/Kozgz3uMoKpkYSpkUMuUoHJ0pic8ek40ZwBw1n74csOMUb4AYAjiMI6dA6m
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?c3BnbWI0T2Q0ZU5pYkpTbndydVF0bzRYM01weUVxRlY1Z0x3blNEelNpNVlI?=
+ =?utf-8?B?aTh6ckxteHNaalBibWhuRGlwOURHK1ZjQXh4NUZWMXVyWEdROUpHOHduV1FR?=
+ =?utf-8?B?WjQ1c1MxQS90ZDBiRDRKellabUoxeWIwaXlHWERvakFUWHJzb210N0Fkb21C?=
+ =?utf-8?B?TXZ6VnJLSy94UWpHZm5RZE9GN3FJQmloZWVkK2t3ZDFucTcybTlkZ3dxYngz?=
+ =?utf-8?B?dkhkU3U2dnpIdjVRMVJ5QmFkU0p6STFjaDdiU2NLRUs0emZaMHVmNFRNOWtH?=
+ =?utf-8?B?anZ3YzZMaWYvWjlMNXhyK2lHajhGS0phQTJoTFFkelY1dVZFSGJsaHE0anhO?=
+ =?utf-8?B?M1lDeEcyZWhvZTE0VW9RT05yTW1XNy92QlZzeEtid0k2S1kvSzQrYkhta1dP?=
+ =?utf-8?B?Um5QcVVCd251MmhuSUJTbWl6N2lLQlpWQS8yZkRwOW5yNVBlT1hzTm00b2sw?=
+ =?utf-8?B?SFlwVkUvUDA0Y1p2Q0ViQSszVGVZR1JDbElLQzBBaDJmclhKbHJPVHlydkYz?=
+ =?utf-8?B?ajdUUVdLaHdtbkluYjc3RGQyVDdSMEJpMWNsem8vL05mNVc1MzVFL3FSV25B?=
+ =?utf-8?B?ME4wdTdWN2VJd1d5STNKMWs4ZkFsYU9nOHEvN2s1d3E5VE01TXpIYUxIVkVB?=
+ =?utf-8?B?VCtBamxmR2YyaWVibThxeXBFWURUTFEvNEN1WTJBS0NZY21sdFBJK3lVUTMw?=
+ =?utf-8?B?S092YXEwRmJDWUJDdEYxVkhxVUp2SVBUZUhWZXNZd3FOTStDRk95TlFJUGd3?=
+ =?utf-8?B?YmpRaTEvTGJvSE5adHdOYWhDMXV3RHFJZCtSY0VIajdzMmZQb2oxcEpHZXdq?=
+ =?utf-8?B?c09OL1IrajQ1T0xOWElDVE52Sk5kRHUrU1o2TVY3NzVsb05zNzk4aFJZaDNM?=
+ =?utf-8?B?TFN5V3QxNVphUHdmc09OMWlaQmk1emdkbkZSVDZMS1J6MFhWUU1OZEpEVngw?=
+ =?utf-8?B?VDE4a2pCYlM4Z3J3VWgzOWJTNExqS0pqRzdwQnpYT29FRG9qejVGM3RQU29B?=
+ =?utf-8?B?TFJTMFdyK3Z3ZEU2Q0ZSUzJqVC9yTTBDOG9KWk5XUU9RSE9vVGorSldCaC94?=
+ =?utf-8?B?VW5LYWxFVG1sRjNjdG1zLzZvcmszRWErczUyalE2eGVTK0gxNnRMd3ZLeEY4?=
+ =?utf-8?B?OHBUWXZiLzVhZlVNUzMvK1VCQ2hqOUMyOVpRUnFIbGp1NzVVVllIaU81TFdR?=
+ =?utf-8?B?cDdJVUtVZVhMQ0MwNndSK0J5THNtN1UrY3IxSFhxbEtoaEhaV3FGdE1PZ2hi?=
+ =?utf-8?B?TjF1YXNJd2RQM0tZbTBuQmlLUm9hNkVlcm8xVVNUZEtGaTlpbmFVK29UcTl4?=
+ =?utf-8?B?MWl6WnlsZ0o1SVplWG8yM09SeWNQT0pyNWpYNnkrUm4rdmR6Vnp1bHhDSlJX?=
+ =?utf-8?B?WGZUd1dMbUlPbDJpRmRmeUs4KzhXbU41Uktva0NUM3FYTEQvNTEzOFk1NUdP?=
+ =?utf-8?B?UldCUjkvc1NkL3Q0d0NxWHJ3bGhRc1gzR3YzRTlLRnlQcDd6czdZVjZGWU9l?=
+ =?utf-8?B?blBpeHlZVC9meTdHSkFoL2tsSE03Z21ncmdDZ3FveHc4M3dlZG5GcVkxZ3U2?=
+ =?utf-8?B?NDh2Mi9wSzdYQ2pQcFdlSm5wTXhveUF1ZDRlWmdzL2V4MVRtNXk1RVp4TEVG?=
+ =?utf-8?B?S05SSkVXTGlLSlVRVytRRUhjTkRNMEJJa0tNMStkVTFBVkJueWtTZGptUDl6?=
+ =?utf-8?B?dmljSDR1eWlVR290MUpvZjUyQmVrTVBRYTA3UTFlclplWDhXZ2ZTV2lnPT0=?=
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ca43b053-bcc8-42e3-8bde-08db77fa84ad
+X-MS-Exchange-CrossTenant-AuthSource: SG2PR06MB3397.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Jun 2023 17:10:06.9147
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR06MB6729
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+The 05/15/2023 16:22, Jonathan Cameron wrote:
+> On Thu, 11 May 2023 17:56:40 +0000
+> Fan Ni <fan.ni@samsung.com> wrote:
+> 
+> > From: Fan Ni <nifan@outlook.com>
+> > 
+> > Before the change, read from or write to dynamic capacity of the memory
+> > device is not support as 1) no host backed file/memory is provided for
+> > it; 2) no address space is created for the dynamic capacity.
+> 
+> Ah nice. I should have read ahead.  Probably makes sense to reorder things
+> so that when we present DCD region it will work.
+
+We can back dynamic capacity with host memory/file and create address
+space for dc regions, but until extents can be added we should not expect
+any read/write can happen to the dynamic capacity, right?
+
+Fan
+> 
+> > 
+> > With the change, add code to support following:
+> > 1. add a new property to type3 device "dc-memdev" to point to host
+> >    memory backend for dynamic capacity;
+> > 2. add a bitmap for each region to track whether a block is host backed,
+> > which will be used for address check when read/write dynamic capacity;
+> > 3. add namespace for dynamic capacity for read/write support;
+> > 4. create cdat entries for each dynamic capacity region;
+> > 
+> > Signed-off-by: Fan Ni <fan.ni@samsung.com>
+> > ---
+> >  hw/cxl/cxl-mailbox-utils.c  |  21 ++-
+> >  hw/mem/cxl_type3.c          | 336 +++++++++++++++++++++++++++++-------
+> >  include/hw/cxl/cxl_device.h |   8 +-
+> >  3 files changed, 298 insertions(+), 67 deletions(-)
+> > 
+> > diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+> > index 7212934627..efe61e67fb 100644
+> > --- a/hw/cxl/cxl-mailbox-utils.c
+> > +++ b/hw/cxl/cxl-mailbox-utils.c
+> > @@ -391,9 +391,11 @@ static CXLRetCode cmd_firmware_update_get_info(struct cxl_cmd *cmd,
+> >          char fw_rev4[0x10];
+> >      } QEMU_PACKED *fw_info;
+> >      QEMU_BUILD_BUG_ON(sizeof(*fw_info) != 0x50);
+> > +	CXLType3Dev *ct3d = container_of(cxl_dstate, CXLType3Dev, cxl_dstate);
+> >  
+> >      if ((cxl_dstate->vmem_size < CXL_CAPACITY_MULTIPLIER) ||
+> > -        (cxl_dstate->pmem_size < CXL_CAPACITY_MULTIPLIER)) {
+> > +			(cxl_dstate->pmem_size < CXL_CAPACITY_MULTIPLIER) ||
+> 
+> Keep old alignment
+> 
+> > +		(ct3d->dc.total_dynamic_capicity < CXL_CAPACITY_MULTIPLIER)) {
+> 
+> We should think about the separation between what goes in cxl_dstate and directly
+> in ct3d. That boundary has been blurring for a while and getting some review
+> comments.
+> 
+> >          return CXL_MBOX_INTERNAL_ERROR;
+> >      }
+> >  
+> > @@ -534,7 +536,9 @@ static CXLRetCode cmd_identify_memory_device(struct cxl_cmd *cmd,
+> >      CXLType3Class *cvc = CXL_TYPE3_GET_CLASS(ct3d);
+> >  
+> >      if ((!QEMU_IS_ALIGNED(cxl_dstate->vmem_size, CXL_CAPACITY_MULTIPLIER)) ||
+> > -        (!QEMU_IS_ALIGNED(cxl_dstate->pmem_size, CXL_CAPACITY_MULTIPLIER))) {
+> > +		(!QEMU_IS_ALIGNED(cxl_dstate->pmem_size, CXL_CAPACITY_MULTIPLIER)) ||
+> > +		(!QEMU_IS_ALIGNED(ct3d->dc.total_dynamic_capicity,
+> > +						CXL_CAPACITY_MULTIPLIER))) {
+> >          return CXL_MBOX_INTERNAL_ERROR;
+> >      }
+> >  
+> > @@ -543,7 +547,8 @@ static CXLRetCode cmd_identify_memory_device(struct cxl_cmd *cmd,
+> >  
+> >      snprintf(id->fw_revision, 0x10, "BWFW VERSION %02d", 0);
+> >  
+> > -    stq_le_p(&id->total_capacity, cxl_dstate->mem_size / CXL_CAPACITY_MULTIPLIER);
+> > +	stq_le_p(&id->total_capacity,
+> > +			cxl_dstate->static_mem_size / CXL_CAPACITY_MULTIPLIER);
+> 
+> Pull the rename out as a precursor patch.
+> 
+> >      stq_le_p(&id->persistent_capacity, cxl_dstate->pmem_size / CXL_CAPACITY_MULTIPLIER);
+> >      stq_le_p(&id->volatile_capacity, cxl_dstate->vmem_size / CXL_CAPACITY_MULTIPLIER);
+> >      stl_le_p(&id->lsa_size, cvc->get_lsa_size(ct3d));
+> > @@ -568,9 +573,12 @@ static CXLRetCode cmd_ccls_get_partition_info(struct cxl_cmd *cmd,
+> >          uint64_t next_pmem;
+> >      } QEMU_PACKED *part_info = (void *)cmd->payload;
+> >      QEMU_BUILD_BUG_ON(sizeof(*part_info) != 0x20);
+> > +	CXLType3Dev *ct3d = container_of(cxl_dstate, CXLType3Dev, cxl_dstate);
+> >  
+> >      if ((!QEMU_IS_ALIGNED(cxl_dstate->vmem_size, CXL_CAPACITY_MULTIPLIER)) ||
+> > -        (!QEMU_IS_ALIGNED(cxl_dstate->pmem_size, CXL_CAPACITY_MULTIPLIER))) {
+> > +		(!QEMU_IS_ALIGNED(cxl_dstate->pmem_size, CXL_CAPACITY_MULTIPLIER)) ||
+> > +		(!QEMU_IS_ALIGNED(ct3d->dc.total_dynamic_capicity,
+> > +						CXL_CAPACITY_MULTIPLIER))) {
+> >          return CXL_MBOX_INTERNAL_ERROR;
+> >      }
+> >  
+> > @@ -881,9 +889,8 @@ static CXLRetCode cmd_media_clear_poison(struct cxl_cmd *cmd,
+> >      struct clear_poison_pl *in = (void *)cmd->payload;
+> >  
+> >      dpa = ldq_le_p(&in->dpa);
+> > -    if (dpa + 64 > cxl_dstate->mem_size) {
+> > -        return CXL_MBOX_INVALID_PA;
+> > -    }
+> > +	if (dpa + 64 > cxl_dstate->static_mem_size && ct3d->dc.num_regions == 0)
+> 
+> This test will need expanding to include DPAs in DC regions.
+> 
+> > +		return CXL_MBOX_INVALID_PA;
+> >  
+> >      QLIST_FOREACH(ent, poison_list, node) {
+> >          /*
+> > diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+> > index 70d47d43b9..334660bd0f 100644
+> > --- a/hw/mem/cxl_type3.c
+> > +++ b/hw/mem/cxl_type3.c
+> > @@ -33,8 +33,8 @@ enum {
+> >  };
+> >  
+> >  static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+> > -                                         int dsmad_handle, MemoryRegion *mr,
+> > -                                         bool is_pmem, uint64_t dpa_base)
+> > +		int dsmad_handle, uint8_t flags,
+> > +		uint64_t dpa_base, uint64_t size)
+> >  {
+> >      g_autofree CDATDsmas *dsmas = NULL;
+> >      g_autofree CDATDslbis *dslbis0 = NULL;
+> > @@ -53,9 +53,9 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+> >              .length = sizeof(*dsmas),
+> >          },
+> >          .DSMADhandle = dsmad_handle,
+> > -        .flags = is_pmem ? CDAT_DSMAS_FLAG_NV : 0,
+> > +		.flags = flags,
+> >          .DPA_base = dpa_base,
+> > -        .DPA_length = int128_get64(mr->size),
+> > +		.DPA_length = size,
+> >      };
+> >  
+> >      /* For now, no memory side cache, plausiblish numbers */
+> > @@ -137,9 +137,9 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+> >           * NV: Reserved - the non volatile from DSMAS matters
+> >           * V: EFI_MEMORY_SP
+> >           */
+> > -        .EFI_memory_type_attr = is_pmem ? 2 : 1,
+> > +		.EFI_memory_type_attr = flags ? 2 : 1,
+> 
+> Fix all these alignment changes (spaces vs tabs)
+> 
+> >          .DPA_offset = 0,
+> > -        .DPA_length = int128_get64(mr->size),
+> > +		.DPA_length = size,
+> >      };
+> >  
+> >      /* Header always at start of structure */
+> > @@ -158,14 +158,15 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+> >      g_autofree CDATSubHeader **table = NULL;
+> >      CXLType3Dev *ct3d = priv;
+> >      MemoryRegion *volatile_mr = NULL, *nonvolatile_mr = NULL;
+> > +	MemoryRegion *dc_mr = NULL;
+> >      int dsmad_handle = 0;
+> >      int cur_ent = 0;
+> >      int len = 0;
+> >      int rc, i;
+> > +	uint64_t vmr_size = 0, pmr_size = 0;
+> >  
+> > -    if (!ct3d->hostpmem && !ct3d->hostvmem) {
+> > -        return 0;
+> > -    }
+> > +	if (!ct3d->hostpmem && !ct3d->hostvmem && !ct3d->dc.num_regions)
+> > +		return 0;
+> >  
+> >      if (ct3d->hostvmem) {
+> >          volatile_mr = host_memory_backend_get_memory(ct3d->hostvmem);
+> > @@ -173,6 +174,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+> >              return -EINVAL;
+> >          }
+> >          len += CT3_CDAT_NUM_ENTRIES;
+> > +		vmr_size = volatile_mr->size;
+> >      }
+> >  
+> >      if (ct3d->hostpmem) {
+> > @@ -181,7 +183,19 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+> >              return -EINVAL;
+> >          }
+> >          len += CT3_CDAT_NUM_ENTRIES;
+> > -    }
+> > +		pmr_size = nonvolatile_mr->size;
+> > +	}
+> > +
+> > +	if (ct3d->dc.num_regions) {
+> > +		if (ct3d->dc.host_dc) {
+> > +			dc_mr = host_memory_backend_get_memory(ct3d->dc.host_dc);
+> > +			if (!dc_mr)
+> > +				return -EINVAL;
+> > +			len += CT3_CDAT_NUM_ENTRIES * ct3d->dc.num_regions;
+> > +		} else {
+> > +			return -EINVAL;
+> > +		}
+> > +	}
+> >  
+> >      table = g_malloc0(len * sizeof(*table));
+> >      if (!table) {
+> > @@ -189,23 +203,45 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+> >      }
+> >  
+> >      /* Now fill them in */
+> > -    if (volatile_mr) {
+> > -        rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
+> > -                                           false, 0);
+> > -        if (rc < 0) {
+> > -            return rc;
+> > -        }
+> > -        cur_ent = CT3_CDAT_NUM_ENTRIES;
+> > -    }
+> > +	if (volatile_mr) {
+> > +		rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++,
+> > +				0, 0, vmr_size);
+> > +		if (rc < 0)
+> > +			return rc;
+> Without the tabs / spaces accidental conversion this diff should look a lot
+> clearer..
+> > +		cur_ent = CT3_CDAT_NUM_ENTRIES;
+> > +	}
+> > +
+> > +	if (nonvolatile_mr) {
+> > +		rc = ct3_build_cdat_entries_for_mr(&(table[cur_ent]), dsmad_handle++,
+> > +				CDAT_DSMAS_FLAG_NV, vmr_size, pmr_size);
+> > +		if (rc < 0)
+> > +			goto error_cleanup;
+> > +		cur_ent += CT3_CDAT_NUM_ENTRIES;
+> > +	}
+> > +
+> > +	if (dc_mr) {
+> > +		uint64_t region_base = vmr_size + pmr_size;
+> > +
+> > +		/*
+> > +		 * Currently we create cdat entries for each region, should we only
+> > +		 * create dsmas table instead??
+> 
+> I don't think it does any harm to have a lot of similar entries. We may want to reconsider
+> this in the longer term to make sure that more complex code paths are handled where
+> things are shared.  What combinations does the spec allow?
+> One entry for all regions with them all sharing a single dsmad handle?
+> 
+> 
+> > +		 * We assume all dc regions are non-volatile for now.
+> > +		 *
+> > +		 */
+> > +		for (i = 0; i < ct3d->dc.num_regions; i++) {
+> > +			rc = ct3_build_cdat_entries_for_mr(&(table[cur_ent])
+> > +					, dsmad_handle++
+> > +					, CDAT_DSMAS_FLAG_NV|CDAT_DSMAS_FLAG_DYNAMIC_CAP
+> > +					, region_base, ct3d->dc.regions[i].len);
+> > +			if (rc < 0)
+> > +				goto error_cleanup;
+> > +			ct3d->dc.regions[i].dsmadhandle = dsmad_handle-1;
+> > +
+> > +			cur_ent += CT3_CDAT_NUM_ENTRIES;
+> > +			region_base += ct3d->dc.regions[i].len;
+> > +		}
+> > +	}
+> >  
+> > -    if (nonvolatile_mr) {
+> > -        rc = ct3_build_cdat_entries_for_mr(&(table[cur_ent]), dsmad_handle++,
+> > -                nonvolatile_mr, true, (volatile_mr ? volatile_mr->size : 0));
+> > -        if (rc < 0) {
+> > -            goto error_cleanup;
+> > -        }
+> > -        cur_ent += CT3_CDAT_NUM_ENTRIES;
+> > -    }
+> >      assert(len == cur_ent);
+> >  
+> >      *cdat_table = g_steal_pointer(&table);
+> > @@ -706,6 +742,11 @@ static int cxl_create_toy_regions(CXLType3Dev *ct3d)
+> >  		/* dsmad_handle is set when creating cdat table entries */
+> >  		region->flags = 0;
+> >  
+> > +		region->blk_bitmap = bitmap_new(region->len / region->block_size);
+> > +		if (!region->blk_bitmap)
+> > +			return -1;
+> > +		bitmap_zero(region->blk_bitmap, region->len / region->block_size);
+> > +
+> >  		region_base += region->len;
+> >  	}
+> >  	QTAILQ_INIT(&ct3d->dc.extents);
+> > @@ -713,11 +754,24 @@ static int cxl_create_toy_regions(CXLType3Dev *ct3d)
+> >  	return 0;
+> >  }
+> >  
+> > +static void cxl_destroy_toy_regions(CXLType3Dev *ct3d)
+> 
+> Why toy?  They work after this so no longer toys ;)
+> 
+> > +{
+> > +	int i;
+> > +	struct CXLDCD_Region *region;
+> > +
+> > +	for (i = 0; i < ct3d->dc.num_regions; i++) {
+> > +		region = &ct3d->dc.regions[i];
+> > +		if (region->blk_bitmap)
+> > +			g_free(region->blk_bitmap);
+> Why is check needed? Is there a path where we call this function
+> without the bitmap having been allocated successfully?
+> 
+> > +	}
+> > +}
+> > +
+> >  static bool cxl_setup_memory(CXLType3Dev *ct3d, Error **errp)
+> >  {
+> >      DeviceState *ds = DEVICE(ct3d);
+> >  
+> > -    if (!ct3d->hostmem && !ct3d->hostvmem && !ct3d->hostpmem) {
+> > +	if (!ct3d->hostmem && !ct3d->hostvmem && !ct3d->hostpmem
+> > +			&& !ct3d->dc.num_regions) {
+> >          error_setg(errp, "at least one memdev property must be set");
+> >          return false;
+> >      } else if (ct3d->hostmem && ct3d->hostpmem) {
+> > @@ -754,7 +808,7 @@ static bool cxl_setup_memory(CXLType3Dev *ct3d, Error **errp)
+> >          }
+> >          address_space_init(&ct3d->hostvmem_as, vmr, v_name);
+> >          ct3d->cxl_dstate.vmem_size = vmr->size;
+> > -        ct3d->cxl_dstate.mem_size += vmr->size;
+> > +		ct3d->cxl_dstate.static_mem_size += vmr->size;
+> >          g_free(v_name);
+> >      }
+> >  
+> > @@ -777,12 +831,47 @@ static bool cxl_setup_memory(CXLType3Dev *ct3d, Error **errp)
+> >          }
+> >          address_space_init(&ct3d->hostpmem_as, pmr, p_name);
+> >          ct3d->cxl_dstate.pmem_size = pmr->size;
+> > -        ct3d->cxl_dstate.mem_size += pmr->size;
+> > +		ct3d->cxl_dstate.static_mem_size += pmr->size;
+> >          g_free(p_name);
+> >      }
+> >  
+> > -	if (cxl_create_toy_regions(ct3d))
+> > -		return false;
+> > +	ct3d->dc.total_dynamic_capicity = 0;
+> > +	if (ct3d->dc.host_dc) {
+> > +		MemoryRegion *dc_mr;
+> > +		char *dc_name;
+> > +		uint64_t total_region_size = 0;
+> > +		int i;
+> > +
+> > +		dc_mr = host_memory_backend_get_memory(ct3d->dc.host_dc);
+> > +		if (!dc_mr) {
+> > +			error_setg(errp, "dynamic capacity must have backing device");
+> > +			return false;
+> 
+> > +		}
+> > +		/* FIXME: set dc as nonvolatile for now */
+> That's fine. I think to do anything else we'll want multiple backends anyway.
+> Perhaps rename the parameter to reflect that it's volatile for now though otherwise
+> we'll end up deprecating another memory region command line parameter and people will
+> begin to get grumpy ;)
+> 
+> > +		memory_region_set_nonvolatile(dc_mr, true);
+> > +		memory_region_set_enabled(dc_mr, true);
+> > +		host_memory_backend_set_mapped(ct3d->dc.host_dc, true);
+> > +		if (ds->id) {
+> > +			dc_name = g_strdup_printf("cxl-dcd-dpa-dc-space:%s", ds->id);
+> > +		} else {
+> > +			dc_name = g_strdup("cxl-dcd-dpa-dc-space");
+> > +		}
+> > +		address_space_init(&ct3d->dc.host_dc_as, dc_mr, dc_name);
+> > +
+> > +		if (cxl_create_toy_regions(ct3d)) {
+> > +			return false;
+> > +		}
+> > +
+> > +		for (i = 0; i < ct3d->dc.num_regions; i++) {
+> > +			total_region_size += ct3d->dc.regions[i].len;
+> > +		}
+> > +		/* Make sure the host backend is large enough to cover all dc range */
+> > +		assert(total_region_size <= dc_mr->size);
+> > +		assert(dc_mr->size % (256*1024*1024) == 0);
+> > +
+> > +		ct3d->dc.total_dynamic_capicity = total_region_size;
+> > +		g_free(dc_name);
+> > +	}
+> >  
+> >      return true;
+> >  }
+> > @@ -890,6 +979,10 @@ err_release_cdat:
+> >  err_free_special_ops:
+> >      g_free(regs->special_ops);
+> >  err_address_space_free:
+> > +	if (ct3d->dc.host_dc) {
+> > +		cxl_destroy_toy_regions(ct3d);
+> > +		address_space_destroy(&ct3d->dc.host_dc_as);
+> > +	}
+> >      if (ct3d->hostpmem) {
+> >          address_space_destroy(&ct3d->hostpmem_as);
+> >      }
+> > @@ -909,6 +1002,10 @@ static void ct3_exit(PCIDevice *pci_dev)
+> >      cxl_doe_cdat_release(cxl_cstate);
+> >      spdm_sock_fini(ct3d->doe_spdm.socket);
+> >      g_free(regs->special_ops);
+> > +	if (ct3d->dc.host_dc) {
+> > +		cxl_destroy_toy_regions(ct3d);
+> > +		address_space_destroy(&ct3d->dc.host_dc_as);
+> > +	}
+> >      if (ct3d->hostpmem) {
+> >          address_space_destroy(&ct3d->hostpmem_as);
+> >      }
+> > @@ -917,6 +1014,100 @@ static void ct3_exit(PCIDevice *pci_dev)
+> >      }
+> >  }
+> >  
+> > +static void set_region_block_backed(CXLType3Dev *ct3d, uint64_t dpa,
+> > +		uint64_t len)
+> > +{
+> > +	int i;
+> > +	CXLDCD_Region *region = NULL;
+> > +
+> > +	if (dpa < ct3d->dc.regions[0].base
+> > +		|| dpa >= ct3d->dc.regions[0].base + ct3d->dc.total_dynamic_capicity)
+> > +		return;
+> > +
+> > +	/*
+> > +	 * spec 3.0 9.13.3: Regions are used in increasing-DPA order, with
+> > +	 * Region 0 being used for the lowest DPA of Dynamic Capacity and
+> > +	 * Region 7 for the highest DPA.
+> > +	 * So we check from the last region to find where the dpa belongs.
+> > +	 * access across multiple regions is not allowed.
+> > +	 **/
+> > +	for (i = ct3d->dc.num_regions-1; i >= 0; i--) {
+> > +		region = &ct3d->dc.regions[i];
+> > +		if (dpa >= region->base)
+> > +			break;
+> > +	}
+> > +
+> > +	bitmap_set(region->blk_bitmap, (dpa-region->base)/region->block_size,
+> > +			len/region->block_size);
+> > +}
+> > +
+> > +static bool test_region_block_backed(CXLType3Dev *ct3d, uint64_t dpa,
+> > +		uint64_t len)
+> > +{
+> > +	int i;
+> > +	CXLDCD_Region *region = NULL;
+> > +	uint64_t nbits;
+> > +	long nr;
+> > +
+> > +	if (dpa < ct3d->dc.regions[0].base
+> > +		   || dpa >= ct3d->dc.regions[0].base + ct3d->dc.total_dynamic_capicity)
+> > +		return false;
+> > +
+> > +	/*
+> > +	 * spec 3.0 9.13.3: Regions are used in increasing-DPA order, with
+> > +	 * Region 0 being used for the lowest DPA of Dynamic Capacity and
+> > +	 * Region 7 for the highest DPA.
+> > +	 * So we check from the last region to find where the dpa belongs.
+> > +	 * access across multiple regions is not allowed.
+> > +	 **/
+> > +	for (i = ct3d->dc.num_regions-1; i >= 0; i--) {
+> > +		region = &ct3d->dc.regions[i];
+> > +		if (dpa >= region->base)
+> > +			break;
+> > +	}
+> > +
+> > +	nr = (dpa-region->base)/region->block_size;
+> > +	nbits = (len + region->block_size-1)/region->block_size;
+> > +	if (find_next_zero_bit(region->blk_bitmap, nr+nbits, nr)
+> > +			>= nr+nbits)
+> > +		return true;
+> > +
+> > +	return false;
+> 
+> return find_next_zero_bit(...) >= nr + nbits;
+> 
+> > +}
+> > +
+> > +static void clear_region_block_backed(CXLType3Dev *ct3d, uint64_t dpa,
+> > +		uint64_t len)
+> > +{
+> > +	int i;
+> > +	CXLDCD_Region *region = NULL;
+> > +	uint64_t nbits;
+> > +	long nr;
+> > +
+> > +	if (dpa < ct3d->dc.regions[0].base
+> > +		|| dpa >= ct3d->dc.regions[0].base + ct3d->dc.total_dynamic_capicity)
+> > +		return;
+> > +
+> > +	/*
+> > +	 * spec 3.0 9.13.3: Regions are used in increasing-DPA order, with
+> > +	 * Region 0 being used for the lowest DPA of Dynamic Capacity and
+> > +	 * Region 7 for the highest DPA.
+> > +	 * So we check from the last region to find where the dpa belongs.
+> > +	 * access across multiple regions is not allowed.
+> > +	 **/
+> > +	for (i = ct3d->dc.num_regions-1; i >= 0; i--) {
+> > +		region = &ct3d->dc.regions[i];
+> > +		if (dpa >= region->base)
+> > +			break;
+> > +	}
+> > +
+> > +	nr = (dpa-region->base) / region->block_size;
+> > +	nbits = (len + region->block_size-1) / region->block_size;
+> 
+> Why handle non precise multiple?  
+> 
+> > +	for (i = 0; i < nbits; i++) {
+> > +		clear_bit(nr, region->blk_bitmap);
+> > +		nr++;
+> > +	}
+> 
+> bitmap_clear()?
+> 
+> 
+> 
+> > +
+> >  static bool cxl_type3_dpa(CXLType3Dev *ct3d, hwaddr host_addr, uint64_t *dpa)
+> >  {
+> >      uint32_t *cache_mem = ct3d->cxl_cstate.crb.cache_mem_registers;
+> > @@ -973,16 +1164,24 @@ static int cxl_type3_hpa_to_as_and_dpa(CXLType3Dev *ct3d,
+> >                                         AddressSpace **as,
+> >                                         uint64_t *dpa_offset)
+> >  {
+> > -    MemoryRegion *vmr = NULL, *pmr = NULL;
+> > +	MemoryRegion *vmr = NULL, *pmr = NULL, *dc_mr = NULL;
+> > +	uint64_t vmr_size = 0, pmr_size = 0, dc_size = 0;
+> >  
+> >      if (ct3d->hostvmem) {
+> >          vmr = host_memory_backend_get_memory(ct3d->hostvmem);
+> > +		vmr_size = int128_get64(vmr->size);
+> >      }
+> >      if (ct3d->hostpmem) {
+> >          pmr = host_memory_backend_get_memory(ct3d->hostpmem);
+> > +		pmr_size = int128_get64(pmr->size);
+> >      }
+> > +	if (ct3d->dc.host_dc) {
+> > +		dc_mr = host_memory_backend_get_memory(ct3d->dc.host_dc);
+> > +		/* Do we want dc_size to be dc_mr->size or not?? */
+> > +		dc_size = ct3d->dc.total_dynamic_capicity;
+> > +	}
+> >  
+> > -    if (!vmr && !pmr) {
+> > +	if (!vmr && !pmr && !dc_mr) {
+> >          return -ENODEV;
+> >      }
+> >  
+> > @@ -990,20 +1189,22 @@ static int cxl_type3_hpa_to_as_and_dpa(CXLType3Dev *ct3d,
+> >          return -EINVAL;
+> >      }
+> >  
+> > -    if (*dpa_offset > int128_get64(ct3d->cxl_dstate.mem_size)) {
+> > +    if (*dpa_offset >= vmr_size + pmr_size + dc_size ||
+> > +       (*dpa_offset >= vmr_size + pmr_size && ct3d->dc.num_regions == 0)) {
+> >          return -EINVAL;
+> >      }
+> >  
+> > -    if (vmr) {
+> > -        if (*dpa_offset < int128_get64(vmr->size)) {
+> > -            *as = &ct3d->hostvmem_as;
+> > -        } else {
+> > -            *as = &ct3d->hostpmem_as;
+> > -            *dpa_offset -= vmr->size;
+> > -        }
+> > -    } else {
+> > -        *as = &ct3d->hostpmem_as;
+> > -    }
+> > +	if (*dpa_offset < vmr_size)
+> > +		*as = &ct3d->hostvmem_as;
+> > +	else if (*dpa_offset < vmr_size + pmr_size) {
+> > +		*as = &ct3d->hostpmem_as;
+> > +		*dpa_offset -= vmr_size;
+> > +	} else {
+> > +		if (!test_region_block_backed(ct3d, *dpa_offset, size))
+> > +			return -ENODEV;
+> > +		*as = &ct3d->dc.host_dc_as;
+> > +		*dpa_offset -= (vmr_size + pmr_size);
+> > +	}
+> >  
+> >      return 0;
+> >  }
+> > @@ -1069,6 +1270,8 @@ static Property ct3_props[] = {
+> >      DEFINE_PROP_STRING("cdat", CXLType3Dev, cxl_cstate.cdat.filename),
+> >      DEFINE_PROP_UINT16("spdm", CXLType3Dev, spdm_port, 0),
+> >  	DEFINE_PROP_UINT8("num-dc-regions", CXLType3Dev, dc.num_regions, 0),
+> > +	DEFINE_PROP_LINK("dc-memdev", CXLType3Dev, dc.host_dc,
+> > +					TYPE_MEMORY_BACKEND, HostMemoryBackend *),
+> 
+> Perhaps volatile-dc-memdev?  leaves us space for a persistent one in future.
+> If anyone every cares that is ;)
+> 
+> >      DEFINE_PROP_END_OF_LIST(),
+> >  };
+> >  
+> > @@ -1135,34 +1338,41 @@ static void set_lsa(CXLType3Dev *ct3d, const void *buf, uint64_t size,
+> >  
+> >  static bool set_cacheline(CXLType3Dev *ct3d, uint64_t dpa_offset, uint8_t *data)
+> >  {
+> > -    MemoryRegion *vmr = NULL, *pmr = NULL;
+> > +	MemoryRegion *vmr = NULL, *pmr = NULL, *dc_mr = NULL;
+> >      AddressSpace *as;
+> > +	uint64_t vmr_size = 0, pmr_size = 0, dc_size = 0;
+> >  
+> >      if (ct3d->hostvmem) {
+> >          vmr = host_memory_backend_get_memory(ct3d->hostvmem);
+> > +		vmr_size = int128_get64(vmr->size);
+> >      }
+> >      if (ct3d->hostpmem) {
+> >          pmr = host_memory_backend_get_memory(ct3d->hostpmem);
+> > +		pmr_size = int128_get64(pmr->size);
+> >      }
+> > +	if (ct3d->dc.host_dc) {
+> > +		dc_mr = host_memory_backend_get_memory(ct3d->dc.host_dc);
+> > +		dc_size = ct3d->dc.total_dynamic_capicity;
+> > +	}
+> >  
+> > -    if (!vmr && !pmr) {
+> > +    if (!vmr && !pmr && !dc_mr) {
+> >          return false;
+> >      }
+> >  
+> > -    if (dpa_offset + 64 > int128_get64(ct3d->cxl_dstate.mem_size)) {
+> > -        return false;
+> > -    }
+> > +	if (dpa_offset >= vmr_size + pmr_size + dc_size)
+> > +		return false;
+> > +	if (dpa_offset + 64 >= vmr_size + pmr_size && ct3d->dc.num_regions == 0)
+> > +		return false;
+> >  
+> > -    if (vmr) {
+> > -        if (dpa_offset <= int128_get64(vmr->size)) {
+> > -            as = &ct3d->hostvmem_as;
+> > -        } else {
+> > -            as = &ct3d->hostpmem_as;
+> > -            dpa_offset -= vmr->size;
+> > -        }
+> > -    } else {
+> > -        as = &ct3d->hostpmem_as;
+> > -    }
+> > +	if (dpa_offset < vmr_size) {
+> > +		as = &ct3d->hostvmem_as;
+> > +	} else if (dpa_offset < vmr_size + pmr_size) {
+> > +		as = &ct3d->hostpmem_as;
+> > +		dpa_offset -= vmr->size;
+> > +	} else {
+> > +		as = &ct3d->dc.host_dc_as;
+> > +		dpa_offset -= (vmr_size + pmr_size);
+> > +	}
+> >  
+> >      address_space_write(as, dpa_offset, MEMTXATTRS_UNSPECIFIED, &data, 64);
+> >      return true;
+> > @@ -1711,6 +1921,14 @@ static void qmp_cxl_process_dynamic_capacity_event(const char *path, CxlEventLog
+> >  		memcpy(&dCap.dynamic_capacity_extent, &extents[i]
+> >  				, sizeof(CXLDCExtent_raw));
+> >  
+> > +		if (dCap.type == 0x0)
+> 
+> Enum values as suggested in earlier patch.
+> 
+> > +			set_region_block_backed(dcd, extents[i].start_dpa, extents[i].len);
+> > +		else if (dCap.type == 0x1)
+> > +			clear_region_block_backed(dcd, extents[i].start_dpa,
+> > +					extents[i].len);
+> > +		else
+> > +			error_setg(errp, "DC event not support yet, no bitmap op");
+> > +
+> >  		if (cxl_event_insert(cxlds, CXL_EVENT_TYPE_DYNAMIC_CAP,
+> >  					(CXLEventRecordRaw *)&dCap)) {
+> >  			;
+> > diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+> > index c0c8fcc24b..d9b6776e2c 100644
+> > --- a/include/hw/cxl/cxl_device.h
+> > +++ b/include/hw/cxl/cxl_device.h
+> > @@ -211,7 +211,7 @@ typedef struct cxl_device_state {
+> >      } timestamp;
+> >  
+> >      /* memory region size, HDM */
+> > -    uint64_t mem_size;
+> > +	uint64_t static_mem_size;
+> >      uint64_t pmem_size;
+> >      uint64_t vmem_size;
+> >  
+> > @@ -412,6 +412,7 @@ typedef struct CXLDCD_Region {
+> >  	uint64_t block_size;
+> >  	uint32_t dsmadhandle;
+> >  	uint8_t flags;
+> > +	unsigned long *blk_bitmap;
+> >  } CXLDCD_Region;
+> >  
+> >  struct CXLType3Dev {
+> > @@ -447,12 +448,17 @@ struct CXLType3Dev {
+> >      uint64_t poison_list_overflow_ts;
+> >  
+> >  	struct dynamic_capacity {
+> > +		HostMemoryBackend *host_dc;
+> > +		AddressSpace host_dc_as;
+> > +
+> > +		uint8_t num_hosts; //Table 7-55
+> 
+> Not visible here as far as I can see. So leave it for now.
+> 
+> >  		uint8_t num_regions; // 1-8
+> >  		struct CXLDCD_Region regions[DCD_MAX_REGION_NUM];
+> >  		CXLDCDExtentList extents;
+> >  
+> >  		uint32_t total_extent_count;
+> >  		uint32_t ext_list_gen_seq;
+> > +		uint64_t total_dynamic_capicity; // 256M aligned
+> capacity
+> 
+> >  	} dc;
+> >  };
+> >  
+> 
+
+-- 
+Fan Ni <nifan@outlook.com>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EED74EB64DA
+	for <linux-cxl@archiver.kernel.org>; Fri, 30 Jun 2023 19:35:04 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229503AbjF3TfD (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 30 Jun 2023 15:35:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33614 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229485AbjF3TfC (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 30 Jun 2023 15:35:02 -0400
+Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01olkn2104.outbound.protection.outlook.com [40.92.107.104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 26B8C3C3C
+        for <linux-cxl@vger.kernel.org>; Fri, 30 Jun 2023 12:34:59 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=PZRPULBZBTrtYOOZR8P+1noc/1BeLSkMLYJ2DSw3z7PbAN3f8F9lYaau73YXdFTT5HG+1I4WLE0QXoiAmWE626+l7ft0dGdMkxy7MSsiFWPLjg4mrkMTLBRQwyId/fEX/wIohsMVryg8I2Z0zEgt3cUfotQzrIgmV77GUn/BUbBZxLpKP+Dwn1qx9eCebl91/m5uKEdqOCuoFL2uY38+o2dufNBGdz/J6Cm878e2joXnVZ7GF3zQnbNltMEgK0p85/DsNaE9L/us3qaBpWa8/Y2f1I50eUDl/Emw63kkZAiFxJ5F+yVvpk6uTm1MVAkopDD2so1VxeXHiNFdXVD6og==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=MIbjBgwnzbuF8VEg2oO4mHuSO6QwBfxJmC3zKKDlTo0=;
+ b=QuejcPKuq0TyCeAFgf759z2y9xCHx4tdBNrfExUEJKDe/eqrf3Qo9snYGrUwbo14xIcYyWrfmJGMgEjOuJtgq/RWO44KkkY6jjPBk+38nJc2xF/SzA/YHB5FbyQuWJzH4SNR73dq1PMouoxWr/LXYGg9mnXR9XD3lfRdX14LsqhX8QY8UWTHaieO3bBTcPfXTx4mvk6oyhOSR48sp6t8cPSRVy/Y7IAAdTOnLa+0pfPdTOrN2oJTnRxVjA2JbxOvind3/agJw808iJnlla0a+b5dJRDTjaoe+6YFUijMdrRK/pzlLqHqma6YSRwo1FU9SFSx35kf5MJY3o3AuQmU7Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=MIbjBgwnzbuF8VEg2oO4mHuSO6QwBfxJmC3zKKDlTo0=;
+ b=IbfE7GCgNUWF3swfkMg1VHb+eD3DS3OMlsAiXq/zjpCUiY0IEvXNk13PjII/kUhTpLie3dIqh3IMDEBUTOke6CENG8ZVilnzAxdD/i+DDROZMwPr7yJLlv9eJzey0QDbd6byvwtQfARMNsrsPGWuIu5q/R76AjAXXAWvIICdqvBn8Wj6kV6dUzgQUJ7slfZyn1HpIXYPG3O85GAWwVPzQjMLG6ilB0lH7xVjcKuO3ttX6hUlSTvGln0TxKd+5MObt4qMexL11YHoytTAlpLHLdsFoheJ6A91ebtsZ/yVoOM2PNEhluXRWFwhSkPkRnSVkeTu1ous+1EkFATlAby/iw==
+Received: from SG2PR06MB3397.apcprd06.prod.outlook.com (2603:1096:4:7a::17) by
+ SG2PR06MB5333.apcprd06.prod.outlook.com (2603:1096:4:1d0::12) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6544.19; Fri, 30 Jun 2023 19:34:53 +0000
+Received: from SG2PR06MB3397.apcprd06.prod.outlook.com
+ ([fe80::33a7:c9e1:75ae:3227]) by SG2PR06MB3397.apcprd06.prod.outlook.com
+ ([fe80::33a7:c9e1:75ae:3227%4]) with mapi id 15.20.6521.026; Fri, 30 Jun 2023
+ 19:34:53 +0000
+Date: Fri, 30 Jun 2023 12:34:36 -0700
+From: "nifan@outlook.com" <nifan@outlook.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Fan Ni <fan.ni@samsung.com>,
+        "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "gregory.price@memverge.com" <gregory.price@memverge.com>,
+        "hchkuo@avery-design.com.tw" <hchkuo@avery-design.com.tw>,
+        "cbrowy@avery-design.com" <cbrowy@avery-design.com>,
+        "ira.weiny@intel.com" <ira.weiny@intel.com>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>,
+        "nmtadam.samsung@gmail.com" <nmtadam.samsung@gmail.com>
+Subject: Re: [RFC 5/7] hw/cxl/cxl-mailbox-utils: Add mailbox commands to
+ support add/release dynamic capacity response
+Message-ID: <SG2PR06MB3397B0935E5C7AF1E3E5BAE3B22AA@SG2PR06MB3397.apcprd06.prod.outlook.com>
+References: <20230511175609.2091136-1-fan.ni@samsung.com>
+ <CGME20230511175642uscas1p1a998a2d4a20c370f0172db93d537ed39@uscas1p1.samsung.com>
+ <20230511175609.2091136-6-fan.ni@samsung.com>
+ <20230515153755.00002bfc@Huawei.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230515153755.00002bfc@Huawei.com>
+X-TMN: [nZzNy93DgneCap5rtl+Cj8jF29WaJkML]
+X-ClientProxiedBy: SJ0PR03CA0335.namprd03.prod.outlook.com
+ (2603:10b6:a03:39c::10) To SG2PR06MB3397.apcprd06.prod.outlook.com
+ (2603:1096:4:7a::17)
+X-Microsoft-Original-Message-ID: <ZJ8uTKWnQBBBhMcu@outlook.com>
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SG2PR06MB3397:EE_|SG2PR06MB5333:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6d65a236-a318-4cea-64f4-08db79a111c2
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: W/DlxQDkLfXT4uocyCIuM1COGn3DzSkkvhRMqTC173AkA45BgjwthU/oDXPD8hOKeFM8m2O4w3J00OHU8mL+es3lJ1/S6e1DQbsvaAnQMP1trquHe4x8F/EW+gx20HKl7iKWONE01nLEUHl91H5Ar45UjlzKue1sz3GIdIs929J7rRDgqNngEzKGPB7scKUVOtD+kzM/WnzS6Z8xo9hpSobmuClZeOTwEolUTmMjf8WTbEsbiX1OEL2LYlAhFTk4H4otLTK0UgzrYcHhHgpjio2pw2tndGSPM2ada478SdALpMLNI3daxWlYVrqlrPzDuyvVRaTMhEY4Ep6yrtNBhhEIAMcCtkvdu5nqeoVwRn77V5yP8ZmJQ2S9UMVm1NlmyfJfgKFPZbJXpDMwr75qXYGDGdt2U3xev4IhHBTme6316txVGXB2m3y5f6f3Lo1WxXb5m1vu/lvFu4CsljQCo1AXZoAA8tTS86ev+j0IV2fSSkL6MwvpbyU46mPQqc6AUuJzVL4mP5MeoM3i90FOOTuPUkckvvJlILsBQU0CnvOmd0ttVW2PbSsMmnbmdgu+
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eE5wRXRRYmZaUFB4c3pRQUdwT3VncStla1FRUzRua1k3eUJTWU4zcERIN0Zl?=
+ =?utf-8?B?ZkRQZGRZMENMdnJzS1JVN3NxcEdWQkVhY2V5WGdtdndIaUxsNEFFWmEwelhU?=
+ =?utf-8?B?Z1habW1tZGdPaUVMaXRLM3c3QlJWcUduZkFQeUdUTVFJSThpODl4NG5lcVcy?=
+ =?utf-8?B?OWZqUmxmbUtYUUJQV29BTHZvKzRNYzVqd2U1RUFKbUVxZkROTFlBVUpnVlNx?=
+ =?utf-8?B?czkvU0RMM3hwMjZYaWpRbkhJekc1Yk5zYU1aNkgxdVZsaEtYY2VvcmFoRnZk?=
+ =?utf-8?B?akJKcTRsZGhyaUhoN0huV3pKMm1UVU9BTVdGYzQ1ZWdvTUk4K1MyNVMxb1dR?=
+ =?utf-8?B?eVhEWXljY0U4NzZKcjQwUkROUHRjK1ZObTdyMXhSa2Jpcy80a3lya21leEg2?=
+ =?utf-8?B?Y21zdHdwWXgybzJsRDZRUGJTblJxRS9VU0lEUzRSYldoekZ2TXFaSWJSNVRJ?=
+ =?utf-8?B?VmZUL0VNejJtaEp3UEFQS1hCeGpNNHNwN0FXMFVhazRZNnhMNzBUZk9PMWFh?=
+ =?utf-8?B?RmpmazNUQ1Q1ZEV1SE0zbmtnWlI2MWhNT3ZqK1Zrb2pHK2ttMllpYVV5cWE0?=
+ =?utf-8?B?KzhJYXA1U3RyVWhwSzVNay9TZUFiL1ZhNkJVeVdtM1Y5WHkxU0doT2x3WklY?=
+ =?utf-8?B?NGE5VHVyK3E5N3hxQjc0aDF2bTV3dHA5a2xvNko4K1hmTFl2aklmVkhSVFN4?=
+ =?utf-8?B?MEFlTktFUkF0d2Jod2llckN0b29NSGFNdEs1NEIydGlReC92Rjg4WXltV1pE?=
+ =?utf-8?B?TXVFclRSYTdVbUljSEhGelQ0K3RSOFczVGg0cWZ0MzhMUmxGTWhvaTE1R3Ix?=
+ =?utf-8?B?eXNkTEc1ZEN3Y0c4R2VVRHZMQkxDcERUbDNGQnUrZWQyNGRBbW9hdlNJYjIv?=
+ =?utf-8?B?YzQwaXRHMGhUWTdVdVNvSklmYlhsS1RxSzI0YjgrUngxY0tMSWU2cGlQL1Vz?=
+ =?utf-8?B?MXJJa2FEOGRZaERqbUx0V0t2NEN6Yjg0SmtOL1I2NDZDYjBmd1VtZlJSUzc4?=
+ =?utf-8?B?aC9TTkpKUVh2TUp2ZGt0T0FsTVhtejlFa2JaOGpWSTVJZGhjMUEwaklENDBu?=
+ =?utf-8?B?WEZCTVhvUzJXSGwrSGNJc0lkc0VQNkoyTUc2eEEyOUluZ0dZNnpTRHdmOUZY?=
+ =?utf-8?B?RU1MOFJiZlhTUDVwKzNKVzFYNlA0SzA4T3dNVHdFUnNmZERQZ2laVTVQdXdE?=
+ =?utf-8?B?MFJCWXRjR3M0SEdVa3VNWjl6aVo5ZlYyZGZ5ZzBXdGNhMkxOV2tHc2hwSUFQ?=
+ =?utf-8?B?K1BvNjFKVmU4MEFqVlBNVDFkTXlIajBzQVhjL0NwQ1k2ekhDaDJKd2IyZDVH?=
+ =?utf-8?B?NktpSkNpM1BzdmJYNGlaTjVuQ3lsTXlsb1NRU2lqSDJ6b204R1B3SjhhY2cr?=
+ =?utf-8?B?VFF5M3VBTVV0bEZEdXZPNk1UWHR4bS8vR2pDeVdmVk45eFVHcDZXVFNyQldQ?=
+ =?utf-8?B?ME9hdmJqeTRaaXlseWFvSERBSmpMRURDZFNMK0ttTVY2QkFhOUlkdmhFQnVl?=
+ =?utf-8?B?eENhbXRGaVhrNENzMmxtUTdvaDArSm1heTBPQ25iUGVscUpBWTRnaTJBK0th?=
+ =?utf-8?B?NkZVK3U3T09abFcwYXJJOUU5TXA2TDRBMFBUcmVxUk92SmpKSWNKeGxXRmhk?=
+ =?utf-8?B?N2FmeUtaVGFzYjdlUHlKNE1icitxOHc9PQ==?=
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6d65a236-a318-4cea-64f4-08db79a111c2
+X-MS-Exchange-CrossTenant-AuthSource: SG2PR06MB3397.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Jun 2023 19:34:53.6674
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SG2PR06MB5333
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+The 05/15/2023 15:37, Jonathan Cameron wrote:
+> On Thu, 11 May 2023 17:56:40 +0000
+> Fan Ni <fan.ni@samsung.com> wrote:
+> 
+> > From: Fan Ni <nifan@outlook.com>
+> > 
+> > Per CXL spec 3.0, we implemented the two mailbox commands:
+> > Add Dynamic Capacity Response (Opcode 4802h) 8.2.9.8.9.3, and
+> > Release Dynamic Capacity Response (Opcode 4803h) 8.2.9.8.9.4.
+> > 
+> > Signed-off-by: Fan Ni <fan.ni@samsung.com>
+> > ---
+> >  hw/cxl/cxl-mailbox-utils.c  | 223 ++++++++++++++++++++++++++++++++++++
+> >  include/hw/cxl/cxl_device.h |   3 +-
+> >  2 files changed, 225 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/hw/cxl/cxl-mailbox-utils.c b/hw/cxl/cxl-mailbox-utils.c
+> > index ed2ac154cb..7212934627 100644
+> > --- a/hw/cxl/cxl-mailbox-utils.c
+> > +++ b/hw/cxl/cxl-mailbox-utils.c
+> > @@ -84,6 +84,8 @@ enum {
+> >  	DCD_CONFIG = 0x48, /*8.2.9.8.9*/
+> >  		#define GET_DC_REGION_CONFIG   0x0
+> >  		#define GET_DYN_CAP_EXT_LIST   0x1
+> > +		#define ADD_DYN_CAP_RSP        0x2
+> > +		#define RELEASE_DYN_CAP        0x3
+> >      PHYSICAL_SWITCH = 0x51
+> >          #define IDENTIFY_SWITCH_DEVICE      0x0
+> >  };
+> > @@ -1069,6 +1071,221 @@ static CXLRetCode cmd_dcd_get_dyn_cap_ext_list(struct cxl_cmd *cmd,
+> >  	return CXL_MBOX_SUCCESS;
+> >  }
+> >  
+> > +static inline int test_bits(const unsigned long *addr, int nr, int size)
+> 
+> Not obvious what this does from the name.  Please add some docs.
+> 
+> > +{
+> > +	unsigned long res = find_next_zero_bit(addr, size + nr, nr);
+> > +
+> > +	if (res >= nr + size)
+> > +		return 1;
+> > +	else
+> > +		return 0;
+> > +}
+> > +
+> > +static uint8_t find_region_id(struct CXLType3Dev *dev, uint64_t dpa
+> 
+> Operates only on things in dev->dc, so perhaps pass that instead.
+dc is a struct defined inside CXLType3Dev struct, so will leave it as it
+is for now.
+
+Fan
+> 
+> > +		, uint64_t len)
+> 
+> comma on previous line.
+> 
+> > +{
+> > +	int8_t i = dev->dc.num_regions-1;
+> > +
+> > +	while (i > 0 && dpa < dev->dc.regions[i].base)
+> > +		i--;
+> > +
+> > +	if (dpa < dev->dc.regions[i].base
+> > +			|| dpa + len > dev->dc.regions[i].base + dev->dc.regions[i].len)
+> > +		return dev->dc.num_regions;
+> > +
+> > +	return i;
+> > +}
+> > +
+> > +static CXLRetCode detect_malformed_extent_list(CXLType3Dev *dev, void *data)
+> > +{
+> > +	struct updated_dc_extent_list_in_pl {
+> This is same as used in next function.  Pull it out of the functions and
+> use that type rather than mapping via a void *data pointer.  
+> 
+> > +		uint32_t num_entries_updated;
+> > +		uint8_t rsvd[4];
+> > +		struct {
+> > +			uint64_t start_dpa;
+> > +			uint64_t len;
+> > +			uint8_t rsvd[8];
+> > +		} QEMU_PACKED updated_entries[];
+> > +	} QEMU_PACKED;
+> > +
+> > +	struct updated_dc_extent_list_in_pl *in = data;
+> > +	unsigned long *blk_bitmap;
+> > +	uint64_t min_block_size = dev->dc.regions[0].block_size;
+> > +	struct CXLDCD_Region *region = &dev->dc.regions[0];
+> > +	uint32_t i;
+> > +	uint64_t dpa, len;
+> > +	uint8_t rid;
+> > +
+> > +	for (i = 1; i < dev->dc.num_regions; i++) {
+> > +		region = &dev->dc.regions[i];
+> > +		if (min_block_size > region->block_size)
+> > +			min_block_size = region->block_size;
+> > +	}
+> > +	blk_bitmap = bitmap_new((region->len + region->base
+> > +				- dev->dc.regions[0].base) / min_block_size);
+> > +	g_assert(blk_bitmap);
+> 
+> Abort in bitmap_new() anyway so no need for this.  Most qemu allocations
+> don't need to be checked as they fail hard anyway so we never get to the checks.
+> 
+> > +	bitmap_zero(blk_bitmap, (region->len + region->base
+> > +				- dev->dc.regions[0].base) / min_block_size);
+> 
+> bitmap_new() seems to use a g_malloc0 internally so no need to zero again here
+> I think.
+> 
+> > +
+> > +	for (i = 0; i < in->num_entries_updated; i++) {
+> > +		dpa = in->updated_entries[i].start_dpa;
+> > +		len = in->updated_entries[i].len;
+> > +
+> > +		rid = find_region_id(dev, dpa, len);
+> > +		if (rid == dev->dc.num_regions) {
+> 
+> Use a goto and single cleanup path having set ret or similar to
+> the particular issue.
+> 
+> > +			g_free(blk_bitmap);
+> > +			return CXL_MBOX_INVALID_PA;
+> > +		}
+> > +		region = &dev->dc.regions[rid];
+> > +		if (dpa % region->block_size || len % region->block_size) {
+> > +			g_free(blk_bitmap);
+> > +			return CXL_MBOX_INVALID_EXTENT_LIST;
+> goto from here as well.. etc.
+> 
+> > +		}
+> > +		/* the dpa range already covered by some other extents in the list */
+> > +		if (test_bits(blk_bitmap, dpa/min_block_size, len/min_block_size)) {
+> > +			g_free(blk_bitmap);
+> > +			return CXL_MBOX_INVALID_EXTENT_LIST;
+> > +		}
+> > +		bitmap_set(blk_bitmap, dpa/min_block_size, len/min_block_size);
+> > +	}
+> > +
+> > +	g_free(blk_bitmap);
+> > +	return CXL_MBOX_SUCCESS;
+> > +}
+> > +
+> > +/*
+> > + * cxl spec 3.0: 8.2.9.8.9.3
+> > + * Add Dynamic Capacity Response (opcode 4802h)
+> > + * Assuming extent list is updated when a extent is added, when receiving
+> > + * the response, verify and ensure the extent is utilized by the host, and
+> > + * update extent list  as needed.
+> 
+> Double space in middle of sentence
+> 
+> > + **/
+> > +static CXLRetCode cmd_dcd_add_dyn_cap_rsp(struct cxl_cmd *cmd,
+> > +		CXLDeviceState *cxl_dstate,
+> > +		uint16_t *len_unused)
+> > +{
+> > +	struct add_dyn_cap_ext_list_in_pl {
+> > +		uint32_t num_entries_updated;
+> > +		uint8_t rsvd[4];
+> > +		struct {
+> > +			uint64_t start_dpa;
+> > +			uint64_t len;
+> > +			uint8_t rsvd[8];
+> > +		} QEMU_PACKED updated_entries[];
+> 
+> These extent list entries keep turning up in the code. Pull that out of here
+> to be a general 'Extent list element' or similar.
+> 
+> > +	} QEMU_PACKED;
+> > +
+> > +	struct add_dyn_cap_ext_list_in_pl *in = (void *)cmd->payload;
+> > +	struct CXLType3Dev *ct3d = container_of(cxl_dstate, CXLType3Dev, cxl_dstate);
+> > +	CXLDCDExtentList *extent_list = &ct3d->dc.extents;
+> > +	CXLDCD_Extent *ent;
+> > +	uint32_t i;
+> > +	uint64_t dpa, len;
+> > +	CXLRetCode rs;
+> > +
+> > +	if (in->num_entries_updated == 0)
+> > +		return CXL_MBOX_SUCCESS;
+> > +
+> > +	rs = detect_malformed_extent_list(ct3d, in);
+> > +	if (rs != CXL_MBOX_SUCCESS)
+> > +		return rs;
+> > +
+> > +	for (i = 0; i < in->num_entries_updated; i++) {
+> > +		dpa = in->updated_entries[i].start_dpa;
+> > +		len = in->updated_entries[i].len;
+> > +
+> > +		/* Todo: check following
+> > +		 * One or more of the updated extent lists contain Starting DPA
+> > +		 * or Lengths that are out of range of a current extent list
+> > +		 * maintained by the device.
+> > +		 **/
+> > +
+> > +		QTAILQ_FOREACH(ent, extent_list, node) {
+> 
+> Add some comments here.  Is this a repeated entry test?
+> 
+> > +			if (ent->start_dpa == dpa && ent->len == len)
+> > +				return CXL_MBOX_INVALID_PA;
+> > +			if (ent->start_dpa <= dpa
+> > +				&& dpa + len <= ent->start_dpa + ent->len) {
+> 
+> Comment needed on this one. Why is it shrinking an existing entry?
+> 
+> > +				ent->start_dpa = dpa;
+> > +				ent->len = len;
+> > +				break;
+> 
+> If you break here I think it will only result in return CXL_MBOX_SUCCESS so
+> might as well do that here.
+> 
+> > +			} else if ((dpa < ent->start_dpa + ent->len
+> > +				&& dpa + len > ent->start_dpa + ent->len)
+> 
+> Above is new entry would contain existing one.
+> 
+> > +				|| (dpa < ent->start_dpa && dpa + len > ent->start_dpa))
+> > +				return CXL_MBOX_INVALID_EXTENT_LIST;
+> > +		}
+> > +		// a new extent added
+> 
+> Why?  This function generally need more documentation.
+> 
+> > +		if (!ent) {
+> > +			ent = g_new0(CXLDCD_Extent, 1);
+> > +			assert(ent);
+> 
+> No need.  g_new0 will already have blown up before you get here.
+> 
+> > +			ent->start_dpa = dpa;
+> > +			ent->len = len;
+> > +			memset(ent->tag, 0, 0x10);
+> Allocated empty just above, still empty so no need to set it again.
+> > +			ent->shared_seq = 0;
+> > +			QTAILQ_INSERT_TAIL(extent_list, ent, node);
+> > +		}
+> > +	}
+> > +
+> > +	return CXL_MBOX_SUCCESS;
+> > +}
+> > +
+> > +/*
+> > + * Spec 3.0: 8.2.9.8.9.4
+> > + * Release Dynamic Capacity (opcode 4803h)
+> > + **/
+> > +static CXLRetCode cmd_dcd_release_dcd_capacity(struct cxl_cmd *cmd,
+> > +		CXLDeviceState *cxl_dstate,
+> > +		uint16_t *len_unused)
+> > +{
+> > +	struct release_dcd_cap_in_pl {
+> > +		uint32_t num_entries_updated;
+> > +		uint8_t rsvd[4];
+> > +		struct {
+> > +			uint64_t start_dpa;
+> > +			uint64_t len;
+> > +			uint8_t rsvd[8];
+> > +		} QEMU_PACKED updated_entries[];
+> > +	} QEMU_PACKED;
+> > +
+> > +	struct release_dcd_cap_in_pl *in = (void *)cmd->payload;
+> > +	struct CXLType3Dev *ct3d = container_of(cxl_dstate, CXLType3Dev, cxl_dstate);
+> > +	CXLDCDExtentList *extent_list = &ct3d->dc.extents;
+> > +	CXLDCD_Extent *ent;
+> > +	uint32_t i;
+> > +	uint64_t dpa, len;
+> > +	CXLRetCode rs;
+> > +
+> > +	if (in->num_entries_updated == 0)
+> > +		return CXL_MBOX_INVALID_INPUT;
+> > +
+> > +	rs = detect_malformed_extent_list(ct3d, in);
+> > +	if (rs != CXL_MBOX_SUCCESS)
+> > +		return rs;
+> > +
+> > +		/* Todo: check following
+> > +		 * One or more of the updated extent lists contain Starting DPA
+> > +		 * or Lengths that are out of range of a current extent list
+> > +		 * maintained by the device.
+> > +		 **/
+> > +
+> > +	for (i = 0; i < in->num_entries_updated; i++) {
+> > +		dpa = in->updated_entries[i].start_dpa;
+> > +		len = in->updated_entries[i].len;
+> > +
+> > +		QTAILQ_FOREACH(ent, extent_list, node) {
+> > +			if (ent->start_dpa == dpa && ent->len == len)
+> 
+> Do the remove here and comment on 'found entry' not needed.
+> Note I think you can release partial extents so that will need handling at some point.
+> 
+> > +				break;
+> > +			else if ((dpa < ent->start_dpa + ent->len
+> > +				&& dpa + len > ent->start_dpa + ent->len)
+> > +				|| (dpa < ent->start_dpa && dpa + len > ent->start_dpa))
+> Comment on this condition and why it's a problem.
+> 
+> > +				return CXL_MBOX_INVALID_EXTENT_LIST;
+> > +		}
+> > +		/* found the entry, release it */
+> > +		if (ent)
+> > +			QTAILQ_REMOVE(extent_list, ent, node);
+> > +	}
+> > +
+> > +	return CXL_MBOX_SUCCESS;
+> > +}
+> > +
+> >  #define IMMEDIATE_CONFIG_CHANGE (1 << 1)
+> >  #define IMMEDIATE_DATA_CHANGE (1 << 2)
+> >  #define IMMEDIATE_POLICY_CHANGE (1 << 3)
+> > @@ -1112,6 +1329,12 @@ static struct cxl_cmd cxl_cmd_set[256][256] = {
+> >  	[DCD_CONFIG][GET_DYN_CAP_EXT_LIST] = {
+> >  		"DCD_GET_DYNAMIC_CAPACITY_EXTENT_LIST", cmd_dcd_get_dyn_cap_ext_list,
+> >  		8, 0 },
+> > +	[DCD_CONFIG][ADD_DYN_CAP_RSP] = {
+> > +		"ADD_DCD_DYNAMIC_CAPACITY_RESPONSE", cmd_dcd_add_dyn_cap_rsp,
+> > +		~0, IMMEDIATE_DATA_CHANGE },
+> > +	[DCD_CONFIG][RELEASE_DYN_CAP] = {
+> > +		"RELEASE_DCD_DYNAMIC_CAPACITY", cmd_dcd_release_dcd_capacity,
+> > +		~0, IMMEDIATE_DATA_CHANGE },
+> >  };
+> >  
+> >  static struct cxl_cmd cxl_cmd_set_sw[256][256] = {
+> > diff --git a/include/hw/cxl/cxl_device.h b/include/hw/cxl/cxl_device.h
+> > index 20ad5e7411..c0c8fcc24b 100644
+> > --- a/include/hw/cxl/cxl_device.h
+> > +++ b/include/hw/cxl/cxl_device.h
+> > @@ -131,7 +131,8 @@ typedef enum {
+> >      CXL_MBOX_INCORRECT_PASSPHRASE = 0x14,
+> >      CXL_MBOX_UNSUPPORTED_MAILBOX = 0x15,
+> >      CXL_MBOX_INVALID_PAYLOAD_LENGTH = 0x16,
+> > -    CXL_MBOX_MAX = 0x17
+> > +	CXL_MBOX_INVALID_EXTENT_LIST = 0x17,
+> 
+> 0x1e in the spec.
+> 
+> > +	CXL_MBOX_MAX = 0x18
+> >  } CXLRetCode;
+> >  
+> >  struct cxl_cmd;
+> 
+
+-- 
+Fan Ni <nifan@outlook.com>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9833EB64D9
+	for <linux-cxl@archiver.kernel.org>; Mon,  3 Jul 2023 01:33:53 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229777AbjGCBdw (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Sun, 2 Jul 2023 21:33:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43646 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229671AbjGCBdv (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Sun, 2 Jul 2023 21:33:51 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFBA712E
+        for <linux-cxl@vger.kernel.org>; Sun,  2 Jul 2023 18:33:49 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QvSzw3S8yz688Z4;
+        Mon,  3 Jul 2023 09:30:52 +0800 (CST)
+Received: from localhost (10.34.206.101) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Mon, 3 Jul
+ 2023 02:33:43 +0100
+Date: Mon, 3 Jul 2023 09:33:39 +0800
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: "nifan@outlook.com" <nifan@outlook.com>
+CC: Fan Ni <fan.ni@samsung.com>,
+        "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "gregory.price@memverge.com" <gregory.price@memverge.com>,
+        "hchkuo@avery-design.com.tw" <hchkuo@avery-design.com.tw>,
+        "cbrowy@avery-design.com" <cbrowy@avery-design.com>,
+        "ira.weiny@intel.com" <ira.weiny@intel.com>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>,
+        "nmtadam.samsung@gmail.com" <nmtadam.samsung@gmail.com>
+Subject: Re: [RFC 7/7] hw/mem/cxl_type3: add read/write support to dynamic
+ capacity
+Message-ID: <20230703093339.00002fb2@Huawei.com>
+In-Reply-To: <SG2PR06MB33973100A036493C2A644C6BB224A@SG2PR06MB3397.apcprd06.prod.outlook.com>
+References: <20230511175609.2091136-1-fan.ni@samsung.com>
+        <CGME20230511175642uscas1p2c037608a1dd26b19cf970f97ce434c6d@uscas1p2.samsung.com>
+        <20230511175609.2091136-8-fan.ni@samsung.com>
+        <20230515162212.0000275c@Huawei.com>
+        <SG2PR06MB33973100A036493C2A644C6BB224A@SG2PR06MB3397.apcprd06.prod.outlook.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.34.206.101]
+X-ClientProxiedBy: lhrpeml500003.china.huawei.com (7.191.162.67) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Wed, 28 Jun 2023 10:09:47 -0700
+"nifan@outlook.com" <nifan@outlook.com> wrote:
+
+> The 05/15/2023 16:22, Jonathan Cameron wrote:
+> > On Thu, 11 May 2023 17:56:40 +0000
+> > Fan Ni <fan.ni@samsung.com> wrote:
+> >   
+> > > From: Fan Ni <nifan@outlook.com>
+> > > 
+> > > Before the change, read from or write to dynamic capacity of the memory
+> > > device is not support as 1) no host backed file/memory is provided for
+> > > it; 2) no address space is created for the dynamic capacity.  
+> > 
+> > Ah nice. I should have read ahead.  Probably makes sense to reorder things
+> > so that when we present DCD region it will work.  
+> 
+> We can back dynamic capacity with host memory/file and create address
+> space for dc regions, but until extents can be added we should not expect
+> any read/write can happen to the dynamic capacity, right?
+
+True.  Seems logically 'unusual' though to set up the routing etc, but
+not plumb the actual memory access i until later.  I guess it all comes
+together in the end and doing it this way lets you handle the extent mapping
+later.  So fine to leave it as you have it.
+
+Jonathan
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85D4FC001DF
+	for <linux-cxl@archiver.kernel.org>; Mon, 24 Jul 2023 17:19:12 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229806AbjGXRTL (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 24 Jul 2023 13:19:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56236 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229547AbjGXRTL (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 24 Jul 2023 13:19:11 -0400
+Received: from mailout2.w2.samsung.com (mailout2.w2.samsung.com [211.189.100.12])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EFEC810D3
+        for <linux-cxl@vger.kernel.org>; Mon, 24 Jul 2023 10:19:06 -0700 (PDT)
+Received: from uscas1p1.samsung.com (unknown [182.198.245.206])
+        by mailout2.w2.samsung.com (KnoxPortal) with ESMTP id 20230724171905usoutp029528fc3c6d183896a8edf808d5d4cf04~03VuqSLFX3140831408usoutp02X;
+        Mon, 24 Jul 2023 17:19:05 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w2.samsung.com 20230724171905usoutp029528fc3c6d183896a8edf808d5d4cf04~03VuqSLFX3140831408usoutp02X
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1690219145;
+        bh=lZyVShsjPJVPM/4YGJCxVmKNwI7mtfbiTtJ5Qj2zoU0=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
+        b=BKKZdTj3eqy4LjGs6bDSJK0NzbMNQjXyE/ykIVtyj87Ezkeo2geaCFN4ahXi+QioG
+         ea0d1La++UNFX4YptRDxlAeipF4f/24T8kO3DI1vf3P2qraWhSOnvHoJ88zMtwl10F
+         0al5rRLNrBYPmscPMjhXLnSpSSj7rS8ZoSCshv3o=
+Received: from ussmges1new.samsung.com (u109.gpu85.samsung.co.kr
+        [203.254.195.109]) by uscas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20230724171905uscas1p11a44fee7787624d948caaa8f7191105e~03VugyMHp0195801958uscas1p1F;
+        Mon, 24 Jul 2023 17:19:05 +0000 (GMT)
+Received: from uscas1p2.samsung.com ( [182.198.245.207]) by
+        ussmges1new.samsung.com (USCPEMTA) with SMTP id 7E.8D.51475.982BEB46; Mon,
+        24 Jul 2023 13:19:05 -0400 (EDT)
+Received: from ussmgxs3new.samsung.com (u92.gpu85.samsung.co.kr
+        [203.254.195.92]) by uscas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20230724171905uscas1p13205f49a68ec261a7d8872ccbff873aa~03VuLrqbb1467114671uscas1p1J;
+        Mon, 24 Jul 2023 17:19:05 +0000 (GMT)
+X-AuditID: cbfec36d-635ff7000001c913-61-64beb289ac75
+Received: from SSI-EX4.ssi.samsung.com ( [105.128.2.145]) by
+        ussmgxs3new.samsung.com (USCPEXMTA) with SMTP id 72.F2.64580.982BEB46; Mon,
+        24 Jul 2023 13:19:05 -0400 (EDT)
+Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
+        SSI-EX4.ssi.samsung.com (105.128.2.229) with Microsoft SMTP Server
+        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+        15.1.2375.24; Mon, 24 Jul 2023 10:19:04 -0700
+Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
+        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Mon,
+        24 Jul 2023 10:19:04 -0700
+From: Fan Ni <fan.ni@samsung.com>
+To: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>
+CC: "jonathan.cameron@huawei.com" <jonathan.cameron@huawei.com>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "gregory.price@memverge.com" <gregory.price@memverge.com>,
+        "hchkuo@avery-design.com.tw" <hchkuo@avery-design.com.tw>,
+        "cbrowy@avery-design.com" <cbrowy@avery-design.com>,
+        "ira.weiny@intel.com" <ira.weiny@intel.com>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>,
+        "nmtadam.samsung@gmail.com" <nmtadam.samsung@gmail.com>,
+        "nifan@outlook.com" <nifan@outlook.com>
+Subject: Re: [Qemu RFC 0/7] Early enabling of DCD emulation in Qemu
+Thread-Topic: [Qemu RFC 0/7] Early enabling of DCD emulation in Qemu
+Thread-Index: AQHZhDHwBF2t8l6CHEO7jqFQqFgBOK/KEtMA
+Date: Mon, 24 Jul 2023 17:19:04 +0000
+Message-ID: <20230724171857.GA329893@bgt-140510-bm03>
+In-Reply-To: <20230511175609.2091136-1-fan.ni@samsung.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [105.128.2.176]
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <7B8894DAF8EF9E43AD05BC3EE7BA4FCB@ssi.samsung.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-CFilter-Loop: Reflected
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrIKsWRmVeSWpSXmKPExsWy7djX87qdm/alGDTP1rToPr+B0WL61AuM
+        FqtvrmG0aGh6xGLRsvs9k8X+p89ZLFYtvMZmcX7WKRaL5xOfM1ksXfKI2eJ47w4WB26PC5Mn
+        sHosbnD12DnrLrtHy5G3QN6el0weGz/+Z/d4cm0zk8fm1y+YPabOrvf4vEkugCuKyyYlNSez
+        LLVI3y6BK2P+6inMBXsCK/6ftm1g/O3QxcjJISFgIrFlzVemLkYuDiGBlYwSWycsYYZwWpkk
+        7j6YxtLFyAFW1dLoDxFfyyjR2nKTFcL5xCjx8t98RpBRQgLLGCU2TbUGsdkEFCX2dW1nA7FF
+        BIwljh2GmMoscI5F4szTD6wgCWEBZ4nJy08wgmwQEXCRuPTMD6LeSGLXzsssIDaLgKrEo2tT
+        mUFsXgFTiRmT1oHt4hSwktjQfIIJxGYUEJP4fmoNmM0sIC5x68l8JojXBCUWzd7DDGGLSfzb
+        9ZANwlaUuP/9JTtEvY7Egt2f2EBOYBawk5j/tRYirC2xbOFrqLWCEidnPmGBaJWUOLjiBgvI
+        KxIC8zklru9fBg0gF4n2I9oQNdIS09dchgonS6z6yAURzpGYv2QL1BhriYV/1jNNYFSZheTo
+        WUgOmoVw0CwkB81CctACRtZVjOKlxcW56anFhnmp5XrFibnFpXnpesn5uZsYganu9L/DuTsY
+        d9z6qHeIkYmD8RCjBAezkgivYcy+FCHelMTKqtSi/Pii0pzU4kOM0hwsSuK8hrYnk4UE0hNL
+        UrNTUwtSi2CyTBycUg1MGc//3rTeaFSi/Efa8qjVllmv/e5G3lm6WNHk6j7JJFY5O32FV3Yq
+        /5ZNCny6d/Gy4szlq57KLg8qPN4XdGGLms33g+KnqyK1LdZ43PH4M/WL3tarqzsLM2ZtPvhh
+        4wcfrTirJhvpDxN4JY9ekhY/t2vthSOeDzxzfUIu9LYVq+1hcprLyHrix6blS67PSO/evqFw
+        8eoAPwVFYeGZ2ZUJVuwrrv07vMjT62RvwNt5xoUnLumt/edlte6F5cqQ+/YTvJbwubQvrjqR
+        eTtDQNqMufuf8LYelX2VileO/9UwND467RGLQPBBu5LpDVs3urk0Bc+fxSPFKnLs4I3lW37M
+        e+L485lKupK0odz/8v3ntJVYijMSDbWYi4oTAfhNw2nkAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrEIsWRmVeSWpSXmKPExsWS2cA0Ubdz074Ug4NNQhbd5zcwWkyfeoHR
+        YvXNNYwWDU2PWCxadr9nstj/9DmLxaqF19gszs86xWLxfOJzJoulSx4xWxzv3cHiwO1xYfIE
+        Vo/FDa4eO2fdZfdoOfIWyNvzkslj48f/7B5Prm1m8tj8+gWzx9TZ9R6fN8kFcEVx2aSk5mSW
+        pRbp2yVwZcxfPYW5YE9gxf/Ttg2Mvx26GDk4JARMJFoa/bsYuTiEBFYzSvSt7WaBcD4xStw9
+        vZsNwlnGKPH8/BWmLkZODjYBRYl9XdvZQGwRAWOJY4eXMIMUMQucY5E4P7kDLCEs4CwxefkJ
+        RpAVIgIuEpee+UHUG0ns2nmZBcRmEVCVeHRtKjOIzStgKjFj0jpGiGW9jBL/l3YxgiQ4Bawk
+        NjSfAFvMKCAm8f3UGjCbWUBc4taT+WC2hICAxJI955khbFGJl4//sULYihL3v79kh6jXkViw
+        +xMbyD3MAnYS87/WQoS1JZYtfA11g6DEyZlPWCBaJSUOrrjBMoFRYhaSbbOQTJqFMGkWkkmz
+        kExawMi6ilG8tLg4N72i2DgvtVyvODG3uDQvXS85P3cTIzBZnP53OGYH471bH/UOMTJxMB5i
+        lOBgVhLhNYzZlyLEm5JYWZValB9fVJqTWnyIUZqDRUmc1yN2YryQQHpiSWp2ampBahFMlomD
+        U6qB6dyc+xW5oc6v131dcdjJ71WA1tfulx9uOGb+2dK0q27TrOddJffuzOWZuDpc+0/eAe5/
+        J8weLhPUNN/hExieVnKzvyfyh2Jn0cfFa+4pH2iRM+CRsU1ctvnm6TXiLyTe7sx8w214QvqU
+        a4/mrrsbTwa5hwrwZosZxTwyMp8+cea7ExcN5+/tP2i2Q+vdxhs9bcmJfN9Unzxep8OsftP9
+        7+kdn0Kn/024EvjAL/S+Vbiczh9lVv1nurJtXUuuVTh+fzVr0ue/r3unmv+PWXLu4/6+TXcX
+        6+9ZI6mY/czvVsbrFzLbn/7lq2U8V3/d/dv2k7e25J4t3rJayvYJUxhrQvz6SMPQqQ8E2r+U
+        FCS8/rBYiaU4I9FQi7moOBEAX3UwEoUDAAA=
+X-CMS-MailID: 20230724171905uscas1p13205f49a68ec261a7d8872ccbff873aa
+CMS-TYPE: 301P
+X-CMS-RootMailID: 20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c
+References: <CGME20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c@uscas1p2.samsung.com>
+        <20230511175609.2091136-1-fan.ni@samsung.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Thu, May 11, 2023 at 05:56:40PM +0000, Fan Ni wrote:
+
+FYI.
+
+I have updated the patch series and sent out again.
+
+I suggested anyone who are interested in DCD and using this patch series to
+use the new series. Quite a few things has been fixed.
+
+https://lore.kernel.org/linux-cxl/20230724162313.34196-1-fan.ni@samsung.com=
+/T/#t
+
+Also, if you want to use the code repo directly, you can try
+
+https://github.com/moking/qemu-dcd-preview-latest/tree/dcd-dev
+
+Fan
+
+
+> Since the early draft of DCD support in kernel is out
+> (https://lore.kernel.org/linux-cxl/20230417164126.GA1904906@bgt-140510-bm=
+03/T/#t),
+> this patch series provide dcd emulation in qemu so people who are interes=
+ted
+> can have an early try. It is noted that the patch series may need to be u=
+pdated
+> accordingly if the kernel side implementation changes.
+>=20
+> To support DCD emulation, the patch series add DCD related mailbox comman=
+d
+> support (CXL Spec 3.0: 8.2.9.8.9), and extend the cxl type3 memory device
+> with dynamic capacity extent and region representative.
+> To support read/write to the dynamic capacity of the device, a host backe=
+nd
+> is provided and necessary check mechnism is added to ensure the dynamic
+> capacity accessed is backed with active dc extents.
+> Currently FM related mailbox commands (cxl spec 3.0: 7.6.7.6) is not supp=
+orted
+> , but we add two qmp interfaces for adding/releasing dynamic capacity ext=
+ents.
+> Also, the support for multiple hosts sharing the same DCD case is missing=
+.
+>=20
+> Things we can try with the patch series together with kernel dcd code:
+> 1. Create DC regions to cover the address range of the dynamic capacity
+> regions.
+> 2. Add/release dynamic capacity extents to the device and notify the
+> kernel.
+> 3. Test kernel side code to accept added dc extents and create dax device=
+s,
+> and release dc extents and notify the device
+> 4. Online the memory range backed with dc extents and let application use
+> them.
+>=20
+> The patch series is based on Jonathan's local qemu branch:
+> https://gitlab.com/jic23/qemu/-/tree/cxl-2023-02-28
+>=20
+> Simple tests peformed with the patch series:
+> 1 Install cxl modules:
+>=20
+> modprobe -a cxl_acpi cxl_core cxl_pci cxl_port cxl_mem
+>=20
+> 2 Create dc regions:
+>=20
+> region=3D$(cat /sys/bus/cxl/devices/decoder0.0/create_dc_region)
+> echo $region> /sys/bus/cxl/devices/decoder0.0/create_dc_region
+> echo 256 > /sys/bus/cxl/devices/$region/interleave_granularity
+> echo 1 > /sys/bus/cxl/devices/$region/interleave_ways
+> echo "dc" >/sys/bus/cxl/devices/decoder2.0/mode
+> echo 0x10000000 >/sys/bus/cxl/devices/decoder2.0/dpa_size
+> echo 0x10000000 > /sys/bus/cxl/devices/$region/size
+> echo  "decoder2.0" > /sys/bus/cxl/devices/$region/target0
+> echo 1 > /sys/bus/cxl/devices/$region/commit
+> echo $region > /sys/bus/cxl/drivers/cxl_region/bind
+>=20
+> /home/fan/cxl/tools-and-scripts# cxl list
+> [
+>   {
+>     "memdevs":[
+>       {
+>         "memdev":"mem0",
+>         "pmem_size":536870912,
+>         "ram_size":0,
+>         "serial":0,
+>         "host":"0000:0d:00.0"
+>       }
+>     ]
+>   },
+>   {
+>     "regions":[
+>       {
+>         "region":"region0",
+>         "resource":45365592064,
+>         "size":268435456,
+>         "interleave_ways":1,
+>         "interleave_granularity":256,
+>         "decode_state":"commit"
+>       }
+>     ]
+>   }
+> ]
+>=20
+> 3 Add two dc extents (128MB each) through qmp interface
+>=20
+> { "execute": "qmp_capabilities" }
+>=20
+> { "execute": "cxl-add-dynamic-capacity-event",
+> 	"arguments": {
+> 		 "path": "/machine/peripheral/cxl-pmem0",
+> 		"region-id" : 0,
+> 		 "num-extent": 2,
+> 		"dpa":0,
+> 		"extent-len": 128
+> 	}
+> }
+>=20
+> /home/fan/cxl/tools-and-scripts# lsmem
+> RANGE                                  SIZE   STATE REMOVABLE   BLOCK
+> 0x0000000000000000-0x000000007fffffff    2G  online       yes    0-15
+> 0x0000000100000000-0x000000027fffffff    6G  online       yes   32-79
+> 0x0000000a90000000-0x0000000a9fffffff  256M offline           338-339
+>=20
+> Memory block size:       128M
+> Total online memory:       8G
+> Total offline memory:    256M
+>=20
+>=20
+> 4.Online the momory with 'daxctl online-memory dax0.0' to online the memo=
+ry
+>=20
+> /home/fan/cxl/ndctl# ./build/daxctl/daxctl online-memory dax0.0
+> [  230.730553] Fallback order for Node 0: 0 1
+> [  230.730825] Fallback order for Node 1: 1 0
+> [  230.730953] Built 2 zonelists, mobility grouping on.  Total pages: 204=
+2541
+> [  230.731110] Policy zone: Normal
+> onlined memory for 1 device
+>=20
+> root@bgt-140510-bm03:/home/fan/cxl/ndctl# lsmem
+> RANGE                                  SIZE   STATE REMOVABLE BLOCK
+> 0x0000000000000000-0x000000007fffffff    2G  online       yes  0-15
+> 0x0000000100000000-0x000000027fffffff    6G  online       yes 32-79
+> 0x0000000a90000000-0x0000000a97ffffff  128M  online       yes   338
+> 0x0000000a98000000-0x0000000a9fffffff  128M offline             339
+>=20
+> Memory block size:       128M
+> Total online memory:     8.1G
+> Total offline memory:    128M
+>=20
+> 5 using dc extents as regular memory
+>=20
+> /home/fan/cxl/ndctl# numactl --membind=3D1 ls
+> CONTRIBUTING.md  README.md  clean_config.sh  cscope.out   git-version-gen
+> ndctl	       scripts	test.h      version.h.in COPYING		 acpi.h
+> config.h.meson   cxl	  make-git-snapshot.sh	ndctl.spec.in  sles	tools
+> Documentation	 build	    contrib	     daxctl	  meson.build		rhel
+> tags	topology.png LICENSES	 ccan	    cscope.files
+> git-version  meson_options.txt	rpmbuild.sh    test	util
+>=20
+>=20
+> QEMU command line cxl configuration:
+>=20
+> RP1=3D"-object memory-backend-file,id=3Dcxl-mem1,share=3Don,mem-path=3D/t=
+mp/cxltest.raw,size=3D512M \
+> -object memory-backend-file,id=3Dcxl-mem2,share=3Don,mem-path=3D/tmp/cxlt=
+est2.raw,size=3D512M \
+> -object memory-backend-file,id=3Dcxl-lsa1,share=3Don,mem-path=3D/tmp/lsa.=
+raw,size=3D512M \
+> -device pxb-cxl,bus_nr=3D12,bus=3Dpcie.0,id=3Dcxl.1 \
+> -device cxl-rp,port=3D0,bus=3Dcxl.1,id=3Droot_port13,chassis=3D0,slot=3D2=
+ \
+> -device cxl-type3,bus=3Droot_port13,memdev=3Dcxl-mem1,lsa=3Dcxl-lsa1,dc-m=
+emdev=3Dcxl-mem2,id=3Dcxl-pmem0,num-dc-regions=3D1\
+> -M cxl-fmw.0.targets.0=3Dcxl.1,cxl-fmw.0.size=3D4G,cxl-fmw.0.interleave-g=
+ranularity=3D8k"
+>=20
+>=20
+> Kernel DCD support used to test the changes
+>=20
+> The code is tested with the posted kernel dcd support:
+> https://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl.git/log/?h=3Dfor-=
+6.5/dcd-preview
+>=20
+> commit: f425bc34c600e2a3721d6560202962ec41622815
+>=20
+> To make the test work, we have made the following changes to the above ke=
+rnel commit:
+>=20
+> diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+> index 5f04bbc18af5..5f421d3c5cef 100644
+> --- a/drivers/cxl/core/mbox.c
+> +++ b/drivers/cxl/core/mbox.c
+> @@ -68,6 +68,7 @@ static struct cxl_mem_command cxl_mem_commands[CXL_MEM_=
+COMMAND_ID_MAX] =3D {
+>  	CXL_CMD(SCAN_MEDIA, 0x11, 0, 0),
+>  	CXL_CMD(GET_SCAN_MEDIA, 0, CXL_VARIABLE_PAYLOAD, 0),
+>  	CXL_CMD(GET_DC_EXTENT_LIST, 0x8, CXL_VARIABLE_PAYLOAD, 0),
+> +	CXL_CMD(GET_DC_CONFIG, 0x2, CXL_VARIABLE_PAYLOAD, 0),
+>  };
+> =20
+>  /*
+> diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
+> index 291c716abd49..ae10e3cf43a1 100644
+> --- a/drivers/cxl/core/region.c
+> +++ b/drivers/cxl/core/region.c
+> @@ -194,7 +194,7 @@ static int cxl_region_manage_dc(struct cxl_region *cx=
+lr)
+>  		}
+>  		cxlds->dc_list_gen_num =3D extent_gen_num;
+>  		dev_dbg(cxlds->dev, "No of preallocated extents :%d\n", rc);
+> -		enable_irq(cxlds->cxl_irq[CXL_EVENT_TYPE_DCD]);
+> +		/*enable_irq(cxlds->cxl_irq[CXL_EVENT_TYPE_DCD]);*/
+>  	}
+>  	return 0;
+>  err:
+> @@ -2810,7 +2810,8 @@ int cxl_add_dc_extent(struct cxl_dev_state *cxlds, =
+struct resource *alloc_dpa_re
+>  				dev_dax->align, memremap_compat_align()))) {
+>  		rc =3D alloc_dev_dax_range(dev_dax, hpa,
+>  					resource_size(alloc_dpa_res));
+> -		return rc;
+> +		if (rc)
+> +			return rc;
+>  	}
+> =20
+>  	rc =3D xa_insert(&cxlr_dc->dax_dev_list, hpa, dev_dax, GFP_KERNEL);
+> diff --git a/drivers/cxl/pci.c b/drivers/cxl/pci.c
+> index 9e45b1056022..653bec203838 100644
+> --- a/drivers/cxl/pci.c
+> +++ b/drivers/cxl/pci.c
+> @@ -659,7 +659,7 @@ static int cxl_event_irqsetup(struct cxl_dev_state *c=
+xlds)
+> =20
+>  	/* Driver enables DCD interrupt after creating the dc cxl_region */
+>  	rc =3D cxl_event_req_irq(cxlds, policy.dyncap_settings, CXL_EVENT_TYPE_=
+DCD,
+> -					IRQF_SHARED | IRQF_ONESHOT | IRQF_NO_AUTOEN);
+> +					IRQF_SHARED | IRQF_ONESHOT);
+>  	if (rc) {
+>  		dev_err(cxlds->dev, "Failed to get interrupt for event dc log\n");
+>  		return rc;
+> diff --git a/include/uapi/linux/cxl_mem.h b/include/uapi/linux/cxl_mem.h
+> index 6ca85861750c..910a48259239 100644
+> --- a/include/uapi/linux/cxl_mem.h
+> +++ b/include/uapi/linux/cxl_mem.h
+> @@ -47,6 +47,7 @@
+>  	___C(SCAN_MEDIA, "Scan Media"),                                   \
+>  	___C(GET_SCAN_MEDIA, "Get Scan Media Results"),                   \
+>  	___C(GET_DC_EXTENT_LIST, "Get dynamic capacity extents"),         \
+> +	___C(GET_DC_CONFIG, "Get dynamic capacity configuration"),         \
+>  	___C(MAX, "invalid / last command")
+> =20
+>  #define ___C(a, b) CXL_MEM_COMMAND_ID_##a
+>=20
+>=20
+>=20
+> Fan Ni (7):
+>   hw/cxl/cxl-mailbox-utils: Add dc_event_log_size field to output
+>     payload of identify memory device command
+>   hw/cxl/cxl-mailbox-utils: Add dynamic capacity region representative
+>     and mailbox command support
+>   hw/mem/cxl_type3: Add a parameter to pass number of DC regions the
+>     device supports in qemu command line
+>   hw/mem/cxl_type3: Add DC extent representative to cxl type3 device
+>   hw/cxl/cxl-mailbox-utils: Add mailbox commands to support add/release
+>     dynamic capacity response
+>   Add qmp interfaces to add/release dynamic capacity extents
+>   hw/mem/cxl_type3: add read/write support to dynamic capacity
+>=20
+>  hw/cxl/cxl-mailbox-utils.c  | 389 +++++++++++++++++++++++++++-
+>  hw/mem/cxl_type3.c          | 492 +++++++++++++++++++++++++++++++-----
+>  include/hw/cxl/cxl_device.h |  50 +++-
+>  include/hw/cxl/cxl_events.h |  16 ++
+>  qapi/cxl.json               |  44 ++++
+>  5 files changed, 924 insertions(+), 67 deletions(-)
+>=20
+> --=20
+> 2.25.1
+> =
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07066C0015E
+	for <linux-cxl@archiver.kernel.org>; Tue, 25 Jul 2023 15:18:49 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S232003AbjGYPSs (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 25 Jul 2023 11:18:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45626 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230377AbjGYPSr (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 25 Jul 2023 11:18:47 -0400
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A9A0E5A
+        for <linux-cxl@vger.kernel.org>; Tue, 25 Jul 2023 08:18:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1690298326; x=1721834326;
+  h=date:from:to:cc:subject:message-id:references:
+   content-transfer-encoding:in-reply-to:mime-version;
+  bh=POUUGIDQmYbr0UXB5WFRozlPHZCldIrBkPYcdmbjzvY=;
+  b=NGvP96PXKoE024IAq5mn8AJBOqfPwYgRc7YBUjusEQXiWbZYbR7uXzp2
+   PT6aQD4sP31/rr9dDfph38PLYUhBHdxuVHIRdl4FQHCmew5UszNdztj0y
+   xVEbGetDeqyvr5x+HFxN33xMDNkJ/IaiOUX+9EVB9PQ5MjndfNaBix3QK
+   0RBsMlTHDoRE2jp25P08hVzcAhbm6Q83uajYJekJDJkabyBa6kT/a5YIY
+   R4ifweduWSaqadpMvvgjpnOSmcJPSRdWimkmqKngmqsVEC/XitY6wp0lt
+   EMj+sJZnpVrk9Ct/SZexa88rhvRA/Qmd7ioqNYAHiSNnNknLUBfHpCy+N
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="434010305"
+X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; 
+   d="scan'208";a="434010305"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jul 2023 08:18:43 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="850067436"
+X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; 
+   d="scan'208";a="850067436"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+  by orsmga004.jf.intel.com with ESMTP; 25 Jul 2023 08:18:42 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Tue, 25 Jul 2023 08:18:42 -0700
+Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27 via Frontend Transport; Tue, 25 Jul 2023 08:18:42 -0700
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (104.47.59.168)
+ by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.27; Tue, 25 Jul 2023 08:18:39 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=oGnKZFH5p5oWiyOSEVgc8Nf+ZDkCeFL8XMwWQY4K5xg6PH5pfdZ+xOsF4ysFSFciMqEP3uavtOTO/wfis/lZ3Ivm6+rxtWFMosbLoQmLnDRlReTXxNZFmOPF8Fp6pB8IMT7EU7N76JFDFbuewfhPDLpO5ymC9SX0lbCB48FMUd10pgbMK6lAmoHYeLjOnt5EAyIDoJ2blgQUBEzpvS9zzlSJGw4qqUUWHEGfQc8G3AN8/wRKDasDHe26S9E1mg69oBaZ9/Kd6tSSdRa4Nx3LvAcM4KoyEjPK8if0uq4Bjl/ZKUT85XYKE85mAz7ftQGVTJkXQjtA5eSFCnKCJShnAQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=cy434QVLOXp4KOcBRSFw4RxHYN5HW+Zh424pKaVBd3o=;
+ b=STGrcraldEkPIY2GWVRVC+f559SbWMI4LbZusvY2B7KpTYrp/b7dSR+l/OVOkzD5i4Rh4hACFGHF48a+qlcoEN4gW8FwFnpsrwYe7nrKv03Vd+rHqNHwK2iOd6/du35a+tlyfr6mgF82MLiv7Vr1c7QCk8eVo1mJOyEH9U+zcmSAaZOhoY58cKdAti0sDlUE+T7FXzOUwlVPdkSnHErKx1d8W88pADOGEGAC2MQrLDPa+ESM0M3mecccgULI0Qd5hzVp8mZfZg9Oa3vExDDnbEkbEDGUiwxMUssXchFLLUykXV5J4tz8f4UKA5JZbYViz9oG11FwRogp26Dse+k2UQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from SA1PR11MB6733.namprd11.prod.outlook.com (2603:10b6:806:25c::17)
+ by SN7PR11MB7707.namprd11.prod.outlook.com (2603:10b6:806:322::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.33; Tue, 25 Jul
+ 2023 15:18:22 +0000
+Received: from SA1PR11MB6733.namprd11.prod.outlook.com
+ ([fe80::6da5:f747:ba54:6938]) by SA1PR11MB6733.namprd11.prod.outlook.com
+ ([fe80::6da5:f747:ba54:6938%6]) with mapi id 15.20.6609.032; Tue, 25 Jul 2023
+ 15:18:22 +0000
+Date: Tue, 25 Jul 2023 08:18:08 -0700
+From: Ira Weiny <ira.weiny@intel.com>
+To: Fan Ni <fan.ni@samsung.com>,
+        "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>
+CC: "jonathan.cameron@huawei.com" <jonathan.cameron@huawei.com>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "gregory.price@memverge.com" <gregory.price@memverge.com>,
+        "hchkuo@avery-design.com.tw" <hchkuo@avery-design.com.tw>,
+        "cbrowy@avery-design.com" <cbrowy@avery-design.com>,
+        "ira.weiny@intel.com" <ira.weiny@intel.com>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>,
+        "nmtadam.samsung@gmail.com" <nmtadam.samsung@gmail.com>,
+        "nifan@outlook.com" <nifan@outlook.com>
+Subject: Re: [Qemu RFC 0/7] Early enabling of DCD emulation in Qemu
+Message-ID: <64bfe7b090843_12757b2945b@iweiny-mobl.notmuch>
+References: <CGME20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c@uscas1p2.samsung.com>
+ <20230511175609.2091136-1-fan.ni@samsung.com>
+ <20230724171857.GA329893@bgt-140510-bm03>
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230724171857.GA329893@bgt-140510-bm03>
+X-ClientProxiedBy: SJ0PR13CA0003.namprd13.prod.outlook.com
+ (2603:10b6:a03:2c0::8) To SA1PR11MB6733.namprd11.prod.outlook.com
+ (2603:10b6:806:25c::17)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA1PR11MB6733:EE_|SN7PR11MB7707:EE_
+X-MS-Office365-Filtering-Correlation-Id: 816d6118-b4cc-4d15-9a50-08db8d22622c
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: WMj1i1isj6gjWyGDGtPRFBAdHylNzAGwu+CKedx4PnOsac2qy52jnJZ1AK8bVpTucdWXZxOjDTgRQmYkDa8AQhRbCk8l8IU/jCXm1kulDY8rFQLM337wNbr5e7QcEfULBxFz0E/pawR70tK3At09YcqpWEt9/1JKkuEuK06gnloxJ8ORAMbvKdrjE6eJ9mTzpfnW1zyB5eLHH7wAfvTQtjCYK/Z+SWX8QmnvwbC0vA8ZBxoIpRXYc4gn8S45AB7g6lK1vs+E4SOo+2AEWD47YvuaNg4piV0liXF23CYmWSQ/kdl0bhSpjSXdNoOmYn7MCwK2uMqZoRbeFcPMDZ4QQrKzyE3RAqBqBkUv3TAVNOx5xl4HkYdJVWwPMY4daWNNQJ5mEi9HUbLDT6WrND0VyiN5sk4pso2CT0vrgghaXYD/9XPcF8ArdKXNDha7Mg9onRltLchrlzjdLLYKQmHclFFDtoz0lrpvD4HCXS8voWT/aYbnS0kb5dMjBQPOeK4JR5SeWTxsYMZhQ1y4dO9Joiu+EKJSNwXeXPlqjrjN0gHTc1ijPkjTp/pymwbnm4zGw6BcG8W01Cj0RDwzCzwIcQ==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR11MB6733.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(39860400002)(396003)(376002)(136003)(346002)(366004)(451199021)(186003)(26005)(6506007)(2906002)(86362001)(82960400001)(54906003)(7416002)(8676002)(8936002)(4326008)(478600001)(110136005)(966005)(6666004)(9686003)(6512007)(6486002)(38100700002)(5660300002)(41300700001)(66556008)(316002)(66476007)(44832011)(66946007)(83380400001);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?M2R3UG8vd3dFc2NzSko3Y1llN3ByU0h2TW1iRXg3RGg2S3d2bFVxM0pBc0t0?=
+ =?utf-8?B?WHZNMWxiMEQzVmVvOERKRUxMMXZ0c0E5dWNvSDY1OVBEY1NYdlJNa20xSStR?=
+ =?utf-8?B?Y0laRVlMUVFza1pFYmsrVlU5ckZKY0hXb1ZqMTUxSS9zN0RDbjdoRFdrQXQx?=
+ =?utf-8?B?azB5YUhRR1dWaW5YbkJJa2xGY05ETjZ6NnRCOXhyWEJZc2JRTFNzbnFGSm4y?=
+ =?utf-8?B?ZzB6SlgzOVlaN0R0V0hzakJXbE95cXZzUU5pazdsV1VyZ016MFgwVFNHRlVy?=
+ =?utf-8?B?Qks4eHdEYTlPZUVBVnhiNWtKR2tWdkxEVFplV1Z5Q1NQVXg5eE9rRTVYYWNF?=
+ =?utf-8?B?ak5uczFCMkY1NWkxblRhNy9ORG9sMWZBWi9oU1dPQzlpUFpSUGh3TXFkT2pm?=
+ =?utf-8?B?VXZEWSsrVmFkd2NNMVRSYlBHZ0oxOUFjd3BROGhNM0ZuK1hidFpuMkxnUFlE?=
+ =?utf-8?B?LzZ5UWV6SkpPdy9aYmZ0Z2o2RzNhUkR3S3R3blF3WCsrY1ZYOUhQSHdrUkFr?=
+ =?utf-8?B?NjFTNjFwZE1QUWx4Tk1UOTZvTGNLUnVnbFNWNkJDUlpHcVdsRVFHRkY0aXFY?=
+ =?utf-8?B?R2JVbitRSDFoelNvaXFpeDVCU01Oc0FnU0FsckFBNGdWVzB6NGFwek9kcG5l?=
+ =?utf-8?B?b0g2Vkd5a0lXZDQ0M3J4TnVHOWRJbXQvUEtZNExKT0dCbUxGNjA1SDBuMHlS?=
+ =?utf-8?B?VGt3Z2d4Q216T2l6L3gwcDExcDRrR1RuNUJxZk1YbFJPSmhhNGdqOVBLbkdJ?=
+ =?utf-8?B?OWY1Z0t4NkFFakFmTnlSTVVBVnR2Q1l1Uk55K3lJQUZQUGhURUVaVjl1Q2po?=
+ =?utf-8?B?KzVBQkZkOUdDMnZwaVZIZ3NKaXRxR3IwVE1LRGxPT0RmaTNJRURBaklRSVc2?=
+ =?utf-8?B?T1NEQ0UwRml1ZjQ4OWRBZnBVczlENHljdHhXU1ptSUhJYmtheTNIZXdOL3Nl?=
+ =?utf-8?B?c0JWTXllTzV2UVd6ZFhhVUlDeHl1cWJjc0xIdlVVdHhnZE9EUzA0RXFLSzda?=
+ =?utf-8?B?ZEZOaHdZSkVXUzJ6Nk5QNTBjdjJTdUdsN25TaXNZMmFzS2s1YWFLSFF6WlN3?=
+ =?utf-8?B?OW9XM1pwRGo3YWFrVmg3emR3UUZlNFg5QUQyTkl2MW9ycHVUOUp3ck9VZ2Ix?=
+ =?utf-8?B?Zm9sdytUOE55c3k3QTR1WjJ5cWFnTTJoRGtDLy8zMVdudzF3TjdWNlQxQXBW?=
+ =?utf-8?B?WWNMU0lCQm1YWDRERVBkTE0zcHM1WkZXMFp4N1JObjI4QjFCQUUzM0pKbkpB?=
+ =?utf-8?B?RlhkMGlSWXZwelJVbnUrdlFZd3Rod09DQm9ZRzE0UUc3VDJWMDhobmJkbVlL?=
+ =?utf-8?B?eXgwMkQ2NklLU3JaQi9RWXJlQytQTEcwZlZ1Ym9PQnc1Q3FSSTQ0U0wySXh5?=
+ =?utf-8?B?VWo2V2JURi9veExYb2h3RUp5MU5QNXpVVzA3QURrQVZod0U1ZWZRWU9QT1FP?=
+ =?utf-8?B?NlZBcVNLaEdLUkJuekNSUXRUMVJLc1k3bkowVWRjMHVraDZSTDI0M3AwM1c1?=
+ =?utf-8?B?RzZJdGNXWG5DQjNHMjlLT0pKRUdXRE1nRVl1TkZ0Szc1d3lRNFJrTTZ0K3VG?=
+ =?utf-8?B?QlhvenN0d2RqWC9SM0x6VzE5VXNlUWp5d1NSZlA1NHlTdHR0ZGg5bVJrbFFy?=
+ =?utf-8?B?U2s0c2U4cm9nUmNiRnRyZXNBMC9EWk82YkEwTkxuck82bi9VUmJvdXNCQzRk?=
+ =?utf-8?B?YmRlQXczWXpDeGdqL1FtN2VIUW9ESjFCenc1SlQ2NEhoTUI2bllxemtUcmth?=
+ =?utf-8?B?ODJpS0VRSVdCbkQ4eGU2MjNWR2ZQd1FoZmZQaUduNlFlM3VVZGc0TmxPUVVG?=
+ =?utf-8?B?dXY2a1BDRlF4UitYTCtLcDIrdVRzWFZKcWNFS1RyWDJhQVNtMGRqNHZ1OG95?=
+ =?utf-8?B?YWtpZTF3eFI4ak5pMThUcE9UYnEwaFBlb3RpdmVGY1R6dGdXaW0xci9FNFVU?=
+ =?utf-8?B?NVVuVm9abFR2Q3Y5MFgxUjc3UENUeE0wazcvanl0NlA0MXZjQ3ZFV0Y5VU5n?=
+ =?utf-8?B?R3NBZzlBSHF2MGV0b21JN0lFaTNiVHQ4YXB2cE9pRlM3UU9zeUtRMEZpQlRw?=
+ =?utf-8?B?aDdZeTVyeXVaWHVIaFNmV0NhN2w3YkoxM3ZsNm9pS05KNEVsN2syK3hCYXhN?=
+ =?utf-8?Q?ocsshGx1mNE5Y/LrzybWqroM0?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 816d6118-b4cc-4d15-9a50-08db8d22622c
+X-MS-Exchange-CrossTenant-AuthSource: SA1PR11MB6733.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Jul 2023 15:18:22.1393
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: nJ/vFjrKKsTbkYE9Q8JLHHj/dWzSqOHfs8iTx7MtDvlyp2LgHh/GT1KiizshfHBwPCNJElBZ1UCBojGazi2VPg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR11MB7707
+X-OriginatorOrg: intel.com
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Fan Ni wrote:
+> On Thu, May 11, 2023 at 05:56:40PM +0000, Fan Ni wrote:
+> 
+> FYI.
+> 
+> I have updated the patch series and sent out again.
+> 
+> I suggested anyone who are interested in DCD and using this patch series to
+> use the new series. Quite a few things has been fixed.
+> 
+> https://lore.kernel.org/linux-cxl/20230724162313.34196-1-fan.ni@samsung.com/T/#t
+> 
+> Also, if you want to use the code repo directly, you can try
+> 
+> https://github.com/moking/qemu-dcd-preview-latest/tree/dcd-dev
+
+Thanks for the branch!
+
+I took a quick look and I don't see a resolution to the problem I
+mentioned with non DCD devices being supported.[1]
+
+[1] https://lore.kernel.org/all/6483946e8152f_f1132294a2@iweiny-mobl.notmuch/
+
+Did you fix this in a different way?  If I don't add DC to my mem devices they
+don't get probed properly.  I'm still looking into this with your new branch,
+but I don't think DC commands should be in the CEL if the device does not
+support it.
+
+Also I get a build warning on this branch I had to fix[3] as my build is
+treating warnings as errors.[2]
+
+I don't think this fix is technically necessary as 'list' should never be NULL
+that I can see.  But might be nice to check or just use my fix.
+
+I'll try and get to a review once I get the DCD stuff out on the list again.
+
+Ira
+
+
+[2]
+../hw/mem/cxl_type3.c: In function ‘qmp_cxl_process_dynamic_capacity_event.constprop’:
+../hw/mem/cxl_type3.c:2063:28: error: ‘rid’ may be used uninitialized [-Werror=maybe-uninitialized]
+ 2063 |     dCap.updated_region_id = rid;
+      |     ~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+../hw/mem/cxl_type3.c:1987:13: note: ‘rid’ was declared here
+ 1987 |     uint8_t rid;
+      |             ^~~
+cc1: all warnings being treated as errors
+
+[3]
+
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index e67328780407..d25e6064f6c9 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -1984,7 +1984,7 @@ static void qmp_cxl_process_dynamic_capacity_event(const char *path,
+     CXLDCExtentRecordList *list = records;
+     CXLDCExtent_raw *extents;
+     uint64_t dpa, len;
+-    uint8_t rid;
++    uint8_t rid = 0;
+     int i;
+ 
+     if (!obj) {
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E885C0015E
+	for <linux-cxl@archiver.kernel.org>; Tue, 25 Jul 2023 16:57:09 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230157AbjGYQ5I (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 25 Jul 2023 12:57:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49784 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229492AbjGYQ5H (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 25 Jul 2023 12:57:07 -0400
+Received: from mailout1.w2.samsung.com (mailout1.w2.samsung.com [211.189.100.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABD021BE2
+        for <linux-cxl@vger.kernel.org>; Tue, 25 Jul 2023 09:57:02 -0700 (PDT)
+Received: from uscas1p2.samsung.com (unknown [182.198.245.207])
+        by mailout1.w2.samsung.com (KnoxPortal) with ESMTP id 20230725164643usoutp0190464a548ca591680819b8fade554011~1KivowJm51673316733usoutp01g;
+        Tue, 25 Jul 2023 16:46:43 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w2.samsung.com 20230725164643usoutp0190464a548ca591680819b8fade554011~1KivowJm51673316733usoutp01g
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1690303603;
+        bh=NtC7E3IsPPbWZ4bZyL31hB+sue0UH1FsmMZSovhBk8k=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
+        b=oiCrKwacxdXTuBRCnSXvpgBYXWTSezB39FOnijDOMka+vDOxnn8VQoiKJSZ8W6Ov8
+         tR9PmCtiyWqtUVK6d61Fm/i9qjkJQSE97btlKINQ6DMymBV9HTkp5tMDXnhWTn6mDi
+         MzeSxJNllwf6ZvFRXtQ9GpJSCZzmS84cIpcuaUNA=
+Received: from ussmges2new.samsung.com (u111.gpu85.samsung.co.kr
+        [203.254.195.111]) by uscas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20230725164643uscas1p163da737305def4399ef8338fc3e8f1e8~1Kivg4Urd0668006680uscas1p1H;
+        Tue, 25 Jul 2023 16:46:43 +0000 (GMT)
+Received: from uscas1p1.samsung.com ( [182.198.245.206]) by
+        ussmges2new.samsung.com (USCPEMTA) with SMTP id D8.0F.42611.27CFFB46; Tue,
+        25 Jul 2023 12:46:42 -0400 (EDT)
+Received: from ussmgxs1new.samsung.com (u89.gpu85.samsung.co.kr
+        [203.254.195.89]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230725164642uscas1p28f95804a99db81ad000c5264f4d5d64d~1KivMCDbE2394423944uscas1p2k;
+        Tue, 25 Jul 2023 16:46:42 +0000 (GMT)
+X-AuditID: cbfec36f-249ff7000000a673-e6-64bffc72ebc1
+Received: from SSI-EX4.ssi.samsung.com ( [105.128.2.145]) by
+        ussmgxs1new.samsung.com (USCPEXMTA) with SMTP id 27.12.38326.27CFFB46; Tue,
+        25 Jul 2023 12:46:42 -0400 (EDT)
+Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
+        SSI-EX4.ssi.samsung.com (105.128.2.229) with Microsoft SMTP Server
+        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+        15.1.2375.24; Tue, 25 Jul 2023 09:46:41 -0700
+Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
+        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Tue,
+        25 Jul 2023 09:46:41 -0700
+From: Fan Ni <fan.ni@samsung.com>
+To: Ira Weiny <ira.weiny@intel.com>
+CC: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        "jonathan.cameron@huawei.com" <jonathan.cameron@huawei.com>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "gregory.price@memverge.com" <gregory.price@memverge.com>,
+        "hchkuo@avery-design.com.tw" <hchkuo@avery-design.com.tw>,
+        "cbrowy@avery-design.com" <cbrowy@avery-design.com>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        Adam Manzanares <a.manzanares@samsung.com>,
+        "dave@stgolabs.net" <dave@stgolabs.net>,
+        "nmtadam.samsung@gmail.com" <nmtadam.samsung@gmail.com>,
+        "nifan@outlook.com" <nifan@outlook.com>
+Subject: Re: [Qemu RFC 0/7] Early enabling of DCD emulation in Qemu
+Thread-Topic: [Qemu RFC 0/7] Early enabling of DCD emulation in Qemu
+Thread-Index: AQHZhDHwBF2t8l6CHEO7jqFQqFgBOK/KEtMAgAFwkACAABi5gA==
+Date: Tue, 25 Jul 2023 16:46:41 +0000
+Message-ID: <20230725164633.GA2317647@bgt-140510-bm03>
+In-Reply-To: <64bfe7b090843_12757b2945b@iweiny-mobl.notmuch>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [105.128.2.176]
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <47A323B06A1BED4EBF5A991C166C9338@ssi.samsung.com>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-CFilter-Loop: Reflected
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrEKsWRmVeSWpSXmKPExsWy7djXc7pFf/anGDyYZWPRfX4Do8X0qRcY
+        LVbfXMNo0dD0iMWiZfd7Jov9T5+zWKxaeI3N4vysUywWzyc+Z7JYuuQRs8Xx3h0sDtweFyZP
+        YPVY3ODqsXPWXXaPliNvgbw9L5k8Nn78z+7x5NpmJo/Nr18we0ydXe/xeZNcAFcUl01Kak5m
+        WWqRvl0CV8a2z7MYC86pVyx6s5+1gfGMWhcjJ4eEgInEle+rWbsYuTiEBFYySsydsYMFwmll
+        kmi6cJoVpmrr7OfsEIm1jBJ9TzeyQTifGCXaVm9hhnCWMUpcP/WCDaSFTUBRYl/XdjBbREBZ
+        4vS/q2AdzAJXWCSuT13HBJIQFnCWmLz8BGMXIwdQkYvEpWd+EPVOEif2n2QEsVkEVCXuXXvE
+        BFLCK2Am0b+0BCTMKWAjsfXEMbDxjAJiEt9PrQGbyCwgLnHryXwmiKsFJRbN3sMMYYtJ/Nv1
+        kA3CVpS4//0lO8hIZgFNifW79CFa7STaLj1lh7AVJaZ0PwSzeYHGnJz5hAWiVVLi4IobUPZs
+        TomXH81AxkgAHb9prwFEWFri6vWpzBDhZIlVH7kgwjkS85dsgeq0llj4Zz3TBEaVWUhunoVw
+        zywk98xCcs8sJPcsYGRdxSheWlycm55abJSXWq5XnJhbXJqXrpecn7uJEZjsTv87nL+D8fqt
+        j3qHGJk4GA8xSnAwK4nwGsbsSxHiTUmsrEotyo8vKs1JLT7EKM3BoiTOa2h7MllIID2xJDU7
+        NbUgtQgmy8TBKdXAxLjS4uE31SRu6a2OjYYP3YLXdiWdE3l8Tpq3QvL9hN6Uf00u8Q7pmya+
+        9ZxkZ3tkw0R9V73g3rtW8/sbHIoKWs7pZf3c6rzoqemMV5xHt4gtNV+351Wj2OOwRXts2c+m
+        Hbk6y2zbHotvP71XMDi3BcjxdKjIPX1eyjbfJq+4zsVJ4s7UqX8MxJT1D15cuy2G1byguWNz
+        XJrKXmGbFeuqYo8+PczUFljcMaP63rv+Sj37qHmlR71CArQc/tr673l/9Huj55mEBaonD8ro
+        rBSZf+XMwa0XdvMl5pRLvbrgHhG8ZcUyPsWNPzetXOfj07L58Lk9N3jE/cSWa5ktTldYtSM9
+        0PPW1c4C/5xe3UkvlFiKMxINtZiLihMBk+pu7+UDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrMIsWRmVeSWpSXmKPExsWS2cA0Ubfoz/4Ugy2nVC26z29gtJg+9QKj
+        xeqbaxgtGpoesVi07H7PZLH/6XMWi1ULr7FZnJ91isXi+cTnTBZLlzxitjjeu4PFgdvjwuQJ
+        rB6LG1w9ds66y+7RcuQtkLfnJZPHxo//2T2eXNvM5LH59Qtmj6mz6z0+b5IL4IrisklJzcks
+        Sy3St0vgytj2eRZjwTn1ikVv9rM2MJ5R62Lk5JAQMJHYOvs5excjF4eQwGpGiabTC1kgnE+M
+        EufOT4ByljFK3NzaygrSwiagKLGvazsbiC0ioCxx+t9VNpAiZoErLBLXp65jAkkICzhLTF5+
+        grGLkQOoyEXi0jM/iHoniRP7TzKC2CwCqhL3rj1iAinhFTCT6F9aArHrNaPErasHwHZxCthI
+        bD1xDGwXo4CYxPdTa8DGMwuIS9x6Mp8J4gUBiSV7zjND2KISLx//Y4WwFSXuf3/JDjKfWUBT
+        Yv0ufYhWO4m2S0/ZIWxFiSndD8FsXgFBiZMzn7BAtEpKHFxxg2UCo8QsJNtmIUyahWTSLCST
+        ZiGZtICRdRWjeGlxcW56RbFhXmq5XnFibnFpXrpecn7uJkZgujj973DkDsajtz7qHWJk4mA8
+        xCjBwawkwmsYsy9FiDclsbIqtSg/vqg0J7X4EKM0B4uSOK+Q68R4IYH0xJLU7NTUgtQimCwT
+        B6dUA9Ok6D3+21LU+1msz7N8m/PdfJ4h+459U74nLU+eJGg28VZIM+fCCcbxKcqMl2uKj7qY
+        hfyxvHMjKr5+q+KDWu1jlnYl0/ZetDvwdNL99xy7beYff7U/T0Kk8eqNCS7tzkVqy9XO8qy3
+        MqwSb+gQ01exEjPuWP9LeMlU3evzrn/LEVnFvuqaUIGih9pFs+KDDA+8e/0XHvHoDcx7+2iq
+        Qzs/20PlWTPCnB2LVuTzcv9yCb05PcHosQBba6LA4qm5zf/v/3L8uGKDXpzKoekVnME+9XEP
+        jh4rzvwk+SmzoqfgcfGrxrMX0jn7060fKGTPlrUTetq++86TZ4aZ5pM9QmOFl5cZf1s1Q6/r
+        K/+5XUosxRmJhlrMRcWJAHgqyD+GAwAA
+X-CMS-MailID: 20230725164642uscas1p28f95804a99db81ad000c5264f4d5d64d
+CMS-TYPE: 301P
+X-CMS-RootMailID: 20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c
+References: <CGME20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c@uscas1p2.samsung.com>
+        <20230511175609.2091136-1-fan.ni@samsung.com>
+        <20230724171857.GA329893@bgt-140510-bm03>
+        <64bfe7b090843_12757b2945b@iweiny-mobl.notmuch>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+T24gVHVlLCBKdWwgMjUsIDIwMjMgYXQgMDg6MTg6MDhBTSAtMDcwMCwgSXJhIFdlaW55IHdyb3Rl
+Og0KDQo+IEZhbiBOaSB3cm90ZToNCj4gPiBPbiBUaHUsIE1heSAxMSwgMjAyMyBhdCAwNTo1Njo0
+MFBNICswMDAwLCBGYW4gTmkgd3JvdGU6DQo+ID4gDQo+ID4gRllJLg0KPiA+IA0KPiA+IEkgaGF2
+ZSB1cGRhdGVkIHRoZSBwYXRjaCBzZXJpZXMgYW5kIHNlbnQgb3V0IGFnYWluLg0KPiA+IA0KPiA+
+IEkgc3VnZ2VzdGVkIGFueW9uZSB3aG8gYXJlIGludGVyZXN0ZWQgaW4gRENEIGFuZCB1c2luZyB0
+aGlzIHBhdGNoIHNlcmllcyB0bw0KPiA+IHVzZSB0aGUgbmV3IHNlcmllcy4gUXVpdGUgYSBmZXcg
+dGhpbmdzIGhhcyBiZWVuIGZpeGVkLg0KPiA+IA0KPiA+IGh0dHBzOi8vdXJsZGVmZW5zZS5jb20v
+djMvX19odHRwczovL2xvcmUua2VybmVsLm9yZy9saW51eC1jeGwvMjAyMzA3MjQxNjIzMTMuMzQx
+OTYtMS1mYW4ubmlAc2Ftc3VuZy5jb20vVC8qdF9fO0l3ISFFd1Z6cUdvVEtCcXYtMERXQUpCbSFW
+OGtEVHBUNXlMVUF5V20zc0ZtN1hJZ04wUWROVXlRWVpkOXZZTEhqVVZrTWtoRFQxNEY4YXZnTkJo
+MjNLUEF0c1NfZEdtMkxadUhKMTAybWdJZyQgDQo+ID4gDQo+ID4gQWxzbywgaWYgeW91IHdhbnQg
+dG8gdXNlIHRoZSBjb2RlIHJlcG8gZGlyZWN0bHksIHlvdSBjYW4gdHJ5DQo+ID4gDQo+ID4gaHR0
+cHM6Ly91cmxkZWZlbnNlLmNvbS92My9fX2h0dHBzOi8vcHJvdGVjdDIuZmlyZWV5ZS5jb20vdjEv
+dXJsP2s9MDYwMGZkNmItNjc4YmU4MjAtMDYwMTc2MjQtNzRmZTQ4NWZiMzA1LWY1MjkyNzkwNjJi
+MDJiNzMmcT0xJmU9NWRmNjUwMTAtZTYyZi00MGExLTlhMjEtNjA5ZWIxNDAwOTIxJnU9aHR0cHMq
+M0EqMkYqMkZnaXRodWIuY29tKjJGbW9raW5nKjJGcWVtdS1kY2QtcHJldmlldy1sYXRlc3QqMkZ0
+cmVlKjJGZGNkLWRldl9fO0pTVWxKU1VsSlEhIUV3VnpxR29US0Jxdi0wRFdBSkJtIVY4a0RUcFQ1
+eUxVQXlXbTNzRm03WElnTjBRZE5VeVFZWmQ5dllMSGpVVmtNa2hEVDE0RjhhdmdOQmgyM0tQQXRz
+U19kR20yTFp1SEpwQjBTbU5zJCANCj4gDQo+IFRoYW5rcyBmb3IgdGhlIGJyYW5jaCENCj4gDQo+
+IEkgdG9vayBhIHF1aWNrIGxvb2sgYW5kIEkgZG9uJ3Qgc2VlIGEgcmVzb2x1dGlvbiB0byB0aGUg
+cHJvYmxlbSBJDQo+IG1lbnRpb25lZCB3aXRoIG5vbiBEQ0QgZGV2aWNlcyBiZWluZyBzdXBwb3J0
+ZWQuWzFdDQo+IA0KPiBbMV0gaHR0cHM6Ly91cmxkZWZlbnNlLmNvbS92My9fX2h0dHBzOi8vbG9y
+ZS5rZXJuZWwub3JnL2FsbC82NDgzOTQ2ZTgxNTJmX2YxMTMyMjk0YTJAaXdlaW55LW1vYmwubm90
+bXVjaC9fXzshIUV3VnpxR29US0Jxdi0wRFdBSkJtIVY4a0RUcFQ1eUxVQXlXbTNzRm03WElnTjBR
+ZE5VeVFZWmQ5dllMSGpVVmtNa2hEVDE0RjhhdmdOQmgyM0tQQXRzU19kR20yTFp1SEo0Z2VTRUFn
+JCANCj4gDQo+IERpZCB5b3UgZml4IHRoaXMgaW4gYSBkaWZmZXJlbnQgd2F5PyAgSWYgSSBkb24n
+dCBhZGQgREMgdG8gbXkgbWVtIGRldmljZXMgdGhleQ0KPiBkb24ndCBnZXQgcHJvYmVkIHByb3Bl
+cmx5LiAgSSdtIHN0aWxsIGxvb2tpbmcgaW50byB0aGlzIHdpdGggeW91ciBuZXcgYnJhbmNoLA0K
+PiBidXQgSSBkb24ndCB0aGluayBEQyBjb21tYW5kcyBzaG91bGQgYmUgaW4gdGhlIENFTCBpZiB0
+aGUgZGV2aWNlIGRvZXMgbm90DQo+IHN1cHBvcnQgaXQuDQo+IA0KPiBBbHNvIEkgZ2V0IGEgYnVp
+bGQgd2FybmluZyBvbiB0aGlzIGJyYW5jaCBJIGhhZCB0byBmaXhbM10gYXMgbXkgYnVpbGQgaXMN
+Cj4gdHJlYXRpbmcgd2FybmluZ3MgYXMgZXJyb3JzLlsyXQ0KPiANCj4gSSBkb24ndCB0aGluayB0
+aGlzIGZpeCBpcyB0ZWNobmljYWxseSBuZWNlc3NhcnkgYXMgJ2xpc3QnIHNob3VsZCBuZXZlciBi
+ZSBOVUxMDQo+IHRoYXQgSSBjYW4gc2VlLiAgQnV0IG1pZ2h0IGJlIG5pY2UgdG8gY2hlY2sgb3Ig
+anVzdCB1c2UgbXkgZml4Lg0KPiANCj4gSSdsbCB0cnkgYW5kIGdldCB0byBhIHJldmlldyBvbmNl
+IEkgZ2V0IHRoZSBEQ0Qgc3R1ZmYgb3V0IG9uIHRoZSBsaXN0IGFnYWluLg0KPiANCj4gSXJhDQo+
+IA0KDQpPaCwgSSBtaXNzZWQgeW91ciBwcmV2aW91cyBjb21tZW50cywgbGV0IG1lIGxvb2sgaW50
+byBpdCBhbmQgZml4DQphY2NvcmRpbmdseSBhbmQgc2VuZCBvdXQgYSBuZXcgdmVyc2lvbi4NCg0K
+QnR3LCB3aGVuIEkgZGlkIHRoZSBEQ0QgdGVzdCB3aXRoIHRoZSBsYXN0IERDRCBrZXJuZWwgY29k
+ZSwgSSBmb3VuZA0Kc29tZSBpc3N1ZSB0aGVyZS4NCg0KV2hlbiBJIGFkZCBhIERDRCBleHRlbnQg
+Zm9yIHRoZSBmaXJzdCB0aW1lLCBpdCB3aWxsIGJlIHJlY29nbml6ZWQgYXMNCnN5c3RlbSBSQU0g
+YXV0b21hdGljYWxseSBhbmQgc2hvdyB1cCB3aXRoIGNvbW1hbmQgbHNtZW0uDQoNCkhvd2V2ZXIs
+IHdoZW4gSSByZWxlYXNlIGl0IGFuZCB0cnkgdG8gcmUtYWRkIHRoZSBzYW1lIGV4dGVudCBhZ2Fp
+bi4NClRoZSBhZGRpbmcgc2VlbXMgbm9ybWFsIGFuZCB0aGUgZGV2aWNlIHdpbGwgc2hvdyB1cCB1
+bmRlciAvZGV2LyBhcw0KZGF4MC5YLiBCdXQgaXQgd2lsbCBub3Qgc2hvdyB1cCB3aXRoIGxzbWVt
+IGNvbW1hbmQgYW5kIEkgaGF2ZSB0byB1c2UNCmRheGN0bCByZWNvbmZpZ3VyZSBjb21tYW5kIHRv
+IHR1cm4gaXQgdG8gc3lzdGVtIHJhbSBhbmQgdGhlbiBpdCBjYW4NCnNob3cgdXAgd2l0aCBsc21l
+bSBjb21tYW5kLiBJIHdvdWxkIGV4cGVjdCB0aGUgYmVoYXZpb3IgZm9yIHRoZQ0KZmlyc3QgYWRk
+IGFuZCBzZWNvbmQgYWRkIGJlIHRoZSBzYW1lLg0KDQpGYW4uDQoNCg0KPiANCj4gWzJdDQo+IC4u
+L2h3L21lbS9jeGxfdHlwZTMuYzogSW4gZnVuY3Rpb24g4oCYcW1wX2N4bF9wcm9jZXNzX2R5bmFt
+aWNfY2FwYWNpdHlfZXZlbnQuY29uc3Rwcm9w4oCZOg0KPiAuLi9ody9tZW0vY3hsX3R5cGUzLmM6
+MjA2MzoyODogZXJyb3I6IOKAmHJpZOKAmSBtYXkgYmUgdXNlZCB1bmluaXRpYWxpemVkIFstV2Vy
+cm9yPW1heWJlLXVuaW5pdGlhbGl6ZWRdDQo+ICAyMDYzIHwgICAgIGRDYXAudXBkYXRlZF9yZWdp
+b25faWQgPSByaWQ7DQo+ICAgICAgIHwgICAgIH5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+Xn5+fn4N
+Cj4gLi4vaHcvbWVtL2N4bF90eXBlMy5jOjE5ODc6MTM6IG5vdGU6IOKAmHJpZOKAmSB3YXMgZGVj
+bGFyZWQgaGVyZQ0KPiAgMTk4NyB8ICAgICB1aW50OF90IHJpZDsNCj4gICAgICAgfCAgICAgICAg
+ICAgICBefn4NCj4gY2MxOiBhbGwgd2FybmluZ3MgYmVpbmcgdHJlYXRlZCBhcyBlcnJvcnMNCj4g
+DQo+IFszXQ0KPiANCj4gZGlmZiAtLWdpdCBhL2h3L21lbS9jeGxfdHlwZTMuYyBiL2h3L21lbS9j
+eGxfdHlwZTMuYw0KPiBpbmRleCBlNjczMjg3ODA0MDcuLmQyNWU2MDY0ZjZjOSAxMDA2NDQNCj4g
+LS0tIGEvaHcvbWVtL2N4bF90eXBlMy5jDQo+ICsrKyBiL2h3L21lbS9jeGxfdHlwZTMuYw0KPiBA
+QCAtMTk4NCw3ICsxOTg0LDcgQEAgc3RhdGljIHZvaWQgcW1wX2N4bF9wcm9jZXNzX2R5bmFtaWNf
+Y2FwYWNpdHlfZXZlbnQoY29uc3QgY2hhciAqcGF0aCwNCj4gICAgICBDWExEQ0V4dGVudFJlY29y
+ZExpc3QgKmxpc3QgPSByZWNvcmRzOw0KPiAgICAgIENYTERDRXh0ZW50X3JhdyAqZXh0ZW50czsN
+Cj4gICAgICB1aW50NjRfdCBkcGEsIGxlbjsNCj4gLSAgICB1aW50OF90IHJpZDsNCj4gKyAgICB1
+aW50OF90IHJpZCA9IDA7DQo+ICAgICAgaW50IGk7DQo+ICANCj4gICAgICBpZiAoIW9iaikgew==
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
 	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EB28C77B7F
 	for <linux-cxl@archiver.kernel.org>; Thu, 11 May 2023 17:58:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
@@ -8451,9 +11275,6 @@ References: <20230511175609.2091136-1-fan.ni@samsung.com>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 4554
-Lines: 145
 
 From: Fan Ni <nifan@outlook.com>
 
@@ -8724,9 +11545,6 @@ References: <20230511175609.2091136-1-fan.ni@samsung.com>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 1697
-Lines: 49
 
 From: Fan Ni <nifan@outlook.com>
 
@@ -8901,9 +11719,6 @@ References: <20230511175609.2091136-1-fan.ni@samsung.com>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 7212
-Lines: 267
 
 From: Fan Ni <nifan@outlook.com>
 
@@ -9296,9 +12111,6 @@ References: <20230511175609.2091136-1-fan.ni@samsung.com>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 21265
-Lines: 673
 
 From: Fan Ni <nifan@outlook.com>
 
@@ -10097,9 +12909,6 @@ References: <20230511175609.2091136-1-fan.ni@samsung.com>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 2207
-Lines: 77
 
 From: Fan Ni <nifan@outlook.com>
 
@@ -10302,9 +13111,6 @@ References: <20230511175609.2091136-1-fan.ni@samsung.com>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 8326
-Lines: 280
 
 From: Fan Ni <nifan@outlook.com>
 
@@ -10710,9 +13516,6 @@ References: <20230511175609.2091136-1-fan.ni@samsung.com>
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 5849
-Lines: 191
 
 From: Fan Ni <nifan@outlook.com>
 
@@ -11024,9 +13827,6 @@ References: <CGME20230511175641uscas1p2b1877f9179709b69e293acdd7e57104c@uscas1p2
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 9131
-Lines: 253
 
 Since the early draft of DCD support in kernel is out
 (https://lore.kernel.org/linux-cxl/20230417164126.GA1904906@bgt-140510-bm03=
@@ -11414,9 +14214,6 @@ X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB8301
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 5192
-Lines: 153
 
 On 5/11/23 12:56, Fan Ni wrote:
 > From: Fan Ni <nifan@outlook.com>
@@ -11704,9 +14501,6 @@ X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4455
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 6356
-Lines: 196
 
 On 5/11/23 12:56, Fan Ni wrote:
 > From: Fan Ni <nifan@outlook.com>

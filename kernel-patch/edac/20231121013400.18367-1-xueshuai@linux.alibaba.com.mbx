@@ -1,0 +1,2956 @@
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEA2EC61D85
+	for <linux-kernel@archiver.kernel.org>; Tue, 21 Nov 2023 01:34:15 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S232818AbjKUBeR (ORCPT <rfc822;linux-kernel@archiver.kernel.org>);
+        Mon, 20 Nov 2023 20:34:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50142 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229490AbjKUBeP (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Mon, 20 Nov 2023 20:34:15 -0500
+Received: from out30-113.freemail.mail.aliyun.com (out30-113.freemail.mail.aliyun.com [115.124.30.113])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1460EAC;
+        Mon, 20 Nov 2023 17:34:10 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R161e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045176;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=17;SR=0;TI=SMTPD_---0VwqXEfT_1700530445;
+Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VwqXEfT_1700530445)
+          by smtp.aliyun-inc.com;
+          Tue, 21 Nov 2023 09:34:08 +0800
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com
+Cc: chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, xueshuai@linux.alibaba.com,
+        renyu.zj@linux.alibaba.com
+Subject: [PATCH v11 0/5] drivers/perf: add Synopsys DesignWare PCIe PMU driver support
+Date: Tue, 21 Nov 2023 09:33:55 +0800
+Message-Id: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Change Log
+==========
+change sinces v10:
+- Rename to pci_clear_and_set_config_dword() to retain the "config"
+  information and match the other accessors. (Per Bjorn)
+- Align pci_clear_and_set_config_dword() and its call site (Per Bjorn)
+- Polish commit log (Per Bjorn)
+- Simplify dwc_pcie_pmu_time_based_event_enable() with bool value (Per Ilkka)
+- Fix dwc_pcie_register_dev() return value (Per Ilkka)
+- Fix vesc capability discovery by pdev->vendor (Per Ilkka)
+- pick up Acked-by tag from Bjorn for Patch 3/5
+- pick up Tested-by tag from Ilkka for all patch set
+
+changes since v9:
+- move the &plat_dev->dev to previous line to warp more beautiful (Per Jonathan)
+- rename error label with the same suffix 'err'  (Per Jonathan)
+- drop unnecessary else branch and return directly (Per Baolin)
+- warp out set prev_count from dwc_pcie_pmu_set_period (Per Baolin)
+- use PMU_FORMAT_ATTR to simplify format sysfs stuff (Per Will)
+- export pci_clear_and_set_dword() to simplify _enable() functions  (Per Will)
+- simplify _read() function by unconditionally calculate with unit in bytes plused if branch for group#1 event (Per Will and Robin)
+- simplify _update() function by unconditionally mask with 64-bit width plused if branch for lane event (Per Will)
+- add type sanity check in _init() (Per Will)
+- test with fuzzing tool before this new version (Per Will)
+- register a platform device for each PCI device to probe RAS_DES PMU cap (Per Robin)
+- add dwc_pcie_vendor_ids to extend vendor id for future added device (Per Krishna)
+- pickup review-by tag from Baolin, Yicong and Jonathan 
+
+
+changes since v8:
+- tidy up doc and pick up Reviewed-by tag in pathc 1/4 (Per Yicong and Jonathan)
+- rename ras_des as ras_des_offset and remove coment about it (Per Jonathan)
+- keep exact reverse order of what happened in probe when unregister pmu (Per Jonathan)
+- remove the hender length check to make the driver more compatible (Per Jonathan)
+- move unwind of register pmu forward to fix list_del() on something that was never added (Per Jonathan)
+- use devm_add_action_or_reset() to unwind bus_register_notifier() (Per Jonathan)
+- use local pdev directly in dwc_pcie_pmu_offline_cpu() and dwc_pcie_pmu_probe() (Per Jonathan)
+- use the approach of a gotos to handle errors in dwc_pcie_pmu_init() (Per Jonathan)
+- multiply the counter value at point of read by 16 for group#1 events (Per Jonathan)
+
+changes since v7:
+- add config help with alibaba name (per Bjorn)
+- remove the ARM64 dependency (per Bjorn and Jonathan)
+- fix typo and column warp (per Bjorn) 
+- move list_del() after perf_pmu_unregister() (per Bjorn) 
+- reorder the funtions by interests (per Bjorn)
+- rewrite commit log about PMU counters, also update doc (per Bjorn)
+- extend to support stat time-based analysis and lane event at the same time (per Bjorn and Jonathan)
+Link: https://lore.kernel.org/linux-arm-kernel/20231012032856.2640-2-xueshuai@linux.alibaba.com/T/
+
+changes since v6:
+- improve editorial things in doc (Per Jonathan)
+- change config help to generic text (Per Jonathan)
+- remove macro to_dwc_pcie_pmu by moving pmu as the first member to struct dwc_pcie_pmu (Per Yicong)
+- add event type check in dwc_pcie_event_show() to keep consistent with other function (Per Jonathan)
+- remove intended blank line (Per Yicong)
+- protect against lower 32 bits of counter overflow by try again trick (Per Jonathan)
+- call pci_dev_put on all the return branch to keep the refcnt balance (Per Jonathan and Yicong)
+- use devm_add_action_or_reset() to automatic unwind (Per Jonathan)
+- fix picking numa-aware context cpu up when offline and offline cpu (Per Jonathan)
+- simplify online cpu by init pcie_pmu->on_cpu as -1 (Per Jonathan)
+- add bus_register_notifier() to handle rootport hotplug (Per Yicong)
+- pick up Acked-by from Bjorn for patch 2/4 (Per Bjorn)
+Link: https://lore.kernel.org/lkml/20230606074938.97724-1-xueshuai@linux.alibaba.com/T/
+
+changes since v5:
+- Rewrite the commit log to follow policy in pci_ids.h (Bjorn Helgaas)
+- return error code when __dwc_pcie_pmu_probe failed (Baolin Wang)
+- call 'cpuhp_remove_multi_state()' when exiting the driver. (Baolin Wang)
+- pick up Review-by tag from Baolin for Patch 1 and 3
+Link: https://lore.kernel.org/lkml/ZGuSimj1cuQl3W5L@bhelgaas/T/#mba3fa2572dde0deddb40b5b24a31f4df41004bdf
+
+changes since v4:
+
+1. addressing commens from Bjorn Helgaas:
+- reorder the includes by alpha
+- change all macros with upper-case hex
+- change ras_des type into u16
+- remove unnecessary outer "()"
+- minor format changes
+
+2. Address commensts from Jonathan Cameron:
+- rewrite doc and add a example to show how to use lane event
+
+3. fix compile error reported by: kernel test robot
+- remove COMPILE_TEST and add depend on PCI in kconfig
+- add Reported-by: kernel test robot <lkp@intel.com>
+
+Changes since v3:
+
+1. addressing comments from Robin Murphy:
+- add a prepare patch to define pci id in linux/pci_ids.h
+- remove unnecessary 64BIT dependency
+- fix DWC_PCIE_PER_EVENT_OFF/ON macro
+- remove dwc_pcie_pmu struct and move all its fileds into dwc_pcie_rp_info
+- remove unnecessary format field show
+- use sysfs_emit() instead of all the assorted sprintf() and snprintf() calls.
+- remove unnecessary spaces and remove unnecessary cast to follow event show convention
+- remove pcie_pmu_event_attr_is_visible
+- fix a refcout leak on error branch when walk pci device in for_each_pci_dev
+- remove bdf field from dwc_pcie_rp_info and calculate it at runtime
+- finish all the checks before allocating rp_info to avoid hanging wasted memory
+- remove some unused fields
+- warp out control register configuration from sub function to .add()
+- make function return type with a proper signature
+- fix lane event count enable by clear DWC_PCIE_CNT_ENABLE field first
+- pass rp_info directly to the read_*_counter helpers and in start, stop and add callbacks
+- move event type validtion into .event_init()
+- use is_sampling_event() to be consistent with everything else of pmu drivers
+- remove unnecessary dev_err message in .event_init()
+- return EINVAL instead EOPNOTSUPP for not a valid event 
+- finish all the checks before start modifying the event
+- fix sibling event check by comparing event->pmu with sibling->pmu
+- probe PMU for each rootport independently
+- use .update() as .read() directly
+- remove dynamically generating symbolic name of lane event
+- redefine static symbolic name of lane event and leave lane filed to user
+- add CPU hotplug support
+
+2. addressing comments from Baolin:
+- add a mask to avoid possible overflow
+
+Changes since v2 addressing comments from Baolin:
+- remove redundant macro definitions
+- use dev_err to print error message
+- change pmu_is_register to boolean
+- use PLATFORM_DEVID_NONE macro
+- fix module author format
+
+Changes since v1:
+
+1. address comments from Jonathan:
+- drop marco for PMU name and VSEC version
+- simplify code with PCI standard marco
+- simplify code with FIELD_PREP()/FIELD_GET() to replace shift marco
+- name register filed with single _ instead double
+- wrap dwc_pcie_pmu_{write}_dword out and drop meaningless snaity check 
+- check vendor id while matching vesc with pci_find_vsec_capability()
+- remove RP_NUM_MAX and use a list to organize PMU devices for rootports
+- replace DWC_PCIE_CREATE_BDF with standard PCI_DEVID
+- comments on riping register together
+
+2. address comments from Bjorn:
+- rename DWC_PCIE_VSEC_ID to DWC_PCIE_VSEC_RAS_DES_ID
+- rename cap_pos to ras_des
+- simplify declare of device_attribute with DEVICE_ATTR_RO
+- simplify code with PCI standard macro and API like pcie_get_width_cap()
+- fix some code style problem and typo
+- drop meaningless snaity check of container_of
+
+3. address comments from Yicong:
+- use sysfs_emit() to replace sprintf()
+- simplify iteration of pci device with for_each_pci_dev
+- pick preferred CPUs on a near die and add comments
+- unregister PMU drivers only for failed ones
+- log on behalf PMU device and give more hint
+- fix some code style problem
+
+(Thanks for all comments and they are very valuable to me)
+
+This patchset adds the PCIe Performance Monitoring Unit (PMU) driver support
+for T-Head Yitian 710 SoC chip. Yitian 710 is based on the Synopsys PCI Express
+Core controller IP which provides statistics feature.
+
+Shuai Xue (5):
+  docs: perf: Add description for Synopsys DesignWare PCIe PMU driver
+  PCI: Add Alibaba Vendor ID to linux/pci_ids.h
+  PCI: Move pci_clear_and_set_dword() helper to PCI header
+  drivers/perf: add DesignWare PCIe PMU driver
+  MAINTAINERS: add maintainers for DesignWare PCIe PMU driver
+
+ .../admin-guide/perf/dwc_pcie_pmu.rst         |  94 +++
+ Documentation/admin-guide/perf/index.rst      |   1 +
+ MAINTAINERS                                   |   7 +
+ drivers/infiniband/hw/erdma/erdma_hw.h        |   2 -
+ drivers/pci/access.c                          |  12 +
+ drivers/pci/pcie/aspm.c                       |  65 +-
+ drivers/perf/Kconfig                          |   7 +
+ drivers/perf/Makefile                         |   1 +
+ drivers/perf/dwc_pcie_pmu.c                   | 792 ++++++++++++++++++
+ include/linux/pci.h                           |   2 +
+ include/linux/pci_ids.h                       |   2 +
+ 11 files changed, 948 insertions(+), 37 deletions(-)
+ create mode 100644 Documentation/admin-guide/perf/dwc_pcie_pmu.rst
+ create mode 100644 drivers/perf/dwc_pcie_pmu.c
+
+-- 
+2.39.3
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76B18C61D88
+	for <linux-kernel@archiver.kernel.org>; Tue, 21 Nov 2023 01:34:18 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S232907AbjKUBeS (ORCPT <rfc822;linux-kernel@archiver.kernel.org>);
+        Mon, 20 Nov 2023 20:34:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50146 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232797AbjKUBeQ (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Mon, 20 Nov 2023 20:34:16 -0500
+Received: from out30-99.freemail.mail.aliyun.com (out30-99.freemail.mail.aliyun.com [115.124.30.99])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78168BC;
+        Mon, 20 Nov 2023 17:34:12 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R161e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046060;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=17;SR=0;TI=SMTPD_---0VwqXEgl_1700530449;
+Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VwqXEgl_1700530449)
+          by smtp.aliyun-inc.com;
+          Tue, 21 Nov 2023 09:34:10 +0800
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com
+Cc: chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, xueshuai@linux.alibaba.com,
+        renyu.zj@linux.alibaba.com
+Subject: [PATCH v11 1/5] docs: perf: Add description for Synopsys DesignWare PCIe PMU driver
+Date: Tue, 21 Nov 2023 09:33:56 +0800
+Message-Id: <20231121013400.18367-2-xueshuai@linux.alibaba.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Alibaba's T-Head Yitan 710 SoC includes Synopsys' DesignWare Core PCIe
+controller which implements PMU for performance and functional debugging to
+facilitate system maintenance.
+
+Document it to provide guidance on how to use it.
+
+Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Yicong Yang <yangyicong@hisilicon.com>
+Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+---
+ .../admin-guide/perf/dwc_pcie_pmu.rst         | 94 +++++++++++++++++++
+ Documentation/admin-guide/perf/index.rst      |  1 +
+ 2 files changed, 95 insertions(+)
+ create mode 100644 Documentation/admin-guide/perf/dwc_pcie_pmu.rst
+
+diff --git a/Documentation/admin-guide/perf/dwc_pcie_pmu.rst b/Documentation/admin-guide/perf/dwc_pcie_pmu.rst
+new file mode 100644
+index 000000000000..d47cd229d710
+--- /dev/null
++++ b/Documentation/admin-guide/perf/dwc_pcie_pmu.rst
+@@ -0,0 +1,94 @@
++======================================================================
++Synopsys DesignWare Cores (DWC) PCIe Performance Monitoring Unit (PMU)
++======================================================================
++
++DesignWare Cores (DWC) PCIe PMU
++===============================
++
++The PMU is a PCIe configuration space register block provided by each PCIe Root
++Port in a Vendor-Specific Extended Capability named RAS D.E.S (Debug, Error
++injection, and Statistics).
++
++As the name indicates, the RAS DES capability supports system level
++debugging, AER error injection, and collection of statistics. To facilitate
++collection of statistics, Synopsys DesignWare Cores PCIe controller
++provides the following two features:
++
++- one 64-bit counter for Time Based Analysis (RX/TX data throughput and
++  time spent in each low-power LTSSM state) and
++- one 32-bit counter for Event Counting (error and non-error events for
++  a specified lane)
++
++Note: There is no interrupt for counter overflow.
++
++Time Based Analysis
++-------------------
++
++Using this feature you can obtain information regarding RX/TX data
++throughput and time spent in each low-power LTSSM state by the controller.
++The PMU measures data in two categories:
++
++- Group#0: Percentage of time the controller stays in LTSSM states.
++- Group#1: Amount of data processed (Units of 16 bytes).
++
++Lane Event counters
++-------------------
++
++Using this feature you can obtain Error and Non-Error information in
++specific lane by the controller. The PMU event is selected by all of:
++
++- Group i
++- Event j within the Group i
++- Lane k
++
++Some of the events only exist for specific configurations.
++
++DesignWare Cores (DWC) PCIe PMU Driver
++=======================================
++
++This driver adds PMU devices for each PCIe Root Port named based on the BDF of
++the Root Port. For example,
++
++    30:03.0 PCI bridge: Device 1ded:8000 (rev 01)
++
++the PMU device name for this Root Port is dwc_rootport_3018.
++
++The DWC PCIe PMU driver registers a perf PMU driver, which provides
++description of available events and configuration options in sysfs, see
++/sys/bus/event_source/devices/dwc_rootport_{bdf}.
++
++The "format" directory describes format of the config fields of the
++perf_event_attr structure. The "events" directory provides configuration
++templates for all documented events.  For example,
++"Rx_PCIe_TLP_Data_Payload" is an equivalent of "eventid=0x22,type=0x1".
++
++The "perf list" command shall list the available events from sysfs, e.g.::
++
++    $# perf list | grep dwc_rootport
++    <...>
++    dwc_rootport_3018/Rx_PCIe_TLP_Data_Payload/        [Kernel PMU event]
++    <...>
++    dwc_rootport_3018/rx_memory_read,lane=?/               [Kernel PMU event]
++
++Time Based Analysis Event Usage
++-------------------------------
++
++Example usage of counting PCIe RX TLP data payload (Units of bytes)::
++
++    $# perf stat -a -e dwc_rootport_3018/Rx_PCIe_TLP_Data_Payload/
++
++The average RX/TX bandwidth can be calculated using the following formula:
++
++    PCIe RX Bandwidth = Rx_PCIe_TLP_Data_Payload / Measure_Time_Window
++    PCIe TX Bandwidth = Tx_PCIe_TLP_Data_Payload / Measure_Time_Window
++
++Lane Event Usage
++-------------------------------
++
++Each lane has the same event set and to avoid generating a list of hundreds
++of events, the user need to specify the lane ID explicitly, e.g.::
++
++    $# perf stat -a -e dwc_rootport_3018/rx_memory_read,lane=4/
++
++The driver does not support sampling, therefore "perf record" will not
++work. Per-task (without "-a") perf sessions are not supported.
+diff --git a/Documentation/admin-guide/perf/index.rst b/Documentation/admin-guide/perf/index.rst
+index f60be04e4e33..6bc7739fddb5 100644
+--- a/Documentation/admin-guide/perf/index.rst
++++ b/Documentation/admin-guide/perf/index.rst
+@@ -19,6 +19,7 @@ Performance monitor support
+    arm_dsu_pmu
+    thunderx2-pmu
+    alibaba_pmu
++   dwc_pcie_pmu
+    nvidia-pmu
+    meson-ddr-pmu
+    cxl
+-- 
+2.39.3
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5DA4C61D88
+	for <linux-kernel@archiver.kernel.org>; Tue, 21 Nov 2023 01:34:21 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S232993AbjKUBeW (ORCPT <rfc822;linux-kernel@archiver.kernel.org>);
+        Mon, 20 Nov 2023 20:34:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50154 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229490AbjKUBeR (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Mon, 20 Nov 2023 20:34:17 -0500
+Received: from out30-133.freemail.mail.aliyun.com (out30-133.freemail.mail.aliyun.com [115.124.30.133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16239A2;
+        Mon, 20 Nov 2023 17:34:13 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R111e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045170;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=17;SR=0;TI=SMTPD_---0VwqXEh._1700530450;
+Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VwqXEh._1700530450)
+          by smtp.aliyun-inc.com;
+          Tue, 21 Nov 2023 09:34:11 +0800
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com
+Cc: chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, xueshuai@linux.alibaba.com,
+        renyu.zj@linux.alibaba.com
+Subject: [PATCH v11 2/5] PCI: Add Alibaba Vendor ID to linux/pci_ids.h
+Date: Tue, 21 Nov 2023 09:33:57 +0800
+Message-Id: <20231121013400.18367-3-xueshuai@linux.alibaba.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+The Alibaba Vendor ID (0x1ded) is now used by Alibaba elasticRDMA ("erdma")
+and will be shared with the upcoming PCIe PMU ("dwc_pcie_pmu"). Move the
+Vendor ID to linux/pci_ids.h so that it can shared by several drivers
+later.
+
+Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>	# pci_ids.h
+Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+---
+ drivers/infiniband/hw/erdma/erdma_hw.h | 2 --
+ include/linux/pci_ids.h                | 2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/infiniband/hw/erdma/erdma_hw.h b/drivers/infiniband/hw/erdma/erdma_hw.h
+index 9d316fdc6f9a..a155519a862f 100644
+--- a/drivers/infiniband/hw/erdma/erdma_hw.h
++++ b/drivers/infiniband/hw/erdma/erdma_hw.h
+@@ -11,8 +11,6 @@
+ #include <linux/types.h>
+ 
+ /* PCIe device related definition. */
+-#define PCI_VENDOR_ID_ALIBABA 0x1ded
+-
+ #define ERDMA_PCI_WIDTH 64
+ #define ERDMA_FUNC_BAR 0
+ #define ERDMA_MISX_BAR 2
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 5fb3d4c393a9..d8760daf9e5a 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2601,6 +2601,8 @@
+ #define PCI_VENDOR_ID_TEKRAM		0x1de1
+ #define PCI_DEVICE_ID_TEKRAM_DC290	0xdc29
+ 
++#define PCI_VENDOR_ID_ALIBABA		0x1ded
++
+ #define PCI_VENDOR_ID_TEHUTI		0x1fc9
+ #define PCI_DEVICE_ID_TEHUTI_3009	0x3009
+ #define PCI_DEVICE_ID_TEHUTI_3010	0x3010
+-- 
+2.39.3
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A37F4C61D88
+	for <linux-kernel@archiver.kernel.org>; Tue, 21 Nov 2023 01:34:26 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S233136AbjKUBe1 (ORCPT <rfc822;linux-kernel@archiver.kernel.org>);
+        Mon, 20 Nov 2023 20:34:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50158 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232926AbjKUBeT (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Mon, 20 Nov 2023 20:34:19 -0500
+Received: from out30-130.freemail.mail.aliyun.com (out30-130.freemail.mail.aliyun.com [115.124.30.130])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A3E3C3;
+        Mon, 20 Nov 2023 17:34:15 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R491e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046060;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=17;SR=0;TI=SMTPD_---0VwqXEhG_1700530452;
+Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VwqXEhG_1700530452)
+          by smtp.aliyun-inc.com;
+          Tue, 21 Nov 2023 09:34:13 +0800
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com
+Cc: chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, xueshuai@linux.alibaba.com,
+        renyu.zj@linux.alibaba.com
+Subject: [PATCH v11 3/5] PCI: Move pci_clear_and_set_dword() helper to PCI header
+Date: Tue, 21 Nov 2023 09:33:58 +0800
+Message-Id: <20231121013400.18367-4-xueshuai@linux.alibaba.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+The clear and set pattern is commonly used for accessing PCI config,
+move the helper pci_clear_and_set_dword() from aspm.c into PCI header.
+In addition, rename to pci_clear_and_set_config_dword() to retain the
+"config" information and match the other accessors.
+
+No functional change intended.
+
+Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+---
+ drivers/pci/access.c    | 12 ++++++++
+ drivers/pci/pcie/aspm.c | 65 +++++++++++++++++++----------------------
+ include/linux/pci.h     |  2 ++
+ 3 files changed, 44 insertions(+), 35 deletions(-)
+
+diff --git a/drivers/pci/access.c b/drivers/pci/access.c
+index 6554a2e89d36..6449056b57dd 100644
+--- a/drivers/pci/access.c
++++ b/drivers/pci/access.c
+@@ -598,3 +598,15 @@ int pci_write_config_dword(const struct pci_dev *dev, int where,
+ 	return pci_bus_write_config_dword(dev->bus, dev->devfn, where, val);
+ }
+ EXPORT_SYMBOL(pci_write_config_dword);
++
++void pci_clear_and_set_config_dword(const struct pci_dev *dev, int pos,
++				    u32 clear, u32 set)
++{
++	u32 val;
++
++	pci_read_config_dword(dev, pos, &val);
++	val &= ~clear;
++	val |= set;
++	pci_write_config_dword(dev, pos, val);
++}
++EXPORT_SYMBOL(pci_clear_and_set_config_dword);
+diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
+index 1bf630059264..9dbc4d3c2591 100644
+--- a/drivers/pci/pcie/aspm.c
++++ b/drivers/pci/pcie/aspm.c
+@@ -423,17 +423,6 @@ static void pcie_aspm_check_latency(struct pci_dev *endpoint)
+ 	}
+ }
+ 
+-static void pci_clear_and_set_dword(struct pci_dev *pdev, int pos,
+-				    u32 clear, u32 set)
+-{
+-	u32 val;
+-
+-	pci_read_config_dword(pdev, pos, &val);
+-	val &= ~clear;
+-	val |= set;
+-	pci_write_config_dword(pdev, pos, val);
+-}
+-
+ /* Calculate L1.2 PM substate timing parameters */
+ static void aspm_calc_l12_info(struct pcie_link_state *link,
+ 				u32 parent_l1ss_cap, u32 child_l1ss_cap)
+@@ -494,10 +483,12 @@ static void aspm_calc_l12_info(struct pcie_link_state *link,
+ 	cl1_2_enables = cctl1 & PCI_L1SS_CTL1_L1_2_MASK;
+ 
+ 	if (pl1_2_enables || cl1_2_enables) {
+-		pci_clear_and_set_dword(child, child->l1ss + PCI_L1SS_CTL1,
+-					PCI_L1SS_CTL1_L1_2_MASK, 0);
+-		pci_clear_and_set_dword(parent, parent->l1ss + PCI_L1SS_CTL1,
+-					PCI_L1SS_CTL1_L1_2_MASK, 0);
++		pci_clear_and_set_config_dword(child,
++					       child->l1ss + PCI_L1SS_CTL1,
++					       PCI_L1SS_CTL1_L1_2_MASK, 0);
++		pci_clear_and_set_config_dword(parent,
++					       parent->l1ss + PCI_L1SS_CTL1,
++					       PCI_L1SS_CTL1_L1_2_MASK, 0);
+ 	}
+ 
+ 	/* Program T_POWER_ON times in both ports */
+@@ -505,22 +496,26 @@ static void aspm_calc_l12_info(struct pcie_link_state *link,
+ 	pci_write_config_dword(child, child->l1ss + PCI_L1SS_CTL2, ctl2);
+ 
+ 	/* Program Common_Mode_Restore_Time in upstream device */
+-	pci_clear_and_set_dword(parent, parent->l1ss + PCI_L1SS_CTL1,
+-				PCI_L1SS_CTL1_CM_RESTORE_TIME, ctl1);
++	pci_clear_and_set_config_dword(parent, parent->l1ss + PCI_L1SS_CTL1,
++				       PCI_L1SS_CTL1_CM_RESTORE_TIME, ctl1);
+ 
+ 	/* Program LTR_L1.2_THRESHOLD time in both ports */
+-	pci_clear_and_set_dword(parent,	parent->l1ss + PCI_L1SS_CTL1,
+-				PCI_L1SS_CTL1_LTR_L12_TH_VALUE |
+-				PCI_L1SS_CTL1_LTR_L12_TH_SCALE, ctl1);
+-	pci_clear_and_set_dword(child, child->l1ss + PCI_L1SS_CTL1,
+-				PCI_L1SS_CTL1_LTR_L12_TH_VALUE |
+-				PCI_L1SS_CTL1_LTR_L12_TH_SCALE, ctl1);
++	pci_clear_and_set_config_dword(parent, parent->l1ss + PCI_L1SS_CTL1,
++				       PCI_L1SS_CTL1_LTR_L12_TH_VALUE |
++				       PCI_L1SS_CTL1_LTR_L12_TH_SCALE,
++				       ctl1);
++	pci_clear_and_set_config_dword(child, child->l1ss + PCI_L1SS_CTL1,
++				       PCI_L1SS_CTL1_LTR_L12_TH_VALUE |
++				       PCI_L1SS_CTL1_LTR_L12_TH_SCALE,
++				       ctl1);
+ 
+ 	if (pl1_2_enables || cl1_2_enables) {
+-		pci_clear_and_set_dword(parent, parent->l1ss + PCI_L1SS_CTL1, 0,
+-					pl1_2_enables);
+-		pci_clear_and_set_dword(child, child->l1ss + PCI_L1SS_CTL1, 0,
+-					cl1_2_enables);
++		pci_clear_and_set_config_dword(parent,
++					       parent->l1ss + PCI_L1SS_CTL1, 0,
++					       pl1_2_enables);
++		pci_clear_and_set_config_dword(child,
++					       child->l1ss + PCI_L1SS_CTL1, 0,
++					       cl1_2_enables);
+ 	}
+ }
+ 
+@@ -680,10 +675,10 @@ static void pcie_config_aspm_l1ss(struct pcie_link_state *link, u32 state)
+ 	 */
+ 
+ 	/* Disable all L1 substates */
+-	pci_clear_and_set_dword(child, child->l1ss + PCI_L1SS_CTL1,
+-				PCI_L1SS_CTL1_L1SS_MASK, 0);
+-	pci_clear_and_set_dword(parent, parent->l1ss + PCI_L1SS_CTL1,
+-				PCI_L1SS_CTL1_L1SS_MASK, 0);
++	pci_clear_and_set_config_dword(child, child->l1ss + PCI_L1SS_CTL1,
++				       PCI_L1SS_CTL1_L1SS_MASK, 0);
++	pci_clear_and_set_config_dword(parent, parent->l1ss + PCI_L1SS_CTL1,
++				       PCI_L1SS_CTL1_L1SS_MASK, 0);
+ 	/*
+ 	 * If needed, disable L1, and it gets enabled later
+ 	 * in pcie_config_aspm_link().
+@@ -706,10 +701,10 @@ static void pcie_config_aspm_l1ss(struct pcie_link_state *link, u32 state)
+ 		val |= PCI_L1SS_CTL1_PCIPM_L1_2;
+ 
+ 	/* Enable what we need to enable */
+-	pci_clear_and_set_dword(parent, parent->l1ss + PCI_L1SS_CTL1,
+-				PCI_L1SS_CTL1_L1SS_MASK, val);
+-	pci_clear_and_set_dword(child, child->l1ss + PCI_L1SS_CTL1,
+-				PCI_L1SS_CTL1_L1SS_MASK, val);
++	pci_clear_and_set_config_dword(parent, parent->l1ss + PCI_L1SS_CTL1,
++				       PCI_L1SS_CTL1_L1SS_MASK, val);
++	pci_clear_and_set_config_dword(child, child->l1ss + PCI_L1SS_CTL1,
++				       PCI_L1SS_CTL1_L1SS_MASK, val);
+ }
+ 
+ static void pcie_config_aspm_dev(struct pci_dev *pdev, u32 val)
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 8c7c2c3c6c65..72b0fb82a820 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1213,6 +1213,8 @@ int pci_read_config_dword(const struct pci_dev *dev, int where, u32 *val);
+ int pci_write_config_byte(const struct pci_dev *dev, int where, u8 val);
+ int pci_write_config_word(const struct pci_dev *dev, int where, u16 val);
+ int pci_write_config_dword(const struct pci_dev *dev, int where, u32 val);
++void pci_clear_and_set_config_dword(const struct pci_dev *dev, int pos,
++				    u32 clear, u32 set);
+ 
+ int pcie_capability_read_word(struct pci_dev *dev, int pos, u16 *val);
+ int pcie_capability_read_dword(struct pci_dev *dev, int pos, u32 *val);
+-- 
+2.39.3
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4C21C61D88
+	for <linux-kernel@archiver.kernel.org>; Tue, 21 Nov 2023 01:34:29 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S233109AbjKUBea (ORCPT <rfc822;linux-kernel@archiver.kernel.org>);
+        Mon, 20 Nov 2023 20:34:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58356 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229490AbjKUBeX (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Mon, 20 Nov 2023 20:34:23 -0500
+Received: from out30-131.freemail.mail.aliyun.com (out30-131.freemail.mail.aliyun.com [115.124.30.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0F81D8;
+        Mon, 20 Nov 2023 17:34:17 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R101e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046060;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=17;SR=0;TI=SMTPD_---0VwqXEhp_1700530453;
+Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VwqXEhp_1700530453)
+          by smtp.aliyun-inc.com;
+          Tue, 21 Nov 2023 09:34:14 +0800
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com
+Cc: chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, xueshuai@linux.alibaba.com,
+        renyu.zj@linux.alibaba.com
+Subject: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+Date: Tue, 21 Nov 2023 09:33:59 +0800
+Message-Id: <20231121013400.18367-5-xueshuai@linux.alibaba.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+This commit adds the PCIe Performance Monitoring Unit (PMU) driver support
+for T-Head Yitian SoC chip. Yitian is based on the Synopsys PCI Express
+Core controller IP which provides statistics feature. The PMU is a PCIe
+configuration space register block provided by each PCIe Root Port in a
+Vendor-Specific Extended Capability named RAS D.E.S (Debug, Error
+injection, and Statistics).
+
+To facilitate collection of statistics the controller provides the
+following two features for each Root Port:
+
+- one 64-bit counter for Time Based Analysis (RX/TX data throughput and
+  time spent in each low-power LTSSM state) and
+- one 32-bit counter for Event Counting (error and non-error events for
+  a specified lane)
+
+Note: There is no interrupt for counter overflow.
+
+This driver adds PMU devices for each PCIe Root Port. And the PMU device is
+named based the BDF of Root Port. For example,
+
+    30:03.0 PCI bridge: Device 1ded:8000 (rev 01)
+
+the PMU device name for this Root Port is dwc_rootport_3018.
+
+Example usage of counting PCIe RX TLP data payload (Units of bytes)::
+
+    $# perf stat -a -e dwc_rootport_3018/Rx_PCIe_TLP_Data_Payload/
+
+average RX bandwidth can be calculated like this:
+
+    PCIe TX Bandwidth = Rx_PCIe_TLP_Data_Payload / Measure_Time_Window
+
+Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Yicong Yang <yangyicong@hisilicon.com>
+Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+---
+ drivers/perf/Kconfig        |   7 +
+ drivers/perf/Makefile       |   1 +
+ drivers/perf/dwc_pcie_pmu.c | 792 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 800 insertions(+)
+ create mode 100644 drivers/perf/dwc_pcie_pmu.c
+
+diff --git a/drivers/perf/Kconfig b/drivers/perf/Kconfig
+index 273d67ecf6d2..ec6e0d9194a1 100644
+--- a/drivers/perf/Kconfig
++++ b/drivers/perf/Kconfig
+@@ -217,6 +217,13 @@ config MARVELL_CN10K_DDR_PMU
+ 	  Enable perf support for Marvell DDR Performance monitoring
+ 	  event on CN10K platform.
+ 
++config DWC_PCIE_PMU
++	tristate "Synopsys DesignWare PCIe PMU"
++	depends on PCI
++	help
++	  Enable perf support for Synopsys DesignWare PCIe PMU Performance
++	  monitoring event on platform including the Alibaba Yitian 710.
++
+ source "drivers/perf/arm_cspmu/Kconfig"
+ 
+ source "drivers/perf/amlogic/Kconfig"
+diff --git a/drivers/perf/Makefile b/drivers/perf/Makefile
+index 16b3ec4db916..a06338e3401c 100644
+--- a/drivers/perf/Makefile
++++ b/drivers/perf/Makefile
+@@ -23,6 +23,7 @@ obj-$(CONFIG_MARVELL_CN10K_TAD_PMU) += marvell_cn10k_tad_pmu.o
+ obj-$(CONFIG_MARVELL_CN10K_DDR_PMU) += marvell_cn10k_ddr_pmu.o
+ obj-$(CONFIG_APPLE_M1_CPU_PMU) += apple_m1_cpu_pmu.o
+ obj-$(CONFIG_ALIBABA_UNCORE_DRW_PMU) += alibaba_uncore_drw_pmu.o
++obj-$(CONFIG_DWC_PCIE_PMU) += dwc_pcie_pmu.o
+ obj-$(CONFIG_ARM_CORESIGHT_PMU_ARCH_SYSTEM_PMU) += arm_cspmu/
+ obj-$(CONFIG_MESON_DDR_PMU) += amlogic/
+ obj-$(CONFIG_CXL_PMU) += cxl_pmu.o
+diff --git a/drivers/perf/dwc_pcie_pmu.c b/drivers/perf/dwc_pcie_pmu.c
+new file mode 100644
+index 000000000000..f937d13e4cab
+--- /dev/null
++++ b/drivers/perf/dwc_pcie_pmu.c
+@@ -0,0 +1,792 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Synopsys DesignWare PCIe PMU driver
++ *
++ * Copyright (C) 2021-2023 Alibaba Inc.
++ */
++
++#include <linux/bitfield.h>
++#include <linux/bitops.h>
++#include <linux/cpuhotplug.h>
++#include <linux/cpumask.h>
++#include <linux/device.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/list.h>
++#include <linux/perf_event.h>
++#include <linux/pci.h>
++#include <linux/platform_device.h>
++#include <linux/smp.h>
++#include <linux/sysfs.h>
++#include <linux/types.h>
++
++#define DWC_PCIE_VSEC_RAS_DES_ID		0x02
++#define DWC_PCIE_EVENT_CNT_CTL			0x8
++
++/*
++ * Event Counter Data Select includes two parts:
++ * - 27-24: Group number(4-bit: 0..0x7)
++ * - 23-16: Event number(8-bit: 0..0x13) within the Group
++ *
++ * Put them together as in TRM.
++ */
++#define DWC_PCIE_CNT_EVENT_SEL			GENMASK(27, 16)
++#define DWC_PCIE_CNT_LANE_SEL			GENMASK(11, 8)
++#define DWC_PCIE_CNT_STATUS			BIT(7)
++#define DWC_PCIE_CNT_ENABLE			GENMASK(4, 2)
++#define DWC_PCIE_PER_EVENT_OFF			0x1
++#define DWC_PCIE_PER_EVENT_ON			0x3
++#define DWC_PCIE_EVENT_CLEAR			GENMASK(1, 0)
++#define DWC_PCIE_EVENT_PER_CLEAR		0x1
++
++#define DWC_PCIE_EVENT_CNT_DATA			0xC
++
++#define DWC_PCIE_TIME_BASED_ANAL_CTL		0x10
++#define DWC_PCIE_TIME_BASED_REPORT_SEL		GENMASK(31, 24)
++#define DWC_PCIE_TIME_BASED_DURATION_SEL	GENMASK(15, 8)
++#define DWC_PCIE_DURATION_MANUAL_CTL		0x0
++#define DWC_PCIE_DURATION_1MS			0x1
++#define DWC_PCIE_DURATION_10MS			0x2
++#define DWC_PCIE_DURATION_100MS			0x3
++#define DWC_PCIE_DURATION_1S			0x4
++#define DWC_PCIE_DURATION_2S			0x5
++#define DWC_PCIE_DURATION_4S			0x6
++#define DWC_PCIE_DURATION_4US			0xFF
++#define DWC_PCIE_TIME_BASED_TIMER_START		BIT(0)
++#define DWC_PCIE_TIME_BASED_CNT_ENABLE		0x1
++
++#define DWC_PCIE_TIME_BASED_ANAL_DATA_REG_LOW	0x14
++#define DWC_PCIE_TIME_BASED_ANAL_DATA_REG_HIGH	0x18
++
++/* Event attributes */
++#define DWC_PCIE_CONFIG_EVENTID			GENMASK(15, 0)
++#define DWC_PCIE_CONFIG_TYPE			GENMASK(19, 16)
++#define DWC_PCIE_CONFIG_LANE			GENMASK(27, 20)
++
++#define DWC_PCIE_EVENT_ID(event)	FIELD_GET(DWC_PCIE_CONFIG_EVENTID, (event)->attr.config)
++#define DWC_PCIE_EVENT_TYPE(event)	FIELD_GET(DWC_PCIE_CONFIG_TYPE, (event)->attr.config)
++#define DWC_PCIE_EVENT_LANE(event)	FIELD_GET(DWC_PCIE_CONFIG_LANE, (event)->attr.config)
++
++enum dwc_pcie_event_type {
++	DWC_PCIE_TIME_BASE_EVENT,
++	DWC_PCIE_LANE_EVENT,
++	DWC_PCIE_EVENT_TYPE_MAX,
++};
++
++#define DWC_PCIE_LANE_EVENT_MAX_PERIOD		GENMASK_ULL(31, 0)
++#define DWC_PCIE_MAX_PERIOD			GENMASK_ULL(63, 0)
++
++struct dwc_pcie_pmu {
++	struct pmu		pmu;
++	struct pci_dev		*pdev;		/* Root Port device */
++	u16			ras_des_offset;
++	u32			nr_lanes;
++
++	struct list_head	pmu_node;
++	struct hlist_node	cpuhp_node;
++	struct perf_event	*event[DWC_PCIE_EVENT_TYPE_MAX];
++	int			on_cpu;
++};
++
++#define to_dwc_pcie_pmu(p) (container_of(p, struct dwc_pcie_pmu, pmu))
++
++static int dwc_pcie_pmu_hp_state;
++static struct list_head dwc_pcie_dev_info_head =
++				LIST_HEAD_INIT(dwc_pcie_dev_info_head);
++static bool notify;
++
++struct dwc_pcie_dev_info {
++	struct platform_device *plat_dev;
++	struct pci_dev *pdev;
++	struct list_head dev_node;
++};
++
++struct dwc_pcie_vendor_id {
++	int vendor_id;
++};
++
++static const struct dwc_pcie_vendor_id dwc_pcie_vendor_ids[] = {
++	{.vendor_id = PCI_VENDOR_ID_ALIBABA },
++	{} /* terminator */
++};
++
++static ssize_t cpumask_show(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf)
++{
++	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(dev_get_drvdata(dev));
++
++	return cpumap_print_to_pagebuf(true, buf, cpumask_of(pcie_pmu->on_cpu));
++}
++static DEVICE_ATTR_RO(cpumask);
++
++static struct attribute *dwc_pcie_pmu_cpumask_attrs[] = {
++	&dev_attr_cpumask.attr,
++	NULL
++};
++
++static struct attribute_group dwc_pcie_cpumask_attr_group = {
++	.attrs = dwc_pcie_pmu_cpumask_attrs,
++};
++
++struct dwc_pcie_format_attr {
++	struct device_attribute attr;
++	u64 field;
++	int config;
++};
++
++PMU_FORMAT_ATTR(eventid, "config:0-15");
++PMU_FORMAT_ATTR(type, "config:16-19");
++PMU_FORMAT_ATTR(lane, "config:20-27");
++
++static struct attribute *dwc_pcie_format_attrs[] = {
++	&format_attr_type.attr,
++	&format_attr_eventid.attr,
++	&format_attr_lane.attr,
++	NULL,
++};
++
++static struct attribute_group dwc_pcie_format_attrs_group = {
++	.name = "format",
++	.attrs = dwc_pcie_format_attrs,
++};
++
++struct dwc_pcie_event_attr {
++	struct device_attribute attr;
++	enum dwc_pcie_event_type type;
++	u16 eventid;
++	u8 lane;
++};
++
++static ssize_t dwc_pcie_event_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct dwc_pcie_event_attr *eattr;
++
++	eattr = container_of(attr, typeof(*eattr), attr);
++
++	if (eattr->type == DWC_PCIE_LANE_EVENT)
++		return sysfs_emit(buf, "eventid=0x%x,type=0x%x,lane=?\n",
++				  eattr->eventid, eattr->type);
++	else if (eattr->type == DWC_PCIE_TIME_BASE_EVENT)
++		return sysfs_emit(buf, "eventid=0x%x,type=0x%x\n",
++				  eattr->eventid, eattr->type);
++
++	return 0;
++}
++
++#define DWC_PCIE_EVENT_ATTR(_name, _type, _eventid, _lane)		\
++	(&((struct dwc_pcie_event_attr[]) {{				\
++		.attr = __ATTR(_name, 0444, dwc_pcie_event_show, NULL),	\
++		.type = _type,						\
++		.eventid = _eventid,					\
++		.lane = _lane,						\
++	}})[0].attr.attr)
++
++#define DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(_name, _eventid)		\
++	DWC_PCIE_EVENT_ATTR(_name, DWC_PCIE_TIME_BASE_EVENT, _eventid, 0)
++#define DWC_PCIE_PMU_LANE_EVENT_ATTR(_name, _eventid)			\
++	DWC_PCIE_EVENT_ATTR(_name, DWC_PCIE_LANE_EVENT, _eventid, 0)
++
++static struct attribute *dwc_pcie_pmu_time_event_attrs[] = {
++	/* Group #0 */
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(one_cycle, 0x00),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(TX_L0S, 0x01),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(RX_L0S, 0x02),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(L0, 0x03),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(L1, 0x04),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(L1_1, 0x05),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(L1_2, 0x06),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(CFG_RCVRY, 0x07),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(TX_RX_L0S, 0x08),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(L1_AUX, 0x09),
++
++	/* Group #1 */
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(Tx_PCIe_TLP_Data_Payload, 0x20),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(Rx_PCIe_TLP_Data_Payload, 0x21),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(Tx_CCIX_TLP_Data_Payload, 0x22),
++	DWC_PCIE_PMU_TIME_BASE_EVENT_ATTR(Rx_CCIX_TLP_Data_Payload, 0x23),
++
++	/*
++	 * Leave it to the user to specify the lane ID to avoid generating
++	 * a list of hundreds of events.
++	 */
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_ack_dllp, 0x600),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_update_fc_dllp, 0x601),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_ack_dllp, 0x602),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_update_fc_dllp, 0x603),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_nulified_tlp, 0x604),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_nulified_tlp, 0x605),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_duplicate_tl, 0x606),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_memory_write, 0x700),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_memory_read, 0x701),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_configuration_write, 0x702),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_configuration_read, 0x703),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_io_write, 0x704),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_io_read, 0x705),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_completion_without_data, 0x706),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_completion_with_data, 0x707),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_message_tlp, 0x708),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_atomic, 0x709),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_tlp_with_prefix, 0x70A),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_memory_write, 0x70B),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_memory_read, 0x70C),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_io_write, 0x70F),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_io_read, 0x710),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_completion_without_data, 0x711),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_completion_with_data, 0x712),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_message_tlp, 0x713),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_atomic, 0x714),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_tlp_with_prefix, 0x715),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(tx_ccix_tlp, 0x716),
++	DWC_PCIE_PMU_LANE_EVENT_ATTR(rx_ccix_tlp, 0x717),
++	NULL
++};
++
++static const struct attribute_group dwc_pcie_event_attrs_group = {
++	.name = "events",
++	.attrs = dwc_pcie_pmu_time_event_attrs,
++};
++
++static const struct attribute_group *dwc_pcie_attr_groups[] = {
++	&dwc_pcie_event_attrs_group,
++	&dwc_pcie_format_attrs_group,
++	&dwc_pcie_cpumask_attr_group,
++	NULL
++};
++
++static void dwc_pcie_pmu_lane_event_enable(struct dwc_pcie_pmu *pcie_pmu,
++					   bool enable)
++{
++	struct pci_dev *pdev = pcie_pmu->pdev;
++	u16 ras_des_offset = pcie_pmu->ras_des_offset;
++
++	if (enable)
++		pci_clear_and_set_config_dword(pdev,
++					ras_des_offset + DWC_PCIE_EVENT_CNT_CTL,
++					DWC_PCIE_CNT_ENABLE, DWC_PCIE_PER_EVENT_ON);
++	else
++		pci_clear_and_set_config_dword(pdev,
++					ras_des_offset + DWC_PCIE_EVENT_CNT_CTL,
++					DWC_PCIE_CNT_ENABLE, DWC_PCIE_PER_EVENT_OFF);
++}
++
++static void dwc_pcie_pmu_time_based_event_enable(struct dwc_pcie_pmu *pcie_pmu,
++					  bool enable)
++{
++	struct pci_dev *pdev = pcie_pmu->pdev;
++	u16 ras_des_offset = pcie_pmu->ras_des_offset;
++
++	pci_clear_and_set_config_dword(pdev,
++				       ras_des_offset + DWC_PCIE_TIME_BASED_ANAL_CTL,
++				       DWC_PCIE_TIME_BASED_TIMER_START, enable);
++}
++
++static u64 dwc_pcie_pmu_read_lane_event_counter(struct perf_event *event)
++{
++	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
++	struct pci_dev *pdev = pcie_pmu->pdev;
++	u16 ras_des_offset = pcie_pmu->ras_des_offset;
++	u32 val;
++
++	pci_read_config_dword(pdev, ras_des_offset + DWC_PCIE_EVENT_CNT_DATA, &val);
++
++	return val;
++}
++
++static u64 dwc_pcie_pmu_read_time_based_counter(struct perf_event *event)
++{
++	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
++	struct pci_dev *pdev = pcie_pmu->pdev;
++	int event_id = DWC_PCIE_EVENT_ID(event);
++	u16 ras_des_offset = pcie_pmu->ras_des_offset;
++	u32 lo, hi, ss;
++	u64 val;
++
++	/*
++	 * The 64-bit value of the data counter is spread across two
++	 * registers that are not synchronized. In order to read them
++	 * atomically, ensure that the high 32 bits match before and after
++	 * reading the low 32 bits.
++	 */
++	pci_read_config_dword(pdev,
++		ras_des_offset + DWC_PCIE_TIME_BASED_ANAL_DATA_REG_HIGH, &hi);
++	do {
++		/* snapshot the high 32 bits */
++		ss = hi;
++
++		pci_read_config_dword(
++			pdev, ras_des_offset + DWC_PCIE_TIME_BASED_ANAL_DATA_REG_LOW,
++			&lo);
++		pci_read_config_dword(
++			pdev, ras_des_offset + DWC_PCIE_TIME_BASED_ANAL_DATA_REG_HIGH,
++			&hi);
++	} while (hi != ss);
++
++	val = ((u64)hi << 32) | lo;
++	/*
++	 * The Group#1 event measures the amount of data processed in 16-byte
++	 * units. Simplify the end-user interface by multiplying the counter
++	 * at the point of read.
++	 */
++	if (event_id >= 0x20 && event_id <= 0x23)
++		val *= 16;
++
++	return val;
++}
++
++static void dwc_pcie_pmu_event_update(struct perf_event *event)
++{
++	struct hw_perf_event *hwc = &event->hw;
++	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
++	u64 delta, prev, now;
++
++	do {
++		prev = local64_read(&hwc->prev_count);
++
++		if (type == DWC_PCIE_LANE_EVENT)
++			now = dwc_pcie_pmu_read_lane_event_counter(event);
++		else if (type == DWC_PCIE_TIME_BASE_EVENT)
++			now = dwc_pcie_pmu_read_time_based_counter(event);
++
++	} while (local64_cmpxchg(&hwc->prev_count, prev, now) != prev);
++
++	delta = (now - prev) & DWC_PCIE_MAX_PERIOD;
++	/* 32-bit counter for Lane Event Counting */
++	if (type == DWC_PCIE_LANE_EVENT)
++		delta &= DWC_PCIE_LANE_EVENT_MAX_PERIOD;
++
++	local64_add(delta, &event->count);
++}
++
++static int dwc_pcie_pmu_event_init(struct perf_event *event)
++{
++	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
++	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
++	struct perf_event *sibling;
++	u32 lane;
++
++	if (event->attr.type != event->pmu->type)
++		return -ENOENT;
++
++	/* We don't support sampling */
++	if (is_sampling_event(event))
++		return -EINVAL;
++
++	/* We cannot support task bound events */
++	if (event->cpu < 0 || event->attach_state & PERF_ATTACH_TASK)
++		return -EINVAL;
++
++	if (event->group_leader != event &&
++	    !is_software_event(event->group_leader))
++		return -EINVAL;
++
++	for_each_sibling_event(sibling, event->group_leader) {
++		if (sibling->pmu != event->pmu && !is_software_event(sibling))
++			return -EINVAL;
++	}
++
++	if (type < 0 || type >= DWC_PCIE_EVENT_TYPE_MAX)
++		return -EINVAL;
++
++	if (type == DWC_PCIE_LANE_EVENT) {
++		lane = DWC_PCIE_EVENT_LANE(event);
++		if (lane < 0 || lane >= pcie_pmu->nr_lanes)
++			return -EINVAL;
++	}
++
++	event->cpu = pcie_pmu->on_cpu;
++
++	return 0;
++}
++
++static void dwc_pcie_pmu_event_start(struct perf_event *event, int flags)
++{
++	struct hw_perf_event *hwc = &event->hw;
++	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
++	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
++
++	hwc->state = 0;
++	local64_set(&hwc->prev_count, 0);
++
++	if (type == DWC_PCIE_LANE_EVENT)
++		dwc_pcie_pmu_lane_event_enable(pcie_pmu, true);
++	else if (type == DWC_PCIE_TIME_BASE_EVENT)
++		dwc_pcie_pmu_time_based_event_enable(pcie_pmu, true);
++}
++
++static void dwc_pcie_pmu_event_stop(struct perf_event *event, int flags)
++{
++	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
++	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
++	struct hw_perf_event *hwc = &event->hw;
++
++	if (event->hw.state & PERF_HES_STOPPED)
++		return;
++
++	if (type == DWC_PCIE_LANE_EVENT)
++		dwc_pcie_pmu_lane_event_enable(pcie_pmu, false);
++	else if (type == DWC_PCIE_TIME_BASE_EVENT)
++		dwc_pcie_pmu_time_based_event_enable(pcie_pmu, false);
++
++	dwc_pcie_pmu_event_update(event);
++	hwc->state |= PERF_HES_STOPPED | PERF_HES_UPTODATE;
++}
++
++static int dwc_pcie_pmu_event_add(struct perf_event *event, int flags)
++{
++	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
++	struct pci_dev *pdev = pcie_pmu->pdev;
++	struct hw_perf_event *hwc = &event->hw;
++	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
++	int event_id = DWC_PCIE_EVENT_ID(event);
++	int lane = DWC_PCIE_EVENT_LANE(event);
++	u16 ras_des_offset = pcie_pmu->ras_des_offset;
++	u32 ctrl;
++
++	/* one counter for each type and it is in use */
++	if (pcie_pmu->event[type])
++		return -ENOSPC;
++
++	pcie_pmu->event[type] = event;
++	hwc->state = PERF_HES_STOPPED | PERF_HES_UPTODATE;
++
++	if (type == DWC_PCIE_LANE_EVENT) {
++		/* EVENT_COUNTER_DATA_REG needs clear manually */
++		ctrl = FIELD_PREP(DWC_PCIE_CNT_EVENT_SEL, event_id) |
++			FIELD_PREP(DWC_PCIE_CNT_LANE_SEL, lane) |
++			FIELD_PREP(DWC_PCIE_CNT_ENABLE, DWC_PCIE_PER_EVENT_OFF) |
++			FIELD_PREP(DWC_PCIE_EVENT_CLEAR, DWC_PCIE_EVENT_PER_CLEAR);
++		pci_write_config_dword(pdev, ras_des_offset + DWC_PCIE_EVENT_CNT_CTL,
++				       ctrl);
++	} else if (type == DWC_PCIE_TIME_BASE_EVENT) {
++		/*
++		 * TIME_BASED_ANAL_DATA_REG is a 64 bit register, we can safely
++		 * use it with any manually controlled duration. And it is
++		 * cleared when next measurement starts.
++		 */
++		ctrl = FIELD_PREP(DWC_PCIE_TIME_BASED_REPORT_SEL, event_id) |
++			FIELD_PREP(DWC_PCIE_TIME_BASED_DURATION_SEL,
++				   DWC_PCIE_DURATION_MANUAL_CTL) |
++			DWC_PCIE_TIME_BASED_CNT_ENABLE;
++		pci_write_config_dword(
++			pdev, ras_des_offset + DWC_PCIE_TIME_BASED_ANAL_CTL, ctrl);
++	}
++
++	if (flags & PERF_EF_START)
++		dwc_pcie_pmu_event_start(event, PERF_EF_RELOAD);
++
++	perf_event_update_userpage(event);
++
++	return 0;
++}
++
++static void dwc_pcie_pmu_event_del(struct perf_event *event, int flags)
++{
++	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
++	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
++
++	dwc_pcie_pmu_event_stop(event, flags | PERF_EF_UPDATE);
++	perf_event_update_userpage(event);
++	pcie_pmu->event[type] = NULL;
++}
++
++static void dwc_pcie_pmu_remove_cpuhp_instance(void *hotplug_node)
++{
++	cpuhp_state_remove_instance_nocalls(dwc_pcie_pmu_hp_state, hotplug_node);
++}
++
++/*
++ * Find the binded DES capability device info of a PCI device.
++ * @pdev: The PCI device.
++ */
++static struct dwc_pcie_dev_info *dwc_pcie_find_dev_info(struct pci_dev *pdev)
++{
++	struct dwc_pcie_dev_info *dev_info;
++
++	list_for_each_entry(dev_info, &dwc_pcie_dev_info_head, dev_node)
++		if (dev_info->pdev == pdev)
++			return dev_info;
++
++	return NULL;
++}
++
++static void dwc_pcie_unregister_pmu(void *data)
++{
++	struct dwc_pcie_pmu *pcie_pmu = data;
++
++	perf_pmu_unregister(&pcie_pmu->pmu);
++}
++
++static bool dwc_pcie_match_des_cap(struct pci_dev *pdev)
++{
++	const struct dwc_pcie_vendor_id *vid;
++	u16 vsec;
++	u32 val;
++
++	if (!pci_is_pcie(pdev) || !(pci_pcie_type(pdev) == PCI_EXP_TYPE_ROOT_PORT))
++		return false;
++
++	for (vid = dwc_pcie_vendor_ids; vid->vendor_id; vid++) {
++		vsec = pci_find_vsec_capability(pdev, vid->vendor_id,
++						DWC_PCIE_VSEC_RAS_DES_ID);
++		if (vsec)
++			break;
++	}
++	if (!vsec)
++		return false;
++
++	pci_read_config_dword(pdev, vsec + PCI_VNDR_HEADER, &val);
++	if (PCI_VNDR_HEADER_REV(val) != 0x04)
++		return false;
++
++	pci_dbg(pdev,
++		"Detected PCIe Vendor-Specific Extended Capability RAS DES\n");
++	return true;
++}
++
++static void dwc_pcie_unregister_dev(struct dwc_pcie_dev_info *dev_info)
++{
++	platform_device_unregister(dev_info->plat_dev);
++	list_del(&dev_info->dev_node);
++	kfree(dev_info);
++}
++
++static int dwc_pcie_register_dev(struct pci_dev *pdev)
++{
++	struct platform_device *plat_dev;
++	struct dwc_pcie_dev_info *dev_info;
++	u32 bdf;
++
++	bdf = PCI_DEVID(pdev->bus->number, pdev->devfn);
++	plat_dev = platform_device_register_data(NULL, "dwc_pcie_pmu", bdf,
++						 pdev, sizeof(*pdev));
++
++	if (IS_ERR(plat_dev))
++		return PTR_ERR(plat_dev);
++
++	dev_info = kzalloc(sizeof(*dev_info), GFP_KERNEL);
++	if (!dev_info)
++		return -ENOMEM;
++
++	/* Cache platform device to handle pci device hotplug */
++	dev_info->plat_dev = plat_dev;
++	dev_info->pdev = pdev;
++	list_add(&dev_info->dev_node, &dwc_pcie_dev_info_head);
++
++	return 0;
++}
++
++static int dwc_pcie_pmu_notifier(struct notifier_block *nb,
++				     unsigned long action, void *data)
++{
++	struct device *dev = data;
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct dwc_pcie_dev_info *dev_info;
++
++	switch (action) {
++	case BUS_NOTIFY_ADD_DEVICE:
++		if (!dwc_pcie_match_des_cap(pdev))
++			return NOTIFY_DONE;
++		if (dwc_pcie_register_dev(pdev))
++			return NOTIFY_BAD;
++		break;
++	case BUS_NOTIFY_DEL_DEVICE:
++		dev_info = dwc_pcie_find_dev_info(pdev);
++		if (!dev_info)
++			return NOTIFY_DONE;
++		dwc_pcie_unregister_dev(dev_info);
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block dwc_pcie_pmu_nb = {
++	.notifier_call = dwc_pcie_pmu_notifier,
++};
++
++static int dwc_pcie_pmu_probe(struct platform_device *plat_dev)
++{
++	struct pci_dev *pdev = plat_dev->dev.platform_data;
++	struct dwc_pcie_pmu *pcie_pmu;
++	char *name;
++	u32 bdf, val;
++	u16 vsec;
++	int ret;
++
++	vsec = pci_find_vsec_capability(pdev, pdev->vendor,
++					DWC_PCIE_VSEC_RAS_DES_ID);
++	pci_read_config_dword(pdev, vsec + PCI_VNDR_HEADER, &val);
++	bdf = PCI_DEVID(pdev->bus->number, pdev->devfn);
++	name = devm_kasprintf(&plat_dev->dev, GFP_KERNEL, "dwc_rootport_%x", bdf);
++	if (!name)
++		return -ENOMEM;
++
++	pcie_pmu = devm_kzalloc(&plat_dev->dev, sizeof(*pcie_pmu), GFP_KERNEL);
++	if (!pcie_pmu)
++		return -ENOMEM;
++
++	pcie_pmu->pdev = pdev;
++	pcie_pmu->ras_des_offset = vsec;
++	pcie_pmu->nr_lanes = pcie_get_width_cap(pdev);
++	pcie_pmu->on_cpu = -1;
++	pcie_pmu->pmu = (struct pmu){
++		.name		= name,
++		.parent		= &pdev->dev,
++		.module		= THIS_MODULE,
++		.attr_groups	= dwc_pcie_attr_groups,
++		.capabilities	= PERF_PMU_CAP_NO_EXCLUDE,
++		.task_ctx_nr	= perf_invalid_context,
++		.event_init	= dwc_pcie_pmu_event_init,
++		.add		= dwc_pcie_pmu_event_add,
++		.del		= dwc_pcie_pmu_event_del,
++		.start		= dwc_pcie_pmu_event_start,
++		.stop		= dwc_pcie_pmu_event_stop,
++		.read		= dwc_pcie_pmu_event_update,
++	};
++
++	/* Add this instance to the list used by the offline callback */
++	ret = cpuhp_state_add_instance(dwc_pcie_pmu_hp_state,
++				       &pcie_pmu->cpuhp_node);
++	if (ret) {
++		pci_err(pdev, "Error %d registering hotplug @%x\n", ret, bdf);
++		return ret;
++	}
++
++	/* Unwind when platform driver removes */
++	ret = devm_add_action_or_reset(&plat_dev->dev,
++				       dwc_pcie_pmu_remove_cpuhp_instance,
++				       &pcie_pmu->cpuhp_node);
++	if (ret)
++		return ret;
++
++	ret = perf_pmu_register(&pcie_pmu->pmu, name, -1);
++	if (ret) {
++		pci_err(pdev, "Error %d registering PMU @%x\n", ret, bdf);
++		return ret;
++	}
++	ret = devm_add_action_or_reset(&plat_dev->dev, dwc_pcie_unregister_pmu,
++				       pcie_pmu);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int dwc_pcie_pmu_online_cpu(unsigned int cpu, struct hlist_node *cpuhp_node)
++{
++	struct dwc_pcie_pmu *pcie_pmu;
++
++	pcie_pmu = hlist_entry_safe(cpuhp_node, struct dwc_pcie_pmu, cpuhp_node);
++	if (pcie_pmu->on_cpu == -1)
++		pcie_pmu->on_cpu = cpumask_local_spread(
++			0, dev_to_node(&pcie_pmu->pdev->dev));
++
++	return 0;
++}
++
++static int dwc_pcie_pmu_offline_cpu(unsigned int cpu, struct hlist_node *cpuhp_node)
++{
++	struct dwc_pcie_pmu *pcie_pmu;
++	struct pci_dev *pdev;
++	int node;
++	cpumask_t mask;
++	unsigned int target;
++
++	pcie_pmu = hlist_entry_safe(cpuhp_node, struct dwc_pcie_pmu, cpuhp_node);
++	/* Nothing to do if this CPU doesn't own the PMU */
++	if (cpu != pcie_pmu->on_cpu)
++		return 0;
++
++	pcie_pmu->on_cpu = -1;
++	pdev = pcie_pmu->pdev;
++	node = dev_to_node(&pdev->dev);
++	if (cpumask_and(&mask, cpumask_of_node(node), cpu_online_mask) &&
++	    cpumask_andnot(&mask, &mask, cpumask_of(cpu)))
++		target = cpumask_any(&mask);
++	else
++		target = cpumask_any_but(cpu_online_mask, cpu);
++
++	if (target >= nr_cpu_ids) {
++		pci_err(pdev, "There is no CPU to set\n");
++		return 0;
++	}
++
++	/* This PMU does NOT support interrupt, just migrate context. */
++	perf_pmu_migrate_context(&pcie_pmu->pmu, cpu, target);
++	pcie_pmu->on_cpu = target;
++
++	return 0;
++}
++
++static struct platform_driver dwc_pcie_pmu_driver = {
++	.probe = dwc_pcie_pmu_probe,
++	.driver = {.name = "dwc_pcie_pmu",},
++};
++
++static int __init dwc_pcie_pmu_init(void)
++{
++	struct pci_dev *pdev = NULL;
++	bool found = false;
++	int ret;
++
++	for_each_pci_dev(pdev) {
++		if (!dwc_pcie_match_des_cap(pdev))
++			continue;
++
++		ret = dwc_pcie_register_dev(pdev);
++		if (ret) {
++			pci_dev_put(pdev);
++			return ret;
++		}
++
++		found = true;
++	}
++	if (!found)
++		return -ENODEV;
++
++	ret = cpuhp_setup_state_multi(CPUHP_AP_ONLINE_DYN,
++				      "perf/dwc_pcie_pmu:online",
++				      dwc_pcie_pmu_online_cpu,
++				      dwc_pcie_pmu_offline_cpu);
++	if (ret < 0)
++		return ret;
++
++	dwc_pcie_pmu_hp_state = ret;
++
++	ret = platform_driver_register(&dwc_pcie_pmu_driver);
++	if (ret)
++		goto platform_driver_register_err;
++
++	ret = bus_register_notifier(&pci_bus_type, &dwc_pcie_pmu_nb);
++	if (ret)
++		goto platform_driver_register_err;
++	notify = true;
++
++	return 0;
++
++platform_driver_register_err:
++	cpuhp_remove_multi_state(dwc_pcie_pmu_hp_state);
++
++	return ret;
++}
++
++static void __exit dwc_pcie_pmu_exit(void)
++{
++	struct dwc_pcie_dev_info *dev_info, *tmp;
++
++	if (notify)
++		bus_unregister_notifier(&pci_bus_type, &dwc_pcie_pmu_nb);
++	list_for_each_entry_safe(dev_info, tmp, &dwc_pcie_dev_info_head, dev_node)
++		dwc_pcie_unregister_dev(dev_info);
++	platform_driver_unregister(&dwc_pcie_pmu_driver);
++	cpuhp_remove_multi_state(dwc_pcie_pmu_hp_state);
++}
++
++module_init(dwc_pcie_pmu_init);
++module_exit(dwc_pcie_pmu_exit);
++
++MODULE_DESCRIPTION("PMU driver for DesignWare Cores PCI Express Controller");
++MODULE_AUTHOR("Shuai Xue <xueshuai@linux.alibaba.com>");
++MODULE_LICENSE("GPL v2");
+-- 
+2.39.3
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42A73C61D85
+	for <linux-kernel@archiver.kernel.org>; Tue, 21 Nov 2023 01:34:34 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S232963AbjKUBef (ORCPT <rfc822;linux-kernel@archiver.kernel.org>);
+        Mon, 20 Nov 2023 20:34:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58394 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233027AbjKUBe0 (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Mon, 20 Nov 2023 20:34:26 -0500
+Received: from out30-111.freemail.mail.aliyun.com (out30-111.freemail.mail.aliyun.com [115.124.30.111])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 658E1ED;
+        Mon, 20 Nov 2023 17:34:18 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R151e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045176;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=17;SR=0;TI=SMTPD_---0VwqXEiK_1700530455;
+Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VwqXEiK_1700530455)
+          by smtp.aliyun-inc.com;
+          Tue, 21 Nov 2023 09:34:16 +0800
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com
+Cc: chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, xueshuai@linux.alibaba.com,
+        renyu.zj@linux.alibaba.com
+Subject: [PATCH v11 5/5] MAINTAINERS: add maintainers for DesignWare PCIe PMU driver
+Date: Tue, 21 Nov 2023 09:34:00 +0800
+Message-Id: <20231121013400.18367-6-xueshuai@linux.alibaba.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Add maintainers for Synopsys DesignWare PCIe PMU driver and driver
+document.
+
+Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+---
+ MAINTAINERS | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6c4cce45a09d..71f363f836ae 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -20866,6 +20866,13 @@ L:	linux-mmc@vger.kernel.org
+ S:	Maintained
+ F:	drivers/mmc/host/dw_mmc*
+ 
++SYNOPSYS DESIGNWARE PCIE PMU DRIVER
++M:	Shuai Xue <xueshuai@linux.alibaba.com>
++M:	Jing Zhang <renyu.zj@linux.alibaba.com>
++S:	Supported
++F:	Documentation/admin-guide/perf/dwc_pcie_pmu.rst
++F:	drivers/perf/dwc_pcie_pmu.c
++
+ SYNOPSYS HSDK RESET CONTROLLER DRIVER
+ M:	Eugeniy Paltsev <Eugeniy.Paltsev@synopsys.com>
+ S:	Supported
+-- 
+2.39.3
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B1AAC61D9C
+	for <linux-kernel@archiver.kernel.org>; Wed, 22 Nov 2023 13:14:57 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1343619AbjKVNO6 (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 22 Nov 2023 08:14:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38126 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1343943AbjKVNOy (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 22 Nov 2023 08:14:54 -0500
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7691719D;
+        Wed, 22 Nov 2023 05:14:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1700658891; x=1732194891;
+  h=date:from:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=ytXM2Pyec8Qp9LaXAdCOR2oRjgWxjhxu7pHl5+cR+4w=;
+  b=gWDJrgxg80wFyJAk7gJGbfT82zmjo81huAQZm5G/euUldKp1KN5uBeha
+   Hx5Th8g/7mj3eQrPgGdbEDqz600AGAFfQIasm14Dppa9qtw2iGbmLMJ4A
+   qAPq0HkdlDw7lbuJ8/aJ4DjbSHJd6ALMT4CnXcKwZ/glhgzatAoX5jUQh
+   Ke2Ortwcefv6o5qLbZ1PzF2gjai1IPoN9SlF11HYhTchSl1EPR9uDxj5w
+   MVV7VaSmDpkYvbPGxUjzt/CbniyKK5l8TbXUJ4QBs2dNOBhkJdwOFn+LE
+   wdZDZwYYKH3nJEixOHTi5/eZf2J78CiAO+VuRy1LB9C+ygccCywXdmN7A
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10901"; a="390908483"
+X-IronPort-AV: E=Sophos;i="6.04,218,1695711600"; 
+   d="scan'208";a="390908483"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Nov 2023 05:14:51 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10901"; a="857728170"
+X-IronPort-AV: E=Sophos;i="6.04,218,1695711600"; 
+   d="scan'208";a="857728170"
+Received: from johannes-ivm.ger.corp.intel.com ([10.249.47.139])
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Nov 2023 05:14:44 -0800
+Date: Wed, 22 Nov 2023 15:14:41 +0200 (EET)
+From: =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: Shuai Xue <xueshuai@linux.alibaba.com>
+cc: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com, chengyou@linux.alibaba.com,
+        LKML <linux-kernel@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, renyu.zj@linux.alibaba.com
+Subject: Re: [PATCH v11 3/5] PCI: Move pci_clear_and_set_dword() helper to
+ PCI header
+In-Reply-To: <20231121013400.18367-4-xueshuai@linux.alibaba.com>
+Message-ID: <f2a31d7f-3acc-fbe8-2684-c61f355f1036@linux.intel.com>
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com> <20231121013400.18367-4-xueshuai@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+On Tue, 21 Nov 2023, Shuai Xue wrote:
+
+> The clear and set pattern is commonly used for accessing PCI config,
+> move the helper pci_clear_and_set_dword() from aspm.c into PCI header.
+> In addition, rename to pci_clear_and_set_config_dword() to retain the
+> "config" information and match the other accessors.
+> 
+> No functional change intended.
+> 
+> Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+> ---
+>  drivers/pci/access.c    | 12 ++++++++
+>  drivers/pci/pcie/aspm.c | 65 +++++++++++++++++++----------------------
+>  include/linux/pci.h     |  2 ++
+>  3 files changed, 44 insertions(+), 35 deletions(-)
+> 
+> diff --git a/drivers/pci/access.c b/drivers/pci/access.c
+> index 6554a2e89d36..6449056b57dd 100644
+> --- a/drivers/pci/access.c
+> +++ b/drivers/pci/access.c
+> @@ -598,3 +598,15 @@ int pci_write_config_dword(const struct pci_dev *dev, int where,
+>  	return pci_bus_write_config_dword(dev->bus, dev->devfn, where, val);
+>  }
+>  EXPORT_SYMBOL(pci_write_config_dword);
+> +
+> +void pci_clear_and_set_config_dword(const struct pci_dev *dev, int pos,
+> +				    u32 clear, u32 set)
+
+Just noting that annoyingly the ordering within the name is inconsistent 
+between:
+  pci_clear_and_set_config_dword()
+and
+  pcie_capability_clear_and_set_dword()
+
+And if changed, it would be again annoyingly inconsistent with 
+pci_read/write_config_*(), oh well... And renaming pci_read/write_config_* 
+into the hierarchical pci_config_read/write_*() form for would touch only 
+~6k lines... ;-D
+
+> +		pci_clear_and_set_config_dword(child,
+> +					       child->l1ss + PCI_L1SS_CTL1, 0,
+> +					       cl1_2_enables);
+
+Adding clear and set only variants into the header like there are for 
+pcie_capability_*() would remove the need to add those 0 parameters.
+IMO, it improves code readability considerably.
+
+
+-- 
+ i.
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-lj1-f179.google.com (mail-lj1-f179.google.com [209.85.208.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A64D23D0
+	for <oe-kbuild@lists.linux.dev>; Sat, 25 Nov 2023 07:06:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="earsV+Zp"
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-2c87adce180so31984611fa.0
+        for <oe-kbuild@lists.linux.dev>; Fri, 24 Nov 2023 23:06:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700896003; x=1701500803; darn=lists.linux.dev;
+        h=delivered-to:in-reply-to:content-disposition:mime-version
+         :message-id:subject:cc:to:date:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5RYcgJht5CpJHvQZaHH5yIH/bBoeNKDITyrwLoWPeXA=;
+        b=earsV+ZpJTWTTQjsx7b9LzBxZ8TOQ2q86XJYforeb43i4ZQm+ymTNXUJHxaz7fN8rm
+         UwZ/xOy3nRdZBoomUqvPUByv36qnnLwDw8yGvVOjW7DmfpdI/TsJDwgrLo8FdDU+HXUs
+         o117k1MZAsCTZ854Fy8zwz6dx39qO2TwLHjXvaV2CWHtaa3+Hls3RWpqq5+XPzFkN0kO
+         LdAOgzhtZgIKEb7U4KOM3j3kkdwQs/TNKXmapCcFwMs8fzZnv3tJHYBaIWY4JHEy7li5
+         9Eh9xINFzpjYRRgMtK/oHQN0Z1+seMVZ5+V+kl1PZ4hxso0bi/aU87xuoR54thW8uJlA
+         KLLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700896003; x=1701500803;
+        h=delivered-to:in-reply-to:content-disposition:mime-version
+         :message-id:subject:cc:to:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5RYcgJht5CpJHvQZaHH5yIH/bBoeNKDITyrwLoWPeXA=;
+        b=bQHaGsn8YZOh7QMTuk5z0jYGZMR65dqjNgwAxs7lhfErL5ncMuUMvPxy/ujLpKcUU2
+         PJw4sAEfwp5mxMsuCAk64WW0rKQSQKCEqgf20hZpPUn8NRYLsdoVJMSlvE208kwEDP0t
+         JEkkoG0sEE+fn1nvST2xj9yZoQVnVpALjL83QBiT1FJtehl4HX+3TADKvR+JntAUoXGm
+         Sa9VC/dbbquvyfodFQkr0oZTqU9v7wMu9BSBe+NPCFCWlZ7YzpNCVIgcjvwL4R9uCB4f
+         LL2v++Ib1cXsl+cKfX98Vzn8AgbCUwMDtaALel3HW+JSHTjvyPlQUR8mF14AQUyE4yNM
+         sibQ==
+X-Gm-Message-State: AOJu0Yw7BkDq63Epmv8RiEsLmpTswWW7APxooqirEV6kLf0ooSHa5zvR
+	i//V7xiD3nqe45i/flr056Uk5PfZ+0+0f8lll+M=
+X-Google-Smtp-Source: AGHT+IEl1CSFNwWMzseTi4XTfwjKF2e9sXcTUutVfBef9FdgkexlK4fipWOxI+J3R9rYKe6Idbdlug==
+X-Received: by 2002:a2e:3503:0:b0:2c6:eea4:3cfb with SMTP id z3-20020a2e3503000000b002c6eea43cfbmr3445356ljz.50.1700896002513;
+        Fri, 24 Nov 2023 23:06:42 -0800 (PST)
+Received: from localhost ([102.36.222.112])
+        by smtp.gmail.com with ESMTPSA id k24-20020a5d5258000000b00332d04514b9sm5922765wrc.95.2023.11.24.23.06.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 23:06:42 -0800 (PST)
+From: Dan Carpenter <dan.carpenter@linaro.org>
+X-Google-Original-From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Sat, 25 Nov 2023 10:06:39 +0300
+To: oe-kbuild@lists.linux.dev, Shuai Xue <xueshuai@linux.alibaba.com>,
+	ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+	helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+	Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+	robin.murphy@arm.com
+Cc: lkp@intel.com, oe-kbuild-all@lists.linux.dev,
+	chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+	rdunlap@infradead.org, mark.rutland@arm.com,
+	zhuo.song@linux.alibaba.com, xueshuai@linux.alibaba.com,
+	renyu.zj@linux.alibaba.com
+Subject: Re: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+Message-ID: <2d52f588-f584-4c01-8f41-227815a54e41@suswa.mountain>
+Precedence: bulk
+X-Mailing-List: oe-kbuild@lists.linux.dev
+List-Id: <oe-kbuild.lists.linux.dev>
+List-Subscribe: <mailto:oe-kbuild+subscribe@lists.linux.dev>
+List-Unsubscribe: <mailto:oe-kbuild+unsubscribe@lists.linux.dev>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231121013400.18367-5-xueshuai@linux.alibaba.com>
+
+Hi Shuai,
+
+kernel test robot noticed the following build warnings:
+
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Shuai-Xue/docs-perf-Add-description-for-Synopsys-DesignWare-PCIe-PMU-driver/20231121-093713
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
+patch link:    https://lore.kernel.org/r/20231121013400.18367-5-xueshuai%40linux.alibaba.com
+patch subject: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+config: x86_64-randconfig-r071-20231123 (https://download.01.org/0day-ci/archive/20231124/202311241906.0ymlLjyo-lkp@intel.com/config)
+compiler: clang version 16.0.4 (https://github.com/llvm/llvm-project.git ae42196bc493ffe877a7e3dff8be32035dea4d07)
+reproduce: (https://download.01.org/0day-ci/archive/20231124/202311241906.0ymlLjyo-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Reported-by: Dan Carpenter <error27@gmail.com>
+| Closes: https://lore.kernel.org/r/202311241906.0ymlLjyo-lkp@intel.com/
+
+smatch warnings:
+drivers/perf/dwc_pcie_pmu.c:352 dwc_pcie_pmu_event_update() error: uninitialized symbol 'now'.
+
+vim +/now +352 drivers/perf/dwc_pcie_pmu.c
+
+3481798a4ec51d1 Shuai Xue 2023-11-21  338  static void dwc_pcie_pmu_event_update(struct perf_event *event)
+3481798a4ec51d1 Shuai Xue 2023-11-21  339  {
+3481798a4ec51d1 Shuai Xue 2023-11-21  340  	struct hw_perf_event *hwc = &event->hw;
+3481798a4ec51d1 Shuai Xue 2023-11-21  341  	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
+3481798a4ec51d1 Shuai Xue 2023-11-21  342  	u64 delta, prev, now;
+3481798a4ec51d1 Shuai Xue 2023-11-21  343  
+3481798a4ec51d1 Shuai Xue 2023-11-21  344  	do {
+3481798a4ec51d1 Shuai Xue 2023-11-21  345  		prev = local64_read(&hwc->prev_count);
+3481798a4ec51d1 Shuai Xue 2023-11-21  346  
+3481798a4ec51d1 Shuai Xue 2023-11-21  347  		if (type == DWC_PCIE_LANE_EVENT)
+3481798a4ec51d1 Shuai Xue 2023-11-21  348  			now = dwc_pcie_pmu_read_lane_event_counter(event);
+3481798a4ec51d1 Shuai Xue 2023-11-21  349  		else if (type == DWC_PCIE_TIME_BASE_EVENT)
+3481798a4ec51d1 Shuai Xue 2023-11-21  350  			now = dwc_pcie_pmu_read_time_based_counter(event);
+
+uninitialized on else path.
+
+3481798a4ec51d1 Shuai Xue 2023-11-21  351  
+3481798a4ec51d1 Shuai Xue 2023-11-21 @352  	} while (local64_cmpxchg(&hwc->prev_count, prev, now) != prev);
+3481798a4ec51d1 Shuai Xue 2023-11-21  353  
+3481798a4ec51d1 Shuai Xue 2023-11-21  354  	delta = (now - prev) & DWC_PCIE_MAX_PERIOD;
+3481798a4ec51d1 Shuai Xue 2023-11-21  355  	/* 32-bit counter for Lane Event Counting */
+3481798a4ec51d1 Shuai Xue 2023-11-21  356  	if (type == DWC_PCIE_LANE_EVENT)
+3481798a4ec51d1 Shuai Xue 2023-11-21  357  		delta &= DWC_PCIE_LANE_EVENT_MAX_PERIOD;
+3481798a4ec51d1 Shuai Xue 2023-11-21  358  
+3481798a4ec51d1 Shuai Xue 2023-11-21  359  	local64_add(delta, &event->count);
+3481798a4ec51d1 Shuai Xue 2023-11-21  360  }
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6209CC07CA9
+	for <linux-kernel@archiver.kernel.org>; Mon, 27 Nov 2023 01:36:29 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229489AbjK0BeG (ORCPT <rfc822;linux-kernel@archiver.kernel.org>);
+        Sun, 26 Nov 2023 20:34:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54922 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229379AbjK0BeE (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Sun, 26 Nov 2023 20:34:04 -0500
+Received: from out30-98.freemail.mail.aliyun.com (out30-98.freemail.mail.aliyun.com [115.124.30.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81ACE10F;
+        Sun, 26 Nov 2023 17:34:10 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R141e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046060;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=17;SR=0;TI=SMTPD_---0Vx7cD-F_1701048846;
+Received: from 30.240.112.131(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0Vx7cD-F_1701048846)
+          by smtp.aliyun-inc.com;
+          Mon, 27 Nov 2023 09:34:08 +0800
+Message-ID: <71fa699f-5130-401a-bf4a-3271579a8dda@linux.alibaba.com>
+Date: Mon, 27 Nov 2023 09:34:05 +0800
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v11 3/5] PCI: Move pci_clear_and_set_dword() helper to PCI
+ header
+Content-Language: en-US
+To: =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Bjorn Helgaas <helgaas@kernel.org>
+Cc: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com, chengyou@linux.alibaba.com,
+        LKML <linux-kernel@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, renyu.zj@linux.alibaba.com
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+ <20231121013400.18367-4-xueshuai@linux.alibaba.com>
+ <f2a31d7f-3acc-fbe8-2684-c61f355f1036@linux.intel.com>
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+In-Reply-To: <f2a31d7f-3acc-fbe8-2684-c61f355f1036@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
++ Bjorn for PCI.
+
+On 2023/11/22 21:14, Ilpo Järvinen wrote:
+
+Hi, Ilpo,
+
+Thank you for your reply. Please see my comments inline.
+
+
+> On Tue, 21 Nov 2023, Shuai Xue wrote:
+> 
+>> The clear and set pattern is commonly used for accessing PCI config,
+>> move the helper pci_clear_and_set_dword() from aspm.c into PCI header.
+>> In addition, rename to pci_clear_and_set_config_dword() to retain the
+>> "config" information and match the other accessors.
+>>
+>> No functional change intended.
+>>
+>> Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+>> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+>> Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+>> ---
+>>  drivers/pci/access.c    | 12 ++++++++
+>>  drivers/pci/pcie/aspm.c | 65 +++++++++++++++++++----------------------
+>>  include/linux/pci.h     |  2 ++
+>>  3 files changed, 44 insertions(+), 35 deletions(-)
+>>
+>> diff --git a/drivers/pci/access.c b/drivers/pci/access.c
+>> index 6554a2e89d36..6449056b57dd 100644
+>> --- a/drivers/pci/access.c
+>> +++ b/drivers/pci/access.c
+>> @@ -598,3 +598,15 @@ int pci_write_config_dword(const struct pci_dev *dev, int where,
+>>  	return pci_bus_write_config_dword(dev->bus, dev->devfn, where, val);
+>>  }
+>>  EXPORT_SYMBOL(pci_write_config_dword);
+>> +
+>> +void pci_clear_and_set_config_dword(const struct pci_dev *dev, int pos,
+>> +				    u32 clear, u32 set)
+> 
+> Just noting that annoyingly the ordering within the name is inconsistent 
+> between:
+>   pci_clear_and_set_config_dword()
+> and
+>   pcie_capability_clear_and_set_dword()
+> 
+> And if changed, it would be again annoyingly inconsistent with 
+> pci_read/write_config_*(), oh well... And renaming pci_read/write_config_* 
+> into the hierarchical pci_config_read/write_*() form for would touch only 
+> ~6k lines... ;-D
+
+I think it is a good question, but I don't have a clear answer. I don't
+know much about the name history.  As you mentioned, the above two
+accessors are the foundation operation, may it comes to @Bjorn decision.
+
+The pci_clear_and_set_config_dword() is a variant of bellow pci accessors:
+
+    pci_read_config_dword()
+    pci_write_config_dword()
+
+At last, they are consistend :)
+
+> 
+>> +		pci_clear_and_set_config_dword(child,
+>> +					       child->l1ss + PCI_L1SS_CTL1, 0,
+>> +					       cl1_2_enables);
+> 
+> Adding clear and set only variants into the header like there are for 
+> pcie_capability_*() would remove the need to add those 0 parameters.
+> IMO, it improves code readability considerably.
+> 
+
+Agreed.
+
+
+Best Regards,
+Shuai
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 345B4C4167B
+	for <linux-kernel@archiver.kernel.org>; Wed, 29 Nov 2023 23:16:03 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1343650AbjK2XPy (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 29 Nov 2023 18:15:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51748 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229658AbjK2XPw (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 29 Nov 2023 18:15:52 -0500
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B788D54
+        for <linux-kernel@vger.kernel.org>; Wed, 29 Nov 2023 15:15:57 -0800 (PST)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6817CC433C9;
+        Wed, 29 Nov 2023 23:15:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1701299757;
+        bh=eZ85cA7Ik1tM1F3uhz1PsvW2kqzGygwIuLJ/hwc0ym8=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=lsmYRCtmKFcBu1rcXaomCG95v4pA6taD5qmHpyLOrgRIDlZ1SOWv5L+WIZ8hyBMum
+         laxg0oycsMQQkuO1QeJIcjlqYNWqmEBqXg/4gz5SspvN0xpYzYOM0siFTlJG8ryyHp
+         vljciukoKJwsG8RuHFositnwxAh75YOMaei6kmhKKGyL00wIYrEovNqm+rR2+AHcW7
+         ORb0aQ0cGLdsnPAfKE/rnH8Yfiu7CQ7WO+/Qa3Arr5beMLLBhhoTr/hdY5+35TE1Bh
+         QIi8nDG56bIgOx8PQbM11gjbmbRnQ1j3Jj2msYgAFjW6uGlvOcwym5mBzcfNulMSfa
+         im9jbRW+GrMtA==
+Date: Wed, 29 Nov 2023 17:15:55 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Shuai Xue <xueshuai@linux.alibaba.com>
+Cc: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+        ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com, chengyou@linux.alibaba.com,
+        LKML <linux-kernel@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, renyu.zj@linux.alibaba.com
+Subject: Re: [PATCH v11 3/5] PCI: Move pci_clear_and_set_dword() helper to
+ PCI header
+Message-ID: <20231129231555.GA443895@bhelgaas>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <71fa699f-5130-401a-bf4a-3271579a8dda@linux.alibaba.com>
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+On Mon, Nov 27, 2023 at 09:34:05AM +0800, Shuai Xue wrote:
+> On 2023/11/22 21:14, Ilpo Järvinen wrote:
+> > On Tue, 21 Nov 2023, Shuai Xue wrote:
+> > 
+> >> The clear and set pattern is commonly used for accessing PCI config,
+> >> move the helper pci_clear_and_set_dword() from aspm.c into PCI header.
+> >> In addition, rename to pci_clear_and_set_config_dword() to retain the
+> >> "config" information and match the other accessors.
+> >>
+> >> No functional change intended.
+> >>
+> >> Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+> >> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> >> Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+> >> ---
+> >>  drivers/pci/access.c    | 12 ++++++++
+> >>  drivers/pci/pcie/aspm.c | 65 +++++++++++++++++++----------------------
+> >>  include/linux/pci.h     |  2 ++
+> >>  3 files changed, 44 insertions(+), 35 deletions(-)
+> >>
+> >> diff --git a/drivers/pci/access.c b/drivers/pci/access.c
+> >> index 6554a2e89d36..6449056b57dd 100644
+> >> --- a/drivers/pci/access.c
+> >> +++ b/drivers/pci/access.c
+> >> @@ -598,3 +598,15 @@ int pci_write_config_dword(const struct pci_dev *dev, int where,
+> >>  	return pci_bus_write_config_dword(dev->bus, dev->devfn, where, val);
+> >>  }
+> >>  EXPORT_SYMBOL(pci_write_config_dword);
+> >> +
+> >> +void pci_clear_and_set_config_dword(const struct pci_dev *dev, int pos,
+> >> +				    u32 clear, u32 set)
+> > 
+> > Just noting that annoyingly the ordering within the name is inconsistent 
+> > between:
+> >   pci_clear_and_set_config_dword()
+> > and
+> >   pcie_capability_clear_and_set_dword()
+> > 
+> > And if changed, it would be again annoyingly inconsistent with 
+> > pci_read/write_config_*(), oh well... And renaming pci_read/write_config_* 
+> > into the hierarchical pci_config_read/write_*() form for would touch only 
+> > ~6k lines... ;-D
+> 
+> I think it is a good question, but I don't have a clear answer. I don't
+> know much about the name history.  As you mentioned, the above two
+> accessors are the foundation operation, may it comes to @Bjorn decision.
+> 
+> The pci_clear_and_set_config_dword() is a variant of below pci accessors:
+> 
+>     pci_read_config_dword()
+>     pci_write_config_dword()
+> 
+> At last, they are consistent :)
+
+"pcie_capability_clear_and_set_dword" is specific to the PCIe
+Capability, doesn't work for arbitrary config space, and doesn't
+include the word "config".
+
+"pci_clear_and_set_config_dword" seems consistent with the arbitrary
+config space accessor pattern.
+
+At least "clear_and_set" is consistent across both.
+
+I'm not too bothered by the difference between "clear_and_set_dword"
+(for the PCIe capability) and "clear_and_set_config_dword" (for
+arbitrary things).
+
+Yes, "pcie_capability_clear_and_set_config_dword" would be a little
+more consistent, but seems excessively wordy (no pun intended).
+
+But maybe I'm missing your point, Ilpo.  If so, what would you
+propose?
+
+Bjorn
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83C36C4167B
+	for <linux-kernel@archiver.kernel.org>; Thu, 30 Nov 2023 01:43:39 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1344061AbjK3Bnb (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 29 Nov 2023 20:43:31 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49306 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231477AbjK3Bn3 (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 29 Nov 2023 20:43:29 -0500
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2092.outbound.protection.outlook.com [40.107.93.92])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BAE3A0;
+        Wed, 29 Nov 2023 17:43:34 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=V0cLrjvg6jHGDQmr+Gy9tN+F7Uealgx+1s+6x4BxTySaviqJXxfAGnY5E8Ffx1EwGV1A8M7zF9NiVex4P5Uc0Vv5boiOxdStq1VMoU2XRg6lJhokWxCgGvjex0+A8aEBlCX5d6zNQtUS05WU3fnPkTWvRd/i3mN+p6akbRLYdAh0ncCr0GOePmX7M+mdwI4ZlsV9N3noET7tXURYrxNqQ/Izaz10DB4WjgGf7CII9vsFztjZosNXlyD/pOjuIB3WGeOHLW7mGmg9We8p5NY7HRwgjqx39sZOEw8r/A+9xEvseDYo6DtXVH0gYkKaH5eLcKp2BtDtTrfeBl/TYwo1/g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=1/ArqhTU/4bF20cmjnsW+snQl0D/0aXlMPj7mEmB5ks=;
+ b=aHLS8MhTZYxcMLafpsrkjJEPKWgN7RBf+5JC6SkHPDlsHnl/6q6aFMOxklNt6e0wNHf4hQwQiP5EQkhebxbDvHisyd8kDWrDlxCwkVz1F5UjUJox5zn4MqGhdtvbYDyV4IZTZaNWAvVvHRt+tPdyDk+M5ilXPZYN2hq727XkNEh7PGcfhLkLst/5qJ83inLdo5wLn6kHpxrr7y9lsqCX7Hzy+wF/+aScEooc3r1PiCfJL9EgIPikUge/VGsMWxtndLkjrn/Ldk4enna2v4tIOx5h6Odc1NQ4r6wnFFW3+vwhMzXRFicFJzazkn6+OYih3HEtqXZXIuynJeD6OywD7g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=os.amperecomputing.com; dmarc=pass action=none
+ header.from=os.amperecomputing.com; dkim=pass
+ header.d=os.amperecomputing.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=os.amperecomputing.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1/ArqhTU/4bF20cmjnsW+snQl0D/0aXlMPj7mEmB5ks=;
+ b=TP0cnFmb06GPfqN5QvnP5UVOP1IIUtY3PNSFfIBsNyjOaiRUkN5MycHXRP686EY5eQJ+KzeGjm9vf728ln+1TxElq4dMIXXAjk6jpEo9OALHdD5i5thKzHO0Mt3m0ZnIectlV3h9yg6kktARCnEIMK3VIGXVzLDiWDBS2mJ625c=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=os.amperecomputing.com;
+Received: from DM5PR0102MB3590.prod.exchangelabs.com (2603:10b6:4:a4::25) by
+ BL3PR01MB7179.prod.exchangelabs.com (2603:10b6:208:346::11) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7046.23; Thu, 30 Nov 2023 01:43:31 +0000
+Received: from DM5PR0102MB3590.prod.exchangelabs.com
+ ([fe80::49fa:8dc0:6fd1:72e6]) by DM5PR0102MB3590.prod.exchangelabs.com
+ ([fe80::49fa:8dc0:6fd1:72e6%4]) with mapi id 15.20.7025.022; Thu, 30 Nov 2023
+ 01:43:31 +0000
+Date: Wed, 29 Nov 2023 17:43:15 -0800 (PST)
+From: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+To: Shuai Xue <xueshuai@linux.alibaba.com>
+cc: ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        helgaas@kernel.org, yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com, chengyou@linux.alibaba.com,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pci@vger.kernel.org, rdunlap@infradead.org,
+        mark.rutland@arm.com, zhuo.song@linux.alibaba.com,
+        renyu.zj@linux.alibaba.com
+Subject: Re: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+In-Reply-To: <20231121013400.18367-5-xueshuai@linux.alibaba.com>
+Message-ID: <aaf365bf-ada5-a52-c35-d7dd2d598b49@os.amperecomputing.com>
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com> <20231121013400.18367-5-xueshuai@linux.alibaba.com>
+Content-Type: text/plain; format=flowed; charset=US-ASCII
+X-ClientProxiedBy: CH0PR03CA0188.namprd03.prod.outlook.com
+ (2603:10b6:610:e4::13) To DM5PR0102MB3590.prod.exchangelabs.com
+ (2603:10b6:4:a4::25)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM5PR0102MB3590:EE_|BL3PR01MB7179:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5e137b57-2f9e-4fb5-6f2c-08dbf145c182
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: I5ucRTcvBBtHs/JrQwuGuXs2OvxJWsuIqHwlTdBOyGz6msM3+4pjHY9dyLRkHVnEY3Lpng9hjpO1PhiibcRjvJVE4aI9vZQQKQvr2R/78M5OyEhRvTZoqEi9sx3WJBRuhAo4Tk+pdvUBLEstZTI+HYvaRCAD0K7G3oJ7oU4AoOReCNCJenUsUTXhlXxSNA8SbHjcDKVQHHyljUGq1jVgOd8aze9dq6r+OVkCVhN3G/n0o8/dd/R6ieKcI40jUzgtyNiquCETMUskr7PLye6KbOdyLSLHDE4OZsg7KtMNpMuHLFrdfLM7n6Ujeb5PqS34Fd2t2TslET5MK8XDXf5+AUatJHETIlQjXK82M8NJzN2+mRz9xQsSSGwoBP3Vhz8fW5Z6ETcL7XCXQs5f2TxSHxKhIW5g8Q81wWtsZZEibS1Rd/QLp6q+pXZen51VDmL0e5+TJV2IBbGsK4eMkXGucgWfgv9t7h+Rsuzw2oDl56EPoG1lLkNg60tf8ZZdmxW2GApFX1x6j9Tok7d5/cd994nGKdALVcGPAjbX0d+00qG/Q8zhcTHVRRghtGQU9RjkvYl8iWYXhYDiWudmRhQoLLk/UdwVCqSYc1SITCycfUOntJgYy6rsY5FIcemVBYsB0lCi7NftzgZriWLOuXZOmxrUR8uQdkk6pUvQ7mvMnho=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR0102MB3590.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(13230031)(396003)(39850400004)(346002)(366004)(376002)(136003)(230922051799003)(186009)(451199024)(1800799012)(64100799003)(38100700002)(202311291699003)(83380400001)(5660300002)(2906002)(86362001)(4326008)(8676002)(8936002)(66556008)(316002)(6916009)(66476007)(66946007)(6486002)(478600001)(52116002)(6666004)(6506007)(19627235002)(41300700001)(7416002)(6512007)(38350700005)(26005)(2616005);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?ugnLTXI03PJ22oKRtsObFlQ1aD2s/60NgRXwAc2pcZCzWnyfFTJ3M6VWoH2b?=
+ =?us-ascii?Q?SeLNMS13qqPznFwONAfQVFACBNgZv13VcmUqT6KT7++U8oXDtM3UMI09aAwo?=
+ =?us-ascii?Q?nZjcyLGMiVhE7lENtBCKPYwCO9iWEPSy7K12NeN64D+AMXeG/lo5d039AD9D?=
+ =?us-ascii?Q?5ZVnILwToLa113KUsKJsvKNoCyQq26YDSwd8XDUpP1kpBOgaXjjOrLchng3P?=
+ =?us-ascii?Q?HxbQWwO8tdG82vJlB4T0EkkePMhLb8rd10KO2aKdccO/7w+1Ktj7piRgq0be?=
+ =?us-ascii?Q?3KOBufCb8bSUN9jqZXI+xDVN5wzNIpGc/BPqvAyQHqcDkq5gVt311zi8LfZY?=
+ =?us-ascii?Q?8LR4H1QLJj/X1BaOIyaQUSjmc2LhftdnCQdB35Ia6cPRf0ANOkBQ6+cs9jHF?=
+ =?us-ascii?Q?cMslca6YTg8n1rOJJ3WYp2CLpTWCcX0zOXHZ6KRhWmbKVf6OpC+l6nwXZQ5N?=
+ =?us-ascii?Q?7qzxV9mlI02Z1MfQ10qCZMsxhuDrOEdlj+/9y6CUcJbDUcC39LetdwqsOWLW?=
+ =?us-ascii?Q?Yz2V80eln6CvlMnmKL+6kymQsBOG0Ybz2w8b5bXpYTyia4vlz8ttx3XdDUsG?=
+ =?us-ascii?Q?IxeF7/17KV3vFowF8q1Mk4A+LSW79aZoU7pjJOuoe38sfmbnLyCtvtKbEQkX?=
+ =?us-ascii?Q?9cDrUpXSecIqe73BA1Tju7bL80NXX3l3VNEvMSPkBjDOqFPq8rJvxh3zA4ak?=
+ =?us-ascii?Q?jeqg2SK/yKBubMptsK4uAaVTdmGM2X6aZ0VujG5Z75tzlidm5mb4hulXVmC5?=
+ =?us-ascii?Q?yFcjonbKyaT8/tazYiukbZlkpJ1yrHdcFi0ZveJ3LHunDYVujXOkUId1DoyM?=
+ =?us-ascii?Q?Q2PpRdWlzn3jpGcwVu620AkvXB5aw9h5mAlFUQghFPbNaVUR46edRRRWK3wP?=
+ =?us-ascii?Q?6sLuiGXPDp1/ABOmOle2m3T4tMlj5HXI0+7BryVUFkFeRmmqkgsehj62PDHp?=
+ =?us-ascii?Q?uDD3PjIj/kQAfN5iSBG+ZEAhoKYasLNEnj3fssAQgNmnrR1GMiCay6OHxSsX?=
+ =?us-ascii?Q?bs0oKSSmvXjb6/FdQqsD+ir1e5+RMk3MBMsfHbhYQ+nL4EiDDHqW8qd1Damd?=
+ =?us-ascii?Q?U/1al4FyvKoUGqJHV2BlOcYpqSuJL1Knj7wLYoa6IepYgw1DxxoLyAbb6yiQ?=
+ =?us-ascii?Q?bjT9eRUJNUCxY+qIWek9jjP12xpPknF7GyzLosUtHzneGm73dlYHxdoVCJhb?=
+ =?us-ascii?Q?1rtmt0o3fY0DpCFygfIITrFqjut80RbzVd1Qp9Ao76V+nq5rRjIg9RJ3YSEQ?=
+ =?us-ascii?Q?urtMn0kQP1UyAwU6wOhz1kZIQtc6JJ6M2wnW2VtdaxzanbBS5XBZttxrjOWu?=
+ =?us-ascii?Q?62b5KylbgbLONeCuxhbJJOW1mFzH2ulLeqX+kOL6naEgfOkyrlQ0gdBQeonr?=
+ =?us-ascii?Q?TNEDj9AiLGct/1pdo/CswSrWXuutpqNr5YFBTiISnlFLk39xmPyBNZqu95pQ?=
+ =?us-ascii?Q?dNeXRsoS2akU1E764Gre9n95CkH12K41LvnDlsYOhaQJJf/GDofs/fcxAM05?=
+ =?us-ascii?Q?alpwCfu1OCcMEWdQ6rhv/bDFt4cHexjvQUSCYzvVnBaN7LrLCFR/YLtkFTfG?=
+ =?us-ascii?Q?7r3TObUape5KTp67OhoAmNQsvfKS7wBmkAtSVN5SrONbZGaLxqZWUoLb1/W8?=
+ =?us-ascii?Q?0AHZE0UYtXCFKIMx/CShRGs=3D?=
+X-OriginatorOrg: os.amperecomputing.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5e137b57-2f9e-4fb5-6f2c-08dbf145c182
+X-MS-Exchange-CrossTenant-AuthSource: DM5PR0102MB3590.prod.exchangelabs.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Nov 2023 01:43:31.0137
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3bc2b170-fd94-476d-b0ce-4229bdc904a7
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: fmE09Af18vNgfnDFusU0j+wMeSj3/Z4No+3f8TrlMEVUnLTfWpoaSJfiIxI68/80l1Kr4rp3ZxA6Ht8zRyIkDGQRgCupxGZUYlNSoQEvkFx7jMxZOf/2rd2Lwl/zSToA
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR01MB7179
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+
+On Tue, 21 Nov 2023, Shuai Xue wrote:
+> This commit adds the PCIe Performance Monitoring Unit (PMU) driver support
+> for T-Head Yitian SoC chip. Yitian is based on the Synopsys PCI Express
+> Core controller IP which provides statistics feature. The PMU is a PCIe
+> configuration space register block provided by each PCIe Root Port in a
+> Vendor-Specific Extended Capability named RAS D.E.S (Debug, Error
+> injection, and Statistics).
+>
+> To facilitate collection of statistics the controller provides the
+> following two features for each Root Port:
+>
+> - one 64-bit counter for Time Based Analysis (RX/TX data throughput and
+>  time spent in each low-power LTSSM state) and
+> - one 32-bit counter for Event Counting (error and non-error events for
+>  a specified lane)
+>
+> Note: There is no interrupt for counter overflow.
+>
+> This driver adds PMU devices for each PCIe Root Port. And the PMU device is
+> named based the BDF of Root Port. For example,
+>
+>    30:03.0 PCI bridge: Device 1ded:8000 (rev 01)
+>
+> the PMU device name for this Root Port is dwc_rootport_3018.
+>
+> Example usage of counting PCIe RX TLP data payload (Units of bytes)::
+>
+>    $# perf stat -a -e dwc_rootport_3018/Rx_PCIe_TLP_Data_Payload/
+>
+> average RX bandwidth can be calculated like this:
+>
+>    PCIe TX Bandwidth = Rx_PCIe_TLP_Data_Payload / Measure_Time_Window
+>
+> Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+> Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Reviewed-by: Yicong Yang <yangyicong@hisilicon.com>
+> Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+
+Looks good to me and seems to work fine. Thus,
+
+   Reviewed-and-tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+
+
+You can keep my "Tested-by: ..." in the other patches.
+
+Cheers, Ilkka
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A3F6C10DAA
+	for <linux-kernel@archiver.kernel.org>; Thu, 30 Nov 2023 03:07:43 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1344266AbjK3DEs (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 29 Nov 2023 22:04:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60600 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230393AbjK3DEr (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 29 Nov 2023 22:04:47 -0500
+Received: from out30-99.freemail.mail.aliyun.com (out30-99.freemail.mail.aliyun.com [115.124.30.99])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A981D5E;
+        Wed, 29 Nov 2023 19:04:53 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R511e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045192;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=16;SR=0;TI=SMTPD_---0VxQ.kvS_1701313489;
+Received: from 30.240.112.131(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VxQ.kvS_1701313489)
+          by smtp.aliyun-inc.com;
+          Thu, 30 Nov 2023 11:04:50 +0800
+Message-ID: <50c44afb-f1ea-4136-9d85-4916a4f3d109@linux.alibaba.com>
+Date: Thu, 30 Nov 2023 11:04:48 +0800
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+Content-Language: en-US
+To: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+Cc: kaishen@linux.alibaba.com, helgaas@kernel.org,
+        yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com, chengyou@linux.alibaba.com,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pci@vger.kernel.org, rdunlap@infradead.org,
+        mark.rutland@arm.com, zhuo.song@linux.alibaba.com,
+        renyu.zj@linux.alibaba.com
+References: <20231121013400.18367-1-xueshuai@linux.alibaba.com>
+ <20231121013400.18367-5-xueshuai@linux.alibaba.com>
+ <aaf365bf-ada5-a52-c35-d7dd2d598b49@os.amperecomputing.com>
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+In-Reply-To: <aaf365bf-ada5-a52-c35-d7dd2d598b49@os.amperecomputing.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+
+
+On 2023/11/30 09:43, Ilkka Koskinen wrote:
+> 
+> On Tue, 21 Nov 2023, Shuai Xue wrote:
+>> This commit adds the PCIe Performance Monitoring Unit (PMU) driver support
+>> for T-Head Yitian SoC chip. Yitian is based on the Synopsys PCI Express
+>> Core controller IP which provides statistics feature. The PMU is a PCIe
+>> configuration space register block provided by each PCIe Root Port in a
+>> Vendor-Specific Extended Capability named RAS D.E.S (Debug, Error
+>> injection, and Statistics).
+>>
+>> To facilitate collection of statistics the controller provides the
+>> following two features for each Root Port:
+>>
+>> - one 64-bit counter for Time Based Analysis (RX/TX data throughput and
+>>  time spent in each low-power LTSSM state) and
+>> - one 32-bit counter for Event Counting (error and non-error events for
+>>  a specified lane)
+>>
+>> Note: There is no interrupt for counter overflow.
+>>
+>> This driver adds PMU devices for each PCIe Root Port. And the PMU device is
+>> named based the BDF of Root Port. For example,
+>>
+>>    30:03.0 PCI bridge: Device 1ded:8000 (rev 01)
+>>
+>> the PMU device name for this Root Port is dwc_rootport_3018.
+>>
+>> Example usage of counting PCIe RX TLP data payload (Units of bytes)::
+>>
+>>    $# perf stat -a -e dwc_rootport_3018/Rx_PCIe_TLP_Data_Payload/
+>>
+>> average RX bandwidth can be calculated like this:
+>>
+>>    PCIe TX Bandwidth = Rx_PCIe_TLP_Data_Payload / Measure_Time_Window
+>>
+>> Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+>> Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+>> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+>> Reviewed-by: Yicong Yang <yangyicong@hisilicon.com>
+>> Tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+> 
+> Looks good to me and seems to work fine. Thus,
+> 
+>   Reviewed-and-tested-by: Ilkka Koskinen <ilkka@os.amperecomputing.com>
+> 
+> 
+> You can keep my "Tested-by: ..." in the other patches.
+> 
+> Cheers, Ilkka
+
+Thank you very much :)
+
+Cheers
+Shuai
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85974C4167B
+	for <linux-kernel@archiver.kernel.org>; Thu, 30 Nov 2023 10:52:32 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1345063AbjK3KwX (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Thu, 30 Nov 2023 05:52:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42630 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231784AbjK3KwV (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Thu, 30 Nov 2023 05:52:21 -0500
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32105E6;
+        Thu, 30 Nov 2023 02:52:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1701341548; x=1732877548;
+  h=date:from:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=2Loo84863mYt3Lh6biFrQxyHbhYSnUO9o1Ffbl3PYZc=;
+  b=AfEDkE60VoTkDwD5QeHJyfmpVCKzjpFS6S8g+FeCWGYXMvkbYDXEGZXO
+   cdChDKp/668eMINXNPkDB0DIFOGoIFsRDVSo26XTG3qWOKcsobWvHfUj9
+   JWfKWBl++lcLNAUlZel4xx+WT5qJfQJ7GEtu3wHz97laiIUmLTJ8E+vOP
+   c6HTR4MlgzzFyf1Fovcox7uCa36PhSYL6SI4Orh3foatB29cgxpKu80TI
+   Nt0ZaUby2Xd0AorHuGiKEJx0Iqlzt16GzBWbE/lsHebMCbYsluG5PPu14
+   gOv7+1uk02sGoNCxfhDlB1Gu3kyIK++fBkWsgFx7zqHZ2LPVnNm1Sl3Mp
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10909"; a="392171351"
+X-IronPort-AV: E=Sophos;i="6.04,237,1695711600"; 
+   d="scan'208";a="392171351"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Nov 2023 02:52:27 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10909"; a="745594631"
+X-IronPort-AV: E=Sophos;i="6.04,237,1695711600"; 
+   d="scan'208";a="745594631"
+Received: from bergler-mobl.ger.corp.intel.com ([10.249.33.30])
+  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Nov 2023 02:52:23 -0800
+Date: Thu, 30 Nov 2023 12:52:20 +0200 (EET)
+From: =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: Bjorn Helgaas <helgaas@kernel.org>
+cc: Shuai Xue <xueshuai@linux.alibaba.com>,
+        ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com, chengyou@linux.alibaba.com,
+        LKML <linux-kernel@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, renyu.zj@linux.alibaba.com
+Subject: Re: [PATCH v11 3/5] PCI: Move pci_clear_and_set_dword() helper to
+ PCI header
+In-Reply-To: <20231129231555.GA443895@bhelgaas>
+Message-ID: <b2aeaf4-8960-8967-ce7b-663f9d77260@linux.intel.com>
+References: <20231129231555.GA443895@bhelgaas>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="8323329-1899874312-1701341547=:1808"
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323329-1899874312-1701341547=:1808
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 29 Nov 2023, Bjorn Helgaas wrote:
+
+> On Mon, Nov 27, 2023 at 09:34:05AM +0800, Shuai Xue wrote:
+> > On 2023/11/22 21:14, Ilpo Järvinen wrote:
+> > > On Tue, 21 Nov 2023, Shuai Xue wrote:
+> > > 
+> > >> The clear and set pattern is commonly used for accessing PCI config,
+> > >> move the helper pci_clear_and_set_dword() from aspm.c into PCI header.
+> > >> In addition, rename to pci_clear_and_set_config_dword() to retain the
+> > >> "config" information and match the other accessors.
+> > >>
+> > >> No functional change intended.
+
+> > >> +
+> > >> +void pci_clear_and_set_config_dword(const struct pci_dev *dev, int pos,
+> > >> +				    u32 clear, u32 set)
+> > > 
+> > > Just noting that annoyingly the ordering within the name is inconsistent 
+> > > between:
+> > >   pci_clear_and_set_config_dword()
+> > > and
+> > >   pcie_capability_clear_and_set_dword()
+> > > 
+> > > And if changed, it would be again annoyingly inconsistent with 
+> > > pci_read/write_config_*(), oh well... And renaming pci_read/write_config_* 
+> > > into the hierarchical pci_config_read/write_*() form for would touch only 
+> > > ~6k lines... ;-D
+> > 
+> > I think it is a good question, but I don't have a clear answer. I don't
+> > know much about the name history.  As you mentioned, the above two
+> > accessors are the foundation operation, may it comes to @Bjorn decision.
+> > 
+> > The pci_clear_and_set_config_dword() is a variant of below pci accessors:
+> > 
+> >     pci_read_config_dword()
+> >     pci_write_config_dword()
+> > 
+> > At last, they are consistent :)
+> 
+> "pcie_capability_clear_and_set_dword" is specific to the PCIe
+> Capability, doesn't work for arbitrary config space, and doesn't
+> include the word "config".
+> 
+> "pci_clear_and_set_config_dword" seems consistent with the arbitrary
+> config space accessor pattern.
+> 
+> At least "clear_and_set" is consistent across both.
+> 
+> I'm not too bothered by the difference between "clear_and_set_dword"
+> (for the PCIe capability) and "clear_and_set_config_dword" (for
+> arbitrary things).
+> 
+> Yes, "pcie_capability_clear_and_set_config_dword" would be a little
+> more consistent, but seems excessively wordy (no pun intended).
+> 
+> But maybe I'm missing your point, Ilpo.  If so, what would you
+> propose?
+
+What I was hoping for a way to (eventually) have consistency in naming 
+like this (that is, the place where "config" or "capabilitity" appears 
+in the name):
+
+pci_config_read_dword()
+pci_config_clear_and_set_dword()
+pcie_capability_read_dword()
+pcie_capability_clear_and_set_dword()
+
+(+ the omitted clear/set/write & size variants)
+
+But thanks to pci_read_config_dword() & friends being there since dawn of 
+time and with 6k+ instances, I guess I'm just dreaming of impossible 
+things.
+
+-- 
+ i.
+
+--8323329-1899874312-1701341547=:1808--
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E55CC10DC2
+	for <linux-kernel@archiver.kernel.org>; Thu, 30 Nov 2023 18:38:04 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1346731AbjK3Sh4 (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Thu, 30 Nov 2023 13:37:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55802 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230162AbjK3Shv (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Thu, 30 Nov 2023 13:37:51 -0500
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FBDC10F4
+        for <linux-kernel@vger.kernel.org>; Thu, 30 Nov 2023 10:37:57 -0800 (PST)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F11F4C433C7;
+        Thu, 30 Nov 2023 18:37:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1701369477;
+        bh=KTVhbWtyOj5CHYptB/YZKupH8RBoVdAwyN+Tqnv2IoU=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=eQGSObfEQXMLIIKR6qHyTIIAkvri7MN76Pfg66IW6uLH1LHSD5zbVupZEwxvYUxXE
+         wDl4+SKwotJbMzkQH3H8p1iDblk8ocNDsu2RGzoYuoTVU2AP36Kr2+1YJZ+OXxr5mE
+         UJi6QFIr70DZVNBcg46d6209zrswsp/0gl7QdKdOog9MwYDuPTU4VIzF/Nk3QxslF4
+         iH5iO+rT67b8SU74Yzo6wUrRaE0uMjSKoRKCLGnHqrbLyy+kpPhnR0Y9caBCDxQXNU
+         YmpOF4uSi3tplWADKJ3XC1AdZ3iy4lCiCxmts2fi7IP6Qq1PPTC5JX+Nx5BAvQVfBD
+         MIXmEeOarJ+9A==
+Date: Thu, 30 Nov 2023 12:37:55 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>
+Cc: Shuai Xue <xueshuai@linux.alibaba.com>,
+        ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+        yangyicong@huawei.com, will@kernel.org,
+        Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+        robin.murphy@arm.com, chengyou@linux.alibaba.com,
+        LKML <linux-kernel@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+        rdunlap@infradead.org, mark.rutland@arm.com,
+        zhuo.song@linux.alibaba.com, renyu.zj@linux.alibaba.com
+Subject: Re: [PATCH v11 3/5] PCI: Move pci_clear_and_set_dword() helper to
+ PCI header
+Message-ID: <20231130183755.GA487634@bhelgaas>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <b2aeaf4-8960-8967-ce7b-663f9d77260@linux.intel.com>
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+On Thu, Nov 30, 2023 at 12:52:20PM +0200, Ilpo Järvinen wrote:
+> On Wed, 29 Nov 2023, Bjorn Helgaas wrote:
+> > On Mon, Nov 27, 2023 at 09:34:05AM +0800, Shuai Xue wrote:
+> > > On 2023/11/22 21:14, Ilpo Järvinen wrote:
+> > > > On Tue, 21 Nov 2023, Shuai Xue wrote:
+> > > > 
+> > > >> The clear and set pattern is commonly used for accessing PCI config,
+> > > >> move the helper pci_clear_and_set_dword() from aspm.c into PCI header.
+> > > >> In addition, rename to pci_clear_and_set_config_dword() to retain the
+> > > >> "config" information and match the other accessors.
+> > > >>
+> > > >> No functional change intended.
+> 
+> > > >> +
+> > > >> +void pci_clear_and_set_config_dword(const struct pci_dev *dev, int pos,
+> > > >> +				    u32 clear, u32 set)
+> > > > 
+> > > > Just noting that annoyingly the ordering within the name is inconsistent 
+> > > > between:
+> > > >   pci_clear_and_set_config_dword()
+> > > > and
+> > > >   pcie_capability_clear_and_set_dword()
+> > > > 
+> > > > And if changed, it would be again annoyingly inconsistent with 
+> > > > pci_read/write_config_*(), oh well... And renaming pci_read/write_config_* 
+> > > > into the hierarchical pci_config_read/write_*() form for would touch only 
+> > > > ~6k lines... ;-D
+> > > 
+> > > I think it is a good question, but I don't have a clear answer. I don't
+> > > know much about the name history.  As you mentioned, the above two
+> > > accessors are the foundation operation, may it comes to @Bjorn decision.
+> > > 
+> > > The pci_clear_and_set_config_dword() is a variant of below pci accessors:
+> > > 
+> > >     pci_read_config_dword()
+> > >     pci_write_config_dword()
+> > > 
+> > > At last, they are consistent :)
+> > 
+> > "pcie_capability_clear_and_set_dword" is specific to the PCIe
+> > Capability, doesn't work for arbitrary config space, and doesn't
+> > include the word "config".
+> > 
+> > "pci_clear_and_set_config_dword" seems consistent with the arbitrary
+> > config space accessor pattern.
+> > 
+> > At least "clear_and_set" is consistent across both.
+> > 
+> > I'm not too bothered by the difference between "clear_and_set_dword"
+> > (for the PCIe capability) and "clear_and_set_config_dword" (for
+> > arbitrary things).
+> > 
+> > Yes, "pcie_capability_clear_and_set_config_dword" would be a little
+> > more consistent, but seems excessively wordy (no pun intended).
+> > 
+> > But maybe I'm missing your point, Ilpo.  If so, what would you
+> > propose?
+> 
+> What I was hoping for a way to (eventually) have consistency in naming 
+> like this (that is, the place where "config" or "capabilitity" appears 
+> in the name):
+> 
+> pci_config_read_dword()
+> pci_config_clear_and_set_dword()
+> pcie_capability_read_dword()
+> pcie_capability_clear_and_set_dword()
+
+Ah, I see, thanks.
+
+> But thanks to pci_read_config_dword() & friends being there since dawn of 
+> time and with 6k+ instances, I guess I'm just dreaming of impossible 
+> things.
+
+Yeah, I think so.
+
+Bjorn
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 318055FF19;
+	Tue,  5 Dec 2023 14:21:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P/1sMhDu"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19F2FC433C7;
+	Tue,  5 Dec 2023 14:21:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1701786095;
+	bh=i1tccxd+eeEBFdaia4vgRnGqbSydm2KGkprxYV81Cww=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=P/1sMhDuwCzF2R1U8l9QkQcrlKg/XwJGUkDdhtEecCh2K0ZEq1AGgUDPqcLH8Mm+I
+	 4N4abTyCacNS/I/MevxRwM60PzEmr5Fu0U4OjRQ3FbMmEZb8PgTxNbVGwkDpfi1UQe
+	 WZ2CNHLdnF3CFF2WHBOhw9YtUPfMv9sNc+4z929tLNkVG9S6frWbW+AWOmKh4POWxm
+	 +8SZWYu3iRrD9G20XP0ylM+fhj74Feswty6fH1uh4y0UV2GTX5MrpM+EZdpmRISCFh
+	 FD0+0QBZa39GQUwrgCXxD+lzFLdTsU2pKgc0I1eZPKKJRkOhVV4BpoY55w5M47CUdd
+	 kGuBk/9ejUerA==
+Date: Tue, 5 Dec 2023 14:21:28 +0000
+From: Will Deacon <will@kernel.org>
+To: Dan Carpenter <dan.carpenter@linaro.org>
+Cc: oe-kbuild@lists.linux.dev, Shuai Xue <xueshuai@linux.alibaba.com>,
+	ilkka@os.amperecomputing.com, kaishen@linux.alibaba.com,
+	helgaas@kernel.org, yangyicong@huawei.com,
+	Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+	robin.murphy@arm.com, lkp@intel.com, oe-kbuild-all@lists.linux.dev,
+	chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+	rdunlap@infradead.org, mark.rutland@arm.com,
+	zhuo.song@linux.alibaba.com, renyu.zj@linux.alibaba.com
+Subject: Re: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+Message-ID: <20231205142128.GA18450@willie-the-truck>
+References: <20231121013400.18367-5-xueshuai@linux.alibaba.com>
+ <2d52f588-f584-4c01-8f41-227815a54e41@suswa.mountain>
+Precedence: bulk
+X-Mailing-List: oe-kbuild@lists.linux.dev
+List-Id: <oe-kbuild.lists.linux.dev>
+List-Subscribe: <mailto:oe-kbuild+subscribe@lists.linux.dev>
+List-Unsubscribe: <mailto:oe-kbuild+unsubscribe@lists.linux.dev>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2d52f588-f584-4c01-8f41-227815a54e41@suswa.mountain>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+
+On Sat, Nov 25, 2023 at 10:06:39AM +0300, Dan Carpenter wrote:
+> Hi Shuai,
+> 
+> kernel test robot noticed the following build warnings:
+> 
+> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> 
+> url:    https://github.com/intel-lab-lkp/linux/commits/Shuai-Xue/docs-perf-Add-description-for-Synopsys-DesignWare-PCIe-PMU-driver/20231121-093713
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
+> patch link:    https://lore.kernel.org/r/20231121013400.18367-5-xueshuai%40linux.alibaba.com
+> patch subject: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+> config: x86_64-randconfig-r071-20231123 (https://download.01.org/0day-ci/archive/20231124/202311241906.0ymlLjyo-lkp@intel.com/config)
+> compiler: clang version 16.0.4 (https://github.com/llvm/llvm-project.git ae42196bc493ffe877a7e3dff8be32035dea4d07)
+> reproduce: (https://download.01.org/0day-ci/archive/20231124/202311241906.0ymlLjyo-lkp@intel.com/reproduce)
+> 
+> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Reported-by: Dan Carpenter <error27@gmail.com>
+> | Closes: https://lore.kernel.org/r/202311241906.0ymlLjyo-lkp@intel.com/
+> 
+> smatch warnings:
+> drivers/perf/dwc_pcie_pmu.c:352 dwc_pcie_pmu_event_update() error: uninitialized symbol 'now'.
+> 
+> vim +/now +352 drivers/perf/dwc_pcie_pmu.c
+> 
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  338  static void dwc_pcie_pmu_event_update(struct perf_event *event)
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  339  {
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  340  	struct hw_perf_event *hwc = &event->hw;
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  341  	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  342  	u64 delta, prev, now;
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  343  
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  344  	do {
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  345  		prev = local64_read(&hwc->prev_count);
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  346  
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  347  		if (type == DWC_PCIE_LANE_EVENT)
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  348  			now = dwc_pcie_pmu_read_lane_event_counter(event);
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  349  		else if (type == DWC_PCIE_TIME_BASE_EVENT)
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  350  			now = dwc_pcie_pmu_read_time_based_counter(event);
+> 
+> uninitialized on else path.
+> 
+> 3481798a4ec51d1 Shuai Xue 2023-11-21  351  
+> 3481798a4ec51d1 Shuai Xue 2023-11-21 @352  	} while (local64_cmpxchg(&hwc->prev_count, prev, now) != prev);
+
+Shuai, any chance you can address this please? I think the event validation
+logic means that the type is only ever one of the cases you handle, so
+you probably just want to either initialise 'now' to 0 or WARN and return
+early if the type is unknown.
+
+Will
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from out30-133.freemail.mail.aliyun.com (out30-133.freemail.mail.aliyun.com [115.124.30.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B48E1A596;
+	Wed,  6 Dec 2023 10:29:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R321e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045192;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=20;SR=0;TI=SMTPD_---0VxxhQrx_1701854900;
+Received: from 30.25.233.235(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VxxhQrx_1701854900)
+          by smtp.aliyun-inc.com;
+          Wed, 06 Dec 2023 17:28:22 +0800
+Message-ID: <2c092b76-6b76-4675-94c8-2e4b0031c966@linux.alibaba.com>
+Date: Wed, 6 Dec 2023 17:28:15 +0800
+Precedence: bulk
+X-Mailing-List: oe-kbuild@lists.linux.dev
+List-Id: <oe-kbuild.lists.linux.dev>
+List-Subscribe: <mailto:oe-kbuild+subscribe@lists.linux.dev>
+List-Unsubscribe: <mailto:oe-kbuild+unsubscribe@lists.linux.dev>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+Content-Language: en-US
+To: Will Deacon <will@kernel.org>, Dan Carpenter <dan.carpenter@linaro.org>
+Cc: oe-kbuild@lists.linux.dev, ilkka@os.amperecomputing.com,
+ kaishen@linux.alibaba.com, helgaas@kernel.org, yangyicong@huawei.com,
+ Jonathan.Cameron@huawei.com, baolin.wang@linux.alibaba.com,
+ robin.murphy@arm.com, lkp@intel.com, oe-kbuild-all@lists.linux.dev,
+ chengyou@linux.alibaba.com, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
+ rdunlap@infradead.org, mark.rutland@arm.com, zhuo.song@linux.alibaba.com,
+ renyu.zj@linux.alibaba.com
+References: <20231121013400.18367-5-xueshuai@linux.alibaba.com>
+ <2d52f588-f584-4c01-8f41-227815a54e41@suswa.mountain>
+ <20231205142128.GA18450@willie-the-truck>
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+In-Reply-To: <20231205142128.GA18450@willie-the-truck>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+
+
+On 2023/12/5 22:21, Will Deacon wrote:
+> On Sat, Nov 25, 2023 at 10:06:39AM +0300, Dan Carpenter wrote:
+>> Hi Shuai,
+>>
+>> kernel test robot noticed the following build warnings:
+>>
+>> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+>>
+>> url:    https://github.com/intel-lab-lkp/linux/commits/Shuai-Xue/docs-perf-Add-description-for-Synopsys-DesignWare-PCIe-PMU-driver/20231121-093713
+>> base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
+>> patch link:    https://lore.kernel.org/r/20231121013400.18367-5-xueshuai%40linux.alibaba.com
+>> patch subject: [PATCH v11 4/5] drivers/perf: add DesignWare PCIe PMU driver
+>> config: x86_64-randconfig-r071-20231123 (https://download.01.org/0day-ci/archive/20231124/202311241906.0ymlLjyo-lkp@intel.com/config)
+>> compiler: clang version 16.0.4 (https://github.com/llvm/llvm-project.git ae42196bc493ffe877a7e3dff8be32035dea4d07)
+>> reproduce: (https://download.01.org/0day-ci/archive/20231124/202311241906.0ymlLjyo-lkp@intel.com/reproduce)
+>>
+>> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+>> the same patch/commit), kindly add following tags
+>> | Reported-by: kernel test robot <lkp@intel.com>
+>> | Reported-by: Dan Carpenter <error27@gmail.com>
+>> | Closes: https://lore.kernel.org/r/202311241906.0ymlLjyo-lkp@intel.com/
+>>
+>> smatch warnings:
+>> drivers/perf/dwc_pcie_pmu.c:352 dwc_pcie_pmu_event_update() error: uninitialized symbol 'now'.
+>>
+>> vim +/now +352 drivers/perf/dwc_pcie_pmu.c
+>>
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  338  static void dwc_pcie_pmu_event_update(struct perf_event *event)
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  339  {
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  340  	struct hw_perf_event *hwc = &event->hw;
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  341  	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  342  	u64 delta, prev, now;
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  343  
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  344  	do {
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  345  		prev = local64_read(&hwc->prev_count);
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  346  
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  347  		if (type == DWC_PCIE_LANE_EVENT)
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  348  			now = dwc_pcie_pmu_read_lane_event_counter(event);
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  349  		else if (type == DWC_PCIE_TIME_BASE_EVENT)
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  350  			now = dwc_pcie_pmu_read_time_based_counter(event);
+>>
+>> uninitialized on else path.
+>>
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21  351  
+>> 3481798a4ec51d1 Shuai Xue 2023-11-21 @352  	} while (local64_cmpxchg(&hwc->prev_count, prev, now) != prev);
+> 
+> Shuai, any chance you can address this please? I think the event validation
+> logic means that the type is only ever one of the cases you handle, so
+> you probably just want to either initialise 'now' to 0 or WARN and return
+> early if the type is unknown.
+
+Hi, Will, and Dan,
+
+As the type is checked in dwc_pcie_pmu_event_init(), I will fix this warning by
+initialising 'now' to 0.
+
+Thank you.
+Best Regards,
+Shuai
+
