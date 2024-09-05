@@ -1,0 +1,3097 @@
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 050E2C83F2C
+	for <qemu-devel@archiver.kernel.org>; Mon,  4 Sep 2023 10:50:39 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qd79J-0003oW-U9; Mon, 04 Sep 2023 06:49:41 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qd79H-0003ni-It; Mon, 04 Sep 2023 06:49:39 -0400
+Received: from wout2-smtp.messagingengine.com ([64.147.123.25])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qd79D-0001N5-7q; Mon, 04 Sep 2023 06:49:39 -0400
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+ by mailout.west.internal (Postfix) with ESMTP id 6B77532007F9;
+ Mon,  4 Sep 2023 06:49:29 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute5.internal (MEProxy); Mon, 04 Sep 2023 06:49:30 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=irrelevant.dk;
+ h=cc:cc:content-type:content-type:date:date:from:from
+ :in-reply-to:in-reply-to:message-id:mime-version:references
+ :reply-to:sender:subject:subject:to:to; s=fm3; t=1693824568; x=
+ 1693910968; bh=tJPEj+fjNH7kCozMYcrY9kliQQZ3lOfOA03Uorp7DpM=; b=S
+ 0pDyBJzmozYPOEJzKkl8VShGYLbOqdOEqteRhzlix8B76uZijeLn++c33j3ZVkXC
+ AvabNK3oj9ng0/2Y7MFK/cvzDLm81X3DkuJIok3ws196plf2K2kB2emovx3VDADI
+ B/w1A2EUo1lldUV1nh+esrZ5scgpfLyBlrk2CXrUn+o0OYo56/kIdw0lp5TfsOgP
+ 7xp0wJm/mospxNOeImHTD8dRrqXub/MVNOUAaWO1xe3Pvt+0ga8KgPtzNBEzEMij
+ /wMn48Yu6+tfru/8PGNHOskot54inws2cZSjzb4Xx8h3DLcqI/LGqLc1oBjRaffm
+ yiFNY1LaFqJWEtPvtg1jQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-type:content-type:date:date
+ :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+ :message-id:mime-version:references:reply-to:sender:subject
+ :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+ :x-sasl-enc; s=fm1; t=1693824568; x=1693910968; bh=tJPEj+fjNH7kC
+ ozMYcrY9kliQQZ3lOfOA03Uorp7DpM=; b=Ctj3j/0HHwbnjj0WdDCeEgm6Cl9/v
+ niygA4zYCgFe22yeY1ZregQ43/QmKbbsqaWIET9eQt4BxRkGFPc8XcbnPnXKXDQ/
+ EFOzRYCNasGeamQkZpKwKuoe1wc+tkD7b60Xn5Q6lducKvY8pyo8WuYIFRIsgez0
+ yva+vNqwksFgdyEXqGiYE8mnzUFWWtLYNaXPfEK+pJMH/AFKQh6vWZphJfQyO7lN
+ qpsoL+pGn3iVZ0szIb//jyBY3qsJvUgyYbjCMQHRW0Vl/krfeBBv8oPDokX/+cEX
+ OOeD38t2IU3mVumlzn5WyunPHK3EtpcDuoKZCw2hyc5wDY4SMvE+9FQQw==
+X-ME-Sender: <xms:Nrb1ZEe0ACtHUGWWj8w7TsFpuwJAMOjF0vMaCBy57Jjqfwkkmmk8vQ>
+ <xme:Nrb1ZGOorvxvBLIgrc8iHWWhu_Wb0HEZeDwpdLcMVBfetral_d3v02n9XhFacAZHx
+ 5LJQG3zb3MabvYir10>
+X-ME-Received: <xmr:Nrb1ZFj8So7q109l3fT8v402x4vRJx4FgH-SmZNrw5xoLZWWCEqTF1UbEYBj>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrudegkedgfeegucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhepfffhvfevuffkfhggtggujgesghdtreertddtjeenucfhrhhomhepmfhlrghu
+ shculfgvnhhsvghnuceoihhtshesihhrrhgvlhgvvhgrnhhtrdgukheqnecuggftrfgrth
+ htvghrnhepffduvdfhheejudfgieejueeileegveduvdelhfekhffgteetffdtvdekveei
+ leefnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpe
+ dtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehithhssehirhhrvghlvghvrghnthdrughk
+X-ME-Proxy: <xmx:Nrb1ZJ_tpyqsqai-N4dsVhIay6lQ2LlnBZBVq7lxkRvvX2SwKKfT0w>
+ <xmx:Nrb1ZAvL1DWf6cDmHRyvz59Fn_3lLD8p8WRzFNfXkXn5mZrH7OzlsA>
+ <xmx:Nrb1ZAHyEFMqcowbiJjsA6P2RuFPQSsF2DELb_kY0LjbjGlUeuSsGQ>
+ <xmx:OLb1ZNNJIU6BliJNYVbHeSvsfSiDwrlrvivHLUAyUoaIf1O3N3HL2g>
+Feedback-ID: idc91472f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 4 Sep 2023 06:49:26 -0400 (EDT)
+Date: Mon, 4 Sep 2023 12:49:20 +0200
+From: Klaus Jensen <its@irrelevant.dk>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Corey Minyard <cminyard@mvista.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ Peter Maydell <peter.maydell@linaro.org>,
+ Jason Wang <jasowang@redhat.com>, Keith Busch <kbusch@kernel.org>,
+ Lior Weintraub <liorw@pliops.com>, Jeremy Kerr <jk@codeconstruct.com.au>,
+ Matt Johnston <matt@codeconstruct.com.au>,
+ Peter Delevoryas <peter@pjd.dev>, qemu-devel@nongnu.org,
+ qemu-arm@nongnu.org, qemu-block@nongnu.org,
+ Klaus Jensen <k.jensen@samsung.com>
+Subject: Re: [PATCH v4 2/3] hw/i2c: add mctp core
+Message-ID: <ZPW2MFWp6mIvReS5@cormorant.local>
+References: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+ <20230823-nmi-i2c-v4-2-2b0f86e5be25@samsung.com>
+ <20230830153123.00006cc4@Huawei.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="8/teniqNx7Xmj1mb"
+Content-Disposition: inline
+In-Reply-To: <20230830153123.00006cc4@Huawei.com>
+Received-SPF: pass client-ip=64.147.123.25; envelope-from=its@irrelevant.dk;
+ helo=wout2-smtp.messagingengine.com
+X-Spam_score_int: -27
+X-Spam_score: -2.8
+X-Spam_bar: --
+X-Spam_report: (-2.8 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1,
+ RCVD_IN_DNSWL_LOW=-0.7, SPF_HELO_PASS=-0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: RO
+Content-Length: 7726
+Lines: 248
+
+
+--8/teniqNx7Xmj1mb
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Aug 30 15:31, Jonathan Cameron wrote:
+> On Wed, 23 Aug 2023 11:21:59 +0200
+> Klaus Jensen <its@irrelevant.dk> wrote:
+>=20
+> > From: Klaus Jensen <k.jensen@samsung.com>
+> >=20
+> > Add an abstract MCTP over I2C endpoint model. This implements MCTP
+> > control message handling as well as handling the actual I2C transport
+> > (packetization).
+> >=20
+> > Devices are intended to derive from this and implement the class
+> > methods.
+> >=20
+> > Parts of this implementation is inspired by code[1] previously posted by
+> > Jonathan Cameron.
+> >=20
+> > Squashed a fix[2] from Matt Johnston.
+> >=20
+> >   [1]: https://lore.kernel.org/qemu-devel/20220520170128.4436-1-Jonatha=
+n.Cameron@huawei.com/
+> >   [2]: https://lore.kernel.org/qemu-devel/20221121080445.GA29062@codeco=
+nstruct.com.au/
+> >=20
+> > Signed-off-by: Klaus Jensen <k.jensen@samsung.com>
+>=20
+> I made the minor changes to the CXL FM-API PoC to use this and all works =
+as expected so
+>=20
+> Tested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+>=20
+>=20
+> Some minor things inline.  With those tidied up or ignored with clear rea=
+soning.
+>=20
+> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+>=20
+>=20
+> > diff --git a/hw/i2c/mctp.c b/hw/i2c/mctp.c
+> > new file mode 100644
+> > index 000000000000..217073d62435
+> > --- /dev/null
+> > +++ b/hw/i2c/mctp.c
+>=20
+>=20
+> ...
+>=20
+>=20
+> > +static int i2c_mctp_event_cb(I2CSlave *i2c, enum i2c_event event)
+> > +{
+> > +    MCTPI2CEndpoint *mctp =3D MCTP_I2C_ENDPOINT(i2c);
+> > +    MCTPI2CEndpointClass *mc =3D MCTP_I2C_ENDPOINT_GET_CLASS(mctp);
+> > +    MCTPI2CPacket *pkt =3D (MCTPI2CPacket *)mctp->buffer;
+> > +    size_t payload_len;
+> > +    uint8_t pec, pktseq, msgtype;
+> > +
+> > +    switch (event) {
+> > +    case I2C_START_SEND:
+> > +        if (mctp->state =3D=3D I2C_MCTP_STATE_IDLE) {
+> > +            mctp->state =3D I2C_MCTP_STATE_RX_STARTED;
+> > +        } else if (mctp->state !=3D I2C_MCTP_STATE_RX) {
+> > +            return -1;
+> > +        }
+> > +
+> > +        /* the i2c core eats the slave address, so put it back in */
+> > +        pkt->i2c.dest =3D i2c->address << 1;
+> > +        mctp->len =3D 1;
+> > +
+> > +        return 0;
+> > +
+> > +    case I2C_FINISH:
+> > +        if (mctp->len < sizeof(MCTPI2CPacket) + 1) {
+> > +            trace_i2c_mctp_drop_short_packet(mctp->len);
+> > +            goto drop;
+> > +        }
+> > +
+> > +        payload_len =3D mctp->len - (1 + offsetof(MCTPI2CPacket, mctp.=
+payload));
+> > +
+> > +        if (pkt->i2c.byte_count + 3 !=3D mctp->len - 1) {
+> > +            trace_i2c_mctp_drop_invalid_length(pkt->i2c.byte_count + 3,
+> > +                                               mctp->len - 1);
+> > +            goto drop;
+> > +        }
+> > +
+> > +        pec =3D i2c_smbus_pec(0, mctp->buffer, mctp->len - 1);
+> > +        if (mctp->buffer[mctp->len - 1] !=3D pec) {
+> > +            trace_i2c_mctp_drop_invalid_pec(mctp->buffer[mctp->len - 1=
+], pec);
+> > +            goto drop;
+> > +        }
+> > +
+> > +        if (!(pkt->mctp.hdr.eid.dest =3D=3D mctp->my_eid ||
+> > +              pkt->mctp.hdr.eid.dest =3D=3D 0)) {
+> > +            trace_i2c_mctp_drop_invalid_eid(pkt->mctp.hdr.eid.dest,
+> > +                                            mctp->my_eid);
+> > +            goto drop;
+> > +        }
+> > +
+> > +        pktseq =3D FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, PKTSEQ=
+);
+> > +
+> > +        if (FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, SOM)) {
+> > +            mctp->tx.is_control =3D false;
+> > +
+> > +            if (mctp->state =3D=3D I2C_MCTP_STATE_RX) {
+> > +                mc->reset(mctp);
+> > +            }
+> > +
+> > +            mctp->state =3D I2C_MCTP_STATE_RX;
+> > +
+> > +            mctp->tx.addr =3D pkt->i2c.source >> 1;
+> > +            mctp->tx.eid =3D pkt->mctp.hdr.eid.source;
+> > +            mctp->tx.tag =3D FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLA=
+GS, TAG);
+> > +            mctp->tx.pktseq =3D pktseq;
+> > +
+> > +            msgtype =3D FIELD_EX8(pkt->mctp.payload[0], MCTP_MESSAGE_H=
+, TYPE);
+> > +
+> > +            if (msgtype =3D=3D MCTP_MESSAGE_TYPE_CONTROL) {
+> > +                mctp->tx.is_control =3D true;
+> > +
+> > +                i2c_mctp_handle_control(mctp);
+> > +
+> > +                return 0;
+> > +            }
+> > +        } else if (mctp->state =3D=3D I2C_MCTP_STATE_RX_STARTED) {
+> > +            trace_i2c_mctp_drop_expected_som();
+> > +            goto drop;
+> > +        } else if (pktseq !=3D (++mctp->tx.pktseq & 0x3)) {
+> > +            trace_i2c_mctp_drop_invalid_pktseq(pktseq, mctp->tx.pktseq=
+ & 0x3);
+> > +            goto drop;
+> > +        }
+> > +
+> > +        mc->put_buf(mctp, i2c_mctp_payload(mctp->buffer), payload_len);
+>=20
+> Given this returns -1 on error should probably handle errors.
+>=20
+
+Yes.
+
+The event callback should only potentially return -1 in the case of
+I2C_START_SEND, so I just do a `goto drop` here.
+
+>=20
+> > +
+> > +        if (FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, EOM)) {
+> > +            mc->handle(mctp);
+> > +            mctp->state =3D I2C_MCTP_STATE_WAIT_TX;
+> > +        }
+> > +
+> > +        return 0;
+> > +
+> > +    default:
+> > +        return -1;
+> > +    }
+> > +
+> > +drop:
+> > +    mc->reset(mctp);
+> > +
+> > +    mctp->state =3D I2C_MCTP_STATE_IDLE;
+> > +
+> > +    return 0;
+> > +}
+>=20
+> ...
+>=20
+>=20
+> > diff --git a/include/hw/i2c/mctp.h b/include/hw/i2c/mctp.h
+> > new file mode 100644
+> > index 000000000000..fccbf249cdbe
+> > --- /dev/null
+> > +++ b/include/hw/i2c/mctp.h
+> > @@ -0,0 +1,127 @@
+> > +#ifndef QEMU_I2C_MCTP_H
+> > +#define QEMU_I2C_MCTP_H
+> > +
+> > +#include "qom/object.h"
+> > +#include "hw/qdev-core.h"
+> > +
+> > +#define TYPE_MCTP_I2C_ENDPOINT "mctp-i2c-endpoint"
+> > +OBJECT_DECLARE_TYPE(MCTPI2CEndpoint, MCTPI2CEndpointClass, MCTP_I2C_EN=
+DPOINT)
+> > +
+> > +struct MCTPI2CEndpointClass {
+> > +    I2CSlaveClass parent_class;
+> > +
+> > +    /**
+> > +     *
+>=20
+> Drop the blank line for consistency with the other comments.
+>=20
+> > +     * put_buf() - receive incoming message fragment
+> > +     *
+> > +     * Must returns 0 for succes or -1 for error.
+>=20
+> I would expect any negative to count as error rather than just -1.
+> Also, simple imperative should be clear enough
+> 	* Return 0 for success or negative for error.
+>=20
+> > +     */
+> > +    int (*put_buf)(MCTPI2CEndpoint *mctp, uint8_t *buf, size_t len);
+> > +
+> > +    /**
+> > +     * get_buf() - provide pointer to message fragment
+> > +     *
+> > +     * Called by the mctp subsystem to request a pointer to the next m=
+essage
+> > +     * fragment. The implementation must advance its internal position=
+ such
+> > +     * that successive calls returns the next fragments.
+> Subsequent call with return next fragment.
+>=20
+> Up to the implementation to decide how it does this.
+>=20
+> > +     *
+> > +     * Must return the number of bytes available.
+> 	Return number of bytes in message fragment.
+>=20
+> Available might mean in all fragments.
+>=20
+
+Thanks for these suggestions, I worked that in.
+
+--8/teniqNx7Xmj1mb
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCgAdFiEEUigzqnXi3OaiR2bATeGvMW1PDekFAmT1ti8ACgkQTeGvMW1P
+DekUqwgAljYNSoFtVO4IovqEhjrqkL9wIyfFJiy66EuJwmZfNb6LY2Xx80J0aix8
+ZUjBztcDeFGvOKZm9dimvSh8HrExMOu7HbFQm8BsFuP1Y8rZ9wLutMmW6luFCfni
+e6DLUv2VRZJJt8KkGgOa+qcqNbBAZ7qBuWDKCNzlbvYBFJ3ofofArXySfwiCRwfY
+moBbQAWVB4WQJ+JneD11Sn/Y9Nt84OsY8vncN2LmaApNgVlE7yoVO7+T95KMc7xr
+8GaLPEjAPd0mEevgQU5KSyE6quPiTeGHm0uOJ2v7wTtLO9ctOJXRyUCINLiSprfj
+Flokh9VcymJTAXJO+2mBCv6vZWggFQ==
+=xH9s
+-----END PGP SIGNATURE-----
+
+--8/teniqNx7Xmj1mb--
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6FD6C6FA8F
+	for <qemu-devel@archiver.kernel.org>; Wed, 30 Aug 2023 14:48:23 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qbMTk-0007kj-LV; Wed, 30 Aug 2023 10:47:32 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1qbMTa-0007Ih-LB; Wed, 30 Aug 2023 10:47:22 -0400
+Received: from frasgout.his.huawei.com ([185.176.79.56])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1qbMTT-0007qc-4T; Wed, 30 Aug 2023 10:47:22 -0400
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+ by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4RbRpy0TS0z67yc8;
+ Wed, 30 Aug 2023 22:42:50 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Wed, 30 Aug
+ 2023 15:47:09 +0100
+Date: Wed, 30 Aug 2023 15:47:08 +0100
+To: Klaus Jensen <its@irrelevant.dk>
+CC: Corey Minyard <cminyard@mvista.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+ Peter Maydell <peter.maydell@linaro.org>, Jason Wang <jasowang@redhat.com>,
+ Keith Busch <kbusch@kernel.org>, Lior Weintraub <liorw@pliops.com>, Jeremy
+ Kerr <jk@codeconstruct.com.au>, Matt Johnston <matt@codeconstruct.com.au>,
+ Peter Delevoryas <peter@pjd.dev>, <qemu-devel@nongnu.org>,
+ <qemu-arm@nongnu.org>, <qemu-block@nongnu.org>, "Klaus Jensen"
+ <k.jensen@samsung.com>
+Subject: Re: [PATCH v4 3/3] hw/nvme: add nvme management interface model
+Message-ID: <20230830154708.000045ef@Huawei.com>
+In-Reply-To: <20230823-nmi-i2c-v4-3-2b0f86e5be25@samsung.com>
+References: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+ <20230823-nmi-i2c-v4-3-2b0f86e5be25@samsung.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500003.china.huawei.com (7.191.162.67) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Received-SPF: pass client-ip=185.176.79.56;
+ envelope-from=jonathan.cameron@huawei.com; helo=frasgout.his.huawei.com
+X-Spam_score_int: -41
+X-Spam_score: -4.2
+X-Spam_bar: ----
+X-Spam_report: (-4.2 / 5.0 requ) BAYES_00=-1.9, RCVD_IN_DNSWL_MED=-2.3,
+ RCVD_IN_MSPIKE_H3=0.001, RCVD_IN_MSPIKE_WL=0.001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Reply-to: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+From: Jonathan Cameron via <qemu-devel@nongnu.org>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: RO
+Content-Length: 5938
+Lines: 226
+
+On Wed, 23 Aug 2023 11:22:00 +0200
+Klaus Jensen <its@irrelevant.dk> wrote:
+
+> From: Klaus Jensen <k.jensen@samsung.com>
+> 
+> Add the 'nmi-i2c' device that emulates an NVMe Management Interface
+> controller.
+> 
+> Initial support is very basic (Read NMI DS, Configuration Get).
+> 
+> This is based on previously posted code by Padmakar Kalghatgi, Arun
+> Kumar Agasar and Saurav Kumar.
+> 
+> Signed-off-by: Klaus Jensen <k.jensen@samsung.com>
+
+Hi Klaus
+
+Minor suggestions inline.  Either way given how trivial they are
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+> diff --git a/hw/nvme/nmi-i2c.c b/hw/nvme/nmi-i2c.c
+> new file mode 100644
+> index 000000000000..9040ba28a87c
+> --- /dev/null
+> +++ b/hw/nvme/nmi-i2c.c
+> @@ -0,0 +1,418 @@
+...
+
+> +#define NMI_MAX_MESSAGE_LENGTH 4224
+
+Spec reference or similar would be good for this.
+
+...
+
+> +
+> +static void nmi_set_error(NMIDevice *nmi, uint8_t status)
+> +{
+> +    uint8_t buf[4] = {};
+> +
+> +    buf[0] = status;
+
+Could just do
+
+    uint8_t buf[4] = { status, };
+
+> +
+> +    memcpy(nmi->scratch + nmi->pos, buf, 4);
+> +    nmi->pos += 4;
+sizeof(buf)
+
+> +}
+> +
+> +static void nmi_handle_mi_read_nmi_ds(NMIDevice *nmi, NMIRequest *request)
+> +{
+> +    I2CSlave *i2c = I2C_SLAVE(nmi);
+> +
+> +    uint32_t dw0 = le32_to_cpu(request->dw0);
+> +    uint8_t dtyp = (dw0 >> 24) & 0xf;
+
+Maybe FIELD_EX32() with appropriate defines?
+
+> +    uint8_t *buf;
+> +    size_t len;
+> +
+> +    trace_nmi_handle_mi_read_nmi_ds(dtyp);
+> +
+> +    static uint8_t nmi_ds_subsystem[36] = {
+> +        0x00,       /* success */
+> +        0x20, 0x00, /* response data length */
+> +        0x00,       /* reserved */
+> +        0x00,       /* number of ports */
+> +        0x01,       /* major version */
+> +        0x01,       /* minor version */
+> +    };
+> +
+> +    /* cannot be static since we need to patch in the i2c address */
+> +    uint8_t nmi_ds_ports[36] = {
+> +        0x00,       /* success */
+> +        0x20, 0x00, /* response data length */
+> +        0x00,       /* reserved */
+> +        0x02,       /* port type (smbus) */
+> +        0x00,       /* reserved */
+> +        0x40, 0x00, /* maximum mctp transission unit size (64 bytes) */
+> +        0x00, 0x00, 0x00, 0x00, /* management endpoint buffer size */
+> +        0x00,       /* vpd i2c address */
+> +        0x00,       /* vpd i2c frequency */
+> +        0x00,       /* management endpoint i2c address */
+> +        0x01,       /* management endpoint i2c frequency */
+> +        0x00,       /* nvme basic management command NOT supported */
+> +    };
+> +
+> +    /**
+> +     * Controller Information is zeroed, since there are no associated
+> +     * controllers at this point.
+> +     */
+> +    static uint8_t nmi_ds_ctrl[36] = {};
+> +
+> +    /**
+> +     * For the Controller List, Optionally Supported Command List and
+> +     * Management Endpoint Buffer Supported Command List data structures.
+> +     *
+> +     * The Controller List data structure is defined in the NVM Express Base
+> +     * Specification, revision 2.0b, Figure 134.
+> +     */
+> +    static uint8_t nmi_ds_empty[6] = {
+> +        0x00,       /* success */
+> +        0x02,       /* response data length */
+> +        0x00, 0x00, /* reserved */
+> +        0x00, 0x00, /* number of entries (zero) */
+> +    };
+> +
+> +    switch (dtyp) {
+> +    case NMI_CMD_READ_NMI_DS_SUBSYSTEM:
+> +        len = sizeof(nmi_ds_subsystem);
+> +        buf = nmi_ds_subsystem;
+> +
+> +        break;
+> +
+> +    case NMI_CMD_READ_NMI_DS_PORTS:
+> +        len = sizeof(nmi_ds_ports);
+> +        buf = nmi_ds_ports;
+> +
+> +        /* patch in the i2c address of the endpoint */
+> +        buf[14] = i2c->address;
+> +
+> +        break;
+> +
+> +    case NMI_CMD_READ_NMI_DS_CTRL_INFO:
+> +        len = sizeof(nmi_ds_ctrl);
+> +        buf = nmi_ds_ctrl;
+> +
+> +        break;
+> +
+> +    case NMI_CMD_READ_NMI_DS_CTRL_LIST:
+> +    case NMI_CMD_READ_NMI_DS_OPT_CMD_SUPPORT:
+> +    case NMI_CMD_READ_NMI_DS_MEB_CMD_SUPPORT:
+> +        len = sizeof(nmi_ds_empty);
+> +        buf = nmi_ds_empty;
+> +
+> +        break;
+> +
+> +    default:
+> +        nmi_set_parameter_error(nmi, offsetof(NMIRequest, dw0) + 4, 0);
+> +
+> +        return;
+> +    }
+> +
+> +    memcpy(nmi->scratch + nmi->pos, buf, len);
+> +    nmi->pos += len;
+> +}
+> +
+
+> +static void nmi_handle_mi_config_get(NMIDevice *nmi, NMIRequest *request)
+> +{
+> +    uint32_t dw0 = le32_to_cpu(request->dw0);
+> +    uint8_t identifier = dw0 & 0xff;
+> +    uint8_t *buf;
+> +
+> +    static uint8_t smbus_freq[4] = {
+> +        0x00,               /* success */
+> +        0x01, 0x00, 0x00,   /* 100 kHz */
+> +    };
+
+const for these? Same for other similar buffers.
+
+> +
+> +    static uint8_t mtu[4] = {
+> +        0x00,       /* success */
+> +        0x40, 0x00, /* 64 */
+> +        0x00,       /* reserved */
+> +    };
+> +
+> +    trace_nmi_handle_mi_config_get(identifier);
+> +
+> +    switch (identifier) {
+> +    case NMI_CMD_CONFIGURATION_GET_SMBUS_FREQ:
+> +        buf = smbus_freq;
+> +        break;
+> +
+> +    case NMI_CMD_CONFIGURATION_GET_MCTP_TRANSMISSION_UNIT:
+> +        buf = mtu;
+> +        break;
+> +
+> +    default:
+> +        nmi_set_parameter_error(nmi, 0x0, offsetof(NMIRequest, dw0));
+> +        return;
+> +    }
+> +
+> +    memcpy(nmi->scratch + nmi->pos, buf, 4);
+> +    nmi->pos += 4;
+> +}
+> +
+
+
+
+> +static void nmi_handle(MCTPI2CEndpoint *mctp)
+> +{
+> +    NMIDevice *nmi = NMI_I2C_DEVICE(mctp);
+> +    NMIMessage *msg = (NMIMessage *)nmi->buffer;
+> +    uint32_t crc;
+> +    uint8_t nmimt;
+> +
+> +    uint8_t buf[] = {
+
+const?
+
+> +        msg->mctpd,
+> +        FIELD_DP8(msg->nmp, NMI_NMP, ROR, 1),
+> +        0x0, 0x0,
+> +    };
+> +
+> +    if (FIELD_EX8(msg->mctpd, NMI_MCTPD, MT) != NMI_MCTPD_MT_NMI) {
+> +        goto drop;
+> +    }
+> +
+> +    if (FIELD_EX8(msg->mctpd, NMI_MCTPD, IC) != NMI_MCTPD_IC_ENABLED) {
+> +        goto drop;
+> +    }
+> +
+> +    memcpy(nmi->scratch, buf, sizeof(buf));
+
+Jonathan
+
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9AF3C83F01
+	for <qemu-devel@archiver.kernel.org>; Wed, 30 Aug 2023 14:32:32 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qbMEN-0001EB-0V; Wed, 30 Aug 2023 10:31:39 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1qbMEK-0001DK-T6; Wed, 30 Aug 2023 10:31:36 -0400
+Received: from frasgout.his.huawei.com ([185.176.79.56])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1qbMEF-00047y-GO; Wed, 30 Aug 2023 10:31:36 -0400
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+ by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4RbRSn0gSPz67Q0T;
+ Wed, 30 Aug 2023 22:27:05 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Wed, 30 Aug
+ 2023 15:31:24 +0100
+Date: Wed, 30 Aug 2023 15:31:23 +0100
+To: Klaus Jensen <its@irrelevant.dk>
+CC: Corey Minyard <cminyard@mvista.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+ Peter Maydell <peter.maydell@linaro.org>, Jason Wang <jasowang@redhat.com>,
+ Keith Busch <kbusch@kernel.org>, Lior Weintraub <liorw@pliops.com>, Jeremy
+ Kerr <jk@codeconstruct.com.au>, Matt Johnston <matt@codeconstruct.com.au>,
+ Peter Delevoryas <peter@pjd.dev>, <qemu-devel@nongnu.org>,
+ <qemu-arm@nongnu.org>, <qemu-block@nongnu.org>, "Klaus Jensen"
+ <k.jensen@samsung.com>
+Subject: Re: [PATCH v4 2/3] hw/i2c: add mctp core
+Message-ID: <20230830153123.00006cc4@Huawei.com>
+In-Reply-To: <20230823-nmi-i2c-v4-2-2b0f86e5be25@samsung.com>
+References: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+ <20230823-nmi-i2c-v4-2-2b0f86e5be25@samsung.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Received-SPF: pass client-ip=185.176.79.56;
+ envelope-from=jonathan.cameron@huawei.com; helo=frasgout.his.huawei.com
+X-Spam_score_int: -41
+X-Spam_score: -4.2
+X-Spam_bar: ----
+X-Spam_report: (-4.2 / 5.0 requ) BAYES_00=-1.9, RCVD_IN_DNSWL_MED=-2.3,
+ RCVD_IN_MSPIKE_H3=0.001, RCVD_IN_MSPIKE_WL=0.001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Reply-to: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+From: Jonathan Cameron via <qemu-devel@nongnu.org>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: RO
+Content-Length: 9080
+Lines: 306
+
+On Wed, 23 Aug 2023 11:21:59 +0200
+Klaus Jensen <its@irrelevant.dk> wrote:
+
+> From: Klaus Jensen <k.jensen@samsung.com>
+> 
+> Add an abstract MCTP over I2C endpoint model. This implements MCTP
+> control message handling as well as handling the actual I2C transport
+> (packetization).
+> 
+> Devices are intended to derive from this and implement the class
+> methods.
+> 
+> Parts of this implementation is inspired by code[1] previously posted by
+> Jonathan Cameron.
+> 
+> Squashed a fix[2] from Matt Johnston.
+> 
+>   [1]: https://lore.kernel.org/qemu-devel/20220520170128.4436-1-Jonathan.Cameron@huawei.com/
+>   [2]: https://lore.kernel.org/qemu-devel/20221121080445.GA29062@codeconstruct.com.au/
+> 
+> Signed-off-by: Klaus Jensen <k.jensen@samsung.com>
+
+I made the minor changes to the CXL FM-API PoC to use this and all works as expected so
+
+Tested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+
+Some minor things inline.  With those tidied up or ignored with clear reasoning.
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+
+> diff --git a/hw/i2c/mctp.c b/hw/i2c/mctp.c
+> new file mode 100644
+> index 000000000000..217073d62435
+> --- /dev/null
+> +++ b/hw/i2c/mctp.c
+
+
+...
+
+
+> +static int i2c_mctp_event_cb(I2CSlave *i2c, enum i2c_event event)
+> +{
+> +    MCTPI2CEndpoint *mctp = MCTP_I2C_ENDPOINT(i2c);
+> +    MCTPI2CEndpointClass *mc = MCTP_I2C_ENDPOINT_GET_CLASS(mctp);
+> +    MCTPI2CPacket *pkt = (MCTPI2CPacket *)mctp->buffer;
+> +    size_t payload_len;
+> +    uint8_t pec, pktseq, msgtype;
+> +
+> +    switch (event) {
+> +    case I2C_START_SEND:
+> +        if (mctp->state == I2C_MCTP_STATE_IDLE) {
+> +            mctp->state = I2C_MCTP_STATE_RX_STARTED;
+> +        } else if (mctp->state != I2C_MCTP_STATE_RX) {
+> +            return -1;
+> +        }
+> +
+> +        /* the i2c core eats the slave address, so put it back in */
+> +        pkt->i2c.dest = i2c->address << 1;
+> +        mctp->len = 1;
+> +
+> +        return 0;
+> +
+> +    case I2C_FINISH:
+> +        if (mctp->len < sizeof(MCTPI2CPacket) + 1) {
+> +            trace_i2c_mctp_drop_short_packet(mctp->len);
+> +            goto drop;
+> +        }
+> +
+> +        payload_len = mctp->len - (1 + offsetof(MCTPI2CPacket, mctp.payload));
+> +
+> +        if (pkt->i2c.byte_count + 3 != mctp->len - 1) {
+> +            trace_i2c_mctp_drop_invalid_length(pkt->i2c.byte_count + 3,
+> +                                               mctp->len - 1);
+> +            goto drop;
+> +        }
+> +
+> +        pec = i2c_smbus_pec(0, mctp->buffer, mctp->len - 1);
+> +        if (mctp->buffer[mctp->len - 1] != pec) {
+> +            trace_i2c_mctp_drop_invalid_pec(mctp->buffer[mctp->len - 1], pec);
+> +            goto drop;
+> +        }
+> +
+> +        if (!(pkt->mctp.hdr.eid.dest == mctp->my_eid ||
+> +              pkt->mctp.hdr.eid.dest == 0)) {
+> +            trace_i2c_mctp_drop_invalid_eid(pkt->mctp.hdr.eid.dest,
+> +                                            mctp->my_eid);
+> +            goto drop;
+> +        }
+> +
+> +        pktseq = FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, PKTSEQ);
+> +
+> +        if (FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, SOM)) {
+> +            mctp->tx.is_control = false;
+> +
+> +            if (mctp->state == I2C_MCTP_STATE_RX) {
+> +                mc->reset(mctp);
+> +            }
+> +
+> +            mctp->state = I2C_MCTP_STATE_RX;
+> +
+> +            mctp->tx.addr = pkt->i2c.source >> 1;
+> +            mctp->tx.eid = pkt->mctp.hdr.eid.source;
+> +            mctp->tx.tag = FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, TAG);
+> +            mctp->tx.pktseq = pktseq;
+> +
+> +            msgtype = FIELD_EX8(pkt->mctp.payload[0], MCTP_MESSAGE_H, TYPE);
+> +
+> +            if (msgtype == MCTP_MESSAGE_TYPE_CONTROL) {
+> +                mctp->tx.is_control = true;
+> +
+> +                i2c_mctp_handle_control(mctp);
+> +
+> +                return 0;
+> +            }
+> +        } else if (mctp->state == I2C_MCTP_STATE_RX_STARTED) {
+> +            trace_i2c_mctp_drop_expected_som();
+> +            goto drop;
+> +        } else if (pktseq != (++mctp->tx.pktseq & 0x3)) {
+> +            trace_i2c_mctp_drop_invalid_pktseq(pktseq, mctp->tx.pktseq & 0x3);
+> +            goto drop;
+> +        }
+> +
+> +        mc->put_buf(mctp, i2c_mctp_payload(mctp->buffer), payload_len);
+
+Given this returns -1 on error should probably handle errors.
+
+
+> +
+> +        if (FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, EOM)) {
+> +            mc->handle(mctp);
+> +            mctp->state = I2C_MCTP_STATE_WAIT_TX;
+> +        }
+> +
+> +        return 0;
+> +
+> +    default:
+> +        return -1;
+> +    }
+> +
+> +drop:
+> +    mc->reset(mctp);
+> +
+> +    mctp->state = I2C_MCTP_STATE_IDLE;
+> +
+> +    return 0;
+> +}
+
+...
+
+
+> diff --git a/include/hw/i2c/mctp.h b/include/hw/i2c/mctp.h
+> new file mode 100644
+> index 000000000000..fccbf249cdbe
+> --- /dev/null
+> +++ b/include/hw/i2c/mctp.h
+> @@ -0,0 +1,127 @@
+> +#ifndef QEMU_I2C_MCTP_H
+> +#define QEMU_I2C_MCTP_H
+> +
+> +#include "qom/object.h"
+> +#include "hw/qdev-core.h"
+> +
+> +#define TYPE_MCTP_I2C_ENDPOINT "mctp-i2c-endpoint"
+> +OBJECT_DECLARE_TYPE(MCTPI2CEndpoint, MCTPI2CEndpointClass, MCTP_I2C_ENDPOINT)
+> +
+> +struct MCTPI2CEndpointClass {
+> +    I2CSlaveClass parent_class;
+> +
+> +    /**
+> +     *
+
+Drop the blank line for consistency with the other comments.
+
+> +     * put_buf() - receive incoming message fragment
+> +     *
+> +     * Must returns 0 for succes or -1 for error.
+
+I would expect any negative to count as error rather than just -1.
+Also, simple imperative should be clear enough
+	* Return 0 for success or negative for error.
+
+> +     */
+> +    int (*put_buf)(MCTPI2CEndpoint *mctp, uint8_t *buf, size_t len);
+> +
+> +    /**
+> +     * get_buf() - provide pointer to message fragment
+> +     *
+> +     * Called by the mctp subsystem to request a pointer to the next message
+> +     * fragment. The implementation must advance its internal position such
+> +     * that successive calls returns the next fragments.
+Subsequent call with return next fragment.
+
+Up to the implementation to decide how it does this.
+
+> +     *
+> +     * Must return the number of bytes available.
+	Return number of bytes in message fragment.
+
+Available might mean in all fragments.
+
+> +     */
+> +    size_t (*get_buf)(MCTPI2CEndpoint *mctp, const uint8_t **buf,
+> +                      size_t maxlen, uint8_t *mctp_flags);
+> +
+> +    /**
+> +     * handle() - handle an MCTP message
+> +     *
+> +     * Called by the mctp subsystem when a full message has been delivered and
+> +     * may be parsed and processed.
+> +     */
+> +    void (*handle)(MCTPI2CEndpoint *mctp);
+> +
+> +    /**
+> +     * reset() - reset internal state
+> +     *
+> +     * Called by the mctp subsystem in the event of some transport error.
+> +     * Implementation must reset its internal state and drop any fragments
+> +     * previously receieved.
+> +     */
+> +    void (*reset)(MCTPI2CEndpoint *mctp);
+> +
+> +    /**
+> +     * get_types() - provide supported mctp message types
+> +     *
+> +     * Must provide a buffer with a full MCTP supported message types payload
+> +     * (i.e. `0x0(SUCCESS),0x1(COUNT),0x4(NMI)`).
+> +     *
+> +     * Returns the size of the response.
+> +     */
+> +    size_t (*get_types)(MCTPI2CEndpoint *mctp, const uint8_t **data);
+> +};
+> +
+> +/*
+> + * Maximum value of the SMBus Block Write "Byte Count" field (8 bits).
+> + *
+> + * This is the count of bytes that follow the Byte Count field and up to, but
+> + * not including, the PEC byte.
+> + */
+> +#define I2C_MCTP_MAXBLOCK 255
+> +
+> +/*
+> + * Maximum Transmission Unit under I2C.
+> + *
+> + * This is for the MCTP Packet Payload (255, subtracting the 4 byte MCTP Packet
+> + * Header or the 1 byte MCTP/I2C piggy-backed source address).
+and the 1 byte.. ?
+
+> + */
+> +#define I2C_MCTP_MAXMTU (I2C_MCTP_MAXBLOCK - (sizeof(MCTPPacketHeader) + 1))
+> +
+> +/*
+> + * Maximum length of an MCTP/I2C packet.
+> + *
+> + * This is the sum of the three I2C header bytes (Destination target address,
+> + * Command Code and Byte Count), the maximum number of bytes in a message (255)
+> + * and the 1 byte Packet Error Code.
+> + */
+> +#define I2C_MCTP_MAX_LENGTH (3 + I2C_MCTP_MAXBLOCK + 1)
+> +
+> +typedef enum {
+> +    I2C_MCTP_STATE_IDLE,
+> +    I2C_MCTP_STATE_RX_STARTED,
+> +    I2C_MCTP_STATE_RX,
+> +    I2C_MCTP_STATE_WAIT_TX,
+> +    I2C_MCTP_STATE_TX,
+> +} MCTPState;
+> +
+> +typedef enum {
+> +    I2C_MCTP_STATE_TX_START_SEND,
+> +    I2C_MCTP_STATE_TX_SEND_BYTE,
+> +} MCTPTxState;
+> +
+> +typedef struct MCTPI2CEndpoint {
+> +    I2CSlave parent_obj;
+> +    I2CBus *i2c;
+> +
+> +    MCTPState state;
+> +
+> +    /* mctp endpoint identifier */
+> +    uint8_t my_eid;
+> +
+> +    uint8_t buffer[I2C_MCTP_MAX_LENGTH];
+> +    uint64_t pos;
+> +    size_t len;
+> +
+> +    struct {
+> +        MCTPTxState state;
+> +        bool is_control;
+> +
+> +        uint8_t eid;
+> +        uint8_t addr;
+> +        uint8_t pktseq;
+> +        uint8_t tag;
+> +
+> +        QEMUBH *bh;
+> +    } tx;
+> +} MCTPI2CEndpoint;
+> +
+> +void i2c_mctp_schedule_send(MCTPI2CEndpoint *mctp);
+> +
+> +#endif /* QEMU_I2C_MCTP_H */
+
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8426C6FA8F
+	for <qemu-devel@archiver.kernel.org>; Wed, 30 Aug 2023 13:05:29 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qbKsL-0005kF-WF; Wed, 30 Aug 2023 09:04:50 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1qbKsG-0005hC-AD; Wed, 30 Aug 2023 09:04:45 -0400
+Received: from frasgout.his.huawei.com ([185.176.79.56])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1qbKs9-0007Qj-EC; Wed, 30 Aug 2023 09:04:43 -0400
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+ by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4RbPWg5GjTz6K6V0;
+ Wed, 30 Aug 2023 20:59:27 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Wed, 30 Aug
+ 2023 14:04:15 +0100
+Date: Wed, 30 Aug 2023 14:04:14 +0100
+To: Klaus Jensen <its@irrelevant.dk>
+CC: Corey Minyard <cminyard@mvista.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+ Peter Maydell <peter.maydell@linaro.org>, Jason Wang <jasowang@redhat.com>,
+ Keith Busch <kbusch@kernel.org>, Lior Weintraub <liorw@pliops.com>, Jeremy
+ Kerr <jk@codeconstruct.com.au>, Matt Johnston <matt@codeconstruct.com.au>,
+ Peter Delevoryas <peter@pjd.dev>, <qemu-devel@nongnu.org>,
+ <qemu-arm@nongnu.org>, <qemu-block@nongnu.org>, "Klaus Jensen"
+ <k.jensen@samsung.com>
+Subject: Re: [PATCH v4 1/3] hw/i2c: add smbus pec utility function
+Message-ID: <20230830140414.0000428b@Huawei.com>
+In-Reply-To: <20230823-nmi-i2c-v4-1-2b0f86e5be25@samsung.com>
+References: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+ <20230823-nmi-i2c-v4-1-2b0f86e5be25@samsung.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Received-SPF: pass client-ip=185.176.79.56;
+ envelope-from=jonathan.cameron@huawei.com; helo=frasgout.his.huawei.com
+X-Spam_score_int: -41
+X-Spam_score: -4.2
+X-Spam_bar: ----
+X-Spam_report: (-4.2 / 5.0 requ) BAYES_00=-1.9, RCVD_IN_DNSWL_MED=-2.3,
+ RCVD_IN_MSPIKE_H3=0.001, RCVD_IN_MSPIKE_WL=0.001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Reply-to: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+From: Jonathan Cameron via <qemu-devel@nongnu.org>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: RO
+Content-Length: 1772
+Lines: 70
+
+On Wed, 23 Aug 2023 11:21:58 +0200
+Klaus Jensen <its@irrelevant.dk> wrote:
+
+> From: Klaus Jensen <k.jensen@samsung.com>
+> 
+> Add i2c_smbus_pec() to calculate the SMBus Packet Error Code for a
+> message.
+> 
+> Signed-off-by: Klaus Jensen <k.jensen@samsung.com>
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+> ---
+>  hw/i2c/smbus_master.c         | 26 ++++++++++++++++++++++++++
+>  include/hw/i2c/smbus_master.h |  2 ++
+>  2 files changed, 28 insertions(+)
+> 
+> diff --git a/hw/i2c/smbus_master.c b/hw/i2c/smbus_master.c
+> index 6a53c34e70b7..01a8e4700222 100644
+> --- a/hw/i2c/smbus_master.c
+> +++ b/hw/i2c/smbus_master.c
+> @@ -15,6 +15,32 @@
+>  #include "hw/i2c/i2c.h"
+>  #include "hw/i2c/smbus_master.h"
+>  
+> +static uint8_t crc8(uint16_t data)
+> +{
+> +    int i;
+> +
+> +    for (i = 0; i < 8; i++) {
+> +        if (data & 0x8000) {
+> +            data ^= 0x1070U << 3;
+> +        }
+> +
+> +        data <<= 1;
+> +    }
+> +
+> +    return (uint8_t)(data >> 8);
+> +}
+> +
+> +uint8_t i2c_smbus_pec(uint8_t crc, uint8_t *buf, size_t len)
+> +{
+> +    int i;
+> +
+> +    for (i = 0; i < len; i++) {
+> +        crc = crc8((crc ^ buf[i]) << 8);
+> +    }
+> +
+> +    return crc;
+> +}
+> +
+>  /* Master device commands.  */
+>  int smbus_quick_command(I2CBus *bus, uint8_t addr, int read)
+>  {
+> diff --git a/include/hw/i2c/smbus_master.h b/include/hw/i2c/smbus_master.h
+> index bb13bc423c22..d90f81767d86 100644
+> --- a/include/hw/i2c/smbus_master.h
+> +++ b/include/hw/i2c/smbus_master.h
+> @@ -27,6 +27,8 @@
+>  
+>  #include "hw/i2c/i2c.h"
+>  
+> +uint8_t i2c_smbus_pec(uint8_t crc, uint8_t *buf, size_t len);
+> +
+>  /* Master device commands.  */
+>  int smbus_quick_command(I2CBus *bus, uint8_t addr, int read);
+>  int smbus_receive_byte(I2CBus *bus, uint8_t addr);
+> 
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6AABEE4993
+	for <qemu-devel@archiver.kernel.org>; Wed, 23 Aug 2023 09:23:33 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qYk4C-0005Q3-L3; Wed, 23 Aug 2023 05:22:20 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qYk4B-0005P7-5u; Wed, 23 Aug 2023 05:22:19 -0400
+Received: from out1-smtp.messagingengine.com ([66.111.4.25])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qYk48-0005M3-U7; Wed, 23 Aug 2023 05:22:18 -0400
+Received: from compute2.internal (compute2.nyi.internal [10.202.2.46])
+ by mailout.nyi.internal (Postfix) with ESMTP id D8B825C0172;
+ Wed, 23 Aug 2023 05:22:15 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute2.internal (MEProxy); Wed, 23 Aug 2023 05:22:15 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=irrelevant.dk;
+ h=cc:cc:content-transfer-encoding:content-type:content-type
+ :date:date:from:from:in-reply-to:in-reply-to:message-id
+ :mime-version:references:reply-to:sender:subject:subject:to:to;
+ s=fm3; t=1692782535; x=1692868935; bh=7glaXVaoAMls38G1n3rfWgwmY
+ uCkgcrj52R7D8xj+IA=; b=vxFxee+Sm3AWV0j26j2uUH2LuvtWuBveBXSePK6GW
+ QcgWEpeuqEyloLQgquh/bR+Qa/FFPcZ1E9c2DMlLgePsv5BkcQMPFhttfPcyGYr9
+ Gh0Y2SxvpMtCxHNEh5I/P69pzIfBHc0dBgk3XbpNyHT8hI3fLfuTYjOUNNki2HJ4
+ J65M5qHF8U+2XNhaMCtFCyYZYRr/TX4//nty6s1FfrnnX2gMjmyfBm+URjFFwj1F
+ iIZ34dMf6Y6ll/7w55gW85+IKs3afczZ3q0yNHAo7Vz98EtyVsvzqwAaRlT64Er6
+ uqtqpofs/vzjQVh13s2TEbpMyRRXaY6pdlrqTC1xGGULQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-transfer-encoding
+ :content-type:content-type:date:date:feedback-id:feedback-id
+ :from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:sender:subject:subject:to:to:x-me-proxy
+ :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
+ 1692782535; x=1692868935; bh=7glaXVaoAMls38G1n3rfWgwmYuCkgcrj52R
+ 7D8xj+IA=; b=gTtxM1HTSgEYkOHvSFHq+9Ka7mYBu2KDBJrqt68nj31ZWTep9pI
+ 7zxhCFAy61IIruYYYAP80kVKCuKensqFkV0VYYGl9F05EwKqKBw83U0r/CXsluCd
+ 6RRRBFN6Ln6cdh2fiiq7MDFVEfchJdSNruvB6RPQo/EvHd1PuLEIWSKZkkF419N8
+ kW7R5B9sW24+vHb57LTJMfbpgWufl1wWqr7ymMEq5fnSUAKl/3Gkh+nKarMMAIAt
+ JhU1wzchgatLXz3u1elJaIZHIUL8kQ/SpIVKFzb+mI5pe6lqfC8okEGA5yDhcetI
+ ktm6lK1sUc6F+inLu/ud7NGIslnuQvZaC1Q==
+X-ME-Sender: <xms:x8_lZDE5dp-vRXYWxQNFmxmpfXnC7Zn5hxH8Jb6HLTdlwCcMYTTd5A>
+ <xme:x8_lZAV82pv-oWWqCn_uNZ7zu-GPQ9eZg0eAzbDZ1dzKcFHKwI36wwKF-jEw62qYJ
+ hkNYvcC6Vsog1VpcJ8>
+X-ME-Received: <xmr:x8_lZFKkb0mWA_jO2iaHN8cP26bHYS2zzIYo1rlX6rLDtSY1buYb_ettgribqRR34iX5xGuTGL0WsUaA7YSV76WFXkrcb9D_Tt6FxTHlyCun_XhFpUy7gDz9c5gS_CtWp0deF4ZBogms3WmLTQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedruddvgedgudehucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephfffufggtgfgkfhfjgfvvefosehtjeertdertdejnecuhfhrohhmpefmlhgr
+ uhhsucflvghnshgvnhcuoehithhssehirhhrvghlvghvrghnthdrughkqeenucggtffrrg
+ htthgvrhhnpeekiedvtdeuhefffedutdelfeekhfeitddtudevgefgffeiteevfffhhefg
+ gefhffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
+ hithhssehirhhrvghlvghvrghnthdrughk
+X-ME-Proxy: <xmx:x8_lZBEPpm45okovtsS4ispnKD6PZBEjKw6kT-eTytuIOcKcv5w0mQ>
+ <xmx:x8_lZJV0LSweCpDq_14lkspHZ-Xme4kupFqy4NEu50ZCHKjqN0C3cA>
+ <xmx:x8_lZMMdW9YC2s-XFy9UKF-HqDXza-igcG962E8NYTbJTigwoKBA-w>
+ <xmx:x8_lZOWYmVMreNk4su_SVAR5SkpmDbW--nqoT77VRrHgOrDMDMD4Uw>
+Feedback-ID: idc91472f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 23 Aug 2023 05:22:13 -0400 (EDT)
+From: Klaus Jensen <its@irrelevant.dk>
+Date: Wed, 23 Aug 2023 11:22:00 +0200
+Subject: [PATCH v4 3/3] hw/nvme: add nvme management interface model
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230823-nmi-i2c-v4-3-2b0f86e5be25@samsung.com>
+References: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+In-Reply-To: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+To: Corey Minyard <cminyard@mvista.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+ Peter Maydell <peter.maydell@linaro.org>, Jason Wang <jasowang@redhat.com>, 
+ Keith Busch <kbusch@kernel.org>
+Cc: Lior Weintraub <liorw@pliops.com>, Jeremy Kerr <jk@codeconstruct.com.au>, 
+ Matt Johnston <matt@codeconstruct.com.au>, Peter Delevoryas <peter@pjd.dev>, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Klaus Jensen <its@irrelevant.dk>, qemu-devel@nongnu.org, 
+ qemu-arm@nongnu.org, qemu-block@nongnu.org, 
+ Klaus Jensen <k.jensen@samsung.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=13194; i=k.jensen@samsung.com; 
+ h=from:subject:message-id;
+ bh=mernA+RE3iSkd5we3CxZxEqWGX2CATOsesxQakE+F/s=; 
+ b=owJ4nAFtAZL+kA0DAAoBTeGvMW1PDekByyZiAGTlz71eui3jzGkzKK8I9Lqnq5b7TSEmuwTXs
+ Rq1f+Z5VkH1ookBMwQAAQoAHRYhBFIoM6p14tzmokdmwE3hrzFtTw3pBQJk5c+9AAoJEE3hrzFt
+ Tw3pJS0H/jOTN80SWgxR0y40e/ciKmzONCQnLnkzI1/Em6yso6cT5LXwZyx7DIWQP8IiLKdRKHj
+ tWZyxIh6yoVIaXd/eHfMEk9Rlc+zTw28GdXYdJcEA8wZtymiCNKLPL1CPqKOaR8OTYxz/hK4HIv
+ f4aCWnkbPGKp9XK0sFBPlttF29vZXXdlPgBmvVJJLTUBzxcJIa6ml7TYT8uoeRvf1214AGqOfXa
+ n23q6+GU5EcER/0jz5JwC+xYVF6ErIfOcKiQ5zsfgI6lf02THbuqlpXwCVl5wg1SE/DJGXGwcuO
+ Z3cKlTw6Uj7BwNpz2ImRrZfiPeRAQPkNSep3jZ1hOu4wLFuM1cOzdaht
+X-Developer-Key: i=k.jensen@samsung.com; a=openpgp;
+ fpr=DDCA4D9C9EF931CC3468427263D56FC5E55DA838
+Received-SPF: pass client-ip=66.111.4.25; envelope-from=its@irrelevant.dk;
+ helo=out1-smtp.messagingengine.com
+X-Spam_score_int: -27
+X-Spam_score: -2.8
+X-Spam_bar: --
+X-Spam_report: (-2.8 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1,
+ RCVD_IN_DNSWL_LOW=-0.7, RCVD_IN_MSPIKE_H3=0.001, RCVD_IN_MSPIKE_WL=0.001,
+ SPF_HELO_PASS=-0.001, SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: RO
+Content-Length: 12763
+Lines: 480
+
+From: Klaus Jensen <k.jensen@samsung.com>
+
+Add the 'nmi-i2c' device that emulates an NVMe Management Interface
+controller.
+
+Initial support is very basic (Read NMI DS, Configuration Get).
+
+This is based on previously posted code by Padmakar Kalghatgi, Arun
+Kumar Agasar and Saurav Kumar.
+
+Signed-off-by: Klaus Jensen <k.jensen@samsung.com>
+---
+ hw/nvme/Kconfig      |   4 +
+ hw/nvme/meson.build  |   1 +
+ hw/nvme/nmi-i2c.c    | 418 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ hw/nvme/trace-events |   6 +
+ 4 files changed, 429 insertions(+)
+
+diff --git a/hw/nvme/Kconfig b/hw/nvme/Kconfig
+index 8ac90942e55e..1d89a4f4ecea 100644
+--- a/hw/nvme/Kconfig
++++ b/hw/nvme/Kconfig
+@@ -2,3 +2,7 @@ config NVME_PCI
+     bool
+     default y if PCI_DEVICES
+     depends on PCI
++
++config NVME_NMI_I2C
++    bool
++    default y if I2C_MCTP
+diff --git a/hw/nvme/meson.build b/hw/nvme/meson.build
+index 1a6a2ca2f307..7bc85f31c149 100644
+--- a/hw/nvme/meson.build
++++ b/hw/nvme/meson.build
+@@ -1 +1,2 @@
+ system_ss.add(when: 'CONFIG_NVME_PCI', if_true: files('ctrl.c', 'dif.c', 'ns.c', 'subsys.c'))
++system_ss.add(when: 'CONFIG_NVME_NMI_I2C', if_true: files('nmi-i2c.c'))
+diff --git a/hw/nvme/nmi-i2c.c b/hw/nvme/nmi-i2c.c
+new file mode 100644
+index 000000000000..9040ba28a87c
+--- /dev/null
++++ b/hw/nvme/nmi-i2c.c
+@@ -0,0 +1,418 @@
++/*
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ *
++ * SPDX-FileCopyrightText: Copyright (c) 2023 Samsung Electronics Co., Ltd.
++ *
++ * SPDX-FileContributor: Padmakar Kalghatgi <p.kalghatgi@samsung.com>
++ * SPDX-FileContributor: Arun Kumar Agasar <arun.kka@samsung.com>
++ * SPDX-FileContributor: Saurav Kumar <saurav.29@partner.samsung.com>
++ * SPDX-FileContributor: Klaus Jensen <k.jensen@samsung.com>
++ */
++
++#include "qemu/osdep.h"
++#include "qemu/crc32c.h"
++#include "hw/registerfields.h"
++#include "hw/i2c/i2c.h"
++#include "hw/i2c/mctp.h"
++#include "net/mctp.h"
++#include "trace.h"
++
++#define NMI_MAX_MESSAGE_LENGTH 4224
++
++#define TYPE_NMI_I2C_DEVICE "nmi-i2c"
++OBJECT_DECLARE_SIMPLE_TYPE(NMIDevice, NMI_I2C_DEVICE)
++
++typedef struct NMIDevice {
++    MCTPI2CEndpoint mctp;
++
++    uint8_t buffer[NMI_MAX_MESSAGE_LENGTH];
++    uint8_t scratch[NMI_MAX_MESSAGE_LENGTH];
++
++    size_t  len;
++    int64_t pos;
++} NMIDevice;
++
++FIELD(NMI_MCTPD, MT, 0, 7)
++FIELD(NMI_MCTPD, IC, 7, 1)
++
++#define NMI_MCTPD_MT_NMI 0x4
++#define NMI_MCTPD_IC_ENABLED 0x1
++
++FIELD(NMI_NMP, ROR, 7, 1)
++FIELD(NMI_NMP, NMIMT, 3, 4)
++
++#define NMI_NMP_NMIMT_NVME_MI 0x1
++#define NMI_NMP_NMIMT_NVME_ADMIN 0x2
++
++typedef struct NMIMessage {
++    uint8_t mctpd;
++    uint8_t nmp;
++    uint8_t rsvd2[2];
++    uint8_t payload[]; /* includes the Message Integrity Check */
++} NMIMessage;
++
++typedef struct NMIRequest {
++   uint8_t opc;
++   uint8_t rsvd1[3];
++   uint32_t dw0;
++   uint32_t dw1;
++   uint32_t mic;
++} NMIRequest;
++
++typedef enum NMIReadDSType {
++    NMI_CMD_READ_NMI_DS_SUBSYSTEM       = 0x0,
++    NMI_CMD_READ_NMI_DS_PORTS           = 0x1,
++    NMI_CMD_READ_NMI_DS_CTRL_LIST       = 0x2,
++    NMI_CMD_READ_NMI_DS_CTRL_INFO       = 0x3,
++    NMI_CMD_READ_NMI_DS_OPT_CMD_SUPPORT = 0x4,
++    NMI_CMD_READ_NMI_DS_MEB_CMD_SUPPORT = 0x5,
++} NMIReadDSType;
++
++#define NMI_STATUS_INVALID_PARAMETER 0x4
++
++static void nmi_set_parameter_error(NMIDevice *nmi, uint8_t bit, uint16_t byte)
++{
++    /* NVM Express Management Interface 1.2c, Figure 30 */
++    struct resp {
++        uint8_t  status;
++        uint8_t  bit;
++        uint16_t byte;
++    };
++
++    struct resp *buf = (struct resp *)(nmi->scratch + nmi->pos);
++
++    buf->status = NMI_STATUS_INVALID_PARAMETER;
++    buf->bit = bit & 0x3;
++    buf->byte = byte;
++
++    nmi->pos += sizeof(struct resp);
++}
++
++static void nmi_set_error(NMIDevice *nmi, uint8_t status)
++{
++    uint8_t buf[4] = {};
++
++    buf[0] = status;
++
++    memcpy(nmi->scratch + nmi->pos, buf, 4);
++    nmi->pos += 4;
++}
++
++static void nmi_handle_mi_read_nmi_ds(NMIDevice *nmi, NMIRequest *request)
++{
++    I2CSlave *i2c = I2C_SLAVE(nmi);
++
++    uint32_t dw0 = le32_to_cpu(request->dw0);
++    uint8_t dtyp = (dw0 >> 24) & 0xf;
++    uint8_t *buf;
++    size_t len;
++
++    trace_nmi_handle_mi_read_nmi_ds(dtyp);
++
++    static uint8_t nmi_ds_subsystem[36] = {
++        0x00,       /* success */
++        0x20, 0x00, /* response data length */
++        0x00,       /* reserved */
++        0x00,       /* number of ports */
++        0x01,       /* major version */
++        0x01,       /* minor version */
++    };
++
++    /* cannot be static since we need to patch in the i2c address */
++    uint8_t nmi_ds_ports[36] = {
++        0x00,       /* success */
++        0x20, 0x00, /* response data length */
++        0x00,       /* reserved */
++        0x02,       /* port type (smbus) */
++        0x00,       /* reserved */
++        0x40, 0x00, /* maximum mctp transission unit size (64 bytes) */
++        0x00, 0x00, 0x00, 0x00, /* management endpoint buffer size */
++        0x00,       /* vpd i2c address */
++        0x00,       /* vpd i2c frequency */
++        0x00,       /* management endpoint i2c address */
++        0x01,       /* management endpoint i2c frequency */
++        0x00,       /* nvme basic management command NOT supported */
++    };
++
++    /**
++     * Controller Information is zeroed, since there are no associated
++     * controllers at this point.
++     */
++    static uint8_t nmi_ds_ctrl[36] = {};
++
++    /**
++     * For the Controller List, Optionally Supported Command List and
++     * Management Endpoint Buffer Supported Command List data structures.
++     *
++     * The Controller List data structure is defined in the NVM Express Base
++     * Specification, revision 2.0b, Figure 134.
++     */
++    static uint8_t nmi_ds_empty[6] = {
++        0x00,       /* success */
++        0x02,       /* response data length */
++        0x00, 0x00, /* reserved */
++        0x00, 0x00, /* number of entries (zero) */
++    };
++
++    switch (dtyp) {
++    case NMI_CMD_READ_NMI_DS_SUBSYSTEM:
++        len = sizeof(nmi_ds_subsystem);
++        buf = nmi_ds_subsystem;
++
++        break;
++
++    case NMI_CMD_READ_NMI_DS_PORTS:
++        len = sizeof(nmi_ds_ports);
++        buf = nmi_ds_ports;
++
++        /* patch in the i2c address of the endpoint */
++        buf[14] = i2c->address;
++
++        break;
++
++    case NMI_CMD_READ_NMI_DS_CTRL_INFO:
++        len = sizeof(nmi_ds_ctrl);
++        buf = nmi_ds_ctrl;
++
++        break;
++
++    case NMI_CMD_READ_NMI_DS_CTRL_LIST:
++    case NMI_CMD_READ_NMI_DS_OPT_CMD_SUPPORT:
++    case NMI_CMD_READ_NMI_DS_MEB_CMD_SUPPORT:
++        len = sizeof(nmi_ds_empty);
++        buf = nmi_ds_empty;
++
++        break;
++
++    default:
++        nmi_set_parameter_error(nmi, offsetof(NMIRequest, dw0) + 4, 0);
++
++        return;
++    }
++
++    memcpy(nmi->scratch + nmi->pos, buf, len);
++    nmi->pos += len;
++}
++
++enum {
++    NMI_CMD_CONFIGURATION_GET_SMBUS_FREQ                = 0x1,
++    NMI_CMD_CONFIGURATION_GET_HEALTH_STATUS_CHANGE      = 0x2,
++    NMI_CMD_CONFIGURATION_GET_MCTP_TRANSMISSION_UNIT    = 0x3,
++};
++
++static void nmi_handle_mi_config_get(NMIDevice *nmi, NMIRequest *request)
++{
++    uint32_t dw0 = le32_to_cpu(request->dw0);
++    uint8_t identifier = dw0 & 0xff;
++    uint8_t *buf;
++
++    static uint8_t smbus_freq[4] = {
++        0x00,               /* success */
++        0x01, 0x00, 0x00,   /* 100 kHz */
++    };
++
++    static uint8_t mtu[4] = {
++        0x00,       /* success */
++        0x40, 0x00, /* 64 */
++        0x00,       /* reserved */
++    };
++
++    trace_nmi_handle_mi_config_get(identifier);
++
++    switch (identifier) {
++    case NMI_CMD_CONFIGURATION_GET_SMBUS_FREQ:
++        buf = smbus_freq;
++        break;
++
++    case NMI_CMD_CONFIGURATION_GET_MCTP_TRANSMISSION_UNIT:
++        buf = mtu;
++        break;
++
++    default:
++        nmi_set_parameter_error(nmi, 0x0, offsetof(NMIRequest, dw0));
++        return;
++    }
++
++    memcpy(nmi->scratch + nmi->pos, buf, 4);
++    nmi->pos += 4;
++}
++
++enum {
++    NMI_CMD_READ_NMI_DS         = 0x0,
++    NMI_CMD_CONFIGURATION_GET   = 0x4,
++};
++
++static void nmi_handle_mi(NMIDevice *nmi, NMIMessage *msg)
++{
++    NMIRequest *request = (NMIRequest *)msg->payload;
++
++    trace_nmi_handle_mi(request->opc);
++
++    switch (request->opc) {
++    case NMI_CMD_READ_NMI_DS:
++        nmi_handle_mi_read_nmi_ds(nmi, request);
++        break;
++
++    case NMI_CMD_CONFIGURATION_GET:
++        nmi_handle_mi_config_get(nmi, request);
++        break;
++
++    default:
++        nmi_set_parameter_error(nmi, 0x0, 0x0);
++        fprintf(stderr, "nmi command 0x%x not handled\n", request->opc);
++
++        break;
++    }
++}
++
++static void nmi_reset(MCTPI2CEndpoint *mctp)
++{
++    NMIDevice *nmi = NMI_I2C_DEVICE(mctp);
++    nmi->len = 0;
++}
++
++static void nmi_handle(MCTPI2CEndpoint *mctp)
++{
++    NMIDevice *nmi = NMI_I2C_DEVICE(mctp);
++    NMIMessage *msg = (NMIMessage *)nmi->buffer;
++    uint32_t crc;
++    uint8_t nmimt;
++
++    uint8_t buf[] = {
++        msg->mctpd,
++        FIELD_DP8(msg->nmp, NMI_NMP, ROR, 1),
++        0x0, 0x0,
++    };
++
++    if (FIELD_EX8(msg->mctpd, NMI_MCTPD, MT) != NMI_MCTPD_MT_NMI) {
++        goto drop;
++    }
++
++    if (FIELD_EX8(msg->mctpd, NMI_MCTPD, IC) != NMI_MCTPD_IC_ENABLED) {
++        goto drop;
++    }
++
++    memcpy(nmi->scratch, buf, sizeof(buf));
++    nmi->pos = sizeof(buf);
++
++    nmimt = FIELD_EX8(msg->nmp, NMI_NMP, NMIMT);
++
++    trace_nmi_handle_msg(nmimt);
++
++    switch (nmimt) {
++    case NMI_NMP_NMIMT_NVME_MI:
++        nmi_handle_mi(nmi, msg);
++        break;
++
++    default:
++        fprintf(stderr, "nmi message type 0x%x not handled\n", nmimt);
++
++        nmi_set_error(nmi, 0x3);
++
++        break;
++    }
++
++    /* add message integrity check */
++    memset(nmi->scratch + nmi->pos, 0x0, sizeof(crc));
++
++    crc = crc32c(0xffffffff, nmi->scratch, nmi->pos);
++    memcpy(nmi->scratch + nmi->pos, &crc, sizeof(crc));
++
++    nmi->len = nmi->pos + sizeof(crc);
++    nmi->pos = 0;
++
++    i2c_mctp_schedule_send(mctp);
++
++    return;
++
++drop:
++    nmi_reset(mctp);
++}
++
++static size_t nmi_get_buf(MCTPI2CEndpoint *mctp, const uint8_t **buf,
++                          size_t maxlen, uint8_t *mctp_flags)
++{
++    NMIDevice *nmi = NMI_I2C_DEVICE(mctp);
++    size_t len;
++
++    len = MIN(maxlen, nmi->len - nmi->pos);
++
++    if (len == 0) {
++        return 0;
++    }
++
++    if (nmi->pos == 0) {
++        *mctp_flags = FIELD_DP8(*mctp_flags, MCTP_H_FLAGS, SOM, 1);
++    }
++
++    *buf = nmi->scratch + nmi->pos;
++    nmi->pos += len;
++
++    if (nmi->pos == nmi->len) {
++        *mctp_flags = FIELD_DP8(*mctp_flags, MCTP_H_FLAGS, EOM, 1);
++
++        nmi->pos = nmi->len = 0;
++    }
++
++    return len;
++}
++
++static int nmi_put_buf(MCTPI2CEndpoint *mctp, uint8_t *buf, size_t len)
++{
++    NMIDevice *nmi = NMI_I2C_DEVICE(mctp);
++
++    if (nmi->len + len > NMI_MAX_MESSAGE_LENGTH) {
++        return -1;
++    }
++
++    memcpy(nmi->buffer + nmi->len, buf, len);
++    nmi->len += len;
++
++    return 0;
++}
++
++static size_t nmi_get_types(MCTPI2CEndpoint *mctp, const uint8_t **data)
++{
++    /**
++     * DSP0236 1.3.0, Table 19.
++     *
++     * This only includes message types that are supported *in addition* to the
++     * MCTP control message type.
++     */
++    static const uint8_t buf[] = {
++        0x0,                /* success */
++        0x1,                /* number of message types in list (supported) */
++        NMI_MCTPD_MT_NMI,
++    };
++
++    *data = buf;
++
++    return sizeof(buf);
++}
++
++static void nvme_mi_class_init(ObjectClass *oc, void *data)
++{
++    MCTPI2CEndpointClass *mc = MCTP_I2C_ENDPOINT_CLASS(oc);
++
++    mc->get_types = nmi_get_types;
++
++    mc->get_buf = nmi_get_buf;
++    mc->put_buf = nmi_put_buf;
++
++    mc->handle = nmi_handle;
++    mc->reset = nmi_reset;
++}
++
++static const TypeInfo nvme_mi = {
++    .name = TYPE_NMI_I2C_DEVICE,
++    .parent = TYPE_MCTP_I2C_ENDPOINT,
++    .instance_size = sizeof(NMIDevice),
++    .class_init = nvme_mi_class_init,
++};
++
++static void register_types(void)
++{
++    type_register_static(&nvme_mi);
++}
++
++type_init(register_types);
+diff --git a/hw/nvme/trace-events b/hw/nvme/trace-events
+index 3a67680c6ad1..41e2c540dcf2 100644
+--- a/hw/nvme/trace-events
++++ b/hw/nvme/trace-events
+@@ -216,3 +216,9 @@ pci_nvme_ub_db_wr_invalid_sq(uint32_t qid) "submission queue doorbell write for
+ pci_nvme_ub_db_wr_invalid_sqtail(uint32_t qid, uint16_t new_tail) "submission queue doorbell write value beyond queue size, sqid=%"PRIu32", new_head=%"PRIu16", ignoring"
+ pci_nvme_ub_unknown_css_value(void) "unknown value in cc.css field"
+ pci_nvme_ub_too_many_mappings(void) "too many prp/sgl mappings"
++
++# nmi-i2c
++nmi_handle_mi_read_nmi_ds(uint8_t dtyp) "dtyp 0x%"PRIx8""
++nmi_handle_mi_config_get(uint8_t identifier) "identifier 0x%"PRIx8""
++nmi_handle_mi(uint8_t opc) "opc 0x%"PRIx8""
++nmi_handle_msg(uint8_t nmint) "nmint 0x%"PRIx8""
+
+-- 
+2.42.0
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6288EEE4993
+	for <qemu-devel@archiver.kernel.org>; Wed, 23 Aug 2023 09:23:26 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qYk4l-0005Rf-JD; Wed, 23 Aug 2023 05:22:55 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qYk49-0005Ob-O3; Wed, 23 Aug 2023 05:22:18 -0400
+Received: from out1-smtp.messagingengine.com ([66.111.4.25])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qYk46-0005Lh-VA; Wed, 23 Aug 2023 05:22:17 -0400
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+ by mailout.nyi.internal (Postfix) with ESMTP id 9BB585C0126;
+ Wed, 23 Aug 2023 05:22:13 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute5.internal (MEProxy); Wed, 23 Aug 2023 05:22:13 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=irrelevant.dk;
+ h=cc:cc:content-transfer-encoding:content-type:content-type
+ :date:date:from:from:in-reply-to:in-reply-to:message-id
+ :mime-version:references:reply-to:sender:subject:subject:to:to;
+ s=fm3; t=1692782533; x=1692868933; bh=oQ5tLI/HlkpXUtfGL/EeQZnYR
+ NOMiNvpQ9IqKdxx/H4=; b=L3P4Nr3a78b97CSMZdmadX384JqDqHSCf1UTH43qH
+ ZV17FtadzK72yFrYSecMrDlrdxRAE2qF8avqnHqBiJvLlTtVILGkh5VAju5MprUD
+ Nc3XvUMRoGZgA9ndlwUKBO3x4cbXGrfYRvask2Kcp+rUpWSRAkTnX2uUXysdBCkd
+ XwLiyxsDExau5BYYWVdrZzIBjRApfiOoOPsqbiOP7bZmsNkT8xolJRsn8RmFu4qo
+ O1P/SFTyLAknsdIuGl4mRuLLGSfnMmYiWLtzrmKrEzwmkjQGcROrccf0pnSdXI8d
+ +76sCW9wfUQBYwrJTmp/ZsVR0RN2FCaPiHnuohcBDMKpw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-transfer-encoding
+ :content-type:content-type:date:date:feedback-id:feedback-id
+ :from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:sender:subject:subject:to:to:x-me-proxy
+ :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
+ 1692782533; x=1692868933; bh=oQ5tLI/HlkpXUtfGL/EeQZnYRNOMiNvpQ9I
+ qKdxx/H4=; b=nTYz+B01kt6dsKdeBu4kl61i2LK8D1vsAaZkvaKYXbKNVMdoXP9
+ WU5oKeEfXN8aLEh/nRlKZEDelTe0QxHn0rknAEfU2ggElW0tohII8YXoXcWvRRKR
+ KN705pN8VRsME99CP6Nm0/ZtGFKia+zN++f1ijM8d1ZTgxn/VWPW12M5l68n4oiY
+ BdatZaWsFkRHX7ByukSI823BLaVTvkampyAVz7utrlGXk982+muJUH4QOnhrIhbM
+ soZ/g9fwG5aMwBKgtKGUY1Xy08TmaKnc91yZZ0zuUxuZakochLFuIHV/K1HZ58PH
+ Vzq/t/gW5UkaCC/vYYWOUQVCT90qYGKTyeg==
+X-ME-Sender: <xms:xc_lZEsvMJRSPdOSG9957Zxi4eCBvdj9OC4ZJ7Uc9i3ZFdyZp0ghWA>
+ <xme:xc_lZBehG07dKxjmUB1xx_N9h6LDXwWvajA7Uem8284WonjPm5bB_kVdv3TGZtQs1
+ j5Irzo7blvY1zeVu7E>
+X-ME-Received: <xmr:xc_lZPyYEn-skXJqy_yIEsoomKgJMoXpDVeaRIJZlXyeaAc7ECf0k6Si8fxKKQ6qhIPSh7hLE4piEbOfh_iwrR7KRJZ-avrZ89kRt1tlttHgcxgHxSf9T_9LzjGTYwwhyQfwRwdxUi35GS2Rmg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedruddvgedgudegucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephfffufggtgfgkfhfjgfvvefosehtkeertdertdejnecuhfhrohhmpefmlhgr
+ uhhsucflvghnshgvnhcuoehithhssehirhhrvghlvghvrghnthdrughkqeenucggtffrrg
+ htthgvrhhnpeekhfdtgeeluedtveekteevjedvvdegvedthedvudelgfegkeekvddtgfet
+ geetieenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivg
+ eptdenucfrrghrrghmpehmrghilhhfrhhomhepihhtshesihhrrhgvlhgvvhgrnhhtrdgu
+ kh
+X-ME-Proxy: <xmx:xc_lZHP3kKUb9zy63u_htHm_TcLGjgCFQSyVIcp9OMgzXAgGg2yIxw>
+ <xmx:xc_lZE9yUtEI0DhqKkVyMHc0fll2W8aeMlaZhLr0_oUhVDi_ybuowQ>
+ <xmx:xc_lZPVBiJYVjQuwRfI0RQXaEZfyNzXe0rxv5DMoY-3_lNv_gpyokQ>
+ <xmx:xc_lZOeJO5b6ICxEfneL2FEHRv6f9QiNlgS7DhKkoTEsreLhDRZNbQ>
+Feedback-ID: idc91472f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 23 Aug 2023 05:22:11 -0400 (EDT)
+From: Klaus Jensen <its@irrelevant.dk>
+Date: Wed, 23 Aug 2023 11:21:59 +0200
+Subject: [PATCH v4 2/3] hw/i2c: add mctp core
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20230823-nmi-i2c-v4-2-2b0f86e5be25@samsung.com>
+References: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+In-Reply-To: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+To: Corey Minyard <cminyard@mvista.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+ Peter Maydell <peter.maydell@linaro.org>, Jason Wang <jasowang@redhat.com>, 
+ Keith Busch <kbusch@kernel.org>
+Cc: Lior Weintraub <liorw@pliops.com>, Jeremy Kerr <jk@codeconstruct.com.au>, 
+ Matt Johnston <matt@codeconstruct.com.au>, Peter Delevoryas <peter@pjd.dev>, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Klaus Jensen <its@irrelevant.dk>, qemu-devel@nongnu.org, 
+ qemu-arm@nongnu.org, qemu-block@nongnu.org, 
+ Klaus Jensen <k.jensen@samsung.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=21569; i=k.jensen@samsung.com; 
+ h=from:subject:message-id;
+ bh=w7Nc5wPN5iMxl7zUj7ITVgwqLQtYtu6G6Fao8CeHpVk=; 
+ b=owJ4nAFsAZP+kA0DAAoBTeGvMW1PDekByyZiAGTlz70pPJcubhQFjQR6fTfROzHpEWer3bbcm
+ o1O4V5bv/q8D4kBMgQAAQoAHRYhBFIoM6p14tzmokdmwE3hrzFtTw3pBQJk5c+9AAoJEE3hrzFt
+ Tw3pNu4H+OVswiZ7R0tBE4xucUM3o+qBwwYQApR/Q4AqMBqV+6ndDPKOAlMNHNBJzzoPGJfBj9l
+ Gc7nOoXP9YLNtabrkcckxdMr1Dt6Fm2OB2clH0Yz+JgGbKOWjdmG9bQofS0AUS6lQ3Mc0+NT8r2
+ WrUUmIRHuySfVQf4WteVyPdzoRcHXDgjaE9pKfbTk4VNhtjT0PSEvryMKvlise1vUdEnBi3R6Eh
+ 4zOSqQQIJPN0Z8Gx7uUeeQlypc0qHGOMX1cMgJgcsWtSbQD5N2zra8o6D3mFxSvh4UDIuYyNEWW
+ 38aRE1j+1KNAOfOySJvRPI9H1TNHUEG00Zzbewsus2ypmFfZW8igp/8=
+X-Developer-Key: i=k.jensen@samsung.com; a=openpgp;
+ fpr=DDCA4D9C9EF931CC3468427263D56FC5E55DA838
+Received-SPF: pass client-ip=66.111.4.25; envelope-from=its@irrelevant.dk;
+ helo=out1-smtp.messagingengine.com
+X-Spam_score_int: -27
+X-Spam_score: -2.8
+X-Spam_bar: --
+X-Spam_report: (-2.8 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1,
+ RCVD_IN_DNSWL_LOW=-0.7, RCVD_IN_MSPIKE_H3=0.001, RCVD_IN_MSPIKE_WL=0.001,
+ SPF_HELO_PASS=-0.001, SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: RO
+Content-Length: 20899
+Lines: 719
+
+From: Klaus Jensen <k.jensen@samsung.com>
+
+Add an abstract MCTP over I2C endpoint model. This implements MCTP
+control message handling as well as handling the actual I2C transport
+(packetization).
+
+Devices are intended to derive from this and implement the class
+methods.
+
+Parts of this implementation is inspired by code[1] previously posted by
+Jonathan Cameron.
+
+Squashed a fix[2] from Matt Johnston.
+
+  [1]: https://lore.kernel.org/qemu-devel/20220520170128.4436-1-Jonathan.Cameron@huawei.com/
+  [2]: https://lore.kernel.org/qemu-devel/20221121080445.GA29062@codeconstruct.com.au/
+
+Signed-off-by: Klaus Jensen <k.jensen@samsung.com>
+---
+ MAINTAINERS           |   7 +
+ hw/arm/Kconfig        |   1 +
+ hw/i2c/Kconfig        |   4 +
+ hw/i2c/mctp.c         | 428 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ hw/i2c/meson.build    |   1 +
+ hw/i2c/trace-events   |  13 ++
+ include/hw/i2c/mctp.h | 127 +++++++++++++++
+ include/net/mctp.h    |  35 +++++
+ 8 files changed, 616 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6111b6b4d928..8ca71167607d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3395,6 +3395,13 @@ F: tests/qtest/adm1272-test.c
+ F: tests/qtest/max34451-test.c
+ F: tests/qtest/isl_pmbus_vr-test.c
+ 
++MCTP I2C Transport
++M: Klaus Jensen <k.jensen@samsung.com>
++S: Maintained
++F: hw/i2c/mctp.c
++F: include/hw/i2c/mctp.h
++F: include/net/mctp.h
++
+ Firmware schema specifications
+ M: Philippe Mathieu-Daudé <philmd@linaro.org>
+ R: Daniel P. Berrange <berrange@redhat.com>
+diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
+index 7e6834844051..5bcb1e0e8a6f 100644
+--- a/hw/arm/Kconfig
++++ b/hw/arm/Kconfig
+@@ -541,6 +541,7 @@ config ASPEED_SOC
+     select DS1338
+     select FTGMAC100
+     select I2C
++    select I2C_MCTP
+     select DPS310
+     select PCA9552
+     select SERIAL
+diff --git a/hw/i2c/Kconfig b/hw/i2c/Kconfig
+index 14886b35dac2..2b2a50b83d1e 100644
+--- a/hw/i2c/Kconfig
++++ b/hw/i2c/Kconfig
+@@ -6,6 +6,10 @@ config I2C_DEVICES
+     # to any board's i2c bus
+     bool
+ 
++config I2C_MCTP
++    bool
++    select I2C
++
+ config SMBUS
+     bool
+     select I2C
+diff --git a/hw/i2c/mctp.c b/hw/i2c/mctp.c
+new file mode 100644
+index 000000000000..217073d62435
+--- /dev/null
++++ b/hw/i2c/mctp.c
+@@ -0,0 +1,428 @@
++/*
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ *
++ * SPDX-FileCopyrightText: Copyright (c) 2023 Samsung Electronics Co., Ltd.
++ * SPDX-FileContributor: Klaus Jensen <k.jensen@samsung.com>
++ */
++
++#include "qemu/osdep.h"
++#include "qemu/main-loop.h"
++
++#include "hw/qdev-properties.h"
++#include "hw/i2c/i2c.h"
++#include "hw/i2c/smbus_master.h"
++#include "hw/i2c/mctp.h"
++#include "net/mctp.h"
++
++#include "trace.h"
++
++/* DSP0237 1.2.0, Figure 1 */
++typedef struct MCTPI2CPacketHeader {
++    uint8_t dest;
++#define MCTP_I2C_COMMAND_CODE 0xf
++    uint8_t command_code;
++    uint8_t byte_count;
++    uint8_t source;
++} MCTPI2CPacketHeader;
++
++typedef struct MCTPI2CPacket {
++    MCTPI2CPacketHeader i2c;
++    MCTPPacket          mctp;
++} MCTPI2CPacket;
++
++#define i2c_mctp_payload_offset offsetof(MCTPI2CPacket, mctp.payload)
++#define i2c_mctp_payload(buf) (buf + i2c_mctp_payload_offset)
++
++/* DSP0236 1.3.0, Figure 20 */
++typedef struct MCTPControlMessage {
++#define MCTP_MESSAGE_TYPE_CONTROL 0x0
++    uint8_t type;
++#define MCTP_CONTROL_FLAGS_RQ               (1 << 7)
++#define MCTP_CONTROL_FLAGS_D                (1 << 6)
++    uint8_t flags;
++    uint8_t command_code;
++    uint8_t data[];
++} MCTPControlMessage;
++
++enum MCTPControlCommandCodes {
++    MCTP_CONTROL_SET_EID                    = 0x01,
++    MCTP_CONTROL_GET_EID                    = 0x02,
++    MCTP_CONTROL_GET_VERSION                = 0x04,
++    MCTP_CONTROL_GET_MESSAGE_TYPE_SUPPORT   = 0x05,
++};
++
++#define MCTP_CONTROL_ERROR_UNSUPPORTED_CMD 0x5
++
++#define i2c_mctp_control_data_offset \
++    (i2c_mctp_payload_offset + offsetof(MCTPControlMessage, data))
++#define i2c_mctp_control_data(buf) (buf + i2c_mctp_control_data_offset)
++
++/**
++ * The byte count field in the SMBUS Block Write containers the number of bytes
++ * *following* the field itself.
++ *
++ * This is at least 5.
++ *
++ * 1 byte for the MCTP/I2C piggy-backed I2C source address in addition to the
++ * size of the MCTP transport/packet header.
++ */
++#define MCTP_I2C_BYTE_COUNT_OFFSET (sizeof(MCTPPacketHeader) + 1)
++
++void i2c_mctp_schedule_send(MCTPI2CEndpoint *mctp)
++{
++    I2CBus *i2c = I2C_BUS(qdev_get_parent_bus(DEVICE(mctp)));
++
++    mctp->tx.state = I2C_MCTP_STATE_TX_START_SEND;
++
++    i2c_bus_master(i2c, mctp->tx.bh);
++}
++
++static void i2c_mctp_tx(void *opaque)
++{
++    DeviceState *dev = DEVICE(opaque);
++    I2CBus *i2c = I2C_BUS(qdev_get_parent_bus(dev));
++    I2CSlave *slave = I2C_SLAVE(dev);
++    MCTPI2CEndpoint *mctp = MCTP_I2C_ENDPOINT(dev);
++    MCTPI2CEndpointClass *mc = MCTP_I2C_ENDPOINT_GET_CLASS(mctp);
++    MCTPI2CPacket *pkt = (MCTPI2CPacket *)mctp->buffer;
++    uint8_t flags = 0;
++
++    switch (mctp->tx.state) {
++    case I2C_MCTP_STATE_TX_SEND_BYTE:
++        if (mctp->pos < mctp->len) {
++            uint8_t byte = mctp->buffer[mctp->pos];
++
++            trace_i2c_mctp_tx_send_byte(mctp->pos, byte);
++
++            /* send next byte */
++            i2c_send_async(i2c, byte);
++
++            mctp->pos++;
++
++            break;
++        }
++
++        /* packet sent */
++        i2c_end_transfer(i2c);
++
++        /* end of any control data */
++        mctp->len = 0;
++
++        /* fall through */
++
++    case I2C_MCTP_STATE_TX_START_SEND:
++        if (mctp->tx.is_control) {
++            /* packet payload is already in buffer; max 1 packet */
++            flags = FIELD_DP8(flags, MCTP_H_FLAGS, SOM, 1);
++            flags = FIELD_DP8(flags, MCTP_H_FLAGS, EOM, 1);
++        } else {
++            const uint8_t *payload;
++
++            /* get message bytes from derived device */
++            mctp->len = mc->get_buf(mctp, &payload, I2C_MCTP_MAXMTU, &flags);
++            assert(mctp->len <= I2C_MCTP_MAXMTU);
++
++            memcpy(pkt->mctp.payload, payload, mctp->len);
++        }
++
++        if (!mctp->len) {
++            trace_i2c_mctp_tx_done();
++
++            /* no more packets needed; release the bus */
++            i2c_bus_release(i2c);
++
++            mctp->state = I2C_MCTP_STATE_IDLE;
++            mctp->tx.is_control = false;
++
++            break;
++        }
++
++        mctp->state = I2C_MCTP_STATE_TX;
++
++        pkt->i2c = (MCTPI2CPacketHeader) {
++            .dest = mctp->tx.addr << 1,
++            .command_code = MCTP_I2C_COMMAND_CODE,
++            .byte_count = MCTP_I2C_BYTE_COUNT_OFFSET + mctp->len,
++
++            /* DSP0237 1.2.0, Figure 1 */
++            .source = slave->address << 1 | 0x1,
++        };
++
++        pkt->mctp.hdr = (MCTPPacketHeader) {
++            .version = 0x1,
++            .eid.dest = mctp->tx.eid,
++            .eid.source = mctp->my_eid,
++            .flags = flags,
++        };
++
++        pkt->mctp.hdr.flags = FIELD_DP8(pkt->mctp.hdr.flags, MCTP_H_FLAGS,
++                                        PKTSEQ, mctp->tx.pktseq++);
++        pkt->mctp.hdr.flags = FIELD_DP8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, TAG,
++                                        mctp->tx.tag);
++
++        mctp->len += sizeof(MCTPI2CPacket);
++        assert(mctp->len < I2C_MCTP_MAX_LENGTH);
++
++        mctp->buffer[mctp->len] = i2c_smbus_pec(0, mctp->buffer, mctp->len);
++        mctp->len++;
++
++        trace_i2c_mctp_tx_start_send(mctp->len);
++
++        i2c_start_send_async(i2c, pkt->i2c.dest >> 1);
++
++        /* already "sent" the destination slave address */
++        mctp->pos = 1;
++
++        mctp->tx.state = I2C_MCTP_STATE_TX_SEND_BYTE;
++
++        break;
++    }
++}
++
++static void i2c_mctp_set_control_data(MCTPI2CEndpoint *mctp, const void * buf,
++                                      size_t len)
++{
++    assert(i2c_mctp_control_data_offset < I2C_MCTP_MAX_LENGTH - len);
++    memcpy(i2c_mctp_control_data(mctp->buffer), buf, len);
++
++    assert(mctp->len < I2C_MCTP_MAX_LENGTH - len);
++    mctp->len += len;
++}
++
++static void i2c_mctp_handle_control_set_eid(MCTPI2CEndpoint *mctp, uint8_t eid)
++{
++    mctp->my_eid = eid;
++
++    uint8_t buf[] = {
++        0x0, 0x0, eid, 0x0,
++    };
++
++    i2c_mctp_set_control_data(mctp, buf, sizeof(buf));
++}
++
++static void i2c_mctp_handle_control_get_eid(MCTPI2CEndpoint *mctp)
++{
++    uint8_t buf[] = {
++        0x0, mctp->my_eid, 0x0, 0x0,
++    };
++
++    i2c_mctp_set_control_data(mctp, buf, sizeof(buf));
++}
++
++static void i2c_mctp_handle_control_get_version(MCTPI2CEndpoint *mctp)
++{
++    uint8_t buf[] = {
++        0x0, 0x1, 0x0, 0x1, 0x3, 0x1,
++    };
++
++    i2c_mctp_set_control_data(mctp, buf, sizeof(buf));
++}
++
++static void i2c_mctp_handle_get_message_type_support(MCTPI2CEndpoint *mctp)
++{
++    MCTPI2CEndpointClass *mc = MCTP_I2C_ENDPOINT_GET_CLASS(mctp);
++    const uint8_t *types;
++    size_t len;
++
++    len = mc->get_types(mctp, &types);
++    assert(mctp->len <= MCTP_BASELINE_MTU - len);
++
++    i2c_mctp_set_control_data(mctp, types, len);
++}
++
++static void i2c_mctp_handle_control(MCTPI2CEndpoint *mctp)
++{
++    MCTPControlMessage *msg = (MCTPControlMessage *)i2c_mctp_payload(mctp->buffer);
++
++    /* clear Rq/D */
++    msg->flags &= ~(MCTP_CONTROL_FLAGS_RQ | MCTP_CONTROL_FLAGS_D);
++
++    mctp->len = sizeof(MCTPControlMessage);
++
++    trace_i2c_mctp_handle_control(msg->command_code);
++
++    switch (msg->command_code) {
++    case MCTP_CONTROL_SET_EID:
++        i2c_mctp_handle_control_set_eid(mctp, msg->data[1]);
++        break;
++
++    case MCTP_CONTROL_GET_EID:
++        i2c_mctp_handle_control_get_eid(mctp);
++        break;
++
++    case MCTP_CONTROL_GET_VERSION:
++        i2c_mctp_handle_control_get_version(mctp);
++        break;
++
++    case MCTP_CONTROL_GET_MESSAGE_TYPE_SUPPORT:
++        i2c_mctp_handle_get_message_type_support(mctp);
++        break;
++
++    default:
++        trace_i2c_mctp_unhandled_control(msg->command_code);
++
++        msg->data[0] = MCTP_CONTROL_ERROR_UNSUPPORTED_CMD;
++        mctp->len++;
++
++        break;
++    }
++
++    assert(mctp->len <= MCTP_BASELINE_MTU);
++
++    i2c_mctp_schedule_send(mctp);
++}
++
++static int i2c_mctp_event_cb(I2CSlave *i2c, enum i2c_event event)
++{
++    MCTPI2CEndpoint *mctp = MCTP_I2C_ENDPOINT(i2c);
++    MCTPI2CEndpointClass *mc = MCTP_I2C_ENDPOINT_GET_CLASS(mctp);
++    MCTPI2CPacket *pkt = (MCTPI2CPacket *)mctp->buffer;
++    size_t payload_len;
++    uint8_t pec, pktseq, msgtype;
++
++    switch (event) {
++    case I2C_START_SEND:
++        if (mctp->state == I2C_MCTP_STATE_IDLE) {
++            mctp->state = I2C_MCTP_STATE_RX_STARTED;
++        } else if (mctp->state != I2C_MCTP_STATE_RX) {
++            return -1;
++        }
++
++        /* the i2c core eats the slave address, so put it back in */
++        pkt->i2c.dest = i2c->address << 1;
++        mctp->len = 1;
++
++        return 0;
++
++    case I2C_FINISH:
++        if (mctp->len < sizeof(MCTPI2CPacket) + 1) {
++            trace_i2c_mctp_drop_short_packet(mctp->len);
++            goto drop;
++        }
++
++        payload_len = mctp->len - (1 + offsetof(MCTPI2CPacket, mctp.payload));
++
++        if (pkt->i2c.byte_count + 3 != mctp->len - 1) {
++            trace_i2c_mctp_drop_invalid_length(pkt->i2c.byte_count + 3,
++                                               mctp->len - 1);
++            goto drop;
++        }
++
++        pec = i2c_smbus_pec(0, mctp->buffer, mctp->len - 1);
++        if (mctp->buffer[mctp->len - 1] != pec) {
++            trace_i2c_mctp_drop_invalid_pec(mctp->buffer[mctp->len - 1], pec);
++            goto drop;
++        }
++
++        if (!(pkt->mctp.hdr.eid.dest == mctp->my_eid ||
++              pkt->mctp.hdr.eid.dest == 0)) {
++            trace_i2c_mctp_drop_invalid_eid(pkt->mctp.hdr.eid.dest,
++                                            mctp->my_eid);
++            goto drop;
++        }
++
++        pktseq = FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, PKTSEQ);
++
++        if (FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, SOM)) {
++            mctp->tx.is_control = false;
++
++            if (mctp->state == I2C_MCTP_STATE_RX) {
++                mc->reset(mctp);
++            }
++
++            mctp->state = I2C_MCTP_STATE_RX;
++
++            mctp->tx.addr = pkt->i2c.source >> 1;
++            mctp->tx.eid = pkt->mctp.hdr.eid.source;
++            mctp->tx.tag = FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, TAG);
++            mctp->tx.pktseq = pktseq;
++
++            msgtype = FIELD_EX8(pkt->mctp.payload[0], MCTP_MESSAGE_H, TYPE);
++
++            if (msgtype == MCTP_MESSAGE_TYPE_CONTROL) {
++                mctp->tx.is_control = true;
++
++                i2c_mctp_handle_control(mctp);
++
++                return 0;
++            }
++        } else if (mctp->state == I2C_MCTP_STATE_RX_STARTED) {
++            trace_i2c_mctp_drop_expected_som();
++            goto drop;
++        } else if (pktseq != (++mctp->tx.pktseq & 0x3)) {
++            trace_i2c_mctp_drop_invalid_pktseq(pktseq, mctp->tx.pktseq & 0x3);
++            goto drop;
++        }
++
++        mc->put_buf(mctp, i2c_mctp_payload(mctp->buffer), payload_len);
++
++        if (FIELD_EX8(pkt->mctp.hdr.flags, MCTP_H_FLAGS, EOM)) {
++            mc->handle(mctp);
++            mctp->state = I2C_MCTP_STATE_WAIT_TX;
++        }
++
++        return 0;
++
++    default:
++        return -1;
++    }
++
++drop:
++    mc->reset(mctp);
++
++    mctp->state = I2C_MCTP_STATE_IDLE;
++
++    return 0;
++}
++
++static int i2c_mctp_send_cb(I2CSlave *i2c, uint8_t data)
++{
++    MCTPI2CEndpoint *mctp = MCTP_I2C_ENDPOINT(i2c);
++
++    if (mctp->len < I2C_MCTP_MAX_LENGTH) {
++        mctp->buffer[mctp->len++] = data;
++        return 0;
++    }
++
++    return -1;
++}
++
++static void i2c_mctp_instance_init(Object *obj)
++{
++    MCTPI2CEndpoint *mctp = MCTP_I2C_ENDPOINT(obj);
++
++    mctp->tx.bh = qemu_bh_new(i2c_mctp_tx, mctp);
++}
++
++static Property mctp_i2c_props[] = {
++    DEFINE_PROP_UINT8("eid", MCTPI2CEndpoint, my_eid, 0x9),
++    DEFINE_PROP_END_OF_LIST(),
++};
++
++static void i2c_mctp_class_init(ObjectClass *oc, void *data)
++{
++    DeviceClass *dc = DEVICE_CLASS(oc);
++    I2CSlaveClass *k = I2C_SLAVE_CLASS(oc);
++
++    k->event = i2c_mctp_event_cb;
++    k->send = i2c_mctp_send_cb;
++
++    device_class_set_props(dc, mctp_i2c_props);
++}
++
++static const TypeInfo i2c_mctp_info = {
++    .name = TYPE_MCTP_I2C_ENDPOINT,
++    .parent = TYPE_I2C_SLAVE,
++    .abstract = true,
++    .instance_init = i2c_mctp_instance_init,
++    .instance_size = sizeof(MCTPI2CEndpoint),
++    .class_init = i2c_mctp_class_init,
++    .class_size = sizeof(MCTPI2CEndpointClass),
++};
++
++static void register_types(void)
++{
++    type_register_static(&i2c_mctp_info);
++}
++
++type_init(register_types)
+diff --git a/hw/i2c/meson.build b/hw/i2c/meson.build
+index b58bc167dbcd..c4bddc4f5024 100644
+--- a/hw/i2c/meson.build
++++ b/hw/i2c/meson.build
+@@ -1,5 +1,6 @@
+ i2c_ss = ss.source_set()
+ i2c_ss.add(when: 'CONFIG_I2C', if_true: files('core.c'))
++i2c_ss.add(when: 'CONFIG_I2C_MCTP', if_true: files('mctp.c'))
+ i2c_ss.add(when: 'CONFIG_SMBUS', if_true: files('smbus_slave.c', 'smbus_master.c'))
+ i2c_ss.add(when: 'CONFIG_ACPI_SMBUS', if_true: files('pm_smbus.c'))
+ i2c_ss.add(when: 'CONFIG_ACPI_ICH9', if_true: files('smbus_ich9.c'))
+diff --git a/hw/i2c/trace-events b/hw/i2c/trace-events
+index d7b1e25858b1..5a5c64b2652a 100644
+--- a/hw/i2c/trace-events
++++ b/hw/i2c/trace-events
+@@ -45,3 +45,16 @@ npcm7xx_smbus_recv_fifo(const char *id, uint8_t received, uint8_t expected) "%s
+ 
+ pca954x_write_bytes(uint8_t value) "PCA954X write data: 0x%02x"
+ pca954x_read_data(uint8_t value) "PCA954X read data: 0x%02x"
++
++# mctp.c
++i2c_mctp_tx_start_send(size_t len) "len %zu"
++i2c_mctp_tx_send_byte(size_t pos, uint8_t byte) "pos %zu byte 0x%"PRIx8""
++i2c_mctp_tx_done(void) "packet sent"
++i2c_mctp_handle_control(uint8_t command) "command 0x%"PRIx8""
++i2c_mctp_unhandled_control(uint8_t command) "command 0x%"PRIx8""
++i2c_mctp_drop_invalid_length(unsigned byte_count, size_t expected) "byte_count %u expected %zu"
++i2c_mctp_drop_invalid_pec(uint8_t pec, uint8_t expected) "pec 0x%"PRIx8" expected 0x%"PRIx8""
++i2c_mctp_drop_invalid_eid(uint8_t eid, uint8_t expected) "eid 0x%"PRIx8" expected 0x%"PRIx8""
++i2c_mctp_drop_invalid_pktseq(uint8_t pktseq, uint8_t expected) "pktseq 0x%"PRIx8" expected 0x%"PRIx8""
++i2c_mctp_drop_short_packet(size_t len) "len %zu"
++i2c_mctp_drop_expected_som(void) ""
+diff --git a/include/hw/i2c/mctp.h b/include/hw/i2c/mctp.h
+new file mode 100644
+index 000000000000..fccbf249cdbe
+--- /dev/null
++++ b/include/hw/i2c/mctp.h
+@@ -0,0 +1,127 @@
++#ifndef QEMU_I2C_MCTP_H
++#define QEMU_I2C_MCTP_H
++
++#include "qom/object.h"
++#include "hw/qdev-core.h"
++
++#define TYPE_MCTP_I2C_ENDPOINT "mctp-i2c-endpoint"
++OBJECT_DECLARE_TYPE(MCTPI2CEndpoint, MCTPI2CEndpointClass, MCTP_I2C_ENDPOINT)
++
++struct MCTPI2CEndpointClass {
++    I2CSlaveClass parent_class;
++
++    /**
++     *
++     * put_buf() - receive incoming message fragment
++     *
++     * Must returns 0 for succes or -1 for error.
++     */
++    int (*put_buf)(MCTPI2CEndpoint *mctp, uint8_t *buf, size_t len);
++
++    /**
++     * get_buf() - provide pointer to message fragment
++     *
++     * Called by the mctp subsystem to request a pointer to the next message
++     * fragment. The implementation must advance its internal position such
++     * that successive calls returns the next fragments.
++     *
++     * Must return the number of bytes available.
++     */
++    size_t (*get_buf)(MCTPI2CEndpoint *mctp, const uint8_t **buf,
++                      size_t maxlen, uint8_t *mctp_flags);
++
++    /**
++     * handle() - handle an MCTP message
++     *
++     * Called by the mctp subsystem when a full message has been delivered and
++     * may be parsed and processed.
++     */
++    void (*handle)(MCTPI2CEndpoint *mctp);
++
++    /**
++     * reset() - reset internal state
++     *
++     * Called by the mctp subsystem in the event of some transport error.
++     * Implementation must reset its internal state and drop any fragments
++     * previously receieved.
++     */
++    void (*reset)(MCTPI2CEndpoint *mctp);
++
++    /**
++     * get_types() - provide supported mctp message types
++     *
++     * Must provide a buffer with a full MCTP supported message types payload
++     * (i.e. `0x0(SUCCESS),0x1(COUNT),0x4(NMI)`).
++     *
++     * Returns the size of the response.
++     */
++    size_t (*get_types)(MCTPI2CEndpoint *mctp, const uint8_t **data);
++};
++
++/*
++ * Maximum value of the SMBus Block Write "Byte Count" field (8 bits).
++ *
++ * This is the count of bytes that follow the Byte Count field and up to, but
++ * not including, the PEC byte.
++ */
++#define I2C_MCTP_MAXBLOCK 255
++
++/*
++ * Maximum Transmission Unit under I2C.
++ *
++ * This is for the MCTP Packet Payload (255, subtracting the 4 byte MCTP Packet
++ * Header or the 1 byte MCTP/I2C piggy-backed source address).
++ */
++#define I2C_MCTP_MAXMTU (I2C_MCTP_MAXBLOCK - (sizeof(MCTPPacketHeader) + 1))
++
++/*
++ * Maximum length of an MCTP/I2C packet.
++ *
++ * This is the sum of the three I2C header bytes (Destination target address,
++ * Command Code and Byte Count), the maximum number of bytes in a message (255)
++ * and the 1 byte Packet Error Code.
++ */
++#define I2C_MCTP_MAX_LENGTH (3 + I2C_MCTP_MAXBLOCK + 1)
++
++typedef enum {
++    I2C_MCTP_STATE_IDLE,
++    I2C_MCTP_STATE_RX_STARTED,
++    I2C_MCTP_STATE_RX,
++    I2C_MCTP_STATE_WAIT_TX,
++    I2C_MCTP_STATE_TX,
++} MCTPState;
++
++typedef enum {
++    I2C_MCTP_STATE_TX_START_SEND,
++    I2C_MCTP_STATE_TX_SEND_BYTE,
++} MCTPTxState;
++
++typedef struct MCTPI2CEndpoint {
++    I2CSlave parent_obj;
++    I2CBus *i2c;
++
++    MCTPState state;
++
++    /* mctp endpoint identifier */
++    uint8_t my_eid;
++
++    uint8_t buffer[I2C_MCTP_MAX_LENGTH];
++    uint64_t pos;
++    size_t len;
++
++    struct {
++        MCTPTxState state;
++        bool is_control;
++
++        uint8_t eid;
++        uint8_t addr;
++        uint8_t pktseq;
++        uint8_t tag;
++
++        QEMUBH *bh;
++    } tx;
++} MCTPI2CEndpoint;
++
++void i2c_mctp_schedule_send(MCTPI2CEndpoint *mctp);
++
++#endif /* QEMU_I2C_MCTP_H */
+diff --git a/include/net/mctp.h b/include/net/mctp.h
+new file mode 100644
+index 000000000000..5d26d855dba0
+--- /dev/null
++++ b/include/net/mctp.h
+@@ -0,0 +1,35 @@
++#ifndef QEMU_MCTP_H
++#define QEMU_MCTP_H
++
++#include "hw/registerfields.h"
++
++/* DSP0236 1.3.0, Section 8.3.1 */
++#define MCTP_BASELINE_MTU 64
++
++/* DSP0236 1.3.0, Table 1, Message body */
++FIELD(MCTP_MESSAGE_H, TYPE, 0, 7)
++FIELD(MCTP_MESSAGE_H, IC,   7, 1)
++
++/* DSP0236 1.3.0, Table 1, MCTP transport header */
++FIELD(MCTP_H_FLAGS, TAG,    0, 3);
++FIELD(MCTP_H_FLAGS, TO,     3, 1);
++FIELD(MCTP_H_FLAGS, PKTSEQ, 4, 2);
++FIELD(MCTP_H_FLAGS, EOM,    6, 1);
++FIELD(MCTP_H_FLAGS, SOM,    7, 1);
++
++/* DSP0236 1.3.0, Figure 4 */
++typedef struct MCTPPacketHeader {
++    uint8_t version;
++    struct {
++        uint8_t dest;
++        uint8_t source;
++    } eid;
++    uint8_t flags;
++} MCTPPacketHeader;
++
++typedef struct MCTPPacket {
++    MCTPPacketHeader hdr;
++    uint8_t          payload[];
++} MCTPPacket;
++
++#endif /* QEMU_MCTP_H */
+
+-- 
+2.42.0
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 687DEEE49AE
+	for <qemu-devel@archiver.kernel.org>; Wed, 23 Aug 2023 09:23:11 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qYk4B-0005Pj-Vi; Wed, 23 Aug 2023 05:22:20 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qYk46-0005Nu-Fn; Wed, 23 Aug 2023 05:22:14 -0400
+Received: from out1-smtp.messagingengine.com ([66.111.4.25])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qYk44-0005LT-R3; Wed, 23 Aug 2023 05:22:14 -0400
+Received: from compute2.internal (compute2.nyi.internal [10.202.2.46])
+ by mailout.nyi.internal (Postfix) with ESMTP id 719165C0150;
+ Wed, 23 Aug 2023 05:22:11 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute2.internal (MEProxy); Wed, 23 Aug 2023 05:22:11 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=irrelevant.dk;
+ h=cc:cc:content-transfer-encoding:content-type:content-type
+ :date:date:from:from:in-reply-to:in-reply-to:message-id
+ :mime-version:references:reply-to:sender:subject:subject:to:to;
+ s=fm3; t=1692782531; x=1692868931; bh=TxT5FJBQFAQKhqwk36E64LI9W
+ 142sBokm3Pek9uHubI=; b=BY8CmMLBDvJi+xC2oxjFoJdzG+zzr/HxLhqR4m+Hz
+ s/GcKuk2sTSfXlnQ6VQQq6fTZN4Bpg/WlGzJlckW3YwpiRhhYpXg8VSO1QWDzbld
+ ZHviN0sAh/yQs+ulOuiba53v6W0ye0RTrQ83fyNLYfJWNBPSmd0xJJOBt+VcM595
+ y0/MDrOeiLenPZ+AB1SugoZEhm4vNJWEUcCArQ0pgyLYwNfMrDhoqcc3TzDXpUwX
+ K0csfxGzm2Sgj6nYWwXyNFAE7NTexLfd9H5aF2YQcMJzGNr/k2Dit6GSTsjIYUQf
+ 2l0DLTz6ml8prWZN3Z0Rvk90EiRdrz3PYblX8YleuQ+sw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-transfer-encoding
+ :content-type:content-type:date:date:feedback-id:feedback-id
+ :from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:sender:subject:subject:to:to:x-me-proxy
+ :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
+ 1692782531; x=1692868931; bh=TxT5FJBQFAQKhqwk36E64LI9W142sBokm3P
+ ek9uHubI=; b=UzgxsjbtkbfMBPxp5d2pRG+zfcn3ZUzdjnPjJsPDZADPDpWAEbn
+ W/JblNd1WdLHJ2h9XenWgv8fnkh8AXMSDrb9dVBpdteebOpoPKRRRBrspMZ1aDiz
+ spn6D+W8GnueOzSB3NWh4Se43AdBCVE/NhVukLNbovbuX715An3nHHjaLqek/b7A
+ DzV38oxCHNwYVKHdPrOG+mLs6CPwZ4tYowuXSLipWpNtLD919CWXkr7QbooVM9j6
+ haksXPXrcYvyARNdsxZfEnC3dH0CtmgdjxIOG0sN9WNmwB7jY0e8v3XKgRDia76D
+ 7La6i4kb+B2HIe33JCYZvIPIEinx3YboNkQ==
+X-ME-Sender: <xms:w8_lZDae76XnVe-c_5Yi7_UCw-Q8A5uzohETSD5xPbHsabk-NrFxSg>
+ <xme:w8_lZCb96OQlgdpTYXDBXTSwwa4_bMgmVdRm0aheA02-hS4EbXIU1wi64D_S0eP9b
+ ZzJFsJu5lxPNRnJnqw>
+X-ME-Received: <xmr:w8_lZF9FDBX0mHzSinBjw7N-0WY40D4x1uHjg0tUedXRLenZnz-beQZGuYnxAVt01RaOpV0ktY0C4tRvrAygGwz97jYrs41sOgnzxaek7-emz07HRWjL40Jc3kMHC20I8Jq68cCMDkc2MNlkVQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedruddvgedgudehucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephfffufggtgfgkfhfjgfvvefosehtjeertdertdejnecuhfhrohhmpefmlhgr
+ uhhsucflvghnshgvnhcuoehithhssehirhhrvghlvghvrghnthdrughkqeenucggtffrrg
+ htthgvrhhnpeekiedvtdeuhefffedutdelfeekhfeitddtudevgefgffeiteevfffhhefg
+ gefhffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
+ hithhssehirhhrvghlvghvrghnthdrughk
+X-ME-Proxy: <xmx:w8_lZJpPBJcVYvIBeX14OrsBd0OoAUemwVSmES6n3nAnC3g5Hm-2QQ>
+ <xmx:w8_lZOoEllaCGx2MFBLVA9he2D9a6fBwJmem2T6hfbX19EPWAdomEg>
+ <xmx:w8_lZPTv6JoqBK6sP9x-wUyASc35ZR0YJ5CVPMct1_EDwtt1YEvKFw>
+ <xmx:w8_lZD7xNuAonlSLt5zQsK_Y4nnHmXvA-8oGiuW0m2kYoyufWhXbTQ>
+Feedback-ID: idc91472f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 23 Aug 2023 05:22:09 -0400 (EDT)
+From: Klaus Jensen <its@irrelevant.dk>
+Date: Wed, 23 Aug 2023 11:21:58 +0200
+Subject: [PATCH v4 1/3] hw/i2c: add smbus pec utility function
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230823-nmi-i2c-v4-1-2b0f86e5be25@samsung.com>
+References: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+In-Reply-To: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+To: Corey Minyard <cminyard@mvista.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+ Peter Maydell <peter.maydell@linaro.org>, Jason Wang <jasowang@redhat.com>, 
+ Keith Busch <kbusch@kernel.org>
+Cc: Lior Weintraub <liorw@pliops.com>, Jeremy Kerr <jk@codeconstruct.com.au>, 
+ Matt Johnston <matt@codeconstruct.com.au>, Peter Delevoryas <peter@pjd.dev>, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Klaus Jensen <its@irrelevant.dk>, qemu-devel@nongnu.org, 
+ qemu-arm@nongnu.org, qemu-block@nongnu.org, 
+ Klaus Jensen <k.jensen@samsung.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1538; i=k.jensen@samsung.com; 
+ h=from:subject:message-id;
+ bh=8bL+r5gcnCGchv7l1z4cPWVJYm8QL5SGL7mTA0JWL9M=; 
+ b=owJ4nAFtAZL+kA0DAAoBTeGvMW1PDekByyZiAGTlz72X3EqVSWHVNHaYNKunrslH55pb9mDC0
+ DAhFmxXJGXOXIkBMwQAAQoAHRYhBFIoM6p14tzmokdmwE3hrzFtTw3pBQJk5c+9AAoJEE3hrzFt
+ Tw3pCWAIAJrw11uJZod/3DespK3JYZkQEZKLTplG591PlPqYEnHqxSBjTkIw7+q/awzfHlLFxWH
+ pgpJm4Z+UwLzDzfwj7MCG3PPnB9spfOU2W4vDuky7Qre/SX6s4hS11CMUWZhyv98f7uoAPeiCIl
+ 2PJqEQX0kliTMmK6nQbjd16CxPb75dmbOuwuiPDlk24Pyk5hjopb1rxWiRC8mzCYEORz7W4AsDY
+ 9Kc0/8VZ0Ld2atUcdgKjZOvp4QchN/TSrAaE/f4zztu61Atc6HdYFNCMl6MG6Xv1V0rVUfLcsut
+ ABFNeJ+qMWsnnSecqXy9AaKl3DZslm8QfpapH56s0m8JWzaYSEDR4q2u
+X-Developer-Key: i=k.jensen@samsung.com; a=openpgp;
+ fpr=DDCA4D9C9EF931CC3468427263D56FC5E55DA838
+Received-SPF: pass client-ip=66.111.4.25; envelope-from=its@irrelevant.dk;
+ helo=out1-smtp.messagingengine.com
+X-Spam_score_int: -27
+X-Spam_score: -2.8
+X-Spam_bar: --
+X-Spam_report: (-2.8 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1,
+ RCVD_IN_DNSWL_LOW=-0.7, RCVD_IN_MSPIKE_H3=0.001, RCVD_IN_MSPIKE_WL=0.001,
+ SPF_HELO_PASS=-0.001, SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: RO
+Content-Length: 1521
+Lines: 66
+
+From: Klaus Jensen <k.jensen@samsung.com>
+
+Add i2c_smbus_pec() to calculate the SMBus Packet Error Code for a
+message.
+
+Signed-off-by: Klaus Jensen <k.jensen@samsung.com>
+---
+ hw/i2c/smbus_master.c         | 26 ++++++++++++++++++++++++++
+ include/hw/i2c/smbus_master.h |  2 ++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/hw/i2c/smbus_master.c b/hw/i2c/smbus_master.c
+index 6a53c34e70b7..01a8e4700222 100644
+--- a/hw/i2c/smbus_master.c
++++ b/hw/i2c/smbus_master.c
+@@ -15,6 +15,32 @@
+ #include "hw/i2c/i2c.h"
+ #include "hw/i2c/smbus_master.h"
+ 
++static uint8_t crc8(uint16_t data)
++{
++    int i;
++
++    for (i = 0; i < 8; i++) {
++        if (data & 0x8000) {
++            data ^= 0x1070U << 3;
++        }
++
++        data <<= 1;
++    }
++
++    return (uint8_t)(data >> 8);
++}
++
++uint8_t i2c_smbus_pec(uint8_t crc, uint8_t *buf, size_t len)
++{
++    int i;
++
++    for (i = 0; i < len; i++) {
++        crc = crc8((crc ^ buf[i]) << 8);
++    }
++
++    return crc;
++}
++
+ /* Master device commands.  */
+ int smbus_quick_command(I2CBus *bus, uint8_t addr, int read)
+ {
+diff --git a/include/hw/i2c/smbus_master.h b/include/hw/i2c/smbus_master.h
+index bb13bc423c22..d90f81767d86 100644
+--- a/include/hw/i2c/smbus_master.h
++++ b/include/hw/i2c/smbus_master.h
+@@ -27,6 +27,8 @@
+ 
+ #include "hw/i2c/i2c.h"
+ 
++uint8_t i2c_smbus_pec(uint8_t crc, uint8_t *buf, size_t len);
++
+ /* Master device commands.  */
+ int smbus_quick_command(I2CBus *bus, uint8_t addr, int read);
+ int smbus_receive_byte(I2CBus *bus, uint8_t addr);
+
+-- 
+2.42.0
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BB05EE4993
+	for <qemu-devel@archiver.kernel.org>; Wed, 23 Aug 2023 09:23:10 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1qYk4A-0005OZ-7M; Wed, 23 Aug 2023 05:22:19 -0400
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qYk45-0005Nl-GH; Wed, 23 Aug 2023 05:22:13 -0400
+Received: from out1-smtp.messagingengine.com ([66.111.4.25])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <its@irrelevant.dk>)
+ id 1qYk43-0005LJ-02; Wed, 23 Aug 2023 05:22:13 -0400
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+ by mailout.nyi.internal (Postfix) with ESMTP id 32E905C00DE;
+ Wed, 23 Aug 2023 05:22:09 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute5.internal (MEProxy); Wed, 23 Aug 2023 05:22:09 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=irrelevant.dk;
+ h=cc:cc:content-transfer-encoding:content-type:content-type
+ :date:date:from:from:in-reply-to:message-id:mime-version
+ :reply-to:sender:subject:subject:to:to; s=fm3; t=1692782529; x=
+ 1692868929; bh=20ITenHY9SaVI3QeBxMfm7q3tEtFSLMhSrUzH5wzjLg=; b=t
+ M7QgqdG1eJmW65s+ookcd1WS23RB+TkP2WBWleDFKJxlCfkG4tZ/SO1gHLtuSAMn
+ rTDLFUqUt8N+ioBcF9x6oHI4Xw2DDa9FMrRgj2zjDxg2KrG8xuez101RTp0r0mzV
+ xeWz6dAvCMVsl1Bon7yoUP0P6ql1ZXqiIlPJrP7nMnWCSB9TaTtbi0tKqJarSINZ
+ DvolUL/wXGUtxs2l2Zpta1Kgcx99vYOQjx3qKigbjNNymxEYor1r9tkGKTkHE40f
+ PKu4vydpb+kzBLJEsMEDfOcU8NszGoJHCDXGUmLIqbUzh7RqMNlj3fOZgTOZXbqv
+ Xyd7wQRu/yXLhii46idPw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-transfer-encoding
+ :content-type:content-type:date:date:feedback-id:feedback-id
+ :from:from:in-reply-to:message-id:mime-version:reply-to:sender
+ :subject:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender
+ :x-me-sender:x-sasl-enc; s=fm1; t=1692782529; x=1692868929; bh=2
+ 0ITenHY9SaVI3QeBxMfm7q3tEtFSLMhSrUzH5wzjLg=; b=cEYteBL8uXjJt3PBo
+ YsNeQyFDIc/3aZUyo1Wo+h4ih8AlopfJC4Niwo9h7wTtKhogXV/rxbr0i4gJgnMQ
+ hHYONgDGB1wAOTUWFuzNqlReTXZc7dAUFrXsz0M/046DnNlQvKDgYn+Vjm+dh4Id
+ EpcsbwQTt5fpIeaIu5sPOz0Hbr9J0DxaLCuiThWiExaY18nes5yugnYU6OxXNsh6
+ QMW7klb7tXKSL3yUGZ6CcjVPktsLt6sUoo1Q7m1/bYI2hvbLpjeyHEmDwvbgh880
+ yrRRqhcpRm+ruPAHWC3TyBJCQHhNBoAJ5BC4Nxl5AGGv6qqYzwp1fLip/qgcy8PD
+ 5ZVBw==
+X-ME-Sender: <xms:v8_lZC-mHUKGGtIu4O24Df5Q2wn4Ji-bsFCYW0R_LTvdSR56JrGFgA>
+ <xme:v8_lZCsYOAfZlTPHm0i5Yih1GtD0KmcyetRdaXKr5W4eqj7biSeylv--6xM7z-8j6
+ 7kxdjAB89L3wM7Gvo0>
+X-ME-Received: <xmr:v8_lZIBEnQFMTcmBonSkSiJ8qIDp0BXG3NsQjEtgbcdI20tn3FYkezXDv8zOu22b4AsihJJcf3a7P-0QvY__L8Zrk1u_lQ390o52abluha3nExDVEoIoGbBSojC0GJLrEaspDXjw1u9LUr_NEA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedruddvgedgudegucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffufffkgggtgffvvefosehtjeertdertdejnecuhfhrohhmpefmlhgruhhs
+ ucflvghnshgvnhcuoehithhssehirhhrvghlvghvrghnthdrughkqeenucggtffrrghtth
+ gvrhhnpeduffduheffffeihfeuleekgfejkeefkeegheetheegiefgudetudevieejgeff
+ leenucffohhmrghinhepghhithhhuhgsrdgtohhmnecuvehluhhsthgvrhfuihiivgeptd
+ enucfrrghrrghmpehmrghilhhfrhhomhepihhtshesihhrrhgvlhgvvhgrnhhtrdgukh
+X-ME-Proxy: <xmx:v8_lZKeWZGbQEMdAbr73wNywOiCuvvuDPNOARCT5YhSXPkOMhKXk4w>
+ <xmx:v8_lZHPzZeiTKCtupxcEovtWB3DOazFNh2bm_gGKSvQuQ6ZcOJPjxQ>
+ <xmx:v8_lZEmWDDXwnIylybliPw4uCau5yyDA77gPdjL4b6DOvzEKroaUSA>
+ <xmx:wc_lZFvtEaqeYKzcqa1VpTlvr6tSeZItTJLy2R9eCW4r4Yl5EWXvxA>
+Feedback-ID: idc91472f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 23 Aug 2023 05:22:05 -0400 (EDT)
+From: Klaus Jensen <its@irrelevant.dk>
+Subject: [PATCH v4 0/3] hw/{i2c,nvme}: mctp endpoint, nvme management
+ interface model
+Date: Wed, 23 Aug 2023 11:21:57 +0200
+Message-Id: <20230823-nmi-i2c-v4-0-2b0f86e5be25@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIALbP5WQC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyTHQUlJIzE
+ vPSU3UzU4B8JSMDI2MDCyMj3bzcTN1Mo2TdFAsDk9QU06RU81QzJaDqgqLUtMwKsEnRsbW1AA2
+ 4YLRZAAAA
+To: Corey Minyard <cminyard@mvista.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+ Peter Maydell <peter.maydell@linaro.org>, Jason Wang <jasowang@redhat.com>, 
+ Keith Busch <kbusch@kernel.org>
+Cc: Lior Weintraub <liorw@pliops.com>, Jeremy Kerr <jk@codeconstruct.com.au>, 
+ Matt Johnston <matt@codeconstruct.com.au>, Peter Delevoryas <peter@pjd.dev>, 
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+ Klaus Jensen <its@irrelevant.dk>, qemu-devel@nongnu.org, 
+ qemu-arm@nongnu.org, qemu-block@nongnu.org, 
+ Klaus Jensen <k.jensen@samsung.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3795; i=k.jensen@samsung.com; 
+ h=from:subject:message-id;
+ bh=rBAEmt0JsBGp/GN3Q5V2cSgy3EXakcIYEMcJk82QxDQ=; 
+ b=owJ4nAFtAZL+kA0DAAoBTeGvMW1PDekByyZiAGTlz73/tVI8B9iob50DMlkUASZE8IKKtAFYz
+ Y6d2Ap32txyY4kBMwQAAQoAHRYhBFIoM6p14tzmokdmwE3hrzFtTw3pBQJk5c+9AAoJEE3hrzFt
+ Tw3pSLIIAL6QAZJEgRawiTkBTJqOZgSW/nk6hx/EdHbHnrNRdV+lpCU1oM+TaY6jhhHiQCSpbUI
+ 95mGpY5sZdnG2W6wMiLRgrjWuFCtync2w1DqJ22pDg62J2mijYFYdFpPwh/bc0T8W69fdgx+YDk
+ Pe95H4L9s4y6dkdYRN8Cqg4TMhhEdk+l355QO0A66HPMIjhnIh9fUVoGZAcWU4ZE41hhP5+Qcr9
+ SEUzI/1FtUfpzmFvXX6KW0GTBXoeGxPv0PdSCNtLWuAw1nEafSL3Z2VEsjaUCrGrWRltDD9CNPg
+ o4swDFz7ks3XJZXVjHwDQgUWZ6uWSqVp7AgICI+BJu+rfXYJbDzz6aYF
+X-Developer-Key: i=k.jensen@samsung.com; a=openpgp;
+ fpr=DDCA4D9C9EF931CC3468427263D56FC5E55DA838
+Received-SPF: pass client-ip=66.111.4.25; envelope-from=its@irrelevant.dk;
+ helo=out1-smtp.messagingengine.com
+X-Spam_score_int: -27
+X-Spam_score: -2.8
+X-Spam_bar: --
+X-Spam_report: (-2.8 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, DKIM_VALID_EF=-0.1,
+ RCVD_IN_DNSWL_LOW=-0.7, RCVD_IN_MSPIKE_H3=0.001, RCVD_IN_MSPIKE_WL=0.001,
+ SPF_HELO_PASS=-0.001, SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: RO
+Content-Length: 3690
+Lines: 110
+
+This adds a generic MCTP endpoint model that other devices may derive
+from.
+
+Also included is a very basic implementation of an NVMe-MI device,
+supporting only a small subset of the required commands.
+
+Since this all relies on i2c target mode, this can currently only be
+used with an SoC that includes the Aspeed I2C controller.
+
+The easiest way to get up and running with this, is to grab my buildroot
+overlay[1] (aspeed_ast2600evb_nmi_defconfig). It includes modified a
+modified dts as well as a couple of required packages.
+
+QEMU can then be launched along these lines:
+
+  qemu-system-arm \
+    -nographic \
+    -M ast2600-evb \
+    -kernel output/images/zImage \
+    -initrd output/images/rootfs.cpio \
+    -dtb output/images/aspeed-ast2600-evb-nmi.dtb \
+    -nic user,hostfwd=tcp::2222-:22 \
+    -device nmi-i2c,address=0x3a \
+    -serial mon:stdio
+
+>From within the booted system,
+
+  mctp addr add 8 dev mctpi2c15
+  mctp link set mctpi2c15 up
+  mctp route add 9 via mctpi2c15
+  mctp neigh add 9 dev mctpi2c15 lladdr 0x3a
+  mi-mctp 1 9 info
+
+Comments are very welcome!
+
+  [1]: https://github.com/birkelund/hwtests/tree/main/br2-external
+
+Changes since v3
+~~~~~~~~~~~~~~~~
+
+  - Inlined the POLY define in the crc8 function (Philippe)
+  - Changed a bunch of fields to use registerfields.h
+
+  - From Jonathan:
+    + Added references to specs defining the structures.
+
+  - From Corey:
+    + Reworked the buffer handling (again) ;)
+      Derived devices can now never write into the mctp core buffers. Instead,
+      the mctp core will request a buffer pointer and copy from there.
+      Internally, within the mctp core, writes to internal buffers are also
+      checked.
+
+Changes since v2
+~~~~~~~~~~~~~~~~
+
+  - Applied a bunch of feedback from Jonathan:
+    + Moved a lot of internally used structs out of the include headers
+      and into the source files.
+    + Added spec references in various places
+    + Split the patch for i2c_smbus_pec() into its own
+    + Fix a compile error (and bug) in nmi-i2c.c.
+
+  - From Corey:
+    + Reworked the buffer handling. The deriving devices now returns a
+      pointer to their own buffer that the mctp core copies into.
+    + Added a couple of extra debugging trace events.
+
+Changes since v1
+~~~~~~~~~~~~~~~~
+
+  - Fix SPDX-License tag for hw/nvme/nmi-i2c.c (Philippe)
+  - Add some asserts to verify buffer indices (by request from Corey).
+  - Drop short packets that could result in underflow (Corey)
+  - Move i2c_smbus_pec() to smbus common code (Corey)
+  - A couple of logic fixes (patch from Jeremy squashed in)
+  - Added a patch to handle messages with dest eid 0 (Matt)
+    Maybe squash this as well.
+
+Signed-off-by: Klaus Jensen <k.jensen@samsung.com>
+---
+Klaus Jensen (3):
+      hw/i2c: add smbus pec utility function
+      hw/i2c: add mctp core
+      hw/nvme: add nvme management interface model
+
+ MAINTAINERS                   |   7 +
+ hw/arm/Kconfig                |   1 +
+ hw/i2c/Kconfig                |   4 +
+ hw/i2c/mctp.c                 | 428 ++++++++++++++++++++++++++++++++++++++++++
+ hw/i2c/meson.build            |   1 +
+ hw/i2c/smbus_master.c         |  26 +++
+ hw/i2c/trace-events           |  13 ++
+ hw/nvme/Kconfig               |   4 +
+ hw/nvme/meson.build           |   1 +
+ hw/nvme/nmi-i2c.c             | 418 +++++++++++++++++++++++++++++++++++++++++
+ hw/nvme/trace-events          |   6 +
+ include/hw/i2c/mctp.h         | 127 +++++++++++++
+ include/hw/i2c/smbus_master.h |   2 +
+ include/net/mctp.h            |  35 ++++
+ 14 files changed, 1073 insertions(+)
+---
+base-commit: b0dd9a7d6dd15a6898e9c585b521e6bec79b25aa
+change-id: 20230822-nmi-i2c-d804ed5be7e6
+
+Best regards,
+-- 
+Klaus Jensen <k.jensen@samsung.com>
+
+
+
