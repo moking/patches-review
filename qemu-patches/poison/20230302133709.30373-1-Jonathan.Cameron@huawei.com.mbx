@@ -1857,609 +1857,6 @@ Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 682CBC61DA4
-	for <linux-cxl@archiver.kernel.org>; Mon,  6 Mar 2023 20:08:33 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230201AbjCFUIc (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Mon, 6 Mar 2023 15:08:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50226 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230202AbjCFUIb (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Mar 2023 15:08:31 -0500
-Received: from mailout2.w2.samsung.com (mailout2.w2.samsung.com [211.189.100.12])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D069637713
-        for <linux-cxl@vger.kernel.org>; Mon,  6 Mar 2023 12:08:29 -0800 (PST)
-Received: from uscas1p2.samsung.com (unknown [182.198.245.207])
-        by mailout2.w2.samsung.com (KnoxPortal) with ESMTP id 20230306172148usoutp0266fbfe25d648e97725e74ee1c4d175ed~J5EH-OAIN2801728017usoutp02h;
-        Mon,  6 Mar 2023 17:21:48 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w2.samsung.com 20230306172148usoutp0266fbfe25d648e97725e74ee1c4d175ed~J5EH-OAIN2801728017usoutp02h
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1678123308;
-        bh=H2it2XComyhed/Ktkk/8iKc/Xzxi3tX70yy9BOsk5RQ=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
-        b=n5tOhcrErGxVCre/TwO46XbztwX1vcM/F2oO2rM0uxeO+xVnkSeTHtNXK6YrjvJ5H
-         XbBPmaKMB/Y9rPAn/2v7DAjFQUX/ZnBJmxpn/mNZMn3quSFwIgMXiDgqPwOb+FvSOO
-         vA1T05GS2038zNVkEaJMO7cSPjSk+/TjllMEQVSk=
-Received: from ussmges1new.samsung.com (u109.gpu85.samsung.co.kr
-        [203.254.195.109]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20230306172148uscas1p257044c62a225c2617f0046b568e7113b~J5EHzz8Y_3131231312uscas1p2_;
-        Mon,  6 Mar 2023 17:21:48 +0000 (GMT)
-Received: from uscas1p2.samsung.com ( [182.198.245.207]) by
-        ussmges1new.samsung.com (USCPEMTA) with SMTP id 64.39.06976.B2126046; Mon, 
-        6 Mar 2023 12:21:47 -0500 (EST)
-Received: from ussmgxs1new.samsung.com (u89.gpu85.samsung.co.kr
-        [203.254.195.89]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20230306172146uscas1p2e9446294d8b850a1bbcd0e0d4302b603~J5EGM6vNf1373213732uscas1p2B;
-        Mon,  6 Mar 2023 17:21:46 +0000 (GMT)
-X-AuditID: cbfec36d-afdff70000011b40-6a-6406212b6380
-Received: from SSI-EX1.ssi.samsung.com ( [105.128.2.145]) by
-        ussmgxs1new.samsung.com (USCPEXMTA) with SMTP id E4.D3.11378.92126046; Mon, 
-        6 Mar 2023 12:21:46 -0500 (EST)
-Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
-        SSI-EX1.ssi.samsung.com (105.128.2.226) with Microsoft SMTP Server
-        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
-        15.1.2375.24; Mon, 6 Mar 2023 09:21:45 -0800
-Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
-        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Mon,
-        6 Mar 2023 09:21:45 -0800
-From: Fan Ni <fan.ni@samsung.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-CC: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
-        Michael Tsirkin <mst@redhat.com>,
-        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
-        "linuxarm@huawei.com" <linuxarm@huawei.com>,
-        Ira Weiny <ira.weiny@intel.com>,
-        Alison Schofield <alison.schofield@intel.com>,
-        Michael Roth <michael.roth@amd.com>,
-        =?iso-8859-1?Q?Philippe_Mathieu-Daud=E9?= <philmd@linaro.org>,
-        Dave Jiang <dave.jiang@intel.com>,
-        Markus Armbruster <armbru@redhat.com>,
-        =?iso-8859-1?Q?Daniel_P_=2E_Berrang=E9?= <berrange@redhat.com>,
-        Eric Blake <eblake@redhat.com>,
-        Mike Maslenkin <mike.maslenkin@gmail.com>,
-        =?iso-8859-1?Q?Marc-Andr=E9_Lureau?= <marcandre.lureau@redhat.com>,
-        Thomas Huth <thuth@redhat.com>
-Subject: Re: [RESEND PATCH v6 2/8] hw/pci/aer: Add missing routing for AER
- errors
-Thread-Topic: [RESEND PATCH v6 2/8] hw/pci/aer: Add missing routing for AER
-        errors
-Thread-Index: AQHZTQw/G6QD+/yG8UOd0ZzVQiEZ/K7ujEIA
-Date: Mon, 6 Mar 2023 17:21:45 +0000
-Message-ID: <20230306172144.GB1489326@bgt-140510-bm03>
-In-Reply-To: <20230302133709.30373-3-Jonathan.Cameron@huawei.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [105.128.2.176]
-Content-Type: text/plain; charset="iso-8859-1"
-Content-ID: <3A3BC774316E5341B79BEF4DA8EA2634@ssi.samsung.com>
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-X-CFilter-Loop: Reflected
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrEKsWRmVeSWpSXmKPExsWy7djX87raimwpBrObzC3uPr7AZjF/7X0W
-        izdv1jBZnLjZyGYx8e16Vov9T5+zWKxaeI3N4vysUywWhzeeYbJY0NbOarHm/iFWi99rHzNZ
-        /P/1CshdIWxxvHcHi8XKYzYOAh6tl/6yeeycdZfdo+XIW1aPxXteMnncubaHzePJtc1MHu/3
-        XWXz+LxJLoAjissmJTUnsyy1SN8ugSvj3Ga5gh98FTsfNTI3MJ7l7mLk5JAQMJFY8HEhaxcj
-        F4eQwEpGiY9717BDOK1MEvtmzGfsYuQAq/qzyRsivpZR4sjh/UwQzkdGiUkXvzGDjBISWMoo
-        cb6xFsRmE1CU2Ne1nQ3EFhEwknh3YxIjSAOzwB5WiY8z5rODJIQFgiW+ffsFlGAHKgqReB4G
-        U77v601GEJtFQEXi6e9HLCA2r4CZxOb1z5lAbE4BR4mv/bfAxjMKiEl8P7UGLM4sIC5x68l8
-        JojPBCUWzd7DDGGLSfzb9ZANwlaUuP/9JTtEvZ7EjalT2CBsO4k3XTuh4toSyxa+ZobYKyhx
-        cuYTFoheSYmDK26wgLwiIbCcU2LHs1VQCReJlqMnoJZJS1y9PpUZEnDJEqs+ckGEcyTmL9kC
-        VW4tsfDPeqYJjCqzkJw9C8lJs5CcNAvJSbOQnLSAkXUVo3hpcXFuemqxYV5quV5xYm5xaV66
-        XnJ+7iZGYDI8/e9w7g7GHbc+6h1iZOJgPMQowcGsJMJb9Zs1RYg3JbGyKrUoP76oNCe1+BCj
-        NAeLkjivoe3JZCGB9MSS1OzU1ILUIpgsEwenVANTT9p8pcsPHBkXLTGrnrLiH1OHcKzWBMUH
-        R04uq/67je20geDde48PSrI4PQxfz+jEMaUvMOL1EcnC676hZ2e4PDeqK5gVbvXi5Vcnm5SM
-        P18vNImW/FS4pVc7+Yy/5J6QINHfkw2XWsS3tPd2V+3XPL718/zkIsWt7KkdF/c+VFP7ufR8
-        0nPJxn8iK/mybQ7Z27D1PH2u+ev4yrfGz/+VOx5WVUg6/pvLleO7k4WGiTP/P8d1b6znflVi
-        3GR1UsP6NO+clz1CtdpPPmnZiTJ4bV/LdVjNZeeFJQvtJkoEv92aa9fVKMzlvH364ysMLFb2
-        nv9KFCrFrljNUH3wn010q1Yun+/rH6VrFHbMi01SYinOSDTUYi4qTgQANHFhffUDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFmpileLIzCtJLcpLzFFi42LJbGCaqKulyJZi8PIeh8XdxxfYLOavvc9i
-        8ebNGiaLEzcb2Swmvl3ParH/6XMWi1ULr7FZnJ91isXi8MYzTBYL2tpZLdbcP8Rq8XvtYyaL
-        /79eAbkrhC2O9+5gsVh5zMZBwKP10l82j52z7rJ7tBx5y+qxeM9LJo871/aweTy5tpnJ4/2+
-        q2wenzfJBXBEcdmkpOZklqUW6dslcGWc2yxX8IOvYuejRuYGxrPcXYwcHBICJhJ/Nnl3MXJx
-        CAmsZpT4u/kLaxcjJ5DzkVFi0lwbiMRSRolZDYeYQRJsAooS+7q2s4HYIgJGEu9uTGIEKWIW
-        2MUq8Xjpc3aQhLBAsMS3b78YIYpCJB7vfgXXsO/rTbA4i4CKxNPfj1hAbF4BM4nN658zQWwu
-        lzgx6QbYFZwCjhJf+2+B9TIKiEl8P7UGrIZZQFzi1pP5YLaEgIDEkj3nmSFsUYmXj/+xQtiK
-        Eve/v2SHqNeTuDF1ChuEbSfxpmsnVFxbYtnC18wQNwhKnJz5hAWiV1Li4IobLBOA/kaybhaS
-        UbOQjJqFZNQsJKMWMLKuYhQvLS7OTa8oNsxLLdcrTswtLs1L10vOz93ECEwmp/8djtzBePTW
-        R71DjEwcjIcYJTiYlUR4q36zpgjxpiRWVqUW5ccXleakFh9ilOZgURLnFXKdGC8kkJ5Ykpqd
-        mlqQWgSTZeLglGpgctu9e2KkduOB0MWxVxTXsUsq7v68TOF5efe/vVeaf+5tTp32+HOmkvC7
-        /vTdTAoN7D99H16QS2K5bKrqP6mMMfw9l8rHFLF1RUtW3xew2ybaO0uR7b/xWSfmxTwc19mn
-        Lqz7U6v1WLwjlPWH64n/p6P/b1o/7a5b8WOFh/azja/Ou807f3qHmFDbxa3i99SZxJ4KMoo/
-        uv74g/Cd1XfY1x5f2NF/00Chf3G8102bcJWsftFlprw5KhMaM67q/7xk11nDr2vryrJzm3+Q
-        aZFA8sdljNeX1IV+OvCSL+Wdm1Co4PxIu8YZh3N3vNpt67O5+R3ryY7HrzWMp3u7XnoQvCq2
-        gyHXluXEBz9dnlnsSizFGYmGWsxFxYkA+uVuvJUDAAA=
-X-CMS-MailID: 20230306172146uscas1p2e9446294d8b850a1bbcd0e0d4302b603
-CMS-TYPE: 301P
-X-CMS-RootMailID: 20230306172146uscas1p2e9446294d8b850a1bbcd0e0d4302b603
-References: <20230302133709.30373-1-Jonathan.Cameron@huawei.com>
-        <20230302133709.30373-3-Jonathan.Cameron@huawei.com>
-        <CGME20230306172146uscas1p2e9446294d8b850a1bbcd0e0d4302b603@uscas1p2.samsung.com>
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Thu, Mar 02, 2023 at 01:37:03PM +0000, Jonathan Cameron wrote:
-> PCIe r6.0 Figure 6-3 "Pseudo Logic Diagram for Selected Error Message Con=
-trol
-> and Status Bits" includes a right hand branch under "All PCI Express devi=
-ces"
-> that allows for messages to be generated or sent onwards without SERR#
-> being set as long as the appropriate per error class bit in the PCIe
-> Device Control Register is set.
->=20
-> Implement that branch thus enabling routing of ERR_COR, ERR_NONFATAL
-> and ERR_FATAL under OSes that set these bits appropriately (e.g. Linux)
->=20
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-> ---
-
-Reviewed-by: Fan Ni <fan.ni@samsung.com>
-
->  hw/pci/pcie_aer.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
->=20
-> diff --git a/hw/pci/pcie_aer.c b/hw/pci/pcie_aer.c
-> index 909e027d99..103667c368 100644
-> --- a/hw/pci/pcie_aer.c
-> +++ b/hw/pci/pcie_aer.c
-> @@ -192,8 +192,16 @@ static void pcie_aer_update_uncor_status(PCIDevice *=
-dev)
->  static bool
->  pcie_aer_msg_alldev(PCIDevice *dev, const PCIEAERMsg *msg)
->  {
-> +    uint16_t devctl =3D pci_get_word(dev->config + dev->exp.exp_cap +
-> +                                   PCI_EXP_DEVCTL);
->      if (!(pcie_aer_msg_is_uncor(msg) &&
-> -          (pci_get_word(dev->config + PCI_COMMAND) & PCI_COMMAND_SERR)))=
- {
-> +          (pci_get_word(dev->config + PCI_COMMAND) & PCI_COMMAND_SERR)) =
-&&
-> +        !((msg->severity =3D=3D PCI_ERR_ROOT_CMD_NONFATAL_EN) &&
-> +          (devctl & PCI_EXP_DEVCTL_NFERE)) &&
-> +        !((msg->severity =3D=3D PCI_ERR_ROOT_CMD_COR_EN) &&
-> +          (devctl & PCI_EXP_DEVCTL_CERE)) &&
-> +        !((msg->severity =3D=3D PCI_ERR_ROOT_CMD_FATAL_EN) &&
-> +          (devctl & PCI_EXP_DEVCTL_FERE))) {
->          return false;
->      }
-> =20
-> --=20
-> 2.37.2
->=20
-> =
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9374CC61DA4
-	for <linux-cxl@archiver.kernel.org>; Mon,  6 Mar 2023 18:33:16 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230016AbjCFSdP (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Mon, 6 Mar 2023 13:33:15 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60198 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229813AbjCFSdO (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Mar 2023 13:33:14 -0500
-Received: from mailout1.w2.samsung.com (mailout1.w2.samsung.com [211.189.100.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A71076F604
-        for <linux-cxl@vger.kernel.org>; Mon,  6 Mar 2023 10:32:46 -0800 (PST)
-Received: from uscas1p1.samsung.com (unknown [182.198.245.206])
-        by mailout1.w2.samsung.com (KnoxPortal) with ESMTP id 20230306173743usoutp01ecc678f6b6de0b0b80d693e56ba7ee44~J5SB3-Om82686826868usoutp01f;
-        Mon,  6 Mar 2023 17:37:43 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w2.samsung.com 20230306173743usoutp01ecc678f6b6de0b0b80d693e56ba7ee44~J5SB3-Om82686826868usoutp01f
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1678124263;
-        bh=+DECmdPswst/XV3u5kyQ/V46jl2ssTX0GflLj7cHUeY=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
-        b=Wd4RvUn/O7tY3AFaLtVEXx3dACsjKvldV6UKmhSjjcDGJ+LTRS8QMqII17I6s6MUu
-         JktQvpaYsYbJ87OBsH/IP16nNuhO92QLJ1hY1IhCSWbRKM3xUQYgGU+RaI1pkm0jXk
-         MgYZEhHIuPOnlHzjNepecSue8+oK4Kx9JvUJWIlI=
-Received: from ussmges3new.samsung.com (u112.gpu85.samsung.co.kr
-        [203.254.195.112]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20230306173743uscas1p2405d1db3b207457287238b61ce651b2c~J5SBuCV300309903099uscas1p2A;
-        Mon,  6 Mar 2023 17:37:43 +0000 (GMT)
-Received: from uscas1p2.samsung.com ( [182.198.245.207]) by
-        ussmges3new.samsung.com (USCPEMTA) with SMTP id 20.02.12196.7E426046; Mon, 
-        6 Mar 2023 12:37:43 -0500 (EST)
-Received: from ussmgxs2new.samsung.com (u91.gpu85.samsung.co.kr
-        [203.254.195.91]) by uscas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20230306173743uscas1p1f464bb8a53859927472b90f7f9e017c9~J5SBU_6NE0248702487uscas1p1D;
-        Mon,  6 Mar 2023 17:37:43 +0000 (GMT)
-X-AuditID: cbfec370-5b3ff70000012fa4-44-640624e7ec58
-Received: from SSI-EX2.ssi.samsung.com ( [105.128.2.145]) by
-        ussmgxs2new.samsung.com (USCPEXMTA) with SMTP id F6.33.17110.6E426046; Mon, 
-        6 Mar 2023 12:37:43 -0500 (EST)
-Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
-        SSI-EX2.ssi.samsung.com (105.128.2.227) with Microsoft SMTP Server
-        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
-        15.1.2375.24; Mon, 6 Mar 2023 09:37:42 -0800
-Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
-        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Mon,
-        6 Mar 2023 09:37:42 -0800
-From: Fan Ni <fan.ni@samsung.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-CC: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
-        Michael Tsirkin <mst@redhat.com>,
-        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
-        "linuxarm@huawei.com" <linuxarm@huawei.com>,
-        Ira Weiny <ira.weiny@intel.com>,
-        Alison Schofield <alison.schofield@intel.com>,
-        Michael Roth <michael.roth@amd.com>,
-        =?iso-8859-1?Q?Philippe_Mathieu-Daud=E9?= <philmd@linaro.org>,
-        Dave Jiang <dave.jiang@intel.com>,
-        Markus Armbruster <armbru@redhat.com>,
-        =?iso-8859-1?Q?Daniel_P_=2E_Berrang=E9?= <berrange@redhat.com>,
-        Eric Blake <eblake@redhat.com>,
-        Mike Maslenkin <mike.maslenkin@gmail.com>,
-        =?iso-8859-1?Q?Marc-Andr=E9_Lureau?= <marcandre.lureau@redhat.com>,
-        Thomas Huth <thuth@redhat.com>
-Subject: Re: [RESEND PATCH v6 3/8] hw/pci-bridge/cxl_root_port: Wire up AER
-Thread-Topic: [RESEND PATCH v6 3/8] hw/pci-bridge/cxl_root_port: Wire up AER
-Thread-Index: AQHZTQxQkYHUknmJgkm3Rob6/pEwfq7ukLgA
-Date: Mon, 6 Mar 2023 17:37:42 +0000
-Message-ID: <20230306173742.GC1489326@bgt-140510-bm03>
-In-Reply-To: <20230302133709.30373-4-Jonathan.Cameron@huawei.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [105.128.2.176]
-Content-Type: text/plain; charset="iso-8859-1"
-Content-ID: <C033CFD0F72A9A44B24557E698A6C001@ssi.samsung.com>
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-X-CFilter-Loop: Reflected
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrIKsWRmVeSWpSXmKPExsWy7djX87rPVdhSDGZ8k7O4+/gCm8X8tfdZ
-        LN68WcNkceJmI5vFxLfrWS32P33OYrFq4TU2i/OzTrFYHN54hsliQVs7q8Wa+4dYLX6vfcxk
-        8f/XKyB3hbDF8d4dLBYrj9k4CHi0XvrL5rFz1l12j5Yjb1k9Fu95yeRx59oeNo8n1zYzebzf
-        d5XN4/MmuQCOKC6blNSczLLUIn27BK6MFZNfMhe0clfMP/yatYHxGUcXIweHhICJxOcf/F2M
-        XBxCAisZJdoubGKHcFqZJA6c6WHrYuQEK/oyZxojRGIto8TO72dYIZyPjBK3jxxmg3CWMkq8
-        +72SHaSFTUBRYl/XdrB2EQEjiXc3JoG1MwvsYZX4OGM+O8hyYQFviZ41IhA1PhKbNk1lh6mf
-        tGQOI4jNIqAicaGlESzOK2Am0XfgHhtIK6eAo0T/9wCQMKOAmMT3U2uYQGxmAXGJW0/mM0Fc
-        LSixaPYeZghbTOLfrodQ3yhK3P/+kh2iXk/ixtQpYCOZBewkOo4VQYS1JZYtfM0MsVVQ4uTM
-        JywQrZISB1fcYAH5REJgPafEu93NbJBgdJF41m8LUSMt8ffuMiaIcLLEqo9cEOEciflLtkCN
-        sZZY+Gc90wRGlVlIjp6F5KBZCAfNQnLQLCQHLWBkXcUoXlpcnJueWmycl1quV5yYW1yal66X
-        nJ+7iRGYCk//O1ywg/HWrY96hxiZOBgPMUpwMCuJ8Fb9Zk0R4k1JrKxKLcqPLyrNSS0+xCjN
-        waIkzmtoezJZSCA9sSQ1OzW1ILUIJsvEwSnVwORVUvHtP8fvuYvTTHiTdq4QW3VF8nd+O2/L
-        lTap1/nbTvzY0svO8mKj5LaTR9svCPsLcbxiOSimOO3fgpo3KQnigcUbWWLSW5KrJ/7o+K2v
-        2CXQ8NDihnRWx+d/s0y+nhdYty3UvrnwpYRF54bMwq8VR9Ttd4WaJQen7f9xMbX5Z/mminm7
-        LI/JfHmyyJW7/eiMQvUJ15+8vMVR56W/emG07etF9xM97wc1RvE1/X+3a0vlKW1HFa3Pe4Lm
-        PLJd/VZ6Rchsrs/hRuH72gN5TF8t16oQ1Kl6KON/OHbtn2PS91clRxvsc4lumTKL6erUh/Ha
-        z75wlFaphiX/se+seBZ2tkxt5rWAkMRfm3vVTiqxFGckGmoxFxUnAgAVZyMH9AMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA02SeUwTQRjFM3t1qTaOFe2Idz2iENGi0VVRMWqoCPGKmmgQK2yAWArZWgX+
-        EbRYrScgCpVYGqtWBI+q4QhWBZWKGhqjBfFoBKTWcgRRSYpn2Rj5771v3vt9M8nQuDibDKKT
-        VXtYTqVQSikhkZyF5c52T6MS5lbdIJh3bQ6KMZa7CKazswxj7K+zKSa36zrJ3PvoJphSk5Ni
-        Gg0NBFN38xnGlBzSkUyZq5ZkBsrbMOa37/NfaxnF1B+vJJgrj8MjoDznxU9KXmV4J5BrH3aR
-        8gs1Hkz+1llDydudtzB5j+0VJe+zTlxPbxOGJ7DK5L0sN2fZTmGSJd+Dp+UMSzfWecks0EHr
-        QQCN4Hz0tfgM0AMhLYZXAfqkyyd40wtQ6bVyijcXAfI6nJS/QsEpyKavGNSBMAx1N+cN1nFY
-        TaK2i26BHtD0KLgWHSsL5DPRyGotEPzL55mLgV8TcBpyaLMH5yK4AJ24/36QKYb7kK2plfRj
-        AuAKdLJ/vX8M4BjU31CG+TUOJail3YjxL4DIXNOI83o08rT9Ink9Bbn6PQI+H4qaC05TfiQO
-        l6HDjzl+HIIumbw4f4OR6ElRO8FXx6IHlmbiFECGIdsMQ0iG/yTDEJJhCKkEkKVAolGrUxLT
-        1WEqdl+oWpGi1qgSQ+NTU6zg7y95+qtueyV409IbWgswGtQCROPSQFHmAJkgFiUoMjJZLjWO
-        0yhZdS0YRxNSicizLTdODBMVe9jdLJvGcv9OMTogKAvbXOy54bop06/+UbprsujBjIhH1ePr
-        OiZLNR7ImQQC5uCz2N60zniHrjjkSYQttl9hnhqj7TLancbNs6xLvpFF0gqzJWbCtyO+e1FH
-        JMH586pld0K0YRZfztc1YSvzppIzqw+sOpdx+M5DX99Jo7OnMcNk20hmrrPfXdJS4KiI5yb1
-        zY9WNi0M7ihMr9y+a4Y3OXp/5lHM4O6OzB7YaF8u6Y5Y+n6rLt47PKbwqXi67vvA9UUfvs+6
-        vKEe3xm5g4p20zErTkW1C0f0pLoWf1G+RLKSRbkjz/rGa5pum3akNLSev2RtPXhAmxRUr9ri
-        iJvjNo8oDOeKNmELZc/tc6NIKaFOUsiCcU6t+AMxc5cplAMAAA==
-X-CMS-MailID: 20230306173743uscas1p1f464bb8a53859927472b90f7f9e017c9
-CMS-TYPE: 301P
-X-CMS-RootMailID: 20230306173743uscas1p1f464bb8a53859927472b90f7f9e017c9
-References: <20230302133709.30373-1-Jonathan.Cameron@huawei.com>
-        <20230302133709.30373-4-Jonathan.Cameron@huawei.com>
-        <CGME20230306173743uscas1p1f464bb8a53859927472b90f7f9e017c9@uscas1p1.samsung.com>
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Thu, Mar 02, 2023 at 01:37:04PM +0000, Jonathan Cameron wrote:
-> We are missing necessary config write handling for AER emulation in
-> the CXL root port. Add it based on pcie_root_port.c
->=20
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-> ---
->  hw/pci-bridge/cxl_root_port.c | 3 +++
->  1 file changed, 3 insertions(+)
->=20
-> diff --git a/hw/pci-bridge/cxl_root_port.c b/hw/pci-bridge/cxl_root_port.=
-c
-> index 6664783974..00195257f7 100644
-> --- a/hw/pci-bridge/cxl_root_port.c
-> +++ b/hw/pci-bridge/cxl_root_port.c
-> @@ -187,12 +187,15 @@ static void cxl_rp_write_config(PCIDevice *d, uint3=
-2_t address, uint32_t val,
->                                  int len)
->  {
->      uint16_t slt_ctl, slt_sta;
-> +    uint32_t root_cmd =3D
-> +        pci_get_long(d->config + d->exp.aer_cap + PCI_ERR_ROOT_COMMAND);
-> =20
->      pcie_cap_slot_get(d, &slt_ctl, &slt_sta);
->      pci_bridge_write_config(d, address, val, len);
->      pcie_cap_flr_write_config(d, address, val, len);
->      pcie_cap_slot_write_config(d, slt_ctl, slt_sta, address, val, len);
->      pcie_aer_write_config(d, address, val, len);
-> +    pcie_aer_root_write_config(d, address, val, len, root_cmd);
-> =20
->      cxl_rp_dvsec_write_config(d, address, val, len);
->  }
-> --=20
-> 2.37.2
->=20
->=20
-
-Reviewed-by: Fan Ni <fan.ni@samsung.com>
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 281CCC64EC4
-	for <linux-cxl@archiver.kernel.org>; Mon,  6 Mar 2023 18:04:43 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229542AbjCFSEm (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Mon, 6 Mar 2023 13:04:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38694 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229909AbjCFSEk (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Mar 2023 13:04:40 -0500
-Received: from mailout2.w2.samsung.com (mailout2.w2.samsung.com [211.189.100.12])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66F7764854
-        for <linux-cxl@vger.kernel.org>; Mon,  6 Mar 2023 10:04:09 -0800 (PST)
-Received: from uscas1p2.samsung.com (unknown [182.198.245.207])
-        by mailout2.w2.samsung.com (KnoxPortal) with ESMTP id 20230306175134usoutp0299993b2fd75a25a3b7810a1a89d33537~J5eHUTGZ_2431824318usoutp02E;
-        Mon,  6 Mar 2023 17:51:34 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w2.samsung.com 20230306175134usoutp0299993b2fd75a25a3b7810a1a89d33537~J5eHUTGZ_2431824318usoutp02E
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1678125094;
-        bh=DiP3VyMp3FLM9F+nkLGfr3ZQ3EIpqPCACWw8PVaWwqo=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
-        b=hc5oGj+k3BGsJg4WwuaCCNiGhNoaRilPnqtA1bKzWwksR+MawmQADbWjcz6CC+zbD
-         +AO6aIncs5DUkPqOvwxrQXu7HdDFeXKtpZmRe+cKlVfsoz+ClftFEHtdre4VrRTCbj
-         pmkTK+QUQq08M2/LyyYdetUW7K5dtM+o1/noq5a8=
-Received: from ussmges3new.samsung.com (u112.gpu85.samsung.co.kr
-        [203.254.195.112]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20230306175133uscas1p24f80d53a61a2b39bfaef915fc9d88d8e~J5eG6wm1a3080030800uscas1p2P;
-        Mon,  6 Mar 2023 17:51:33 +0000 (GMT)
-Received: from uscas1p1.samsung.com ( [182.198.245.206]) by
-        ussmges3new.samsung.com (USCPEMTA) with SMTP id 4E.34.12196.52826046; Mon, 
-        6 Mar 2023 12:51:33 -0500 (EST)
-Received: from ussmgxs3new.samsung.com (u92.gpu85.samsung.co.kr
-        [203.254.195.92]) by uscas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20230306175133uscas1p163baf7c881e373c5a5db0805fa83fdd1~J5eGi2vyV2059520595uscas1p1e;
-        Mon,  6 Mar 2023 17:51:33 +0000 (GMT)
-X-AuditID: cbfec370-83dfe70000012fa4-5a-64062825c52b
-Received: from SSI-EX1.ssi.samsung.com ( [105.128.2.146]) by
-        ussmgxs3new.samsung.com (USCPEXMTA) with SMTP id 40.A7.11346.52826046; Mon, 
-        6 Mar 2023 12:51:33 -0500 (EST)
-Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
-        SSI-EX1.ssi.samsung.com (105.128.2.226) with Microsoft SMTP Server
-        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
-        15.1.2375.24; Mon, 6 Mar 2023 09:51:32 -0800
-Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
-        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Mon,
-        6 Mar 2023 09:51:32 -0800
-From: Fan Ni <fan.ni@samsung.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-CC: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
-        Michael Tsirkin <mst@redhat.com>,
-        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
-        "linuxarm@huawei.com" <linuxarm@huawei.com>,
-        Ira Weiny <ira.weiny@intel.com>,
-        Alison Schofield <alison.schofield@intel.com>,
-        Michael Roth <michael.roth@amd.com>,
-        =?iso-8859-1?Q?Philippe_Mathieu-Daud=E9?= <philmd@linaro.org>,
-        Dave Jiang <dave.jiang@intel.com>,
-        Markus Armbruster <armbru@redhat.com>,
-        =?iso-8859-1?Q?Daniel_P_=2E_Berrang=E9?= <berrange@redhat.com>,
-        Eric Blake <eblake@redhat.com>,
-        Mike Maslenkin <mike.maslenkin@gmail.com>,
-        =?iso-8859-1?Q?Marc-Andr=E9_Lureau?= <marcandre.lureau@redhat.com>,
-        Thomas Huth <thuth@redhat.com>
-Subject: Re: [RESEND PATCH v6 4/8] hw/pci-bridge/cxl_root_port: Wire up MSI
-Thread-Topic: [RESEND PATCH v6 4/8] hw/pci-bridge/cxl_root_port: Wire up MSI
-Thread-Index: AQHZTQxw0vEaWIMUIkuF/VYoXnZD4q7ulJUA
-Date: Mon, 6 Mar 2023 17:51:32 +0000
-Message-ID: <20230306175132.GD1489326@bgt-140510-bm03>
-In-Reply-To: <20230302133709.30373-5-Jonathan.Cameron@huawei.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [105.128.2.176]
-Content-Type: text/plain; charset="iso-8859-1"
-Content-ID: <E5973700F21BC3428932588D959CA985@ssi.samsung.com>
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-X-CFilter-Loop: Reflected
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrOKsWRmVeSWpSXmKPExsWy7djXc7qqGmwpBtsu6FncfXyBzWL+2vss
-        Fm/erGGyOHGzkc1i4tv1rBb7nz5nsVi18BqbxflZp1gsDm88w2SxoK2d1WLN/UOsFr/XPmay
-        +P/rFZC7QtjieO8OFouVx2wcBDxaL/1l89g56y67R8uRt6wei/e8ZPK4c20Pm8eTa5uZPN7v
-        u8rm8XmTXABHFJdNSmpOZllqkb5dAldGz+sDjAUzFSpm7N7F1MD4UKKLkZNDQsBE4vOBP2xd
-        jFwcQgIrGSUePvrNCuG0MklM+HyPDabq3euZTBCJtYwSTQ27oKo+MkpM2NQL1b+UUWLGpB/s
-        IC1sAooS+7q2g7WLCBhJvLsxiRGkiFlgD6vExxnzwYqEBbwl7i16wQpR5CNx5toRdpiGf5vf
-        gTWzCKhIHLz4HczmFTCT6LtyE8zmFHCUuL19NxOIzSggJvH91Bowm1lAXOLWk/lMEHcLSiya
-        vYcZwhaT+LfrIdQ/ihL3v79kh6jXk7gxdQobhG0ncehKPyuErS2xbOFrZoi9ghInZz5hgeiV
-        lDi44gYLyDMSAqs5JWb9u8IKkXCRuDipD6pIWmL6mstANgeQnSyx6iMXRDhHYv6SLVAl1hIL
-        /6xnmsCoMgvJ2bOQnDQLyUmzkJw0C8lJCxhZVzGKlxYX56anFhvnpZbrFSfmFpfmpesl5+du
-        YgSmxdP/DhfsYLx166PeIUYmDsZDjBIczEoivFW/WVOEeFMSK6tSi/Lji0pzUosPMUpzsCiJ
-        8xrankwWEkhPLEnNTk0tSC2CyTJxcEo1MGlHX1n1e4rh3UiDQB1v+z4r82V6J+5NO1rHNC3P
-        WXbL9Yk7nhQ0zfPhz7honP2z6GaXU8WEWbG7+z/YW3H9PPMv3Jf5J0uH8qEDVzUU9f4Yltcf
-        f3mnrMzj8V/evXKcK1XfLM88KxBxtl94TumLUzZdViELLt57kPHj5qs5DlPP6OfWCQmt2eBe
-        uc2/YK2qW8Kr2b3qt+42eq4KqppfdOmR8kKjypUL91aEdy39IBm2MOhSWU5ncyhfb1E584Yd
-        70rWXhXpkmV8oP5QJC/wQafzurW/N//J5t2zikH0QYzgIquZH1Viv3r8aH2ju+dUz9SGwO73
-        K18Yf1W+eFNNgD2/p+sSa+xe9g2rrD4o/lNiKc5INNRiLipOBABms+S++gMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFmplleLIzCtJLcpLzFFi42LJbGCapKuqwZZi8PuHkMXdxxfYLOavvc9i
-        8ebNGiaLEzcb2Swmvl3ParH/6XMWi1ULr7FZnJ91isXi8MYzTBYL2tpZLdbcP8Rq8XvtYyaL
-        /79eAbkrhC2O9+5gsVh5zMZBwKP10l82j52z7rJ7tBx5y+qxeM9LJo871/aweTy5tpnJ4/2+
-        q2wenzfJBXBEcdmkpOZklqUW6dslcGX0vD7AWDBToWLG7l1MDYwPJboYOTkkBEwk3r2eydTF
-        yMUhJLCaUeLgko2MEM5HRomNLSugMksZJZbMesUO0sImoCixr2s7G4gtImAk8e7GJLAOZoFd
-        rBKPlz4HKxIW8Ja4t+gFK0SRj8SZa0fYYRr+bX4H1swioCJx8OJ3MJtXwEyi78pNMFtIoFzi
-        zv2bjCA2p4CjxO3tu5lAbEYBMYnvp9aA2cwC4hK3nsxngvhBQGLJnvPMELaoxMvH/1ghbEWJ
-        +99fskPU60ncmDqFDcK2kzh0pZ8VwtaWWLbwNTPEDYISJ2c+YYHolZQ4uOIGywRGiVlI1s1C
-        MmoWklGzkIyahWTUAkbWVYzipcXFuekVxcZ5qeV6xYm5xaV56XrJ+bmbGIEp5fS/wzE7GO/d
-        +qh3iJGJg/EQowQHs5IIb9Vv1hQh3pTEyqrUovz4otKc1OJDjNIcLErivB6xE+OFBNITS1Kz
-        U1MLUotgskwcnFINTLsUuVZacGz615psuM0ty6t21YXD9y2P/Lwd8Lv4ZT/7h58xPG9tFv87
-        9oZv9oYj+VzP5/jmlojtZPnveIRni3trxZo9W/bKe52Sqm5UWcPn7zT/zp1TbFPfp1iePrtA
-        QHXDzA/7k1x2b2rPCkn3rRV7LvD4L4ePyrE4bqZpdRsLFxzTOvPgZb3Uku/OfEJ/nx2LM57w
-        YdsEC1venLLDgv/vJNS6iLtPOSoVwyf8dmtos+nGxTr5x4SuPF7fc2+C99OFeb1P76etWDdJ
-        bX+1i4yVupDnpM0zjEwMkiKfTRR+rniCaX1P14t6QYWC+WoL+QNMMg65pFud/H019T5/nt2t
-        P0u7fuZHV5ds5s2zmq3EUpyRaKjFXFScCADGuK++mAMAAA==
-X-CMS-MailID: 20230306175133uscas1p163baf7c881e373c5a5db0805fa83fdd1
-CMS-TYPE: 301P
-X-CMS-RootMailID: 20230306175133uscas1p163baf7c881e373c5a5db0805fa83fdd1
-References: <20230302133709.30373-1-Jonathan.Cameron@huawei.com>
-        <20230302133709.30373-5-Jonathan.Cameron@huawei.com>
-        <CGME20230306175133uscas1p163baf7c881e373c5a5db0805fa83fdd1@uscas1p1.samsung.com>
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Thu, Mar 02, 2023 at 01:37:05PM +0000, Jonathan Cameron wrote:
-> Done to avoid fixing ACPI route description of traditional PCI interrupts=
- on q35
-> and because we should probably move with the times anyway.
->=20
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-> ---
-
-Reviewed-by: Fan Ni <fan.ni@samsung.com>
-
->  hw/pci-bridge/cxl_root_port.c | 61 +++++++++++++++++++++++++++++++++++
->  1 file changed, 61 insertions(+)
->=20
-> diff --git a/hw/pci-bridge/cxl_root_port.c b/hw/pci-bridge/cxl_root_port.=
-c
-> index 00195257f7..7dfd20aa67 100644
-> --- a/hw/pci-bridge/cxl_root_port.c
-> +++ b/hw/pci-bridge/cxl_root_port.c
-> @@ -22,6 +22,7 @@
->  #include "qemu/range.h"
->  #include "hw/pci/pci_bridge.h"
->  #include "hw/pci/pcie_port.h"
-> +#include "hw/pci/msi.h"
->  #include "hw/qdev-properties.h"
->  #include "hw/sysbus.h"
->  #include "qapi/error.h"
-> @@ -29,6 +30,10 @@
-> =20
->  #define CXL_ROOT_PORT_DID 0x7075
-> =20
-> +#define CXL_RP_MSI_OFFSET               0x60
-> +#define CXL_RP_MSI_SUPPORTED_FLAGS      PCI_MSI_FLAGS_MASKBIT
-> +#define CXL_RP_MSI_NR_VECTOR            2
-> +
->  /* Copied from the gen root port which we derive */
->  #define GEN_PCIE_ROOT_PORT_AER_OFFSET 0x100
->  #define GEN_PCIE_ROOT_PORT_ACS_OFFSET \
-> @@ -47,6 +52,49 @@ typedef struct CXLRootPort {
->  #define TYPE_CXL_ROOT_PORT "cxl-rp"
->  DECLARE_INSTANCE_CHECKER(CXLRootPort, CXL_ROOT_PORT, TYPE_CXL_ROOT_PORT)
-> =20
-> +/*
-> + * If two MSI vector are allocated, Advanced Error Interrupt Message Num=
-ber
-> + * is 1. otherwise 0.
-> + * 17.12.5.10 RPERRSTS,  32:27 bit Advanced Error Interrupt Message Numb=
-er.
-> + */
-> +static uint8_t cxl_rp_aer_vector(const PCIDevice *d)
-> +{
-> +    switch (msi_nr_vectors_allocated(d)) {
-> +    case 1:
-> +        return 0;
-> +    case 2:
-> +        return 1;
-> +    case 4:
-> +    case 8:
-> +    case 16:
-> +    case 32:
-> +    default:
-> +        break;
-> +    }
-> +    abort();
-> +    return 0;
-> +}
-> +
-> +static int cxl_rp_interrupts_init(PCIDevice *d, Error **errp)
-> +{
-> +    int rc;
-> +
-> +    rc =3D msi_init(d, CXL_RP_MSI_OFFSET, CXL_RP_MSI_NR_VECTOR,
-> +                  CXL_RP_MSI_SUPPORTED_FLAGS & PCI_MSI_FLAGS_64BIT,
-> +                  CXL_RP_MSI_SUPPORTED_FLAGS & PCI_MSI_FLAGS_MASKBIT,
-> +                  errp);
-> +    if (rc < 0) {
-> +        assert(rc =3D=3D -ENOTSUP);
-> +    }
-> +
-> +    return rc;
-> +}
-> +
-> +static void cxl_rp_interrupts_uninit(PCIDevice *d)
-> +{
-> +    msi_uninit(d);
-> +}
-> +
->  static void latch_registers(CXLRootPort *crp)
->  {
->      uint32_t *reg_state =3D crp->cxl_cstate.crb.cache_mem_registers;
-> @@ -183,6 +231,15 @@ static void cxl_rp_dvsec_write_config(PCIDevice *dev=
-, uint32_t addr,
->      }
->  }
-> =20
-> +static void cxl_rp_aer_vector_update(PCIDevice *d)
-> +{
-> +    PCIERootPortClass *rpc =3D PCIE_ROOT_PORT_GET_CLASS(d);
-> +
-> +    if (rpc->aer_vector) {
-> +        pcie_aer_root_set_vector(d, rpc->aer_vector(d));
-> +    }
-> +}
-> +
->  static void cxl_rp_write_config(PCIDevice *d, uint32_t address, uint32_t=
- val,
->                                  int len)
->  {
-> @@ -192,6 +249,7 @@ static void cxl_rp_write_config(PCIDevice *d, uint32_=
-t address, uint32_t val,
-> =20
->      pcie_cap_slot_get(d, &slt_ctl, &slt_sta);
->      pci_bridge_write_config(d, address, val, len);
-> +    cxl_rp_aer_vector_update(d);
->      pcie_cap_flr_write_config(d, address, val, len);
->      pcie_cap_slot_write_config(d, slt_ctl, slt_sta, address, val, len);
->      pcie_aer_write_config(d, address, val, len);
-> @@ -220,6 +278,9 @@ static void cxl_root_port_class_init(ObjectClass *oc,=
- void *data)
-> =20
->      rpc->aer_offset =3D GEN_PCIE_ROOT_PORT_AER_OFFSET;
->      rpc->acs_offset =3D GEN_PCIE_ROOT_PORT_ACS_OFFSET;
-> +    rpc->aer_vector =3D cxl_rp_aer_vector;
-> +    rpc->interrupts_init =3D cxl_rp_interrupts_init;
-> +    rpc->interrupts_uninit =3D cxl_rp_interrupts_uninit;
-> =20
->      dc->hotpluggable =3D false;
->  }
-> --=20
-> 2.37.2
->=20
-> =
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
 	by smtp.lore.kernel.org (Postfix) with ESMTP id 310ADC6FD19
 	for <linux-cxl@archiver.kernel.org>; Mon,  6 Mar 2023 17:53:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
@@ -2834,6 +2231,265 @@ Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 281CCC64EC4
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Mar 2023 18:04:43 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229542AbjCFSEm (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Mar 2023 13:04:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38694 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229909AbjCFSEk (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Mar 2023 13:04:40 -0500
+Received: from mailout2.w2.samsung.com (mailout2.w2.samsung.com [211.189.100.12])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66F7764854
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Mar 2023 10:04:09 -0800 (PST)
+Received: from uscas1p2.samsung.com (unknown [182.198.245.207])
+        by mailout2.w2.samsung.com (KnoxPortal) with ESMTP id 20230306175134usoutp0299993b2fd75a25a3b7810a1a89d33537~J5eHUTGZ_2431824318usoutp02E;
+        Mon,  6 Mar 2023 17:51:34 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w2.samsung.com 20230306175134usoutp0299993b2fd75a25a3b7810a1a89d33537~J5eHUTGZ_2431824318usoutp02E
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1678125094;
+        bh=DiP3VyMp3FLM9F+nkLGfr3ZQ3EIpqPCACWw8PVaWwqo=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
+        b=hc5oGj+k3BGsJg4WwuaCCNiGhNoaRilPnqtA1bKzWwksR+MawmQADbWjcz6CC+zbD
+         +AO6aIncs5DUkPqOvwxrQXu7HdDFeXKtpZmRe+cKlVfsoz+ClftFEHtdre4VrRTCbj
+         pmkTK+QUQq08M2/LyyYdetUW7K5dtM+o1/noq5a8=
+Received: from ussmges3new.samsung.com (u112.gpu85.samsung.co.kr
+        [203.254.195.112]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230306175133uscas1p24f80d53a61a2b39bfaef915fc9d88d8e~J5eG6wm1a3080030800uscas1p2P;
+        Mon,  6 Mar 2023 17:51:33 +0000 (GMT)
+Received: from uscas1p1.samsung.com ( [182.198.245.206]) by
+        ussmges3new.samsung.com (USCPEMTA) with SMTP id 4E.34.12196.52826046; Mon, 
+        6 Mar 2023 12:51:33 -0500 (EST)
+Received: from ussmgxs3new.samsung.com (u92.gpu85.samsung.co.kr
+        [203.254.195.92]) by uscas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20230306175133uscas1p163baf7c881e373c5a5db0805fa83fdd1~J5eGi2vyV2059520595uscas1p1e;
+        Mon,  6 Mar 2023 17:51:33 +0000 (GMT)
+X-AuditID: cbfec370-83dfe70000012fa4-5a-64062825c52b
+Received: from SSI-EX1.ssi.samsung.com ( [105.128.2.146]) by
+        ussmgxs3new.samsung.com (USCPEXMTA) with SMTP id 40.A7.11346.52826046; Mon, 
+        6 Mar 2023 12:51:33 -0500 (EST)
+Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
+        SSI-EX1.ssi.samsung.com (105.128.2.226) with Microsoft SMTP Server
+        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+        15.1.2375.24; Mon, 6 Mar 2023 09:51:32 -0800
+Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
+        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Mon,
+        6 Mar 2023 09:51:32 -0800
+From: Fan Ni <fan.ni@samsung.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+CC: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        Michael Tsirkin <mst@redhat.com>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "linuxarm@huawei.com" <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?iso-8859-1?Q?Philippe_Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?iso-8859-1?Q?Daniel_P_=2E_Berrang=E9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?iso-8859-1?Q?Marc-Andr=E9_Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: Re: [RESEND PATCH v6 4/8] hw/pci-bridge/cxl_root_port: Wire up MSI
+Thread-Topic: [RESEND PATCH v6 4/8] hw/pci-bridge/cxl_root_port: Wire up MSI
+Thread-Index: AQHZTQxw0vEaWIMUIkuF/VYoXnZD4q7ulJUA
+Date: Mon, 6 Mar 2023 17:51:32 +0000
+Message-ID: <20230306175132.GD1489326@bgt-140510-bm03>
+In-Reply-To: <20230302133709.30373-5-Jonathan.Cameron@huawei.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [105.128.2.176]
+Content-Type: text/plain; charset="iso-8859-1"
+Content-ID: <E5973700F21BC3428932588D959CA985@ssi.samsung.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-CFilter-Loop: Reflected
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrOKsWRmVeSWpSXmKPExsWy7djXc7qqGmwpBtsu6FncfXyBzWL+2vss
+        Fm/erGGyOHGzkc1i4tv1rBb7nz5nsVi18BqbxflZp1gsDm88w2SxoK2d1WLN/UOsFr/XPmay
+        +P/rFZC7QtjieO8OFouVx2wcBDxaL/1l89g56y67R8uRt6wei/e8ZPK4c20Pm8eTa5uZPN7v
+        u8rm8XmTXABHFJdNSmpOZllqkb5dAldGz+sDjAUzFSpm7N7F1MD4UKKLkZNDQsBE4vOBP2xd
+        jFwcQgIrGSUePvrNCuG0MklM+HyPDabq3euZTBCJtYwSTQ27oKo+MkpM2NQL1b+UUWLGpB/s
+        IC1sAooS+7q2g7WLCBhJvLsxiRGkiFlgD6vExxnzwYqEBbwl7i16wQpR5CNx5toRdpiGf5vf
+        gTWzCKhIHLz4HczmFTCT6LtyE8zmFHCUuL19NxOIzSggJvH91Bowm1lAXOLWk/lMEHcLSiya
+        vYcZwhaT+LfrIdQ/ihL3v79kh6jXk7gxdQobhG0ncehKPyuErS2xbOFrZoi9ghInZz5hgeiV
+        lDi44gYLyDMSAqs5JWb9u8IKkXCRuDipD6pIWmL6mstANgeQnSyx6iMXRDhHYv6SLVAl1hIL
+        /6xnmsCoMgvJ2bOQnDQLyUmzkJw0C8lJCxhZVzGKlxYX56anFhvnpZbrFSfmFpfmpesl5+du
+        YgSmxdP/DhfsYLx166PeIUYmDsZDjBIczEoivFW/WVOEeFMSK6tSi/Lji0pzUosPMUpzsCiJ
+        8xrankwWEkhPLEnNTk0tSC2CyTJxcEo1MGlHX1n1e4rh3UiDQB1v+z4r82V6J+5NO1rHNC3P
+        WXbL9Yk7nhQ0zfPhz7honP2z6GaXU8WEWbG7+z/YW3H9PPMv3Jf5J0uH8qEDVzUU9f4Yltcf
+        f3mnrMzj8V/evXKcK1XfLM88KxBxtl94TumLUzZdViELLt57kPHj5qs5DlPP6OfWCQmt2eBe
+        uc2/YK2qW8Kr2b3qt+42eq4KqppfdOmR8kKjypUL91aEdy39IBm2MOhSWU5ncyhfb1E584Yd
+        70rWXhXpkmV8oP5QJC/wQafzurW/N//J5t2zikH0QYzgIquZH1Viv3r8aH2ju+dUz9SGwO73
+        K18Yf1W+eFNNgD2/p+sSa+xe9g2rrD4o/lNiKc5INNRiLipOBABms+S++gMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFmplleLIzCtJLcpLzFFi42LJbGCapKuqwZZi8PuHkMXdxxfYLOavvc9i
+        8ebNGiaLEzcb2Swmvl3ParH/6XMWi1ULr7FZnJ91isXi8MYzTBYL2tpZLdbcP8Rq8XvtYyaL
+        /79eAbkrhC2O9+5gsVh5zMZBwKP10l82j52z7rJ7tBx5y+qxeM9LJo871/aweTy5tpnJ4/2+
+        q2wenzfJBXBEcdmkpOZklqUW6dslcGX0vD7AWDBToWLG7l1MDYwPJboYOTkkBEwk3r2eydTF
+        yMUhJLCaUeLgko2MEM5HRomNLSugMksZJZbMesUO0sImoCixr2s7G4gtImAk8e7GJLAOZoFd
+        rBKPlz4HKxIW8Ja4t+gFK0SRj8SZa0fYYRr+bX4H1swioCJx8OJ3MJtXwEyi78pNMFtIoFzi
+        zv2bjCA2p4CjxO3tu5lAbEYBMYnvp9aA2cwC4hK3nsxngvhBQGLJnvPMELaoxMvH/1ghbEWJ
+        +99fskPU60ncmDqFDcK2kzh0pZ8VwtaWWLbwNTPEDYISJ2c+YYHolZQ4uOIGywRGiVlI1s1C
+        MmoWklGzkIyahWTUAkbWVYzipcXFuekVxcZ5qeV6xYm5xaV56XrJ+bmbGIEp5fS/wzE7GO/d
+        +qh3iJGJg/EQowQHs5IIb9Vv1hQh3pTEyqrUovz4otKc1OJDjNIcLErivB6xE+OFBNITS1Kz
+        U1MLUotgskwcnFINTLsUuVZacGz615psuM0ty6t21YXD9y2P/Lwd8Lv4ZT/7h58xPG9tFv87
+        9oZv9oYj+VzP5/jmlojtZPnveIRni3trxZo9W/bKe52Sqm5UWcPn7zT/zp1TbFPfp1iePrtA
+        QHXDzA/7k1x2b2rPCkn3rRV7LvD4L4ePyrE4bqZpdRsLFxzTOvPgZb3Uku/OfEJ/nx2LM57w
+        YdsEC1venLLDgv/vJNS6iLtPOSoVwyf8dmtos+nGxTr5x4SuPF7fc2+C99OFeb1P76etWDdJ
+        bX+1i4yVupDnpM0zjEwMkiKfTRR+rniCaX1P14t6QYWC+WoL+QNMMg65pFud/H019T5/nt2t
+        P0u7fuZHV5ds5s2zmq3EUpyRaKjFXFScCADGuK++mAMAAA==
+X-CMS-MailID: 20230306175133uscas1p163baf7c881e373c5a5db0805fa83fdd1
+CMS-TYPE: 301P
+X-CMS-RootMailID: 20230306175133uscas1p163baf7c881e373c5a5db0805fa83fdd1
+References: <20230302133709.30373-1-Jonathan.Cameron@huawei.com>
+        <20230302133709.30373-5-Jonathan.Cameron@huawei.com>
+        <CGME20230306175133uscas1p163baf7c881e373c5a5db0805fa83fdd1@uscas1p1.samsung.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Thu, Mar 02, 2023 at 01:37:05PM +0000, Jonathan Cameron wrote:
+> Done to avoid fixing ACPI route description of traditional PCI interrupts=
+ on q35
+> and because we should probably move with the times anyway.
+>=20
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+> ---
+
+Reviewed-by: Fan Ni <fan.ni@samsung.com>
+
+>  hw/pci-bridge/cxl_root_port.c | 61 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 61 insertions(+)
+>=20
+> diff --git a/hw/pci-bridge/cxl_root_port.c b/hw/pci-bridge/cxl_root_port.=
+c
+> index 00195257f7..7dfd20aa67 100644
+> --- a/hw/pci-bridge/cxl_root_port.c
+> +++ b/hw/pci-bridge/cxl_root_port.c
+> @@ -22,6 +22,7 @@
+>  #include "qemu/range.h"
+>  #include "hw/pci/pci_bridge.h"
+>  #include "hw/pci/pcie_port.h"
+> +#include "hw/pci/msi.h"
+>  #include "hw/qdev-properties.h"
+>  #include "hw/sysbus.h"
+>  #include "qapi/error.h"
+> @@ -29,6 +30,10 @@
+> =20
+>  #define CXL_ROOT_PORT_DID 0x7075
+> =20
+> +#define CXL_RP_MSI_OFFSET               0x60
+> +#define CXL_RP_MSI_SUPPORTED_FLAGS      PCI_MSI_FLAGS_MASKBIT
+> +#define CXL_RP_MSI_NR_VECTOR            2
+> +
+>  /* Copied from the gen root port which we derive */
+>  #define GEN_PCIE_ROOT_PORT_AER_OFFSET 0x100
+>  #define GEN_PCIE_ROOT_PORT_ACS_OFFSET \
+> @@ -47,6 +52,49 @@ typedef struct CXLRootPort {
+>  #define TYPE_CXL_ROOT_PORT "cxl-rp"
+>  DECLARE_INSTANCE_CHECKER(CXLRootPort, CXL_ROOT_PORT, TYPE_CXL_ROOT_PORT)
+> =20
+> +/*
+> + * If two MSI vector are allocated, Advanced Error Interrupt Message Num=
+ber
+> + * is 1. otherwise 0.
+> + * 17.12.5.10 RPERRSTS,  32:27 bit Advanced Error Interrupt Message Numb=
+er.
+> + */
+> +static uint8_t cxl_rp_aer_vector(const PCIDevice *d)
+> +{
+> +    switch (msi_nr_vectors_allocated(d)) {
+> +    case 1:
+> +        return 0;
+> +    case 2:
+> +        return 1;
+> +    case 4:
+> +    case 8:
+> +    case 16:
+> +    case 32:
+> +    default:
+> +        break;
+> +    }
+> +    abort();
+> +    return 0;
+> +}
+> +
+> +static int cxl_rp_interrupts_init(PCIDevice *d, Error **errp)
+> +{
+> +    int rc;
+> +
+> +    rc =3D msi_init(d, CXL_RP_MSI_OFFSET, CXL_RP_MSI_NR_VECTOR,
+> +                  CXL_RP_MSI_SUPPORTED_FLAGS & PCI_MSI_FLAGS_64BIT,
+> +                  CXL_RP_MSI_SUPPORTED_FLAGS & PCI_MSI_FLAGS_MASKBIT,
+> +                  errp);
+> +    if (rc < 0) {
+> +        assert(rc =3D=3D -ENOTSUP);
+> +    }
+> +
+> +    return rc;
+> +}
+> +
+> +static void cxl_rp_interrupts_uninit(PCIDevice *d)
+> +{
+> +    msi_uninit(d);
+> +}
+> +
+>  static void latch_registers(CXLRootPort *crp)
+>  {
+>      uint32_t *reg_state =3D crp->cxl_cstate.crb.cache_mem_registers;
+> @@ -183,6 +231,15 @@ static void cxl_rp_dvsec_write_config(PCIDevice *dev=
+, uint32_t addr,
+>      }
+>  }
+> =20
+> +static void cxl_rp_aer_vector_update(PCIDevice *d)
+> +{
+> +    PCIERootPortClass *rpc =3D PCIE_ROOT_PORT_GET_CLASS(d);
+> +
+> +    if (rpc->aer_vector) {
+> +        pcie_aer_root_set_vector(d, rpc->aer_vector(d));
+> +    }
+> +}
+> +
+>  static void cxl_rp_write_config(PCIDevice *d, uint32_t address, uint32_t=
+ val,
+>                                  int len)
+>  {
+> @@ -192,6 +249,7 @@ static void cxl_rp_write_config(PCIDevice *d, uint32_=
+t address, uint32_t val,
+> =20
+>      pcie_cap_slot_get(d, &slt_ctl, &slt_sta);
+>      pci_bridge_write_config(d, address, val, len);
+> +    cxl_rp_aer_vector_update(d);
+>      pcie_cap_flr_write_config(d, address, val, len);
+>      pcie_cap_slot_write_config(d, slt_ctl, slt_sta, address, val, len);
+>      pcie_aer_write_config(d, address, val, len);
+> @@ -220,6 +278,9 @@ static void cxl_root_port_class_init(ObjectClass *oc,=
+ void *data)
+> =20
+>      rpc->aer_offset =3D GEN_PCIE_ROOT_PORT_AER_OFFSET;
+>      rpc->acs_offset =3D GEN_PCIE_ROOT_PORT_ACS_OFFSET;
+> +    rpc->aer_vector =3D cxl_rp_aer_vector;
+> +    rpc->interrupts_init =3D cxl_rp_interrupts_init;
+> +    rpc->interrupts_uninit =3D cxl_rp_interrupts_uninit;
+> =20
+>      dc->hotpluggable =3D false;
+>  }
+> --=20
+> 2.37.2
+>=20
+> =
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
 	by smtp.lore.kernel.org (Postfix) with ESMTP id 887D8C64EC4
 	for <linux-cxl@archiver.kernel.org>; Mon,  6 Mar 2023 18:28:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
@@ -2997,6 +2653,350 @@ nt indent);
 >=20
 
 Reviewed-by: Fan Ni <fan.ni@samsung.com>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9374CC61DA4
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Mar 2023 18:33:16 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230016AbjCFSdP (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Mar 2023 13:33:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60198 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229813AbjCFSdO (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Mar 2023 13:33:14 -0500
+Received: from mailout1.w2.samsung.com (mailout1.w2.samsung.com [211.189.100.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A71076F604
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Mar 2023 10:32:46 -0800 (PST)
+Received: from uscas1p1.samsung.com (unknown [182.198.245.206])
+        by mailout1.w2.samsung.com (KnoxPortal) with ESMTP id 20230306173743usoutp01ecc678f6b6de0b0b80d693e56ba7ee44~J5SB3-Om82686826868usoutp01f;
+        Mon,  6 Mar 2023 17:37:43 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w2.samsung.com 20230306173743usoutp01ecc678f6b6de0b0b80d693e56ba7ee44~J5SB3-Om82686826868usoutp01f
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1678124263;
+        bh=+DECmdPswst/XV3u5kyQ/V46jl2ssTX0GflLj7cHUeY=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
+        b=Wd4RvUn/O7tY3AFaLtVEXx3dACsjKvldV6UKmhSjjcDGJ+LTRS8QMqII17I6s6MUu
+         JktQvpaYsYbJ87OBsH/IP16nNuhO92QLJ1hY1IhCSWbRKM3xUQYgGU+RaI1pkm0jXk
+         MgYZEhHIuPOnlHzjNepecSue8+oK4Kx9JvUJWIlI=
+Received: from ussmges3new.samsung.com (u112.gpu85.samsung.co.kr
+        [203.254.195.112]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230306173743uscas1p2405d1db3b207457287238b61ce651b2c~J5SBuCV300309903099uscas1p2A;
+        Mon,  6 Mar 2023 17:37:43 +0000 (GMT)
+Received: from uscas1p2.samsung.com ( [182.198.245.207]) by
+        ussmges3new.samsung.com (USCPEMTA) with SMTP id 20.02.12196.7E426046; Mon, 
+        6 Mar 2023 12:37:43 -0500 (EST)
+Received: from ussmgxs2new.samsung.com (u91.gpu85.samsung.co.kr
+        [203.254.195.91]) by uscas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20230306173743uscas1p1f464bb8a53859927472b90f7f9e017c9~J5SBU_6NE0248702487uscas1p1D;
+        Mon,  6 Mar 2023 17:37:43 +0000 (GMT)
+X-AuditID: cbfec370-5b3ff70000012fa4-44-640624e7ec58
+Received: from SSI-EX2.ssi.samsung.com ( [105.128.2.145]) by
+        ussmgxs2new.samsung.com (USCPEXMTA) with SMTP id F6.33.17110.6E426046; Mon, 
+        6 Mar 2023 12:37:43 -0500 (EST)
+Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
+        SSI-EX2.ssi.samsung.com (105.128.2.227) with Microsoft SMTP Server
+        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+        15.1.2375.24; Mon, 6 Mar 2023 09:37:42 -0800
+Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
+        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Mon,
+        6 Mar 2023 09:37:42 -0800
+From: Fan Ni <fan.ni@samsung.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+CC: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        Michael Tsirkin <mst@redhat.com>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "linuxarm@huawei.com" <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?iso-8859-1?Q?Philippe_Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?iso-8859-1?Q?Daniel_P_=2E_Berrang=E9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?iso-8859-1?Q?Marc-Andr=E9_Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: Re: [RESEND PATCH v6 3/8] hw/pci-bridge/cxl_root_port: Wire up AER
+Thread-Topic: [RESEND PATCH v6 3/8] hw/pci-bridge/cxl_root_port: Wire up AER
+Thread-Index: AQHZTQxQkYHUknmJgkm3Rob6/pEwfq7ukLgA
+Date: Mon, 6 Mar 2023 17:37:42 +0000
+Message-ID: <20230306173742.GC1489326@bgt-140510-bm03>
+In-Reply-To: <20230302133709.30373-4-Jonathan.Cameron@huawei.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [105.128.2.176]
+Content-Type: text/plain; charset="iso-8859-1"
+Content-ID: <C033CFD0F72A9A44B24557E698A6C001@ssi.samsung.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-CFilter-Loop: Reflected
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrIKsWRmVeSWpSXmKPExsWy7djX87rPVdhSDGZ8k7O4+/gCm8X8tfdZ
+        LN68WcNkceJmI5vFxLfrWS32P33OYrFq4TU2i/OzTrFYHN54hsliQVs7q8Wa+4dYLX6vfcxk
+        8f/XKyB3hbDF8d4dLBYrj9k4CHi0XvrL5rFz1l12j5Yjb1k9Fu95yeRx59oeNo8n1zYzebzf
+        d5XN4/MmuQCOKC6blNSczLLUIn27BK6MFZNfMhe0clfMP/yatYHxGUcXIweHhICJxOcf/F2M
+        XBxCAisZJdoubGKHcFqZJA6c6WHrYuQEK/oyZxojRGIto8TO72dYIZyPjBK3jxxmg3CWMkq8
+        +72SHaSFTUBRYl/XdrB2EQEjiXc3JoG1MwvsYZX4OGM+O8hyYQFviZ41IhA1PhKbNk1lh6mf
+        tGQOI4jNIqAicaGlESzOK2Am0XfgHhtIK6eAo0T/9wCQMKOAmMT3U2uYQGxmAXGJW0/mM0Fc
+        LSixaPYeZghbTOLfrodQ3yhK3P/+kh2iXk/ixtQpYCOZBewkOo4VQYS1JZYtfM0MsVVQ4uTM
+        JywQrZISB1fcYAH5REJgPafEu93NbJBgdJF41m8LUSMt8ffuMiaIcLLEqo9cEOEciflLtkCN
+        sZZY+Gc90wRGlVlIjp6F5KBZCAfNQnLQLCQHLWBkXcUoXlpcnJueWmycl1quV5yYW1yal66X
+        nJ+7iRGYCk//O1ywg/HWrY96hxiZOBgPMUpwMCuJ8Fb9Zk0R4k1JrKxKLcqPLyrNSS0+xCjN
+        waIkzmtoezJZSCA9sSQ1OzW1ILUIJsvEwSnVwORVUvHtP8fvuYvTTHiTdq4QW3VF8nd+O2/L
+        lTap1/nbTvzY0svO8mKj5LaTR9svCPsLcbxiOSimOO3fgpo3KQnigcUbWWLSW5KrJ/7o+K2v
+        2CXQ8NDihnRWx+d/s0y+nhdYty3UvrnwpYRF54bMwq8VR9Ttd4WaJQen7f9xMbX5Z/mminm7
+        LI/JfHmyyJW7/eiMQvUJ15+8vMVR56W/emG07etF9xM97wc1RvE1/X+3a0vlKW1HFa3Pe4Lm
+        PLJd/VZ6Rchsrs/hRuH72gN5TF8t16oQ1Kl6KON/OHbtn2PS91clRxvsc4lumTKL6erUh/Ha
+        z75wlFaphiX/se+seBZ2tkxt5rWAkMRfm3vVTiqxFGckGmoxFxUnAgAVZyMH9AMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SeUwTQRjFM3t1qTaOFe2Idz2iENGi0VVRMWqoCPGKmmgQK2yAWArZWgX+
+        EbRYrScgCpVYGqtWBI+q4QhWBZWKGhqjBfFoBKTWcgRRSYpn2Rj5771v3vt9M8nQuDibDKKT
+        VXtYTqVQSikhkZyF5c52T6MS5lbdIJh3bQ6KMZa7CKazswxj7K+zKSa36zrJ3PvoJphSk5Ni
+        Gg0NBFN38xnGlBzSkUyZq5ZkBsrbMOa37/NfaxnF1B+vJJgrj8MjoDznxU9KXmV4J5BrH3aR
+        8gs1Hkz+1llDydudtzB5j+0VJe+zTlxPbxOGJ7DK5L0sN2fZTmGSJd+Dp+UMSzfWecks0EHr
+        QQCN4Hz0tfgM0AMhLYZXAfqkyyd40wtQ6bVyijcXAfI6nJS/QsEpyKavGNSBMAx1N+cN1nFY
+        TaK2i26BHtD0KLgWHSsL5DPRyGotEPzL55mLgV8TcBpyaLMH5yK4AJ24/36QKYb7kK2plfRj
+        AuAKdLJ/vX8M4BjU31CG+TUOJail3YjxL4DIXNOI83o08rT9Ink9Bbn6PQI+H4qaC05TfiQO
+        l6HDjzl+HIIumbw4f4OR6ElRO8FXx6IHlmbiFECGIdsMQ0iG/yTDEJJhCKkEkKVAolGrUxLT
+        1WEqdl+oWpGi1qgSQ+NTU6zg7y95+qtueyV409IbWgswGtQCROPSQFHmAJkgFiUoMjJZLjWO
+        0yhZdS0YRxNSicizLTdODBMVe9jdLJvGcv9OMTogKAvbXOy54bop06/+UbprsujBjIhH1ePr
+        OiZLNR7ImQQC5uCz2N60zniHrjjkSYQttl9hnhqj7TLancbNs6xLvpFF0gqzJWbCtyO+e1FH
+        JMH586pld0K0YRZfztc1YSvzppIzqw+sOpdx+M5DX99Jo7OnMcNk20hmrrPfXdJS4KiI5yb1
+        zY9WNi0M7ihMr9y+a4Y3OXp/5lHM4O6OzB7YaF8u6Y5Y+n6rLt47PKbwqXi67vvA9UUfvs+6
+        vKEe3xm5g4p20zErTkW1C0f0pLoWf1G+RLKSRbkjz/rGa5pum3akNLSev2RtPXhAmxRUr9ri
+        iJvjNo8oDOeKNmELZc/tc6NIKaFOUsiCcU6t+AMxc5cplAMAAA==
+X-CMS-MailID: 20230306173743uscas1p1f464bb8a53859927472b90f7f9e017c9
+CMS-TYPE: 301P
+X-CMS-RootMailID: 20230306173743uscas1p1f464bb8a53859927472b90f7f9e017c9
+References: <20230302133709.30373-1-Jonathan.Cameron@huawei.com>
+        <20230302133709.30373-4-Jonathan.Cameron@huawei.com>
+        <CGME20230306173743uscas1p1f464bb8a53859927472b90f7f9e017c9@uscas1p1.samsung.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Thu, Mar 02, 2023 at 01:37:04PM +0000, Jonathan Cameron wrote:
+> We are missing necessary config write handling for AER emulation in
+> the CXL root port. Add it based on pcie_root_port.c
+>=20
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+> ---
+>  hw/pci-bridge/cxl_root_port.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/hw/pci-bridge/cxl_root_port.c b/hw/pci-bridge/cxl_root_port.=
+c
+> index 6664783974..00195257f7 100644
+> --- a/hw/pci-bridge/cxl_root_port.c
+> +++ b/hw/pci-bridge/cxl_root_port.c
+> @@ -187,12 +187,15 @@ static void cxl_rp_write_config(PCIDevice *d, uint3=
+2_t address, uint32_t val,
+>                                  int len)
+>  {
+>      uint16_t slt_ctl, slt_sta;
+> +    uint32_t root_cmd =3D
+> +        pci_get_long(d->config + d->exp.aer_cap + PCI_ERR_ROOT_COMMAND);
+> =20
+>      pcie_cap_slot_get(d, &slt_ctl, &slt_sta);
+>      pci_bridge_write_config(d, address, val, len);
+>      pcie_cap_flr_write_config(d, address, val, len);
+>      pcie_cap_slot_write_config(d, slt_ctl, slt_sta, address, val, len);
+>      pcie_aer_write_config(d, address, val, len);
+> +    pcie_aer_root_write_config(d, address, val, len, root_cmd);
+> =20
+>      cxl_rp_dvsec_write_config(d, address, val, len);
+>  }
+> --=20
+> 2.37.2
+>=20
+>=20
+
+Reviewed-by: Fan Ni <fan.ni@samsung.com>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 682CBC61DA4
+	for <linux-cxl@archiver.kernel.org>; Mon,  6 Mar 2023 20:08:33 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230201AbjCFUIc (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 6 Mar 2023 15:08:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50226 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230202AbjCFUIb (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 6 Mar 2023 15:08:31 -0500
+Received: from mailout2.w2.samsung.com (mailout2.w2.samsung.com [211.189.100.12])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D069637713
+        for <linux-cxl@vger.kernel.org>; Mon,  6 Mar 2023 12:08:29 -0800 (PST)
+Received: from uscas1p2.samsung.com (unknown [182.198.245.207])
+        by mailout2.w2.samsung.com (KnoxPortal) with ESMTP id 20230306172148usoutp0266fbfe25d648e97725e74ee1c4d175ed~J5EH-OAIN2801728017usoutp02h;
+        Mon,  6 Mar 2023 17:21:48 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w2.samsung.com 20230306172148usoutp0266fbfe25d648e97725e74ee1c4d175ed~J5EH-OAIN2801728017usoutp02h
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1678123308;
+        bh=H2it2XComyhed/Ktkk/8iKc/Xzxi3tX70yy9BOsk5RQ=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References:From;
+        b=n5tOhcrErGxVCre/TwO46XbztwX1vcM/F2oO2rM0uxeO+xVnkSeTHtNXK6YrjvJ5H
+         XbBPmaKMB/Y9rPAn/2v7DAjFQUX/ZnBJmxpn/mNZMn3quSFwIgMXiDgqPwOb+FvSOO
+         vA1T05GS2038zNVkEaJMO7cSPjSk+/TjllMEQVSk=
+Received: from ussmges1new.samsung.com (u109.gpu85.samsung.co.kr
+        [203.254.195.109]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230306172148uscas1p257044c62a225c2617f0046b568e7113b~J5EHzz8Y_3131231312uscas1p2_;
+        Mon,  6 Mar 2023 17:21:48 +0000 (GMT)
+Received: from uscas1p2.samsung.com ( [182.198.245.207]) by
+        ussmges1new.samsung.com (USCPEMTA) with SMTP id 64.39.06976.B2126046; Mon, 
+        6 Mar 2023 12:21:47 -0500 (EST)
+Received: from ussmgxs1new.samsung.com (u89.gpu85.samsung.co.kr
+        [203.254.195.89]) by uscas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230306172146uscas1p2e9446294d8b850a1bbcd0e0d4302b603~J5EGM6vNf1373213732uscas1p2B;
+        Mon,  6 Mar 2023 17:21:46 +0000 (GMT)
+X-AuditID: cbfec36d-afdff70000011b40-6a-6406212b6380
+Received: from SSI-EX1.ssi.samsung.com ( [105.128.2.145]) by
+        ussmgxs1new.samsung.com (USCPEXMTA) with SMTP id E4.D3.11378.92126046; Mon, 
+        6 Mar 2023 12:21:46 -0500 (EST)
+Received: from SSI-EX2.ssi.samsung.com (105.128.2.227) by
+        SSI-EX1.ssi.samsung.com (105.128.2.226) with Microsoft SMTP Server
+        (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+        15.1.2375.24; Mon, 6 Mar 2023 09:21:45 -0800
+Received: from SSI-EX2.ssi.samsung.com ([105.128.2.227]) by
+        SSI-EX2.ssi.samsung.com ([105.128.2.227]) with mapi id 15.01.2375.024; Mon,
+        6 Mar 2023 09:21:45 -0800
+From: Fan Ni <fan.ni@samsung.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+CC: "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>,
+        Michael Tsirkin <mst@redhat.com>,
+        "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+        "linuxarm@huawei.com" <linuxarm@huawei.com>,
+        Ira Weiny <ira.weiny@intel.com>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Michael Roth <michael.roth@amd.com>,
+        =?iso-8859-1?Q?Philippe_Mathieu-Daud=E9?= <philmd@linaro.org>,
+        Dave Jiang <dave.jiang@intel.com>,
+        Markus Armbruster <armbru@redhat.com>,
+        =?iso-8859-1?Q?Daniel_P_=2E_Berrang=E9?= <berrange@redhat.com>,
+        Eric Blake <eblake@redhat.com>,
+        Mike Maslenkin <mike.maslenkin@gmail.com>,
+        =?iso-8859-1?Q?Marc-Andr=E9_Lureau?= <marcandre.lureau@redhat.com>,
+        Thomas Huth <thuth@redhat.com>
+Subject: Re: [RESEND PATCH v6 2/8] hw/pci/aer: Add missing routing for AER
+ errors
+Thread-Topic: [RESEND PATCH v6 2/8] hw/pci/aer: Add missing routing for AER
+        errors
+Thread-Index: AQHZTQw/G6QD+/yG8UOd0ZzVQiEZ/K7ujEIA
+Date: Mon, 6 Mar 2023 17:21:45 +0000
+Message-ID: <20230306172144.GB1489326@bgt-140510-bm03>
+In-Reply-To: <20230302133709.30373-3-Jonathan.Cameron@huawei.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [105.128.2.176]
+Content-Type: text/plain; charset="iso-8859-1"
+Content-ID: <3A3BC774316E5341B79BEF4DA8EA2634@ssi.samsung.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-CFilter-Loop: Reflected
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrEKsWRmVeSWpSXmKPExsWy7djX87raimwpBrObzC3uPr7AZjF/7X0W
+        izdv1jBZnLjZyGYx8e16Vov9T5+zWKxaeI3N4vysUywWhzeeYbJY0NbOarHm/iFWi99rHzNZ
+        /P/1CshdIWxxvHcHi8XKYzYOAh6tl/6yeeycdZfdo+XIW1aPxXteMnncubaHzePJtc1MHu/3
+        XWXz+LxJLoAjissmJTUnsyy1SN8ugSvj3Ga5gh98FTsfNTI3MJ7l7mLk5JAQMJFY8HEhaxcj
+        F4eQwEpGiY9717BDOK1MEvtmzGfsYuQAq/qzyRsivpZR4sjh/UwQzkdGiUkXvzGDjBISWMoo
+        cb6xFsRmE1CU2Ne1nQ3EFhEwknh3YxIjSAOzwB5WiY8z5rODJIQFgiW+ffsFlGAHKgqReB4G
+        U77v601GEJtFQEXi6e9HLCA2r4CZxOb1z5lAbE4BR4mv/bfAxjMKiEl8P7UGLM4sIC5x68l8
+        JojPBCUWzd7DDGGLSfzb9ZANwlaUuP/9JTtEvZ7EjalT2CBsO4k3XTuh4toSyxa+ZobYKyhx
+        cuYTFoheSYmDK26wgLwiIbCcU2LHs1VQCReJlqMnoJZJS1y9PpUZEnDJEqs+ckGEcyTmL9kC
+        VW4tsfDPeqYJjCqzkJw9C8lJs5CcNAvJSbOQnLSAkXUVo3hpcXFuemqxYV5quV5xYm5xaV66
+        XnJ+7iZGYDI8/e9w7g7GHbc+6h1iZOJgPMQowcGsJMJb9Zs1RYg3JbGyKrUoP76oNCe1+BCj
+        NAeLkjivoe3JZCGB9MSS1OzU1ILUIpgsEwenVANTT9p8pcsPHBkXLTGrnrLiH1OHcKzWBMUH
+        R04uq/67je20geDde48PSrI4PQxfz+jEMaUvMOL1EcnC676hZ2e4PDeqK5gVbvXi5Vcnm5SM
+        P18vNImW/FS4pVc7+Yy/5J6QINHfkw2XWsS3tPd2V+3XPL718/zkIsWt7KkdF/c+VFP7ufR8
+        0nPJxn8iK/mybQ7Z27D1PH2u+ev4yrfGz/+VOx5WVUg6/pvLleO7k4WGiTP/P8d1b6znflVi
+        3GR1UsP6NO+clz1CtdpPPmnZiTJ4bV/LdVjNZeeFJQvtJkoEv92aa9fVKMzlvH364ysMLFb2
+        nv9KFCrFrljNUH3wn010q1Yun+/rH6VrFHbMi01SYinOSDTUYi4qTgQANHFhffUDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFmpileLIzCtJLcpLzFFi42LJbGCaqKulyJZi8PIeh8XdxxfYLOavvc9i
+        8ebNGiaLEzcb2Swmvl3ParH/6XMWi1ULr7FZnJ91isXi8MYzTBYL2tpZLdbcP8Rq8XvtYyaL
+        /79eAbkrhC2O9+5gsVh5zMZBwKP10l82j52z7rJ7tBx5y+qxeM9LJo871/aweTy5tpnJ4/2+
+        q2wenzfJBXBEcdmkpOZklqUW6dslcGWc2yxX8IOvYuejRuYGxrPcXYwcHBICJhJ/Nnl3MXJx
+        CAmsZpT4u/kLaxcjJ5DzkVFi0lwbiMRSRolZDYeYQRJsAooS+7q2s4HYIgJGEu9uTGIEKWIW
+        2MUq8Xjpc3aQhLBAsMS3b78YIYpCJB7vfgXXsO/rTbA4i4CKxNPfj1hAbF4BM4nN658zQWwu
+        lzgx6QbYFZwCjhJf+2+B9TIKiEl8P7UGrIZZQFzi1pP5YLaEgIDEkj3nmSFsUYmXj/+xQtiK
+        Eve/v2SHqNeTuDF1ChuEbSfxpmsnVFxbYtnC18wQNwhKnJz5hAWiV1Li4IobLBOA/kaybhaS
+        UbOQjJqFZNQsJKMWMLKuYhQvLS7OTa8oNsxLLdcrTswtLs1L10vOz93ECEwmp/8djtzBePTW
+        R71DjEwcjIcYJTiYlUR4q36zpgjxpiRWVqUW5ccXleakFh9ilOZgURLnFXKdGC8kkJ5Ykpqd
+        mlqQWgSTZeLglGpgctu9e2KkduOB0MWxVxTXsUsq7v68TOF5efe/vVeaf+5tTp32+HOmkvC7
+        /vTdTAoN7D99H16QS2K5bKrqP6mMMfw9l8rHFLF1RUtW3xew2ybaO0uR7b/xWSfmxTwc19mn
+        Lqz7U6v1WLwjlPWH64n/p6P/b1o/7a5b8WOFh/azja/Ou807f3qHmFDbxa3i99SZxJ4KMoo/
+        uv74g/Cd1XfY1x5f2NF/00Chf3G8102bcJWsftFlprw5KhMaM67q/7xk11nDr2vryrJzm3+Q
+        aZFA8sdljNeX1IV+OvCSL+Wdm1Co4PxIu8YZh3N3vNpt67O5+R3ryY7HrzWMp3u7XnoQvCq2
+        gyHXluXEBz9dnlnsSizFGYmGWsxFxYkA+uVuvJUDAAA=
+X-CMS-MailID: 20230306172146uscas1p2e9446294d8b850a1bbcd0e0d4302b603
+CMS-TYPE: 301P
+X-CMS-RootMailID: 20230306172146uscas1p2e9446294d8b850a1bbcd0e0d4302b603
+References: <20230302133709.30373-1-Jonathan.Cameron@huawei.com>
+        <20230302133709.30373-3-Jonathan.Cameron@huawei.com>
+        <CGME20230306172146uscas1p2e9446294d8b850a1bbcd0e0d4302b603@uscas1p2.samsung.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Thu, Mar 02, 2023 at 01:37:03PM +0000, Jonathan Cameron wrote:
+> PCIe r6.0 Figure 6-3 "Pseudo Logic Diagram for Selected Error Message Con=
+trol
+> and Status Bits" includes a right hand branch under "All PCI Express devi=
+ces"
+> that allows for messages to be generated or sent onwards without SERR#
+> being set as long as the appropriate per error class bit in the PCIe
+> Device Control Register is set.
+>=20
+> Implement that branch thus enabling routing of ERR_COR, ERR_NONFATAL
+> and ERR_FATAL under OSes that set these bits appropriately (e.g. Linux)
+>=20
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+> ---
+
+Reviewed-by: Fan Ni <fan.ni@samsung.com>
+
+>  hw/pci/pcie_aer.c | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/hw/pci/pcie_aer.c b/hw/pci/pcie_aer.c
+> index 909e027d99..103667c368 100644
+> --- a/hw/pci/pcie_aer.c
+> +++ b/hw/pci/pcie_aer.c
+> @@ -192,8 +192,16 @@ static void pcie_aer_update_uncor_status(PCIDevice *=
+dev)
+>  static bool
+>  pcie_aer_msg_alldev(PCIDevice *dev, const PCIEAERMsg *msg)
+>  {
+> +    uint16_t devctl =3D pci_get_word(dev->config + dev->exp.exp_cap +
+> +                                   PCI_EXP_DEVCTL);
+>      if (!(pcie_aer_msg_is_uncor(msg) &&
+> -          (pci_get_word(dev->config + PCI_COMMAND) & PCI_COMMAND_SERR)))=
+ {
+> +          (pci_get_word(dev->config + PCI_COMMAND) & PCI_COMMAND_SERR)) =
+&&
+> +        !((msg->severity =3D=3D PCI_ERR_ROOT_CMD_NONFATAL_EN) &&
+> +          (devctl & PCI_EXP_DEVCTL_NFERE)) &&
+> +        !((msg->severity =3D=3D PCI_ERR_ROOT_CMD_COR_EN) &&
+> +          (devctl & PCI_EXP_DEVCTL_CERE)) &&
+> +        !((msg->severity =3D=3D PCI_ERR_ROOT_CMD_FATAL_EN) &&
+> +          (devctl & PCI_EXP_DEVCTL_FERE))) {
+>          return false;
+>      }
+> =20
+> --=20
+> 2.37.2
+>=20
+> =
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
 Return-Path: <linux-cxl-owner@vger.kernel.org>

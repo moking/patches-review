@@ -361,6 +361,290 @@ base-commit: e8f897f4afef0031fe618a8e94127a0934896aba
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
 Received: from invmail4.hynix.com (exvmail4.hynix.com [166.125.252.92])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 31E0B25774
+	for <damon@lists.linux.dev>; Fri,  5 Apr 2024 06:09:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=166.125.252.92
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1712297357; cv=none; b=bHXl7jNb4sKNuu5H8ucVOdQc6XgY/iaElKpLWTWJViUv2+TYCdBR4v6Ds/pExSHIlS/NkhkQuJtsKdZD1Tw65gkjy1IvMa0+uvAez/wpHrvdnxZtpxtkcUhMS1MrceCOezPaNCwi93xE2ZKf0m8MYxUYNjlGfc5lv6kNV65tkRg=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1712297357; c=relaxed/simple;
+	bh=Ig1CU3NKL8/cdJN+rmc1e4GaDBcrnBkfyq6QFF/1g7U=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=rEH/04k0Vqrj4CO/+QtskkmIKOOrj6N+tHFjKol8rkNwyydLtDfAxn8FmkbJ9Jjxu2lg4hDsGsu/Xl9PnYyJnMlkqu25rljdgjf3sqJOsC//emkbC4MzpH7WUtCtFN7jKHl4BwN931ZkYLuEaCO93/xuF92gYhpM0LVR0U3TFUc=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sk.com; spf=pass smtp.mailfrom=sk.com; arc=none smtp.client-ip=166.125.252.92
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sk.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sk.com
+X-AuditID: a67dfc5b-d6dff70000001748-86-660f957f95fe
+From: Honggyu Kim <honggyu.kim@sk.com>
+To: sj@kernel.org,
+	damon@lists.linux.dev,
+	linux-mm@kvack.org
+Cc: akpm@linux-foundation.org,
+	apopple@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	dave.jiang@intel.com,
+	honggyu.kim@sk.com,
+	hyeongtak.ji@sk.com,
+	kernel_team@skhynix.com,
+	linmiaohe@huawei.com,
+	linux-kernel@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	mathieu.desnoyers@efficios.com,
+	mhiramat@kernel.org,
+	rakie.kim@sk.com,
+	rostedt@goodmis.org,
+	surenb@google.com,
+	yangx.jy@fujitsu.com,
+	ying.huang@intel.com,
+	ziy@nvidia.com,
+	42.hyeyoo@gmail.com,
+	art.jeongseob@gmail.com
+Subject: [RFC PATCH v3 1/7] mm/damon/paddr: refactor DAMOS_PAGEOUT with migration_mode
+Date: Fri,  5 Apr 2024 15:08:50 +0900
+Message-ID: <20240405060858.2818-2-honggyu.kim@sk.com>
+X-Mailer: git-send-email 2.43.0.windows.1
+In-Reply-To: <20240405060858.2818-1-honggyu.kim@sk.com>
+References: <20240405060858.2818-1-honggyu.kim@sk.com>
+Precedence: bulk
+X-Mailing-List: damon@lists.linux.dev
+List-Id: <damon.lists.linux.dev>
+List-Subscribe: <mailto:damon+subscribe@lists.linux.dev>
+List-Unsubscribe: <mailto:damon+unsubscribe@lists.linux.dev>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrMIsWRmVeSWpSXmKPExsXC9ZZnkW79VP40g0kXlS0m9hhYzFm/hs1i
+	140Qi/sPXrNb/N97jNHiyf/frBYnbjayWXR+X8picXnXHDaLe2v+s1ocWX+WxWLz2TPMFouX
+	q1ns63jAZHH46xsmi8mXFrBZvJhyhtHi5KzJLBazj95jdxD2WHr6DZvHhiYgsXPWXXaPln23
+	2D0WbCr1aDnyltVj8Z6XTB6bVnWyeWz6NInd48SM3yweOx9aerzYPJPRo7f5HZvH501yAXxR
+	XDYpqTmZZalF+nYJXBlzGjYwF7TwVsz7sYatgfEKVxcjJ4eEgIlE94t9jF2MHGD27WdaIGE2
+	ATWJKy8nMYGERQQcJFZ9Vehi5OJgFvjPLHG59xcrSI2wQJhE0/JXYDaLgKrE2n13WUBsXgEz
+	if1HXzJBjNeUeLz9JzuIzSlgLjHv8QYwWwio5tPBY+wQ9YISJ2c+AetlFpCXaN46mxlkmYTA
+	KXaJzzua2SAGSUocXHGDZQIj/ywkPbOQ9CxgZFrFKJSZV5abmJljopdRmZdZoZecn7uJERh1
+	y2r/RO9g/HQh+BCjAAejEg+vx1y+NCHWxLLiytxDjBIczEoivN0OvGlCvCmJlVWpRfnxRaU5
+	qcWHGKU5WJTEeY2+lacICaQnlqRmp6YWpBbBZJk4OKUaGNme7eV0WT0z7nfAmw2pXAvTP8Vu
+	CT4TmjfVRrQ3T+R5eFryrkTPFsOtAtE8t7+/Yj03c8H2Q6wzjf+pZ6o/VkgyuF7yM2rhmy1b
+	nUv8Wh6n3f9UEZi6mF3/9bF/M1xeJAQynvCJ810UGajY/y5m/ecPG1MkW1YeSlYRtf3w4TaP
+	+yKRSfa2k5VYijMSDbWYi4oTASXCDe+2AgAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprLIsWRmVeSWpSXmKPExsXCNUNLT7d+Kn+awd2dohYTewws5qxfw2ax
+	60aIxf0Hr9kt/u89xmjx5P9vVosTNxvZLD4/e81s0fnkO6PF4bknWS06vy9lsbi8aw6bxb01
+	/1ktjqw/y2Kx+ewZZovFy9UsDl17zmqxr+MBk8Xhr2+YLCZfWsBm8WLKGUaLk7Mms1jMPnqP
+	3UHcY+npN2weG5qAxM5Zd9k9WvbdYvdYsKnUo+XIW1aPxXteMnlsWtXJ5rHp0yR2jxMzfrN4
+	7Hxo6fFi80xGj97md2we3257eCx+8YHJ4/MmuQCBKC6blNSczLLUIn27BK6MOQ0bmAtaeCvm
+	/VjD1sB4hauLkYNDQsBE4vYzrS5GTg42ATWJKy8nMYGERQQcJFZ9Vehi5OJgFvjPLHG59xcr
+	SI2wQJhE0/JXYDaLgKrE2n13WUBsXgEzif1HXzKB2BICmhKPt/9kB7E5Bcwl5j3eAGYLAdV8
+	OniMHaJeUOLkzCdgvcwC8hLNW2czT2DkmYUkNQtJagEj0ypGkcy8stzEzBxTveLsjMq8zAq9
+	5PzcTYzASFtW+2fiDsYvl90PMQpwMCrx8HrM5UsTYk0sK67MPcQowcGsJMLb7cCbJsSbklhZ
+	lVqUH19UmpNafIhRmoNFSZzXKzw1QUggPbEkNTs1tSC1CCbLxMEp1cC4e7Y008H3Puvn802q
+	KLBwYKqy+vuxWH3tMi73NL1wTbvn/h7l23ofn17MY7ciq/dfWHvN5Ztz96c+j6jVe141oa7V
+	TanTctfMV50q3bOyr9jJ3JUvuflup6jOxUVSO+1jJnOFVwrx3fBly9J+/6hNOyshcXX1WYkp
+	R14Y7LGYEbY0iJU/r1qJpTgj0VCLuag4EQAvLqFpsAIAAA==
+X-CFilter-Loop: Reflected
+
+This is a preparation patch that introduces migration modes.
+
+The damon_pa_pageout is renamed to damon_pa_migrate and it receives an
+extra argument for migration_mode.
+
+No functional changes applied.
+
+Signed-off-by: Honggyu Kim <honggyu.kim@sk.com>
+---
+ mm/damon/paddr.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/mm/damon/paddr.c b/mm/damon/paddr.c
+index 081e2a325778..277a1c4d833c 100644
+--- a/mm/damon/paddr.c
++++ b/mm/damon/paddr.c
+@@ -224,7 +224,12 @@ static bool damos_pa_filter_out(struct damos *scheme, struct folio *folio)
+ 	return false;
+ }
+ 
+-static unsigned long damon_pa_pageout(struct damon_region *r, struct damos *s)
++enum migration_mode {
++	MIG_PAGEOUT,
++};
++
++static unsigned long damon_pa_migrate(struct damon_region *r, struct damos *s,
++				      enum migration_mode mm)
+ {
+ 	unsigned long addr, applied;
+ 	LIST_HEAD(folio_list);
+@@ -249,7 +254,14 @@ static unsigned long damon_pa_pageout(struct damon_region *r, struct damos *s)
+ put_folio:
+ 		folio_put(folio);
+ 	}
+-	applied = reclaim_pages(&folio_list);
++	switch (mm) {
++	case MIG_PAGEOUT:
++		applied = reclaim_pages(&folio_list);
++		break;
++	default:
++		/* Unexpected migration mode. */
++		return 0;
++	}
+ 	cond_resched();
+ 	return applied * PAGE_SIZE;
+ }
+@@ -297,7 +309,7 @@ static unsigned long damon_pa_apply_scheme(struct damon_ctx *ctx,
+ {
+ 	switch (scheme->action) {
+ 	case DAMOS_PAGEOUT:
+-		return damon_pa_pageout(r, scheme);
++		return damon_pa_migrate(r, scheme, MIG_PAGEOUT);
+ 	case DAMOS_LRU_PRIO:
+ 		return damon_pa_mark_accessed(r, scheme);
+ 	case DAMOS_LRU_DEPRIO:
+-- 
+2.34.1
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from invmail4.hynix.com (exvmail4.skhynix.com [166.125.252.92])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7C7BD4C619
+	for <damon@lists.linux.dev>; Fri,  5 Apr 2024 06:09:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=166.125.252.92
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1712297358; cv=none; b=ugHCrDOTCpjXU5zJUHvwcDqo7bK9Gn0HEscs0jCyK7KcHxi5Ecg80Let+ggJq/0y948LKE4EXU8FCWdvYvhfd/dvS1/fu+0tujWhPSp6adEbN57XifjA6nDLQC8apRCa/dJeEEZCoVNwDzXROjyjltXftn9tQiEKP8CkkIb3ssI=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1712297358; c=relaxed/simple;
+	bh=W3mt8mOCa+BsunCXjuZaMC2bD+wmxhYuB7tpSjWh41A=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=nfZGqCpcskkVkP0LBg+nZnX8/GH0vZ2b2TWqIv+hoCf83z/sRN+FXCYS5IuwShX3SfprKFxQjnv641z1Ri8YiP9vIoId0GSZnRq53mpWPF9SsUpaRukf5sjPYSS6W42KozfGX9jXCm0WxLZt6A91F0DhVKnrlBlRuPAFqXZ9n6s=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sk.com; spf=pass smtp.mailfrom=sk.com; arc=none smtp.client-ip=166.125.252.92
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sk.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sk.com
+X-AuditID: a67dfc5b-d6dff70000001748-8f-660f9580d017
+From: Honggyu Kim <honggyu.kim@sk.com>
+To: sj@kernel.org,
+	damon@lists.linux.dev,
+	linux-mm@kvack.org
+Cc: akpm@linux-foundation.org,
+	apopple@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	dave.jiang@intel.com,
+	honggyu.kim@sk.com,
+	hyeongtak.ji@sk.com,
+	kernel_team@skhynix.com,
+	linmiaohe@huawei.com,
+	linux-kernel@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	mathieu.desnoyers@efficios.com,
+	mhiramat@kernel.org,
+	rakie.kim@sk.com,
+	rostedt@goodmis.org,
+	surenb@google.com,
+	yangx.jy@fujitsu.com,
+	ying.huang@intel.com,
+	ziy@nvidia.com,
+	42.hyeyoo@gmail.com,
+	art.jeongseob@gmail.com
+Subject: [RFC PATCH v3 2/7] mm: make alloc_demote_folio externally invokable for migration
+Date: Fri,  5 Apr 2024 15:08:51 +0900
+Message-ID: <20240405060858.2818-3-honggyu.kim@sk.com>
+X-Mailer: git-send-email 2.43.0.windows.1
+In-Reply-To: <20240405060858.2818-1-honggyu.kim@sk.com>
+References: <20240405060858.2818-1-honggyu.kim@sk.com>
+Precedence: bulk
+X-Mailing-List: damon@lists.linux.dev
+List-Id: <damon.lists.linux.dev>
+List-Subscribe: <mailto:damon+subscribe@lists.linux.dev>
+List-Unsubscribe: <mailto:damon+unsubscribe@lists.linux.dev>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrMIsWRmVeSWpSXmKPExsXC9ZZnkW7DVP40g7N/TC0m9hhYzFm/hs1i
+	140Qi/sPXrNb/N97jNHiyf/frBYnbjayWXR+X8picXnXHDaLe2v+s1ocWX+WxWLz2TPMFouX
+	q1ns63jAZHH46xsmi8mXFrBZvJhyhtHi5KzJLBazj95jdxD2WHr6DZvHhiYgsXPWXXaPln23
+	2D0WbCr1aDnyltVj8Z6XTB6bVnWyeWz6NInd48SM3yweOx9aerzYPJPRo7f5HZvH501yAXxR
+	XDYpqTmZZalF+nYJXBmHjj9hKTgkWHHr/VzGBsbNfF2MHBwSAiYSE85KdjFygpl31zazgdhs
+	AmoSV15OYgIpERFwkFj1VaGLkYuDWeA/s8Tl3l+sIDXCAlESS0+8BLNZBFQlFty7D9bLK2Am
+	8e70O3aImZoSj7f/BLM5Bcwl5j3eAGYLAdV8OniMHaJeUOLkzCcsIDazgLxE89bZzCDLJASO
+	sUv03PrOCDFIUuLgihssExj5ZyHpmYWkZwEj0ypGocy8stzEzBwTvYzKvMwKveT83E2MwKhb
+	VvsnegfjpwvBhxgFOBiVeHg95vKlCbEmlhVX5h5ilOBgVhLh7XbgTRPiTUmsrEotyo8vKs1J
+	LT7EKM3BoiTOa/StPEVIID2xJDU7NbUgtQgmy8TBKdXAWOatH6b/L89C8d/CqDVemTeuZH8+
+	X/5rodYsN9EFLz8aP2P9dG2NeM3+Gw9UlRUvNYRLdK37oDmjOCw8Rj346zMztQ0NSTc2GFY3
+	rWqOqVx95YSpS9aMAzIz7JZYvn3SuOnK6xcNrfv3bfm08e2e757Pvkaw9V0tdLlQbf7ggO0N
+	LdH+Jg6lGCWW4oxEQy3mouJEAHAPeW+2AgAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprHIsWRmVeSWpSXmKPExsXCNUNLT7dhKn+awclHGhYTewws5qxfw2ax
+	60aIxf0Hr9kt/u89xmjx5P9vVosTNxvZLD4/e81s0fnkO6PF4bknWS06vy9lsbi8aw6bxb01
+	/1ktjqw/y2Kx+ewZZovFy9UsDl17zmqxr+MBk8Xhr2+YLCZfWsBm8WLKGUaLk7Mms1jMPnqP
+	3UHcY+npN2weG5qAxM5Zd9k9WvbdYvdYsKnUo+XIW1aPxXteMnlsWtXJ5rHp0yR2jxMzfrN4
+	7Hxo6fFi80xGj97md2we3257eCx+8YHJ4/MmuQCBKC6blNSczLLUIn27BK6MQ8efsBQcEqy4
+	9X4uYwPjZr4uRk4OCQETibtrm9lAbDYBNYkrLycxdTFycIgIOEis+qrQxcjFwSzwn1nicu8v
+	VpAaYYEoiaUnXoLZLAKqEgvu3Qfr5RUwk3h3+h07xExNicfbf4LZnALmEvMebwCzhYBqPh08
+	xg5RLyhxcuYTFhCbWUBeonnrbOYJjDyzkKRmIUktYGRaxSiSmVeWm5iZY6pXnJ1RmZdZoZec
+	n7uJERhry2r/TNzB+OWy+yFGAQ5GJR5ej7l8aUKsiWXFlbmHGCU4mJVEeLsdeNOEeFMSK6tS
+	i/Lji0pzUosPMUpzsCiJ83qFpyYICaQnlqRmp6YWpBbBZJk4OKUaGLdVHdhTwN9+yD3Jw63+
+	JXvOuqMRXl+z9825+mHGKZ8WR529Mb90dG3cTi3O4ckKf3TTi/vew4yrTr3Vy024a479SPhf
+	db/Q7PuhRReyTaTnxlZs65JO8bgv9NmodPkpmVpf37t926983XPrcXDdBIZD6Wn5jCF5ggfs
+	znZ9+DS3LaY2M776jxJLcUaioRZzUXEiAFYH+5KxAgAA
+X-CFilter-Loop: Reflected
+
+The alloc_demote_folio can be used out of vmscan.c so it'd be better to
+remove static keyword from it.
+
+This function can also be used for both demotion and promotion so it'd
+be better to rename it from alloc_demote_folio to alloc_migrate_folio.
+
+Signed-off-by: Honggyu Kim <honggyu.kim@sk.com>
+---
+ mm/internal.h |  1 +
+ mm/vmscan.c   | 10 +++++++---
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/mm/internal.h b/mm/internal.h
+index f309a010d50f..c96ff9bc82d0 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -866,6 +866,7 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
+         unsigned long, unsigned long);
+ 
+ extern void set_pageblock_order(void);
++struct folio *alloc_migrate_folio(struct folio *src, unsigned long private);
+ unsigned long reclaim_pages(struct list_head *folio_list);
+ unsigned int reclaim_clean_pages_from_list(struct zone *zone,
+ 					    struct list_head *folio_list);
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 4255619a1a31..9e456cac03b4 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -910,8 +910,7 @@ static void folio_check_dirty_writeback(struct folio *folio,
+ 		mapping->a_ops->is_dirty_writeback(folio, dirty, writeback);
+ }
+ 
+-static struct folio *alloc_demote_folio(struct folio *src,
+-		unsigned long private)
++struct folio *alloc_migrate_folio(struct folio *src, unsigned long private)
+ {
+ 	struct folio *dst;
+ 	nodemask_t *allowed_mask;
+@@ -935,6 +934,11 @@ static struct folio *alloc_demote_folio(struct folio *src,
+ 	if (dst)
+ 		return dst;
+ 
++	/*
++	 * Allocation failed from the target node so try to allocate from
++	 * fallback nodes based on allowed_mask.
++	 * See fallback_alloc() at mm/slab.c.
++	 */
+ 	mtc->gfp_mask &= ~__GFP_THISNODE;
+ 	mtc->nmask = allowed_mask;
+ 
+@@ -973,7 +977,7 @@ static unsigned int demote_folio_list(struct list_head *demote_folios,
+ 	node_get_allowed_targets(pgdat, &allowed_mask);
+ 
+ 	/* Demotion ignores all cpuset and mempolicy settings */
+-	migrate_pages(demote_folios, alloc_demote_folio, NULL,
++	migrate_pages(demote_folios, alloc_migrate_folio, NULL,
+ 		      (unsigned long)&mtc, MIGRATE_ASYNC, MR_DEMOTION,
+ 		      &nr_succeeded);
+ 
+-- 
+2.34.1
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from invmail4.hynix.com (exvmail4.hynix.com [166.125.252.92])
 	by smtp.subspace.kernel.org (Postfix) with ESMTP id 09C74535CB
 	for <damon@lists.linux.dev>; Fri,  5 Apr 2024 06:09:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=166.125.252.92
@@ -1522,471 +1806,6 @@ index db79935e4a54..be9ba89fede1 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Received: from invmail4.hynix.com (exvmail4.hynix.com [166.125.252.92])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 31E0B25774
-	for <damon@lists.linux.dev>; Fri,  5 Apr 2024 06:09:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=166.125.252.92
-ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712297357; cv=none; b=bHXl7jNb4sKNuu5H8ucVOdQc6XgY/iaElKpLWTWJViUv2+TYCdBR4v6Ds/pExSHIlS/NkhkQuJtsKdZD1Tw65gkjy1IvMa0+uvAez/wpHrvdnxZtpxtkcUhMS1MrceCOezPaNCwi93xE2ZKf0m8MYxUYNjlGfc5lv6kNV65tkRg=
-ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712297357; c=relaxed/simple;
-	bh=Ig1CU3NKL8/cdJN+rmc1e4GaDBcrnBkfyq6QFF/1g7U=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=rEH/04k0Vqrj4CO/+QtskkmIKOOrj6N+tHFjKol8rkNwyydLtDfAxn8FmkbJ9Jjxu2lg4hDsGsu/Xl9PnYyJnMlkqu25rljdgjf3sqJOsC//emkbC4MzpH7WUtCtFN7jKHl4BwN931ZkYLuEaCO93/xuF92gYhpM0LVR0U3TFUc=
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sk.com; spf=pass smtp.mailfrom=sk.com; arc=none smtp.client-ip=166.125.252.92
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sk.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sk.com
-X-AuditID: a67dfc5b-d6dff70000001748-86-660f957f95fe
-From: Honggyu Kim <honggyu.kim@sk.com>
-To: sj@kernel.org,
-	damon@lists.linux.dev,
-	linux-mm@kvack.org
-Cc: akpm@linux-foundation.org,
-	apopple@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	dave.jiang@intel.com,
-	honggyu.kim@sk.com,
-	hyeongtak.ji@sk.com,
-	kernel_team@skhynix.com,
-	linmiaohe@huawei.com,
-	linux-kernel@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	mathieu.desnoyers@efficios.com,
-	mhiramat@kernel.org,
-	rakie.kim@sk.com,
-	rostedt@goodmis.org,
-	surenb@google.com,
-	yangx.jy@fujitsu.com,
-	ying.huang@intel.com,
-	ziy@nvidia.com,
-	42.hyeyoo@gmail.com,
-	art.jeongseob@gmail.com
-Subject: [RFC PATCH v3 1/7] mm/damon/paddr: refactor DAMOS_PAGEOUT with migration_mode
-Date: Fri,  5 Apr 2024 15:08:50 +0900
-Message-ID: <20240405060858.2818-2-honggyu.kim@sk.com>
-X-Mailer: git-send-email 2.43.0.windows.1
-In-Reply-To: <20240405060858.2818-1-honggyu.kim@sk.com>
-References: <20240405060858.2818-1-honggyu.kim@sk.com>
-Precedence: bulk
-X-Mailing-List: damon@lists.linux.dev
-List-Id: <damon.lists.linux.dev>
-List-Subscribe: <mailto:damon+subscribe@lists.linux.dev>
-List-Unsubscribe: <mailto:damon+unsubscribe@lists.linux.dev>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrMIsWRmVeSWpSXmKPExsXC9ZZnkW79VP40g0kXlS0m9hhYzFm/hs1i
-	140Qi/sPXrNb/N97jNHiyf/frBYnbjayWXR+X8picXnXHDaLe2v+s1ocWX+WxWLz2TPMFouX
-	q1ns63jAZHH46xsmi8mXFrBZvJhyhtHi5KzJLBazj95jdxD2WHr6DZvHhiYgsXPWXXaPln23
-	2D0WbCr1aDnyltVj8Z6XTB6bVnWyeWz6NInd48SM3yweOx9aerzYPJPRo7f5HZvH501yAXxR
-	XDYpqTmZZalF+nYJXBlzGjYwF7TwVsz7sYatgfEKVxcjJ4eEgIlE94t9jF2MHGD27WdaIGE2
-	ATWJKy8nMYGERQQcJFZ9Vehi5OJgFvjPLHG59xcrSI2wQJhE0/JXYDaLgKrE2n13WUBsXgEz
-	if1HXzJBjNeUeLz9JzuIzSlgLjHv8QYwWwio5tPBY+wQ9YISJ2c+AetlFpCXaN46mxlkmYTA
-	KXaJzzua2SAGSUocXHGDZQIj/ywkPbOQ9CxgZFrFKJSZV5abmJljopdRmZdZoZecn7uJERh1
-	y2r/RO9g/HQh+BCjAAejEg+vx1y+NCHWxLLiytxDjBIczEoivN0OvGlCvCmJlVWpRfnxRaU5
-	qcWHGKU5WJTEeY2+lacICaQnlqRmp6YWpBbBZJk4OKUaGNme7eV0WT0z7nfAmw2pXAvTP8Vu
-	CT4TmjfVRrQ3T+R5eFryrkTPFsOtAtE8t7+/Yj03c8H2Q6wzjf+pZ6o/VkgyuF7yM2rhmy1b
-	nUv8Wh6n3f9UEZi6mF3/9bF/M1xeJAQynvCJ810UGajY/y5m/ecPG1MkW1YeSlYRtf3w4TaP
-	+yKRSfa2k5VYijMSDbWYi4oTASXCDe+2AgAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprLIsWRmVeSWpSXmKPExsXCNUNLT7d+Kn+awd2dohYTewws5qxfw2ax
-	60aIxf0Hr9kt/u89xmjx5P9vVosTNxvZLD4/e81s0fnkO6PF4bknWS06vy9lsbi8aw6bxb01
-	/1ktjqw/y2Kx+ewZZovFy9UsDl17zmqxr+MBk8Xhr2+YLCZfWsBm8WLKGUaLk7Mms1jMPnqP
-	3UHcY+npN2weG5qAxM5Zd9k9WvbdYvdYsKnUo+XIW1aPxXteMnlsWtXJ5rHp0yR2jxMzfrN4
-	7Hxo6fFi80xGj97md2we3257eCx+8YHJ4/MmuQCBKC6blNSczLLUIn27BK6MOQ0bmAtaeCvm
-	/VjD1sB4hauLkYNDQsBE4vYzrS5GTg42ATWJKy8nMYGERQQcJFZ9Vehi5OJgFvjPLHG59xcr
-	SI2wQJhE0/JXYDaLgKrE2n13WUBsXgEzif1HXzKB2BICmhKPt/9kB7E5Bcwl5j3eAGYLAdV8
-	OniMHaJeUOLkzCdgvcwC8hLNW2czT2DkmYUkNQtJagEj0ypGkcy8stzEzBxTveLsjMq8zAq9
-	5PzcTYzASFtW+2fiDsYvl90PMQpwMCrx8HrM5UsTYk0sK67MPcQowcGsJMLb7cCbJsSbklhZ
-	lVqUH19UmpNafIhRmoNFSZzXKzw1QUggPbEkNTs1tSC1CCbLxMEp1cC4e7Y008H3Puvn802q
-	KLBwYKqy+vuxWH3tMi73NL1wTbvn/h7l23ofn17MY7ciq/dfWHvN5Ztz96c+j6jVe141oa7V
-	TanTctfMV50q3bOyr9jJ3JUvuflup6jOxUVSO+1jJnOFVwrx3fBly9J+/6hNOyshcXX1WYkp
-	R14Y7LGYEbY0iJU/r1qJpTgj0VCLuag4EQAvLqFpsAIAAA==
-X-CFilter-Loop: Reflected
-
-This is a preparation patch that introduces migration modes.
-
-The damon_pa_pageout is renamed to damon_pa_migrate and it receives an
-extra argument for migration_mode.
-
-No functional changes applied.
-
-Signed-off-by: Honggyu Kim <honggyu.kim@sk.com>
----
- mm/damon/paddr.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
-
-diff --git a/mm/damon/paddr.c b/mm/damon/paddr.c
-index 081e2a325778..277a1c4d833c 100644
---- a/mm/damon/paddr.c
-+++ b/mm/damon/paddr.c
-@@ -224,7 +224,12 @@ static bool damos_pa_filter_out(struct damos *scheme, struct folio *folio)
- 	return false;
- }
- 
--static unsigned long damon_pa_pageout(struct damon_region *r, struct damos *s)
-+enum migration_mode {
-+	MIG_PAGEOUT,
-+};
-+
-+static unsigned long damon_pa_migrate(struct damon_region *r, struct damos *s,
-+				      enum migration_mode mm)
- {
- 	unsigned long addr, applied;
- 	LIST_HEAD(folio_list);
-@@ -249,7 +254,14 @@ static unsigned long damon_pa_pageout(struct damon_region *r, struct damos *s)
- put_folio:
- 		folio_put(folio);
- 	}
--	applied = reclaim_pages(&folio_list);
-+	switch (mm) {
-+	case MIG_PAGEOUT:
-+		applied = reclaim_pages(&folio_list);
-+		break;
-+	default:
-+		/* Unexpected migration mode. */
-+		return 0;
-+	}
- 	cond_resched();
- 	return applied * PAGE_SIZE;
- }
-@@ -297,7 +309,7 @@ static unsigned long damon_pa_apply_scheme(struct damon_ctx *ctx,
- {
- 	switch (scheme->action) {
- 	case DAMOS_PAGEOUT:
--		return damon_pa_pageout(r, scheme);
-+		return damon_pa_migrate(r, scheme, MIG_PAGEOUT);
- 	case DAMOS_LRU_PRIO:
- 		return damon_pa_mark_accessed(r, scheme);
- 	case DAMOS_LRU_DEPRIO:
--- 
-2.34.1
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Received: from invmail4.hynix.com (exvmail4.skhynix.com [166.125.252.92])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7C7BD4C619
-	for <damon@lists.linux.dev>; Fri,  5 Apr 2024 06:09:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=166.125.252.92
-ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712297358; cv=none; b=ugHCrDOTCpjXU5zJUHvwcDqo7bK9Gn0HEscs0jCyK7KcHxi5Ecg80Let+ggJq/0y948LKE4EXU8FCWdvYvhfd/dvS1/fu+0tujWhPSp6adEbN57XifjA6nDLQC8apRCa/dJeEEZCoVNwDzXROjyjltXftn9tQiEKP8CkkIb3ssI=
-ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712297358; c=relaxed/simple;
-	bh=W3mt8mOCa+BsunCXjuZaMC2bD+wmxhYuB7tpSjWh41A=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nfZGqCpcskkVkP0LBg+nZnX8/GH0vZ2b2TWqIv+hoCf83z/sRN+FXCYS5IuwShX3SfprKFxQjnv641z1Ri8YiP9vIoId0GSZnRq53mpWPF9SsUpaRukf5sjPYSS6W42KozfGX9jXCm0WxLZt6A91F0DhVKnrlBlRuPAFqXZ9n6s=
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sk.com; spf=pass smtp.mailfrom=sk.com; arc=none smtp.client-ip=166.125.252.92
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sk.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sk.com
-X-AuditID: a67dfc5b-d6dff70000001748-8f-660f9580d017
-From: Honggyu Kim <honggyu.kim@sk.com>
-To: sj@kernel.org,
-	damon@lists.linux.dev,
-	linux-mm@kvack.org
-Cc: akpm@linux-foundation.org,
-	apopple@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	dave.jiang@intel.com,
-	honggyu.kim@sk.com,
-	hyeongtak.ji@sk.com,
-	kernel_team@skhynix.com,
-	linmiaohe@huawei.com,
-	linux-kernel@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	mathieu.desnoyers@efficios.com,
-	mhiramat@kernel.org,
-	rakie.kim@sk.com,
-	rostedt@goodmis.org,
-	surenb@google.com,
-	yangx.jy@fujitsu.com,
-	ying.huang@intel.com,
-	ziy@nvidia.com,
-	42.hyeyoo@gmail.com,
-	art.jeongseob@gmail.com
-Subject: [RFC PATCH v3 2/7] mm: make alloc_demote_folio externally invokable for migration
-Date: Fri,  5 Apr 2024 15:08:51 +0900
-Message-ID: <20240405060858.2818-3-honggyu.kim@sk.com>
-X-Mailer: git-send-email 2.43.0.windows.1
-In-Reply-To: <20240405060858.2818-1-honggyu.kim@sk.com>
-References: <20240405060858.2818-1-honggyu.kim@sk.com>
-Precedence: bulk
-X-Mailing-List: damon@lists.linux.dev
-List-Id: <damon.lists.linux.dev>
-List-Subscribe: <mailto:damon+subscribe@lists.linux.dev>
-List-Unsubscribe: <mailto:damon+unsubscribe@lists.linux.dev>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrMIsWRmVeSWpSXmKPExsXC9ZZnkW7DVP40g7N/TC0m9hhYzFm/hs1i
-	140Qi/sPXrNb/N97jNHiyf/frBYnbjayWXR+X8picXnXHDaLe2v+s1ocWX+WxWLz2TPMFouX
-	q1ns63jAZHH46xsmi8mXFrBZvJhyhtHi5KzJLBazj95jdxD2WHr6DZvHhiYgsXPWXXaPln23
-	2D0WbCr1aDnyltVj8Z6XTB6bVnWyeWz6NInd48SM3yweOx9aerzYPJPRo7f5HZvH501yAXxR
-	XDYpqTmZZalF+nYJXBmHjj9hKTgkWHHr/VzGBsbNfF2MHBwSAiYSE85KdjFygpl31zazgdhs
-	AmoSV15OYgIpERFwkFj1VaGLkYuDWeA/s8Tl3l+sIDXCAlESS0+8BLNZBFQlFty7D9bLK2Am
-	8e70O3aImZoSj7f/BLM5Bcwl5j3eAGYLAdV8OniMHaJeUOLkzCcsIDazgLxE89bZzCDLJASO
-	sUv03PrOCDFIUuLgihssExj5ZyHpmYWkZwEj0ypGocy8stzEzBwTvYzKvMwKveT83E2MwKhb
-	VvsnegfjpwvBhxgFOBiVeHg95vKlCbEmlhVX5h5ilOBgVhLh7XbgTRPiTUmsrEotyo8vKs1J
-	LT7EKM3BoiTOa/StPEVIID2xJDU7NbUgtQgmy8TBKdXAWOatH6b/L89C8d/CqDVemTeuZH8+
-	X/5rodYsN9EFLz8aP2P9dG2NeM3+Gw9UlRUvNYRLdK37oDmjOCw8Rj346zMztQ0NSTc2GFY3
-	rWqOqVx95YSpS9aMAzIz7JZYvn3SuOnK6xcNrfv3bfm08e2e757Pvkaw9V0tdLlQbf7ggO0N
-	LdH+Jg6lGCWW4oxEQy3mouJEAHAPeW+2AgAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprHIsWRmVeSWpSXmKPExsXCNUNLT7dhKn+awclHGhYTewws5qxfw2ax
-	60aIxf0Hr9kt/u89xmjx5P9vVosTNxvZLD4/e81s0fnkO6PF4bknWS06vy9lsbi8aw6bxb01
-	/1ktjqw/y2Kx+ewZZovFy9UsDl17zmqxr+MBk8Xhr2+YLCZfWsBm8WLKGUaLk7Mms1jMPnqP
-	3UHcY+npN2weG5qAxM5Zd9k9WvbdYvdYsKnUo+XIW1aPxXteMnlsWtXJ5rHp0yR2jxMzfrN4
-	7Hxo6fFi80xGj97md2we3257eCx+8YHJ4/MmuQCBKC6blNSczLLUIn27BK6MQ8efsBQcEqy4
-	9X4uYwPjZr4uRk4OCQETibtrm9lAbDYBNYkrLycxdTFycIgIOEis+qrQxcjFwSzwn1nicu8v
-	VpAaYYEoiaUnXoLZLAKqEgvu3Qfr5RUwk3h3+h07xExNicfbf4LZnALmEvMebwCzhYBqPh08
-	xg5RLyhxcuYTFhCbWUBeonnrbOYJjDyzkKRmIUktYGRaxSiSmVeWm5iZY6pXnJ1RmZdZoZec
-	n7uJERhry2r/TNzB+OWy+yFGAQ5GJR5ej7l8aUKsiWXFlbmHGCU4mJVEeLsdeNOEeFMSK6tS
-	i/Lji0pzUosPMUpzsCiJ83qFpyYICaQnlqRmp6YWpBbBZJk4OKUaGLdVHdhTwN9+yD3Jw63+
-	JXvOuqMRXl+z9825+mHGKZ8WR529Mb90dG3cTi3O4ckKf3TTi/vew4yrTr3Vy024a479SPhf
-	db/Q7PuhRReyTaTnxlZs65JO8bgv9NmodPkpmVpf37t926983XPrcXDdBIZD6Wn5jCF5ggfs
-	znZ9+DS3LaY2M776jxJLcUaioRZzUXEiAFYH+5KxAgAA
-X-CFilter-Loop: Reflected
-
-The alloc_demote_folio can be used out of vmscan.c so it'd be better to
-remove static keyword from it.
-
-This function can also be used for both demotion and promotion so it'd
-be better to rename it from alloc_demote_folio to alloc_migrate_folio.
-
-Signed-off-by: Honggyu Kim <honggyu.kim@sk.com>
----
- mm/internal.h |  1 +
- mm/vmscan.c   | 10 +++++++---
- 2 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/mm/internal.h b/mm/internal.h
-index f309a010d50f..c96ff9bc82d0 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -866,6 +866,7 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
-         unsigned long, unsigned long);
- 
- extern void set_pageblock_order(void);
-+struct folio *alloc_migrate_folio(struct folio *src, unsigned long private);
- unsigned long reclaim_pages(struct list_head *folio_list);
- unsigned int reclaim_clean_pages_from_list(struct zone *zone,
- 					    struct list_head *folio_list);
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 4255619a1a31..9e456cac03b4 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -910,8 +910,7 @@ static void folio_check_dirty_writeback(struct folio *folio,
- 		mapping->a_ops->is_dirty_writeback(folio, dirty, writeback);
- }
- 
--static struct folio *alloc_demote_folio(struct folio *src,
--		unsigned long private)
-+struct folio *alloc_migrate_folio(struct folio *src, unsigned long private)
- {
- 	struct folio *dst;
- 	nodemask_t *allowed_mask;
-@@ -935,6 +934,11 @@ static struct folio *alloc_demote_folio(struct folio *src,
- 	if (dst)
- 		return dst;
- 
-+	/*
-+	 * Allocation failed from the target node so try to allocate from
-+	 * fallback nodes based on allowed_mask.
-+	 * See fallback_alloc() at mm/slab.c.
-+	 */
- 	mtc->gfp_mask &= ~__GFP_THISNODE;
- 	mtc->nmask = allowed_mask;
- 
-@@ -973,7 +977,7 @@ static unsigned int demote_folio_list(struct list_head *demote_folios,
- 	node_get_allowed_targets(pgdat, &allowed_mask);
- 
- 	/* Demotion ignores all cpuset and mempolicy settings */
--	migrate_pages(demote_folios, alloc_demote_folio, NULL,
-+	migrate_pages(demote_folios, alloc_migrate_folio, NULL,
- 		      (unsigned long)&mtc, MIGRATE_ASYNC, MR_DEMOTION,
- 		      &nr_succeeded);
- 
--- 
-2.34.1
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com [209.85.215.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8AC751428F8;
-	Fri,  5 Apr 2024 07:56:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.174
-ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712303774; cv=none; b=eBSV1Pt+hyW3QwpQedV48R2ngdcru2tiB1r71+CnnZMGCfclzLfKtVYDolVr947ODWByCQwppSTnUDBxhMZdMDPHiOW8KBP5Q76wnt22RRXtOAAXp0UbMpUYf/6TL/vllhxCz8xNz5xAx6K3Ddas/EbEu0AAXzWRj3H17Vzpbyc=
-ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712303774; c=relaxed/simple;
-	bh=5FR0ML8gIms8SXMu9qd0IXl0ZXkR1/9EGEn2Gx9HkT0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Huh/gpxOcrb9V0oFPylrOm4ou9oqSEj8KUF0w1Odn8bQPvviIq9rZSRne0wm8mnDAN624b736twIKP3D5YsdMF3IS6Tc9+HN+qyB52wG1bPpJ7Qtm2G5C2cC7B4F+PYJZ+j4qszhBwdi5jxsspSNjqlNCiJhB1sufpiHKbebN9w=
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GoiavdWd; arc=none smtp.client-ip=209.85.215.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GoiavdWd"
-Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-5ce07cf1e5dso1420910a12.2;
-        Fri, 05 Apr 2024 00:56:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1712303772; x=1712908572; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=hzVlWt4l7qxR/k/EhWDwFrSslFncuI6KSbSzKFf8xEw=;
-        b=GoiavdWdYnmZFK1pWIURcuvw3fbxXZUuj+HqYnjDckH8vVZPSYSzXX8KxPD7kO0Emv
-         L8kudC2ynot/y9wvJ5AaJAomB3XTJlOibmVqDi/vvKzxnipzbS9SqFDxS1qKY2vhsC/U
-         3pYsJp9WPL0mRp3j2WBJ964LU25Hd/nSaGyhljf0mNuitIk0D6uHyw3rmnzXxE08eAxq
-         gGsLaSpgKILgcj/gfADWb9A10mPWHoUdQPYxUNtObjiqeiKy1XX6d288t5fuU6/0NGoM
-         oYC3McmdOL1xm7j0Ty5vogsUn3tHcHr+qFrGlQqvbFS0moKe3uZ6A7ChzHWgYR1ztBMe
-         AMbQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712303772; x=1712908572;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hzVlWt4l7qxR/k/EhWDwFrSslFncuI6KSbSzKFf8xEw=;
-        b=M8QKcnOWgUHDgxKzS4joQHVlJQt8MLj5J7fBuvsaMMRzxOke81N7xmMHT66JN+ES42
-         WDU+DY2oz1GSAOOdlT6n3JxxOSd+744787lKwkqNhVRY5DHYioo8AouDQbgSmvit/6nu
-         6jP/0SXU7ZQlz754+kcqv20nSCEGDG5eoykbjQMatklG8Wlku7/Nn5yh2XF3jzMEDAZa
-         iYm/ME/o/9Hs6WOLXCrcUhNfxGSRQfBaAi0YZC7fPmfjQfdp7n5hgH7Yi/fn8PV0vGNm
-         hP5qKey54mp2WzZNCu2jR2melZe+tWDyeEMOI9gybBqIy/rS8pQQVIP9ouN7VYjWM2SX
-         kzcA==
-X-Forwarded-Encrypted: i=1; AJvYcCW9YH++kKv6TnDhtq8GUOvu2WSmCYY8oxDNTnjNDENbfxxmKEaxVKCfKSQa4Y/fBqKL1eNRP3VjhWK5DgkdmY7AkhhdbMdB2eV78e7XYyVCICRHTsylxjDybCjR/wv72/2MgeoyDLVo/eEIoIALW6vw
-X-Gm-Message-State: AOJu0YxESyqS9O/BQjSZLODbdT6CA6TdPVnKelcOI0pKD2WcBTLeWbay
-	joZLdhjm08+n9+GsQmKInvv2Or4tMiAtuUonKh5ZVs2DR28QQQsP
-X-Google-Smtp-Source: AGHT+IFRQC5Hl1XNJ8UHTusIXnKpuWVMqInH6NDdemHxy91rJUVQyZ1BvHxguN/C539fHznDlLcS0A==
-X-Received: by 2002:a17:90a:e00f:b0:2a2:5876:5a74 with SMTP id u15-20020a17090ae00f00b002a258765a74mr666360pjy.25.1712303771654;
-        Fri, 05 Apr 2024 00:56:11 -0700 (PDT)
-Received: from hyeongtakPC.. ([147.46.174.104])
-        by smtp.googlemail.com with ESMTPSA id ce17-20020a17090aff1100b002a2d4bf345bsm2539161pjb.55.2024.04.05.00.56.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 Apr 2024 00:56:10 -0700 (PDT)
-From: Hyeongtak Ji <hyeongtak.ji@gmail.com>
-To: Honggyu Kim <honggyu.kim@sk.com>
-Cc: akpm@linux-foundation.org,
-	apopple@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	dave.jiang@intel.com,
-	hyeongtak.ji@sk.com,
-	kernel_team@skhynix.com,
-	linmiaohe@huawei.com,
-	linux-kernel@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	mathieu.desnoyers@efficios.com,
-	mhiramat@kernel.org,
-	rakie.kim@sk.com,
-	rostedt@goodmis.org,
-	surenb@google.com,
-	yangx.jy@fujitsu.com,
-	ying.huang@intel.com,
-	ziy@nvidia.com,
-	42.hyeyoo@gmail.com,
-	art.jeongseob@gmail.com
-Subject: Re: [RFC PATCH v3 5/7] mm/damon/paddr: introduce DAMOS_MIGRATE_COLD action for demotion
-Date: Fri,  5 Apr 2024 16:55:57 +0900
-Message-Id: <20240405075557.464190-1-hyeongtak.ji@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240405060858.2818-6-honggyu.kim@sk.com>
-References: 
-Precedence: bulk
-X-Mailing-List: linux-kernel@vger.kernel.org
-List-Id: <linux-kernel.vger.kernel.org>
-List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
-List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-
-On Fri,  5 Apr 2024 15:08:54 +0900 Honggyu Kim <honggyu.kim@sk.com> wrote:
-
-...snip...
-
-> +static unsigned long damon_pa_migrate_pages(struct list_head *folio_list,
-> +					    enum migration_mode mm,
-> +					    int target_nid)
-> +{
-> +	int nid;
-> +	unsigned int nr_migrated = 0;
-> +	LIST_HEAD(node_folio_list);
-> +	unsigned int noreclaim_flag;
-> +
-> +	if (list_empty(folio_list))
-> +		return nr_migrated;
-
-How about checking if `target_nid` is `NUMA_NO_NODE` or not earlier,
-
-> +
-> +	noreclaim_flag = memalloc_noreclaim_save();
-> +
-> +	nid = folio_nid(lru_to_folio(folio_list));
-> +	do {
-> +		struct folio *folio = lru_to_folio(folio_list);
-> +
-> +		if (nid == folio_nid(folio)) {
-> +			folio_clear_active(folio);
-> +			list_move(&folio->lru, &node_folio_list);
-> +			continue;
-> +		}
-> +
-> +		nr_migrated += damon_pa_migrate_folio_list(&node_folio_list,
-> +							   NODE_DATA(nid), mm,
-> +							   target_nid);
-> +		nid = folio_nid(lru_to_folio(folio_list));
-> +	} while (!list_empty(folio_list));
-> +
-> +	nr_migrated += damon_pa_migrate_folio_list(&node_folio_list,
-> +						   NODE_DATA(nid), mm,
-> +						   target_nid);
-> +
-> +	memalloc_noreclaim_restore(noreclaim_flag);
-> +
-> +	return nr_migrated;
-> +}
-> +
-
-...snip...
-
-> +static unsigned int migrate_folio_list(struct list_head *migrate_folios,
-> +				       struct pglist_data *pgdat,
-> +				       int target_nid)
-> +{
-> +	unsigned int nr_succeeded;
-> +	nodemask_t allowed_mask = NODE_MASK_NONE;
-> +
-> +	struct migration_target_control mtc = {
-> +		/*
-> +		 * Allocate from 'node', or fail quickly and quietly.
-> +		 * When this happens, 'page' will likely just be discarded
-> +		 * instead of migrated.
-> +		 */
-> +		.gfp_mask = (GFP_HIGHUSER_MOVABLE & ~__GFP_RECLAIM) | __GFP_NOWARN |
-> +			__GFP_NOMEMALLOC | GFP_NOWAIT,
-> +		.nid = target_nid,
-> +		.nmask = &allowed_mask
-> +	};
-> +
-> +	if (pgdat->node_id == target_nid || target_nid == NUMA_NO_NODE)
-> +		return 0;
-
-instead of here.
-
-> +
-> +	if (list_empty(migrate_folios))
-> +		return 0;
-> +
-> +	/* Migration ignores all cpuset and mempolicy settings */
-> +	migrate_pages(migrate_folios, alloc_migrate_folio, NULL,
-> +		      (unsigned long)&mtc, MIGRATE_ASYNC, MR_DAMON,
-> +		      &nr_succeeded);
-> +
-> +	return nr_succeeded;
-> +}
-> +
-
-...snip...
-
-Kind regards,
-Hyeongtak
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
 Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2090.outbound.protection.outlook.com [40.107.94.90])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
@@ -3041,176 +2860,6 @@ should not return error?
 > 
 > 
 
-
-Thanks,
-SJ
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A65E8172BC6;
-	Fri,  5 Apr 2024 19:25:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712345100; cv=none; b=YlWP3R1iCnTNe5ubTVJbWgvcr6jOilNDdYpaIpWGUr1A6euQgl7B87pr1wQTWubFgdogzrZN0OLEH8p3hhh3zkJAvm/96jKgqu0IJ3E/fPebeedV5dZmOraHfEXhBOR1orNjCh5xOoRwyuJdL47fcpZxy5lQXF1/bf7uWqDTULY=
-ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712345100; c=relaxed/simple;
-	bh=FK4h/8Qb4PhaAp88iGaA8h7WqLJqCcrh+xeBVhK+WQs=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=t5lH1wkleTLSSiaJNhMf3YTlQNGib9/uAjUJynzpLEHbY5gCD4vgBRt0u3WB1fdLcEUDmQlSfdsIe9i2XB/SnS6xxc9iTUNyFaMZyA0xh6sNShePugRh97MQ5uMz/wx4UOvDJPpi2g1wMTNV2M4+dDpttviLFj17vOYXaxVWLWY=
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JWxVF0iU; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JWxVF0iU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAFD7C433F1;
-	Fri,  5 Apr 2024 19:24:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712345100;
-	bh=FK4h/8Qb4PhaAp88iGaA8h7WqLJqCcrh+xeBVhK+WQs=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JWxVF0iU2MJc3v/1OhKOge0FpPHa2dL63n59rDezFWDFeGtaDh54MK657/FdoTlbC
-	 9knaxWY/DxXueBIocShzxs3X1qWupXPFogn0MZWVqrfhjffwavFJcJh4smCslyA80r
-	 rFbJOuQl+Q2MCyiEDVU3ybK2CeAbbj/Dxq58AN87pWH9cjxOI8sg9GgRfPYfmzUK00
-	 hCWrqbeFP78f5Yxa2JgruhOCcif4oTpwnEO01GlTZf0rtrJfdYelVLBEMfGFQcAgMH
-	 x3Tff5WbH2MGH+pY9zXork0Oh/eT5bl25k21Vg5MS5EjU+rUycjl/Yx7QXEsuohhya
-	 i3Md/yLT80zWA==
-From: SeongJae Park <sj@kernel.org>
-To: Hyeongtak Ji <hyeongtak.ji@gmail.com>
-Cc: SeongJae Park <sj@kernel.org>,
-	Honggyu Kim <honggyu.kim@sk.com>,
-	akpm@linux-foundation.org,
-	apopple@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	dave.jiang@intel.com,
-	hyeongtak.ji@sk.com,
-	kernel_team@skhynix.com,
-	linmiaohe@huawei.com,
-	linux-kernel@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	mathieu.desnoyers@efficios.com,
-	mhiramat@kernel.org,
-	rakie.kim@sk.com,
-	rostedt@goodmis.org,
-	surenb@google.com,
-	yangx.jy@fujitsu.com,
-	ying.huang@intel.com,
-	ziy@nvidia.com,
-	42.hyeyoo@gmail.com,
-	art.jeongseob@gmail.com
-Subject: Re: [RFC PATCH v3 5/7] mm/damon/paddr: introduce DAMOS_MIGRATE_COLD action for demotion
-Date: Fri,  5 Apr 2024 12:24:57 -0700
-Message-Id: <20240405192457.67068-1-sj@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240405075557.464190-1-hyeongtak.ji@gmail.com>
-References: 
-Precedence: bulk
-X-Mailing-List: linux-kernel@vger.kernel.org
-List-Id: <linux-kernel.vger.kernel.org>
-List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
-List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-
-On Fri,  5 Apr 2024 16:55:57 +0900 Hyeongtak Ji <hyeongtak.ji@gmail.com> wrote:
-
-> On Fri,  5 Apr 2024 15:08:54 +0900 Honggyu Kim <honggyu.kim@sk.com> wrote:
-> 
-> ...snip...
-> 
-> > +static unsigned long damon_pa_migrate_pages(struct list_head *folio_list,
-> > +					    enum migration_mode mm,
-> > +					    int target_nid)
-> > +{
-> > +	int nid;
-> > +	unsigned int nr_migrated = 0;
-> > +	LIST_HEAD(node_folio_list);
-> > +	unsigned int noreclaim_flag;
-> > +
-> > +	if (list_empty(folio_list))
-> > +		return nr_migrated;
-> 
-> How about checking if `target_nid` is `NUMA_NO_NODE` or not earlier,
-> 
-> > +
-> > +	noreclaim_flag = memalloc_noreclaim_save();
-> > +
-> > +	nid = folio_nid(lru_to_folio(folio_list));
-> > +	do {
-> > +		struct folio *folio = lru_to_folio(folio_list);
-> > +
-> > +		if (nid == folio_nid(folio)) {
-> > +			folio_clear_active(folio);
-> > +			list_move(&folio->lru, &node_folio_list);
-> > +			continue;
-> > +		}
-> > +
-> > +		nr_migrated += damon_pa_migrate_folio_list(&node_folio_list,
-> > +							   NODE_DATA(nid), mm,
-> > +							   target_nid);
-> > +		nid = folio_nid(lru_to_folio(folio_list));
-> > +	} while (!list_empty(folio_list));
-> > +
-> > +	nr_migrated += damon_pa_migrate_folio_list(&node_folio_list,
-> > +						   NODE_DATA(nid), mm,
-> > +						   target_nid);
-> > +
-> > +	memalloc_noreclaim_restore(noreclaim_flag);
-> > +
-> > +	return nr_migrated;
-> > +}
-> > +
-> 
-> ...snip...
-> 
-> > +static unsigned int migrate_folio_list(struct list_head *migrate_folios,
-> > +				       struct pglist_data *pgdat,
-> > +				       int target_nid)
-> > +{
-> > +	unsigned int nr_succeeded;
-> > +	nodemask_t allowed_mask = NODE_MASK_NONE;
-> > +
-> > +	struct migration_target_control mtc = {
-> > +		/*
-> > +		 * Allocate from 'node', or fail quickly and quietly.
-> > +		 * When this happens, 'page' will likely just be discarded
-> > +		 * instead of migrated.
-> > +		 */
-> > +		.gfp_mask = (GFP_HIGHUSER_MOVABLE & ~__GFP_RECLAIM) | __GFP_NOWARN |
-> > +			__GFP_NOMEMALLOC | GFP_NOWAIT,
-> > +		.nid = target_nid,
-> > +		.nmask = &allowed_mask
-> > +	};
-> > +
-> > +	if (pgdat->node_id == target_nid || target_nid == NUMA_NO_NODE)
-> > +		return 0;
-> 
-> instead of here.
-
-Agree.  As I replied on the previous reply, I think this check can be done from
-the caller (or the caller of the caller) of this function.
-
-> 
-> > +
-> > +	if (list_empty(migrate_folios))
-> > +		return 0;
-
-Same for this.
-
-> > +
-> > +	/* Migration ignores all cpuset and mempolicy settings */
-> > +	migrate_pages(migrate_folios, alloc_migrate_folio, NULL,
-> > +		      (unsigned long)&mtc, MIGRATE_ASYNC, MR_DAMON,
-> > +		      &nr_succeeded);
-> > +
-> > +	return nr_succeeded;
-> > +}
-> > +
-> 
-> ...snip...
-> 
-> Kind regards,
-> Hyeongtak
-> 
 
 Thanks,
 SJ
@@ -5753,4 +5402,355 @@ Thanks,
 SJ
 
 [...]
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com [209.85.215.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8AC751428F8;
+	Fri,  5 Apr 2024 07:56:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.174
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1712303774; cv=none; b=eBSV1Pt+hyW3QwpQedV48R2ngdcru2tiB1r71+CnnZMGCfclzLfKtVYDolVr947ODWByCQwppSTnUDBxhMZdMDPHiOW8KBP5Q76wnt22RRXtOAAXp0UbMpUYf/6TL/vllhxCz8xNz5xAx6K3Ddas/EbEu0AAXzWRj3H17Vzpbyc=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1712303774; c=relaxed/simple;
+	bh=5FR0ML8gIms8SXMu9qd0IXl0ZXkR1/9EGEn2Gx9HkT0=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=Huh/gpxOcrb9V0oFPylrOm4ou9oqSEj8KUF0w1Odn8bQPvviIq9rZSRne0wm8mnDAN624b736twIKP3D5YsdMF3IS6Tc9+HN+qyB52wG1bPpJ7Qtm2G5C2cC7B4F+PYJZ+j4qszhBwdi5jxsspSNjqlNCiJhB1sufpiHKbebN9w=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GoiavdWd; arc=none smtp.client-ip=209.85.215.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GoiavdWd"
+Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-5ce07cf1e5dso1420910a12.2;
+        Fri, 05 Apr 2024 00:56:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1712303772; x=1712908572; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hzVlWt4l7qxR/k/EhWDwFrSslFncuI6KSbSzKFf8xEw=;
+        b=GoiavdWdYnmZFK1pWIURcuvw3fbxXZUuj+HqYnjDckH8vVZPSYSzXX8KxPD7kO0Emv
+         L8kudC2ynot/y9wvJ5AaJAomB3XTJlOibmVqDi/vvKzxnipzbS9SqFDxS1qKY2vhsC/U
+         3pYsJp9WPL0mRp3j2WBJ964LU25Hd/nSaGyhljf0mNuitIk0D6uHyw3rmnzXxE08eAxq
+         gGsLaSpgKILgcj/gfADWb9A10mPWHoUdQPYxUNtObjiqeiKy1XX6d288t5fuU6/0NGoM
+         oYC3McmdOL1xm7j0Ty5vogsUn3tHcHr+qFrGlQqvbFS0moKe3uZ6A7ChzHWgYR1ztBMe
+         AMbQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1712303772; x=1712908572;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=hzVlWt4l7qxR/k/EhWDwFrSslFncuI6KSbSzKFf8xEw=;
+        b=M8QKcnOWgUHDgxKzS4joQHVlJQt8MLj5J7fBuvsaMMRzxOke81N7xmMHT66JN+ES42
+         WDU+DY2oz1GSAOOdlT6n3JxxOSd+744787lKwkqNhVRY5DHYioo8AouDQbgSmvit/6nu
+         6jP/0SXU7ZQlz754+kcqv20nSCEGDG5eoykbjQMatklG8Wlku7/Nn5yh2XF3jzMEDAZa
+         iYm/ME/o/9Hs6WOLXCrcUhNfxGSRQfBaAi0YZC7fPmfjQfdp7n5hgH7Yi/fn8PV0vGNm
+         hP5qKey54mp2WzZNCu2jR2melZe+tWDyeEMOI9gybBqIy/rS8pQQVIP9ouN7VYjWM2SX
+         kzcA==
+X-Forwarded-Encrypted: i=1; AJvYcCW9YH++kKv6TnDhtq8GUOvu2WSmCYY8oxDNTnjNDENbfxxmKEaxVKCfKSQa4Y/fBqKL1eNRP3VjhWK5DgkdmY7AkhhdbMdB2eV78e7XYyVCICRHTsylxjDybCjR/wv72/2MgeoyDLVo/eEIoIALW6vw
+X-Gm-Message-State: AOJu0YxESyqS9O/BQjSZLODbdT6CA6TdPVnKelcOI0pKD2WcBTLeWbay
+	joZLdhjm08+n9+GsQmKInvv2Or4tMiAtuUonKh5ZVs2DR28QQQsP
+X-Google-Smtp-Source: AGHT+IFRQC5Hl1XNJ8UHTusIXnKpuWVMqInH6NDdemHxy91rJUVQyZ1BvHxguN/C539fHznDlLcS0A==
+X-Received: by 2002:a17:90a:e00f:b0:2a2:5876:5a74 with SMTP id u15-20020a17090ae00f00b002a258765a74mr666360pjy.25.1712303771654;
+        Fri, 05 Apr 2024 00:56:11 -0700 (PDT)
+Received: from hyeongtakPC.. ([147.46.174.104])
+        by smtp.googlemail.com with ESMTPSA id ce17-20020a17090aff1100b002a2d4bf345bsm2539161pjb.55.2024.04.05.00.56.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 05 Apr 2024 00:56:10 -0700 (PDT)
+From: Hyeongtak Ji <hyeongtak.ji@gmail.com>
+To: Honggyu Kim <honggyu.kim@sk.com>
+Cc: akpm@linux-foundation.org,
+	apopple@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	dave.jiang@intel.com,
+	hyeongtak.ji@sk.com,
+	kernel_team@skhynix.com,
+	linmiaohe@huawei.com,
+	linux-kernel@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	mathieu.desnoyers@efficios.com,
+	mhiramat@kernel.org,
+	rakie.kim@sk.com,
+	rostedt@goodmis.org,
+	surenb@google.com,
+	yangx.jy@fujitsu.com,
+	ying.huang@intel.com,
+	ziy@nvidia.com,
+	42.hyeyoo@gmail.com,
+	art.jeongseob@gmail.com
+Subject: Re: [RFC PATCH v3 5/7] mm/damon/paddr: introduce DAMOS_MIGRATE_COLD action for demotion
+Date: Fri,  5 Apr 2024 16:55:57 +0900
+Message-Id: <20240405075557.464190-1-hyeongtak.ji@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240405060858.2818-6-honggyu.kim@sk.com>
+References: 
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+On Fri,  5 Apr 2024 15:08:54 +0900 Honggyu Kim <honggyu.kim@sk.com> wrote:
+
+...snip...
+
+> +static unsigned long damon_pa_migrate_pages(struct list_head *folio_list,
+> +					    enum migration_mode mm,
+> +					    int target_nid)
+> +{
+> +	int nid;
+> +	unsigned int nr_migrated = 0;
+> +	LIST_HEAD(node_folio_list);
+> +	unsigned int noreclaim_flag;
+> +
+> +	if (list_empty(folio_list))
+> +		return nr_migrated;
+
+How about checking if `target_nid` is `NUMA_NO_NODE` or not earlier,
+
+> +
+> +	noreclaim_flag = memalloc_noreclaim_save();
+> +
+> +	nid = folio_nid(lru_to_folio(folio_list));
+> +	do {
+> +		struct folio *folio = lru_to_folio(folio_list);
+> +
+> +		if (nid == folio_nid(folio)) {
+> +			folio_clear_active(folio);
+> +			list_move(&folio->lru, &node_folio_list);
+> +			continue;
+> +		}
+> +
+> +		nr_migrated += damon_pa_migrate_folio_list(&node_folio_list,
+> +							   NODE_DATA(nid), mm,
+> +							   target_nid);
+> +		nid = folio_nid(lru_to_folio(folio_list));
+> +	} while (!list_empty(folio_list));
+> +
+> +	nr_migrated += damon_pa_migrate_folio_list(&node_folio_list,
+> +						   NODE_DATA(nid), mm,
+> +						   target_nid);
+> +
+> +	memalloc_noreclaim_restore(noreclaim_flag);
+> +
+> +	return nr_migrated;
+> +}
+> +
+
+...snip...
+
+> +static unsigned int migrate_folio_list(struct list_head *migrate_folios,
+> +				       struct pglist_data *pgdat,
+> +				       int target_nid)
+> +{
+> +	unsigned int nr_succeeded;
+> +	nodemask_t allowed_mask = NODE_MASK_NONE;
+> +
+> +	struct migration_target_control mtc = {
+> +		/*
+> +		 * Allocate from 'node', or fail quickly and quietly.
+> +		 * When this happens, 'page' will likely just be discarded
+> +		 * instead of migrated.
+> +		 */
+> +		.gfp_mask = (GFP_HIGHUSER_MOVABLE & ~__GFP_RECLAIM) | __GFP_NOWARN |
+> +			__GFP_NOMEMALLOC | GFP_NOWAIT,
+> +		.nid = target_nid,
+> +		.nmask = &allowed_mask
+> +	};
+> +
+> +	if (pgdat->node_id == target_nid || target_nid == NUMA_NO_NODE)
+> +		return 0;
+
+instead of here.
+
+> +
+> +	if (list_empty(migrate_folios))
+> +		return 0;
+> +
+> +	/* Migration ignores all cpuset and mempolicy settings */
+> +	migrate_pages(migrate_folios, alloc_migrate_folio, NULL,
+> +		      (unsigned long)&mtc, MIGRATE_ASYNC, MR_DAMON,
+> +		      &nr_succeeded);
+> +
+> +	return nr_succeeded;
+> +}
+> +
+
+...snip...
+
+Kind regards,
+Hyeongtak
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A65E8172BC6;
+	Fri,  5 Apr 2024 19:25:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1712345100; cv=none; b=YlWP3R1iCnTNe5ubTVJbWgvcr6jOilNDdYpaIpWGUr1A6euQgl7B87pr1wQTWubFgdogzrZN0OLEH8p3hhh3zkJAvm/96jKgqu0IJ3E/fPebeedV5dZmOraHfEXhBOR1orNjCh5xOoRwyuJdL47fcpZxy5lQXF1/bf7uWqDTULY=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1712345100; c=relaxed/simple;
+	bh=FK4h/8Qb4PhaAp88iGaA8h7WqLJqCcrh+xeBVhK+WQs=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=t5lH1wkleTLSSiaJNhMf3YTlQNGib9/uAjUJynzpLEHbY5gCD4vgBRt0u3WB1fdLcEUDmQlSfdsIe9i2XB/SnS6xxc9iTUNyFaMZyA0xh6sNShePugRh97MQ5uMz/wx4UOvDJPpi2g1wMTNV2M4+dDpttviLFj17vOYXaxVWLWY=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JWxVF0iU; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JWxVF0iU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAFD7C433F1;
+	Fri,  5 Apr 2024 19:24:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1712345100;
+	bh=FK4h/8Qb4PhaAp88iGaA8h7WqLJqCcrh+xeBVhK+WQs=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=JWxVF0iU2MJc3v/1OhKOge0FpPHa2dL63n59rDezFWDFeGtaDh54MK657/FdoTlbC
+	 9knaxWY/DxXueBIocShzxs3X1qWupXPFogn0MZWVqrfhjffwavFJcJh4smCslyA80r
+	 rFbJOuQl+Q2MCyiEDVU3ybK2CeAbbj/Dxq58AN87pWH9cjxOI8sg9GgRfPYfmzUK00
+	 hCWrqbeFP78f5Yxa2JgruhOCcif4oTpwnEO01GlTZf0rtrJfdYelVLBEMfGFQcAgMH
+	 x3Tff5WbH2MGH+pY9zXork0Oh/eT5bl25k21Vg5MS5EjU+rUycjl/Yx7QXEsuohhya
+	 i3Md/yLT80zWA==
+From: SeongJae Park <sj@kernel.org>
+To: Hyeongtak Ji <hyeongtak.ji@gmail.com>
+Cc: SeongJae Park <sj@kernel.org>,
+	Honggyu Kim <honggyu.kim@sk.com>,
+	akpm@linux-foundation.org,
+	apopple@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	dave.jiang@intel.com,
+	hyeongtak.ji@sk.com,
+	kernel_team@skhynix.com,
+	linmiaohe@huawei.com,
+	linux-kernel@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	mathieu.desnoyers@efficios.com,
+	mhiramat@kernel.org,
+	rakie.kim@sk.com,
+	rostedt@goodmis.org,
+	surenb@google.com,
+	yangx.jy@fujitsu.com,
+	ying.huang@intel.com,
+	ziy@nvidia.com,
+	42.hyeyoo@gmail.com,
+	art.jeongseob@gmail.com
+Subject: Re: [RFC PATCH v3 5/7] mm/damon/paddr: introduce DAMOS_MIGRATE_COLD action for demotion
+Date: Fri,  5 Apr 2024 12:24:57 -0700
+Message-Id: <20240405192457.67068-1-sj@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240405075557.464190-1-hyeongtak.ji@gmail.com>
+References: 
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+On Fri,  5 Apr 2024 16:55:57 +0900 Hyeongtak Ji <hyeongtak.ji@gmail.com> wrote:
+
+> On Fri,  5 Apr 2024 15:08:54 +0900 Honggyu Kim <honggyu.kim@sk.com> wrote:
+> 
+> ...snip...
+> 
+> > +static unsigned long damon_pa_migrate_pages(struct list_head *folio_list,
+> > +					    enum migration_mode mm,
+> > +					    int target_nid)
+> > +{
+> > +	int nid;
+> > +	unsigned int nr_migrated = 0;
+> > +	LIST_HEAD(node_folio_list);
+> > +	unsigned int noreclaim_flag;
+> > +
+> > +	if (list_empty(folio_list))
+> > +		return nr_migrated;
+> 
+> How about checking if `target_nid` is `NUMA_NO_NODE` or not earlier,
+> 
+> > +
+> > +	noreclaim_flag = memalloc_noreclaim_save();
+> > +
+> > +	nid = folio_nid(lru_to_folio(folio_list));
+> > +	do {
+> > +		struct folio *folio = lru_to_folio(folio_list);
+> > +
+> > +		if (nid == folio_nid(folio)) {
+> > +			folio_clear_active(folio);
+> > +			list_move(&folio->lru, &node_folio_list);
+> > +			continue;
+> > +		}
+> > +
+> > +		nr_migrated += damon_pa_migrate_folio_list(&node_folio_list,
+> > +							   NODE_DATA(nid), mm,
+> > +							   target_nid);
+> > +		nid = folio_nid(lru_to_folio(folio_list));
+> > +	} while (!list_empty(folio_list));
+> > +
+> > +	nr_migrated += damon_pa_migrate_folio_list(&node_folio_list,
+> > +						   NODE_DATA(nid), mm,
+> > +						   target_nid);
+> > +
+> > +	memalloc_noreclaim_restore(noreclaim_flag);
+> > +
+> > +	return nr_migrated;
+> > +}
+> > +
+> 
+> ...snip...
+> 
+> > +static unsigned int migrate_folio_list(struct list_head *migrate_folios,
+> > +				       struct pglist_data *pgdat,
+> > +				       int target_nid)
+> > +{
+> > +	unsigned int nr_succeeded;
+> > +	nodemask_t allowed_mask = NODE_MASK_NONE;
+> > +
+> > +	struct migration_target_control mtc = {
+> > +		/*
+> > +		 * Allocate from 'node', or fail quickly and quietly.
+> > +		 * When this happens, 'page' will likely just be discarded
+> > +		 * instead of migrated.
+> > +		 */
+> > +		.gfp_mask = (GFP_HIGHUSER_MOVABLE & ~__GFP_RECLAIM) | __GFP_NOWARN |
+> > +			__GFP_NOMEMALLOC | GFP_NOWAIT,
+> > +		.nid = target_nid,
+> > +		.nmask = &allowed_mask
+> > +	};
+> > +
+> > +	if (pgdat->node_id == target_nid || target_nid == NUMA_NO_NODE)
+> > +		return 0;
+> 
+> instead of here.
+
+Agree.  As I replied on the previous reply, I think this check can be done from
+the caller (or the caller of the caller) of this function.
+
+> 
+> > +
+> > +	if (list_empty(migrate_folios))
+> > +		return 0;
+
+Same for this.
+
+> > +
+> > +	/* Migration ignores all cpuset and mempolicy settings */
+> > +	migrate_pages(migrate_folios, alloc_migrate_folio, NULL,
+> > +		      (unsigned long)&mtc, MIGRATE_ASYNC, MR_DAMON,
+> > +		      &nr_succeeded);
+> > +
+> > +	return nr_succeeded;
+> > +}
+> > +
+> 
+> ...snip...
+> 
+> Kind regards,
+> Hyeongtak
+> 
+
+Thanks,
+SJ
 

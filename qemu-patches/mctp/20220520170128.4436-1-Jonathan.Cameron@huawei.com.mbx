@@ -3,1221 +3,29 @@ Return-Path: <linux-cxl-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9F68C433FE
-	for <linux-cxl@archiver.kernel.org>; Wed, 25 May 2022 11:14:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CB00C433EF
+	for <linux-cxl@archiver.kernel.org>; Fri, 20 May 2022 17:01:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230270AbiEYLOn (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 25 May 2022 07:14:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57112 "EHLO
+        id S1351960AbiETRBb (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 20 May 2022 13:01:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51608 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242617AbiEYLOe (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 25 May 2022 07:14:34 -0400
+        with ESMTP id S1343837AbiETRBa (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 20 May 2022 13:01:30 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2B1C8CCC5
-        for <linux-cxl@vger.kernel.org>; Wed, 25 May 2022 04:14:29 -0700 (PDT)
-Received: from fraeml715-chm.china.huawei.com (unknown [172.18.147.200])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4L7Sz1359jz681D8;
-        Wed, 25 May 2022 19:10:21 +0800 (CST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0B285B3F4
+        for <linux-cxl@vger.kernel.org>; Fri, 20 May 2022 10:01:28 -0700 (PDT)
+Received: from fraeml740-chm.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4L4Xvz0fhKz687qT;
+        Sat, 21 May 2022 00:57:35 +0800 (CST)
 Received: from lhreml710-chm.china.huawei.com (10.201.108.61) by
- fraeml715-chm.china.huawei.com (10.206.15.34) with Microsoft SMTP Server
+ fraeml740-chm.china.huawei.com (10.206.15.221) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 25 May 2022 13:14:26 +0200
-Received: from localhost (10.202.226.42) by lhreml710-chm.china.huawei.com
- (10.201.108.61) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Wed, 25 May
- 2022 12:14:25 +0100
-Date: Wed, 25 May 2022 12:14:22 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Corey Minyard <minyard@acm.org>
-CC: Ben Widawsky <bwidawsk@kernel.org>, <qemu-devel@nongnu.org>,
-        Klaus Jensen <its@irrelevant.dk>, <linux-cxl@vger.kernel.org>,
-        Damien Hedde <damien.hedde@greensocs.com>,
-        Peter Delevoryas <pdel@fb.com>,
-        =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
-        Alex =?ISO-8859-1?Q?B?= =?ISO-8859-1?Q?enn=E9e?= 
-        <alex.bennee@linaro.org>, <linuxarm@huawei.com>
-Subject: Re: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP
- to enable MCTP testing
-Message-ID: <20220525121422.00003a84@Huawei.com>
-In-Reply-To: <20220524181310.GI3767252@minyard.net>
-References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
- <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
- <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
- <20220524175043.00002ae8@Huawei.com>
- <20220524181310.GI3767252@minyard.net>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; i686-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.226.42]
-X-ClientProxiedBy: lhreml726-chm.china.huawei.com (10.201.108.77) To
- lhreml710-chm.china.huawei.com (10.201.108.61)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 15844
-Lines: 332
-
-On Tue, 24 May 2022 13:13:10 -0500
-Corey Minyard <minyard@acm.org> wrote:
-
-> On Tue, May 24, 2022 at 05:50:43PM +0100, Jonathan Cameron wrote:
-> > On Tue, 24 May 2022 09:36:44 -0700
-> > Ben Widawsky <bwidawsk@kernel.org> wrote:
-> >   
-> > > On 22-05-20 18:01:28, Jonathan Cameron wrote:  
-> > > > As the only I2C emulation in QEMU that supports being both
-> > > > a master and a slave, suitable for MCTP over i2c is aspeed-i2c
-> > > > add this controller to the arm virt model and hook up our new
-> > > > i2c_mctp_cxl_fmapi device.
-> > > > 
-> > > > The current Linux driver for aspeed-i2c has a hard requirement on
-> > > > a reset controller.  Throw down the simplest reset controller
-> > > > I could find so as to avoid need to make any chance to the kernel
-> > > > code.    
-> > > 
-> > > s/chance/change  
-> > oops :)  
-> > >   
-> > > > 
-> > > > Patch also builds appropriate device tree.  Unfortunately for CXL
-> > > > we need to use ACPI (no DT bindings yet defined). Enabling this will
-> > > > either require appropriate support for MCTP on an i2c master that
-> > > > has ACPI bindings, or modifications of the kernel driver to support
-> > > > ACPI with aspeed-i2c (which might be a little controversial ;)    
-> > > 
-> > > I'm naive to what DT defines, but I assume what's there already is insufficient
-> > > to make the bindings for CXL. I say this because I believe it wouldn't be too
-> > > bad at all to make a cxl_dt.ko, and it's certainly less artificial than
-> > > providing ACPI support for things which don't naturally have ACPI support.  
-> > 
-> > It wouldn't be that hard to work out a CXL dt binding, but it's not
-> > of sufficient interest to me that I'd want to do it (I'll review if someone
-> > else sends patches). Platforms I'm interested in CXL with are all strictly
-> > ACPI only.
-> > 
-> > The trick here I think, is going to be adding ACPI support for a suitable I2C controller
-> > which supports the requirement for supporting master and and I2C EP needed
-> > for MCTP. Either I find one that already has ACPI bindings and add enough
-> > emulation for this functionality, or work around the lack of ACPI bindings for the
-> > aspeed-i2c controller.
-> > 
-> > Based on a really quick check of I2C masters for which I have docs and that
-> > definitely have ACPI bindings, it's not a particularly common feature set.  
-> 
-> Ben already got my comments.
-> 
-> It's not common, but it's something you are using, so it obviously
-> exists.  What hardware do you have?  The most natural thing might be to
-> add your controller.
-> 
-
-Right now, no hardware. My interest here isn't really in the i2c mctp thing as
-opposed to running other stuff over MCTP - it's just a convenient path
-to emulating what a Fabric Manager (probably a BMC) would be doing
-in a CXL system. I'm just making us of the existing infrastructure
-rather than rolling a different interface (I could do MCTP over PCI VDM
-for example and may well do that in future).
-
-Actual system might look something like:
-- note that I don't need to model this to be able to
-  exercise the OS support etc... (see later)
-USP - normal upstream port
-DSP - normal downstream port
-vPPB -  is sort of like a virtual downstream port. These
-    are dynamically bound to either a single logical devices (SLD)
-    which has a whole physical CXL DSP to itself, or to one logical
-    device in an Multilogical device (MLD)
-
-What a host sees is either vPPB that has link down (nothing there)
-or a vPPB that has a device below it which it can discover
-via normal enumeration.
-
-Example here has
-
-Host 0 with two root ports
-Each RP is connected to an upstream port on the switch
-with a small virtual hierarchy (VH0 and VH1) of two vPPB each
-As currently configured (and note it dynamically configuring this
-which is of interest) VH0 has one vPPB bound to a 
-
- _________________    ________________
-|  Host 0         |  |   Host 1       |    ---------
-|                 |  |                |   | Fabric  |
-| CXLRP0  CXLRP1  |  | CXLRP0  CXLRP1 |   | Manager |
-|_________________|  |________________|   |_________|
-    |        |            |      |              |
-    | CXL    | CXL        |CXL   |CXL           | I2C 
- ___|________|____________|______|______________|______
-|                                                      | 
-|  USP      USP          USP     USP            FM-API |
-|   |        |            |       |                    |
-|   | VH0    |VH1         |VH2    |VH3                 |
-|  / \      / \          / \     / \                   |
-| /   \        \        /   \       \                  |
-|/     \        \      /     \       \                 |
-|vPPB  vPPB    vPPB  vPPB    vPPB    vPPB              |
-| |    Unbound   |   Unbound   |      |                |
-| bound           \            LD1   LD2               |
-| |                \Bound LD0  |     /                 | 
-| |                 \          |    /                  |
-| DSP                ----DSP-MLD ---                   |
-|______________________________________________________|
-   |                           |
-  SLD Type 3                   MLD memory device
-  memory device
-
-However, to be able to poke all the OS interfaces and
-the fabric manager interfaces I just need the ability to
-model something more like.
- _______________________________________________________
-|  Host 0                                               |
-|                                           FM Software |
-| CXLRP0  CXLRP1                            Manager     |
-|_______________________________________________________|
-    |        |                                  |
-    | CXL    | CXL        Not connected         | I2C 
- ___|________|__________________________________|______
-|                                                      | 
-|  USP      USP          USP     USP            FM-API |
-|   |        |            |       |                    |
-|   | VH0    |VH1         |VH2    |VH3                 |
-|  / \      / \          / \     / \                   |
-| /   \        \        /   \       \                  |
-|/     \        \      /     \       \                 |
-|vPPB  vPPB    vPPB  vPPB    vPPB    vPPB              |
-| |    Unbound   |   Unbound   |      |                |
-| bound           \            LD1   LD2               |
-| |                \Bound LD0  |     /                 | 
-| |                 \          |    /                  |
-| DSP               -----DSP-MLD ---                   |
-|______________________________________________________|
-   |                           |
-  SLD Type 3                   MLD memory device
-  memory device
-
-The reason for jumping through the hoops of mctp over i2c
-is that the software support is there and standard today
-+ this lets me use the existing DMTF MCTP bindings for CXL
-FM-API rather than wrapping them up in something custom.
-It's also nice and lightweight from the emulation point of view.
-
-Clearly lots to do here yet though including...
-1. Hooking the FM-API agent up to the parts of the switch
-   (probably adding links to the USPs is sufficient)
-2. Adding infrastructure for vPPBs.
-3. Wire up everything to be able to trigger appropriate
-  hotplug events to the host for CXL devices being bound
-  to the vPPBs.
-
-I'm not that bothered by the lack of suitable i2c master
-with ACPI bindings in the short term, it just makes
-testing a bit fiddlier as kernel will need patching.
-It'll be a trivial patch, particularly if I can get moving
-most of the aspeed-i2c kernel firmware handling over to the
-generic property.h infrastructure (and then use the wonder
-that is PRP0001, plus bodge the clk and reset). 
-
-Longer term I might just switch to the PCI VDM route but
-that's a bigger job in both the kernel and QEMU.
-
-Right now I'm loving the short cut other people's work gave me ;)
-
-Thanks,
-
-Jonathan
- 
-
-> -corey
-> 
-> > 
-> > Jonathan
-> > 
-> > 
-> >   
-> > >   
-> > > > 
-> > > > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > > > ---
-> > > >  hw/arm/Kconfig        |  1 +
-> > > >  hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
-> > > >  include/hw/arm/virt.h |  2 ++
-> > > >  3 files changed, 80 insertions(+)
-> > > > 
-> > > > diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
-> > > > index 219262a8da..4a733298cd 100644
-> > > > --- a/hw/arm/Kconfig
-> > > > +++ b/hw/arm/Kconfig
-> > > > @@ -30,6 +30,7 @@ config ARM_VIRT
-> > > >      select ACPI_VIOT
-> > > >      select VIRTIO_MEM_SUPPORTED
-> > > >      select ACPI_CXL
-> > > > +    select I2C_MCTP_CXL_FMAPI
-> > > >  
-> > > >  config CHEETAH
-> > > >      bool
-> > > > diff --git a/hw/arm/virt.c b/hw/arm/virt.c
-> > > > index d818131b57..ea04279515 100644
-> > > > --- a/hw/arm/virt.c
-> > > > +++ b/hw/arm/virt.c
-> > > > @@ -80,6 +80,9 @@
-> > > >  #include "hw/char/pl011.h"
-> > > >  #include "hw/cxl/cxl.h"
-> > > >  #include "qemu/guest-random.h"
-> > > > +#include "hw/i2c/i2c.h"
-> > > > +#include "hw/i2c/aspeed_i2c.h"
-> > > > +#include "hw/misc/i2c_mctp_cxl_fmapi.h"
-> > > >  
-> > > >  #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
-> > > >      static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
-> > > > @@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
-> > > >      [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
-> > > >      [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
-> > > >      [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
-> > > > +    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
-> > > > +    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
-> > > >      /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
-> > > >      [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
-> > > >      [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
-> > > > @@ -192,6 +197,7 @@ static const int a15irqmap[] = {
-> > > >      [VIRT_GPIO] = 7,
-> > > >      [VIRT_SECURE_UART] = 8,
-> > > >      [VIRT_ACPI_GED] = 9,
-> > > > +    [VIRT_I2C] = 10,
-> > > >      [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
-> > > >      [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
-> > > >      [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
-> > > > @@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
-> > > >      }
-> > > >  }
-> > > >  
-> > > > +static void create_mctp_test(MachineState *ms)
-> > > > +{
-> > > > +    VirtMachineState *vms = VIRT_MACHINE(ms);
-> > > > +    MemoryRegion *sysmem = get_system_memory();
-> > > > +    AspeedI2CState *aspeedi2c;
-> > > > +    struct DeviceState  *dev;
-> > > > +    char *nodename_i2c_master;
-> > > > +    char *nodename_i2c_sub;
-> > > > +    char *nodename_reset;
-> > > > +    uint32_t clk_phandle, reset_phandle;
-> > > > +    MemoryRegion *sysmem2;
-> > > > +   
-> > > > +    dev = qdev_new("aspeed.i2c-ast2600");
-> > > > +    aspeedi2c = ASPEED_I2C(dev);
-> > > > +    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
-> > > > +    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
-> > > > +    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
-> > > > +    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
-> > > > +
-> > > > +    /* I2C bus DT */
-> > > > +    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-> > > > +    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
-> > > > +    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
-> > > > +    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
-> > > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
-> > > > +                                 2, vms->memmap[VIRT_RESET_FAKE].base,
-> > > > +                                 2, vms->memmap[VIRT_RESET_FAKE].size);
-> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
-> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
-> > > > +    sysmem2 =  g_new(MemoryRegion, 1);
-> > > > +    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
-> > > > +    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
-> > > > +    
-> > > > +    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-> > > > +    
-> > > > +    qemu_fdt_add_subnode(ms->fdt, "/mclk");
-> > > > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
-> > > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
-> > > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
-> > > > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
-> > > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
-> > > > +
-> > > > +    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
-> > > > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
-> > > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
-> > > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
-> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
-> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
-> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
-> > > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
-> > > > +    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
-> > > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
-> > > > +                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
-> > > > +    /* Offset to the first bus is 0x80, next one at 0x100 etc */
-> > > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
-> > > > +                                 2, vms->memmap[VIRT_I2C].base + 0x80,
-> > > > +                                 2, 0x80);
-> > > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
-> > > > +
-> > > > +    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
-> > > > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
-> > > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
-> > > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
-> > > > +
-> > > > +        
-> > > > +    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
-> > > > +    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
-> > > > +}
-> > > > +
-> > > >  static void machvirt_init(MachineState *machine)
-> > > >  {
-> > > >      VirtMachineState *vms = VIRT_MACHINE(machine);
-> > > > @@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
-> > > >          create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
-> > > >      }
-> > > >  
-> > > > +    create_mctp_test(machine);
-> > > > +
-> > > >       /* connect powerdown request */
-> > > >       vms->powerdown_notifier.notify = virt_powerdown_req;
-> > > >       qemu_register_powerdown_notifier(&vms->powerdown_notifier);
-> > > > diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
-> > > > index 67c08a62af..abbfac7c48 100644
-> > > > --- a/include/hw/arm/virt.h
-> > > > +++ b/include/hw/arm/virt.h
-> > > > @@ -71,6 +71,8 @@ enum {
-> > > >      VIRT_SMMU,
-> > > >      VIRT_UART,
-> > > >      VIRT_MMIO,
-> > > > +    VIRT_I2C,
-> > > > +    VIRT_RESET_FAKE,
-> > > >      VIRT_RTC,
-> > > >      VIRT_FW_CFG,
-> > > >      VIRT_PCIE,
-> > > > -- 
-> > > > 2.32.0
-> > > >     
-> >   
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0027C433FE
-	for <linux-cxl@archiver.kernel.org>; Tue, 24 May 2022 18:13:20 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235348AbiEXSNS (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 24 May 2022 14:13:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32858 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238051AbiEXSNQ (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 24 May 2022 14:13:16 -0400
-Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F42346A03B
-        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 11:13:14 -0700 (PDT)
-Received: by mail-qk1-x735.google.com with SMTP id c1so15629468qkf.13
-        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 11:13:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=sender:date:from:to:cc:subject:message-id:reply-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=Tt+yoXSfaSEDtJwWBq0ccW/zcqSPyDxpK46AB1kjft4=;
-        b=mBdseHK+I3PpHzSoeFpZFjuq/Ij6DVUUp/4glqzJ70W6kQl/Kx2o5bnl5v4VSRUP16
-         psYjwyON6AgZKd1O3Q1MCPqh9nxQ0YYPhfBxvQSzJHSziKfNbuUJgNEccvRORnSBTC0e
-         eDakbmIsFJ95NVSOaNy2xdE8jkDY+QQD2ZyhlI2utzxi9fiDDk5SJVkeNTpyCMCle5l2
-         FuenAlmPTNDhsWDbSU/6Unm/3FRnNSeVFkx4mQNLD7fxEllVy5zQ0dfVpnnkjgQ/Zwqz
-         XTsAChUNh/hXs0s0ClUQwF90oJxZvmxXCSlxd23+KoohCex8H2nfbWIPX1im7VUbhPJw
-         NCQg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
-         :reply-to:references:mime-version:content-disposition:in-reply-to;
-        bh=Tt+yoXSfaSEDtJwWBq0ccW/zcqSPyDxpK46AB1kjft4=;
-        b=cNfj3dfukp042ZzkKJc4xWiVL7GCfx8W/5DHPFj+0JbATiW6BveVxZfVHX6hMZxBhG
-         FejQ80yYnBNNx9zv3W33wAI6ZAKgIQnTqJ/ywKRtnFHA2JiLFnpf4Ub9qAbiq1fHGCzC
-         NZFzwABuGf1J5XrlRiGS3+V9TC9Hw5kyc42TTv73cikRPVf5FMLnnMBQ2vA1jObzApw4
-         ct0C030cDM4YGiaZN/eAqtLRCAkaznXdZYSawLKyki+Kq8QMpTXOWub8RUQZNE1sv9ht
-         DXO5neVvA5GnWEVx+hfQM2ufoSXERtKLrJJ+Zz9GY/9dPMbZIe9QUBfAYqMnpjD1pKvI
-         LNsA==
-X-Gm-Message-State: AOAM531jSpfAtwRgZZt+a3C3bevh3TYH7n5US5qCtCGBZol1QThNaNbO
-        AP0Ce+E4m8licrj6OoGFigEq9qw3ag==
-X-Google-Smtp-Source: ABdhPJw/nHHHEb3vRdcCQ1R2PCPjpbu2YzDQqfnCby7n/oT0dXv4x0wQf6lXXOqMeVgVU7lz0OL7/g==
-X-Received: by 2002:a05:620a:248f:b0:6a3:ac24:931c with SMTP id i15-20020a05620a248f00b006a3ac24931cmr5200122qkn.122.1653415993841;
-        Tue, 24 May 2022 11:13:13 -0700 (PDT)
-Received: from serve.minyard.net ([47.184.144.75])
-        by smtp.gmail.com with ESMTPSA id a13-20020a37660d000000b0069fc13ce1e8sm6561400qkc.25.2022.05.24.11.13.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 May 2022 11:13:13 -0700 (PDT)
-Sender: Corey Minyard <tcminyard@gmail.com>
-Received: from minyard.net (unknown [IPv6:2001:470:b8f6:1b:15a9:1d6a:8b02:cb8d])
-        by serve.minyard.net (Postfix) with ESMTPSA id D20D91800BB;
-        Tue, 24 May 2022 18:13:11 +0000 (UTC)
-Date: Tue, 24 May 2022 13:13:10 -0500
-From: Corey Minyard <minyard@acm.org>
-To: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-Cc: Ben Widawsky <bwidawsk@kernel.org>, qemu-devel@nongnu.org,
-        Klaus Jensen <its@irrelevant.dk>, linux-cxl@vger.kernel.org,
-        Damien Hedde <damien.hedde@greensocs.com>,
-        Peter Delevoryas <pdel@fb.com>,
-        =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
-        Alex =?utf-8?Q?Benn=C3=A9e?= <alex.bennee@linaro.org>,
-        linuxarm@huawei.com
-Subject: Re: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP
- to enable MCTP testing
-Message-ID: <20220524181310.GI3767252@minyard.net>
-Reply-To: minyard@acm.org
-References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
- <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
- <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
- <20220524175043.00002ae8@Huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220524175043.00002ae8@Huawei.com>
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 10047
-Lines: 211
-
-On Tue, May 24, 2022 at 05:50:43PM +0100, Jonathan Cameron wrote:
-> On Tue, 24 May 2022 09:36:44 -0700
-> Ben Widawsky <bwidawsk@kernel.org> wrote:
-> 
-> > On 22-05-20 18:01:28, Jonathan Cameron wrote:
-> > > As the only I2C emulation in QEMU that supports being both
-> > > a master and a slave, suitable for MCTP over i2c is aspeed-i2c
-> > > add this controller to the arm virt model and hook up our new
-> > > i2c_mctp_cxl_fmapi device.
-> > > 
-> > > The current Linux driver for aspeed-i2c has a hard requirement on
-> > > a reset controller.  Throw down the simplest reset controller
-> > > I could find so as to avoid need to make any chance to the kernel
-> > > code.  
-> > 
-> > s/chance/change
-> oops :)
-> > 
-> > > 
-> > > Patch also builds appropriate device tree.  Unfortunately for CXL
-> > > we need to use ACPI (no DT bindings yet defined). Enabling this will
-> > > either require appropriate support for MCTP on an i2c master that
-> > > has ACPI bindings, or modifications of the kernel driver to support
-> > > ACPI with aspeed-i2c (which might be a little controversial ;)  
-> > 
-> > I'm naive to what DT defines, but I assume what's there already is insufficient
-> > to make the bindings for CXL. I say this because I believe it wouldn't be too
-> > bad at all to make a cxl_dt.ko, and it's certainly less artificial than
-> > providing ACPI support for things which don't naturally have ACPI support.
-> 
-> It wouldn't be that hard to work out a CXL dt binding, but it's not
-> of sufficient interest to me that I'd want to do it (I'll review if someone
-> else sends patches). Platforms I'm interested in CXL with are all strictly
-> ACPI only.
-> 
-> The trick here I think, is going to be adding ACPI support for a suitable I2C controller
-> which supports the requirement for supporting master and and I2C EP needed
-> for MCTP. Either I find one that already has ACPI bindings and add enough
-> emulation for this functionality, or work around the lack of ACPI bindings for the
-> aspeed-i2c controller.
-> 
-> Based on a really quick check of I2C masters for which I have docs and that
-> definitely have ACPI bindings, it's not a particularly common feature set.
-
-Ben already got my comments.
-
-It's not common, but it's something you are using, so it obviously
-exists.  What hardware do you have?  The most natural thing might be to
-add your controller.
-
--corey
-
-> 
-> Jonathan
-> 
-> 
-> 
-> > 
-> > > 
-> > > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > > ---
-> > >  hw/arm/Kconfig        |  1 +
-> > >  hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
-> > >  include/hw/arm/virt.h |  2 ++
-> > >  3 files changed, 80 insertions(+)
-> > > 
-> > > diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
-> > > index 219262a8da..4a733298cd 100644
-> > > --- a/hw/arm/Kconfig
-> > > +++ b/hw/arm/Kconfig
-> > > @@ -30,6 +30,7 @@ config ARM_VIRT
-> > >      select ACPI_VIOT
-> > >      select VIRTIO_MEM_SUPPORTED
-> > >      select ACPI_CXL
-> > > +    select I2C_MCTP_CXL_FMAPI
-> > >  
-> > >  config CHEETAH
-> > >      bool
-> > > diff --git a/hw/arm/virt.c b/hw/arm/virt.c
-> > > index d818131b57..ea04279515 100644
-> > > --- a/hw/arm/virt.c
-> > > +++ b/hw/arm/virt.c
-> > > @@ -80,6 +80,9 @@
-> > >  #include "hw/char/pl011.h"
-> > >  #include "hw/cxl/cxl.h"
-> > >  #include "qemu/guest-random.h"
-> > > +#include "hw/i2c/i2c.h"
-> > > +#include "hw/i2c/aspeed_i2c.h"
-> > > +#include "hw/misc/i2c_mctp_cxl_fmapi.h"
-> > >  
-> > >  #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
-> > >      static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
-> > > @@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
-> > >      [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
-> > >      [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
-> > >      [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
-> > > +    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
-> > > +    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
-> > >      /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
-> > >      [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
-> > >      [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
-> > > @@ -192,6 +197,7 @@ static const int a15irqmap[] = {
-> > >      [VIRT_GPIO] = 7,
-> > >      [VIRT_SECURE_UART] = 8,
-> > >      [VIRT_ACPI_GED] = 9,
-> > > +    [VIRT_I2C] = 10,
-> > >      [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
-> > >      [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
-> > >      [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
-> > > @@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
-> > >      }
-> > >  }
-> > >  
-> > > +static void create_mctp_test(MachineState *ms)
-> > > +{
-> > > +    VirtMachineState *vms = VIRT_MACHINE(ms);
-> > > +    MemoryRegion *sysmem = get_system_memory();
-> > > +    AspeedI2CState *aspeedi2c;
-> > > +    struct DeviceState  *dev;
-> > > +    char *nodename_i2c_master;
-> > > +    char *nodename_i2c_sub;
-> > > +    char *nodename_reset;
-> > > +    uint32_t clk_phandle, reset_phandle;
-> > > +    MemoryRegion *sysmem2;
-> > > +   
-> > > +    dev = qdev_new("aspeed.i2c-ast2600");
-> > > +    aspeedi2c = ASPEED_I2C(dev);
-> > > +    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
-> > > +    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
-> > > +    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
-> > > +    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
-> > > +
-> > > +    /* I2C bus DT */
-> > > +    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-> > > +    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
-> > > +    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
-> > > +    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
-> > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
-> > > +                                 2, vms->memmap[VIRT_RESET_FAKE].base,
-> > > +                                 2, vms->memmap[VIRT_RESET_FAKE].size);
-> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
-> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
-> > > +    sysmem2 =  g_new(MemoryRegion, 1);
-> > > +    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
-> > > +    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
-> > > +    
-> > > +    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-> > > +    
-> > > +    qemu_fdt_add_subnode(ms->fdt, "/mclk");
-> > > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
-> > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
-> > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
-> > > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
-> > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
-> > > +
-> > > +    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
-> > > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
-> > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
-> > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
-> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
-> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
-> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
-> > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
-> > > +    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
-> > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
-> > > +                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
-> > > +    /* Offset to the first bus is 0x80, next one at 0x100 etc */
-> > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
-> > > +                                 2, vms->memmap[VIRT_I2C].base + 0x80,
-> > > +                                 2, 0x80);
-> > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
-> > > +
-> > > +    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
-> > > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
-> > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
-> > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
-> > > +
-> > > +        
-> > > +    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
-> > > +    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
-> > > +}
-> > > +
-> > >  static void machvirt_init(MachineState *machine)
-> > >  {
-> > >      VirtMachineState *vms = VIRT_MACHINE(machine);
-> > > @@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
-> > >          create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
-> > >      }
-> > >  
-> > > +    create_mctp_test(machine);
-> > > +
-> > >       /* connect powerdown request */
-> > >       vms->powerdown_notifier.notify = virt_powerdown_req;
-> > >       qemu_register_powerdown_notifier(&vms->powerdown_notifier);
-> > > diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
-> > > index 67c08a62af..abbfac7c48 100644
-> > > --- a/include/hw/arm/virt.h
-> > > +++ b/include/hw/arm/virt.h
-> > > @@ -71,6 +71,8 @@ enum {
-> > >      VIRT_SMMU,
-> > >      VIRT_UART,
-> > >      VIRT_MMIO,
-> > > +    VIRT_I2C,
-> > > +    VIRT_RESET_FAKE,
-> > >      VIRT_RTC,
-> > >      VIRT_FW_CFG,
-> > >      VIRT_PCIE,
-> > > -- 
-> > > 2.32.0
-> > >   
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93FA5C433EF
-	for <linux-cxl@archiver.kernel.org>; Tue, 24 May 2022 16:50:51 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237401AbiEXQuv (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 24 May 2022 12:50:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57020 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236692AbiEXQuu (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 24 May 2022 12:50:50 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 077B066FB0
-        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 09:50:47 -0700 (PDT)
-Received: from fraeml707-chm.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4L70TZ1QCzz686Gm;
-        Wed, 25 May 2022 00:46:42 +0800 (CST)
-Received: from lhreml710-chm.china.huawei.com (10.201.108.61) by
- fraeml707-chm.china.huawei.com (10.206.15.35) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Tue, 24 May 2022 18:50:45 +0200
-Received: from localhost (10.202.226.42) by lhreml710-chm.china.huawei.com
- (10.201.108.61) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Tue, 24 May
- 2022 17:50:44 +0100
-Date: Tue, 24 May 2022 17:50:43 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Ben Widawsky <bwidawsk@kernel.org>
-CC: <qemu-devel@nongnu.org>, Klaus Jensen <its@irrelevant.dk>,
-        <linux-cxl@vger.kernel.org>, Corey Minyard <minyard@acm.org>,
-        Damien Hedde <damien.hedde@greensocs.com>,
-        Peter Delevoryas <pdel@fb.com>,
-        =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
-        Alex =?ISO-8859-1?Q?B?= =?ISO-8859-1?Q?enn=E9e?= 
-        <alex.bennee@linaro.org>, <linuxarm@huawei.com>
-Subject: Re: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP
- to enable MCTP testing
-Message-ID: <20220524175043.00002ae8@Huawei.com>
-In-Reply-To: <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
-References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
-        <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
-        <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; i686-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.226.42]
-X-ClientProxiedBy: lhreml740-chm.china.huawei.com (10.201.108.190) To
- lhreml710-chm.china.huawei.com (10.201.108.61)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 9379
-Lines: 201
-
-On Tue, 24 May 2022 09:36:44 -0700
-Ben Widawsky <bwidawsk@kernel.org> wrote:
-
-> On 22-05-20 18:01:28, Jonathan Cameron wrote:
-> > As the only I2C emulation in QEMU that supports being both
-> > a master and a slave, suitable for MCTP over i2c is aspeed-i2c
-> > add this controller to the arm virt model and hook up our new
-> > i2c_mctp_cxl_fmapi device.
-> > 
-> > The current Linux driver for aspeed-i2c has a hard requirement on
-> > a reset controller.  Throw down the simplest reset controller
-> > I could find so as to avoid need to make any chance to the kernel
-> > code.  
-> 
-> s/chance/change
-oops :)
-> 
-> > 
-> > Patch also builds appropriate device tree.  Unfortunately for CXL
-> > we need to use ACPI (no DT bindings yet defined). Enabling this will
-> > either require appropriate support for MCTP on an i2c master that
-> > has ACPI bindings, or modifications of the kernel driver to support
-> > ACPI with aspeed-i2c (which might be a little controversial ;)  
-> 
-> I'm naive to what DT defines, but I assume what's there already is insufficient
-> to make the bindings for CXL. I say this because I believe it wouldn't be too
-> bad at all to make a cxl_dt.ko, and it's certainly less artificial than
-> providing ACPI support for things which don't naturally have ACPI support.
-
-It wouldn't be that hard to work out a CXL dt binding, but it's not
-of sufficient interest to me that I'd want to do it (I'll review if someone
-else sends patches). Platforms I'm interested in CXL with are all strictly
-ACPI only.
-
-The trick here I think, is going to be adding ACPI support for a suitable I2C controller
-which supports the requirement for supporting master and and I2C EP needed
-for MCTP. Either I find one that already has ACPI bindings and add enough
-emulation for this functionality, or work around the lack of ACPI bindings for the
-aspeed-i2c controller.
-
-Based on a really quick check of I2C masters for which I have docs and that
-definitely have ACPI bindings, it's not a particularly common feature set.
-
-Jonathan
-
-
-
-> 
-> > 
-> > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > ---
-> >  hw/arm/Kconfig        |  1 +
-> >  hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
-> >  include/hw/arm/virt.h |  2 ++
-> >  3 files changed, 80 insertions(+)
-> > 
-> > diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
-> > index 219262a8da..4a733298cd 100644
-> > --- a/hw/arm/Kconfig
-> > +++ b/hw/arm/Kconfig
-> > @@ -30,6 +30,7 @@ config ARM_VIRT
-> >      select ACPI_VIOT
-> >      select VIRTIO_MEM_SUPPORTED
-> >      select ACPI_CXL
-> > +    select I2C_MCTP_CXL_FMAPI
-> >  
-> >  config CHEETAH
-> >      bool
-> > diff --git a/hw/arm/virt.c b/hw/arm/virt.c
-> > index d818131b57..ea04279515 100644
-> > --- a/hw/arm/virt.c
-> > +++ b/hw/arm/virt.c
-> > @@ -80,6 +80,9 @@
-> >  #include "hw/char/pl011.h"
-> >  #include "hw/cxl/cxl.h"
-> >  #include "qemu/guest-random.h"
-> > +#include "hw/i2c/i2c.h"
-> > +#include "hw/i2c/aspeed_i2c.h"
-> > +#include "hw/misc/i2c_mctp_cxl_fmapi.h"
-> >  
-> >  #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
-> >      static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
-> > @@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
-> >      [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
-> >      [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
-> >      [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
-> > +    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
-> > +    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
-> >      /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
-> >      [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
-> >      [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
-> > @@ -192,6 +197,7 @@ static const int a15irqmap[] = {
-> >      [VIRT_GPIO] = 7,
-> >      [VIRT_SECURE_UART] = 8,
-> >      [VIRT_ACPI_GED] = 9,
-> > +    [VIRT_I2C] = 10,
-> >      [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
-> >      [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
-> >      [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
-> > @@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
-> >      }
-> >  }
-> >  
-> > +static void create_mctp_test(MachineState *ms)
-> > +{
-> > +    VirtMachineState *vms = VIRT_MACHINE(ms);
-> > +    MemoryRegion *sysmem = get_system_memory();
-> > +    AspeedI2CState *aspeedi2c;
-> > +    struct DeviceState  *dev;
-> > +    char *nodename_i2c_master;
-> > +    char *nodename_i2c_sub;
-> > +    char *nodename_reset;
-> > +    uint32_t clk_phandle, reset_phandle;
-> > +    MemoryRegion *sysmem2;
-> > +   
-> > +    dev = qdev_new("aspeed.i2c-ast2600");
-> > +    aspeedi2c = ASPEED_I2C(dev);
-> > +    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
-> > +    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
-> > +    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
-> > +    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
-> > +
-> > +    /* I2C bus DT */
-> > +    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-> > +    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
-> > +    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
-> > +    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
-> > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
-> > +                                 2, vms->memmap[VIRT_RESET_FAKE].base,
-> > +                                 2, vms->memmap[VIRT_RESET_FAKE].size);
-> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
-> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
-> > +    sysmem2 =  g_new(MemoryRegion, 1);
-> > +    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
-> > +    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
-> > +    
-> > +    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-> > +    
-> > +    qemu_fdt_add_subnode(ms->fdt, "/mclk");
-> > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
-> > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
-> > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
-> > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
-> > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
-> > +
-> > +    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
-> > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
-> > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
-> > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
-> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
-> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
-> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
-> > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
-> > +    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
-> > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
-> > +                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
-> > +    /* Offset to the first bus is 0x80, next one at 0x100 etc */
-> > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
-> > +                                 2, vms->memmap[VIRT_I2C].base + 0x80,
-> > +                                 2, 0x80);
-> > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
-> > +
-> > +    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
-> > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
-> > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
-> > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
-> > +
-> > +        
-> > +    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
-> > +    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
-> > +}
-> > +
-> >  static void machvirt_init(MachineState *machine)
-> >  {
-> >      VirtMachineState *vms = VIRT_MACHINE(machine);
-> > @@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
-> >          create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
-> >      }
-> >  
-> > +    create_mctp_test(machine);
-> > +
-> >       /* connect powerdown request */
-> >       vms->powerdown_notifier.notify = virt_powerdown_req;
-> >       qemu_register_powerdown_notifier(&vms->powerdown_notifier);
-> > diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
-> > index 67c08a62af..abbfac7c48 100644
-> > --- a/include/hw/arm/virt.h
-> > +++ b/include/hw/arm/virt.h
-> > @@ -71,6 +71,8 @@ enum {
-> >      VIRT_SMMU,
-> >      VIRT_UART,
-> >      VIRT_MMIO,
-> > +    VIRT_I2C,
-> > +    VIRT_RESET_FAKE,
-> >      VIRT_RTC,
-> >      VIRT_FW_CFG,
-> >      VIRT_PCIE,
-> > -- 
-> > 2.32.0
-> >   
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D995C433F5
-	for <linux-cxl@archiver.kernel.org>; Tue, 24 May 2022 16:37:30 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234266AbiEXQh3 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 24 May 2022 12:37:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40340 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233418AbiEXQh2 (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 24 May 2022 12:37:28 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ED685EBD2
-        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 09:37:27 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C748F61183
-        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 16:37:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0298EC34115;
-        Tue, 24 May 2022 16:37:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1653410246;
-        bh=OtVt6xY3rD+YkacskCHASEsxEolh/JCkruqucr9MjRQ=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=i4lh1odMMXSQR5E/OEvV5nEBgABv2U2w9EqmMw96ptj/VeN3YPv8quEvDyngyh6Py
-         G4WbzzXb5TW8khPtbBtweeWEm6yTJn1NUjBhQ7jtVPEQDU19CGR9GhFj6JW3gSt2tT
-         RD6mKh96RQh/boopffgGUY/7+/Qw3WVIgXoLI23WE98jEjpw83Cr/rzrhUCHcNOMjk
-         L7bJYxG95W6KtWJLr307ulJhXPLjUOwB5cVbpb7fJq4YsGQ6j+/+TNWtM3zfPDXfxB
-         tZ8SY0L/anoxcwySVzggONanX446fhO23/dL1c6D3+J3cWOuC1jMrAxc8runXA+ClW
-         PRv9xKVVXeFzw==
-Date: Tue, 24 May 2022 09:36:44 -0700
-From: Ben Widawsky <bwidawsk@kernel.org>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: qemu-devel@nongnu.org, Klaus Jensen <its@irrelevant.dk>,
-        linux-cxl@vger.kernel.org, Corey Minyard <minyard@acm.org>,
-        Damien Hedde <damien.hedde@greensocs.com>,
-        Peter Delevoryas <pdel@fb.com>,
-        =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
-        Alex =?utf-8?Q?Benn=C3=A9e?= <alex.bennee@linaro.org>,
-        linuarm@huawei.com
-Subject: Re: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP
- to enable MCTP testing
-Message-ID: <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
-References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
- <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 8191
-Lines: 177
-
-On 22-05-20 18:01:28, Jonathan Cameron wrote:
-> As the only I2C emulation in QEMU that supports being both
-> a master and a slave, suitable for MCTP over i2c is aspeed-i2c
-> add this controller to the arm virt model and hook up our new
-> i2c_mctp_cxl_fmapi device.
-> 
-> The current Linux driver for aspeed-i2c has a hard requirement on
-> a reset controller.  Throw down the simplest reset controller
-> I could find so as to avoid need to make any chance to the kernel
-> code.
-
-s/chance/change
-
-> 
-> Patch also builds appropriate device tree.  Unfortunately for CXL
-> we need to use ACPI (no DT bindings yet defined). Enabling this will
-> either require appropriate support for MCTP on an i2c master that
-> has ACPI bindings, or modifications of the kernel driver to support
-> ACPI with aspeed-i2c (which might be a little controversial ;)
-
-I'm naive to what DT defines, but I assume what's there already is insufficient
-to make the bindings for CXL. I say this because I believe it wouldn't be too
-bad at all to make a cxl_dt.ko, and it's certainly less artificial than
-providing ACPI support for things which don't naturally have ACPI support.
-
-> 
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> ---
->  hw/arm/Kconfig        |  1 +
->  hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
->  include/hw/arm/virt.h |  2 ++
->  3 files changed, 80 insertions(+)
-> 
-> diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
-> index 219262a8da..4a733298cd 100644
-> --- a/hw/arm/Kconfig
-> +++ b/hw/arm/Kconfig
-> @@ -30,6 +30,7 @@ config ARM_VIRT
->      select ACPI_VIOT
->      select VIRTIO_MEM_SUPPORTED
->      select ACPI_CXL
-> +    select I2C_MCTP_CXL_FMAPI
->  
->  config CHEETAH
->      bool
-> diff --git a/hw/arm/virt.c b/hw/arm/virt.c
-> index d818131b57..ea04279515 100644
-> --- a/hw/arm/virt.c
-> +++ b/hw/arm/virt.c
-> @@ -80,6 +80,9 @@
->  #include "hw/char/pl011.h"
->  #include "hw/cxl/cxl.h"
->  #include "qemu/guest-random.h"
-> +#include "hw/i2c/i2c.h"
-> +#include "hw/i2c/aspeed_i2c.h"
-> +#include "hw/misc/i2c_mctp_cxl_fmapi.h"
->  
->  #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
->      static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
-> @@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
->      [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
->      [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
->      [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
-> +    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
-> +    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
->      /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
->      [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
->      [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
-> @@ -192,6 +197,7 @@ static const int a15irqmap[] = {
->      [VIRT_GPIO] = 7,
->      [VIRT_SECURE_UART] = 8,
->      [VIRT_ACPI_GED] = 9,
-> +    [VIRT_I2C] = 10,
->      [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
->      [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
->      [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
-> @@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
->      }
->  }
->  
-> +static void create_mctp_test(MachineState *ms)
-> +{
-> +    VirtMachineState *vms = VIRT_MACHINE(ms);
-> +    MemoryRegion *sysmem = get_system_memory();
-> +    AspeedI2CState *aspeedi2c;
-> +    struct DeviceState  *dev;
-> +    char *nodename_i2c_master;
-> +    char *nodename_i2c_sub;
-> +    char *nodename_reset;
-> +    uint32_t clk_phandle, reset_phandle;
-> +    MemoryRegion *sysmem2;
-> +   
-> +    dev = qdev_new("aspeed.i2c-ast2600");
-> +    aspeedi2c = ASPEED_I2C(dev);
-> +    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
-> +    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
-> +    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
-> +    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
-> +
-> +    /* I2C bus DT */
-> +    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-> +    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
-> +    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
-> +    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
-> +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
-> +                                 2, vms->memmap[VIRT_RESET_FAKE].base,
-> +                                 2, vms->memmap[VIRT_RESET_FAKE].size);
-> +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
-> +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
-> +    sysmem2 =  g_new(MemoryRegion, 1);
-> +    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
-> +    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
-> +    
-> +    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-> +    
-> +    qemu_fdt_add_subnode(ms->fdt, "/mclk");
-> +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
-> +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
-> +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
-> +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
-> +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
-> +
-> +    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
-> +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
-> +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
-> +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
-> +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
-> +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
-> +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
-> +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
-> +    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
-> +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
-> +                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
-> +    /* Offset to the first bus is 0x80, next one at 0x100 etc */
-> +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
-> +                                 2, vms->memmap[VIRT_I2C].base + 0x80,
-> +                                 2, 0x80);
-> +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
-> +
-> +    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
-> +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
-> +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
-> +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
-> +
-> +        
-> +    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
-> +    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
-> +}
-> +
->  static void machvirt_init(MachineState *machine)
->  {
->      VirtMachineState *vms = VIRT_MACHINE(machine);
-> @@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
->          create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
->      }
->  
-> +    create_mctp_test(machine);
-> +
->       /* connect powerdown request */
->       vms->powerdown_notifier.notify = virt_powerdown_req;
->       qemu_register_powerdown_notifier(&vms->powerdown_notifier);
-> diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
-> index 67c08a62af..abbfac7c48 100644
-> --- a/include/hw/arm/virt.h
-> +++ b/include/hw/arm/virt.h
-> @@ -71,6 +71,8 @@ enum {
->      VIRT_SMMU,
->      VIRT_UART,
->      VIRT_MMIO,
-> +    VIRT_I2C,
-> +    VIRT_RESET_FAKE,
->      VIRT_RTC,
->      VIRT_FW_CFG,
->      VIRT_PCIE,
-> -- 
-> 2.32.0
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E02FC433F5
-	for <linux-cxl@archiver.kernel.org>; Fri, 20 May 2022 17:02:35 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352010AbiETRCd (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 20 May 2022 13:02:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55772 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352009AbiETRCc (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 20 May 2022 13:02:32 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D2BA185C9B
-        for <linux-cxl@vger.kernel.org>; Fri, 20 May 2022 10:02:30 -0700 (PDT)
-Received: from fraeml736-chm.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4L4Y1J2LQ8z6H6r6;
-        Sat, 21 May 2022 01:02:12 +0800 (CST)
-Received: from lhreml710-chm.china.huawei.com (10.201.108.61) by
- fraeml736-chm.china.huawei.com (10.206.15.217) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 20 May 2022 19:02:28 +0200
+ 15.1.2375.24; Fri, 20 May 2022 19:01:27 +0200
 Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
  lhreml710-chm.china.huawei.com (10.201.108.61) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 20 May 2022 18:02:27 +0100
+ 15.1.2375.24; Fri, 20 May 2022 18:01:26 +0100
 From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 To: <qemu-devel@nongnu.org>, Klaus Jensen <its@irrelevant.dk>
 CC: <linux-cxl@vger.kernel.org>, Corey Minyard <minyard@acm.org>,
@@ -1226,12 +34,10 @@ CC: <linux-cxl@vger.kernel.org>, Corey Minyard <minyard@acm.org>,
         =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
         =?UTF-8?q?Alex=20Benn=C3=A9e?= <alex.bennee@linaro.org>,
         Ben Widawsky <ben.widawsky@intel.com>, <linuarm@huawei.com>
-Subject: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP to enable MCTP testing
-Date: Fri, 20 May 2022 18:01:28 +0100
-Message-ID: <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
+Subject: [RFC PATCH 0/2] CXL FMAPI interface over MCTP/I2C
+Date: Fri, 20 May 2022 18:01:26 +0100
+Message-ID: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
 X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
-References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Content-Type: text/plain; charset=US-ASCII
@@ -1242,174 +48,383 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 7486
-Lines: 167
 
-As the only I2C emulation in QEMU that supports being both
-a master and a slave, suitable for MCTP over i2c is aspeed-i2c
-add this controller to the arm virt model and hook up our new
-i2c_mctp_cxl_fmapi device.
+A quick PoC to show the feasibility of emulating the CXL 2.0
+Fabric Manager API over MCTP over I2C as possible path to standards
+based configuration of emulated CXL switches.  Lots of missing parts
+(such as hooking this up to the upstream ports or making it actually
+do anything useful), but it's enough to establish this as a plausible
+approach. Purpose of sharing this is mostly to let people know I've
+been messing around with this (and that Klaus' work was really
+helpful :)
 
-The current Linux driver for aspeed-i2c has a hard requirement on
-a reset controller.  Throw down the simplest reset controller
-I could find so as to avoid need to make any chance to the kernel
-code.
+The end goal is to enable emulation of more sophisticated
+CXL switches that rely on an external agent (fabric manager) configuring
+them. One likely common way of doing this is to use the DMTF defined
+CXL FMAPI over MCTP binding (message type 7).  Whilst we don't have
+multiple hosts in QEMU, that doesn't matter for exercising both
+the switch configuration elements, and the host handling of the
+resulting events (we can have multiple virtual hierarchies via
+multiple CXL root ports - similar to multiple hosts, but with a
+few additional software complexities). Note there are a load
+of other protocols that we will want to emulate in future (such as
+SPDM) but this one was a simple place to start. Note QEMU emulation
+of simple CXL switches is still under review (queued behind ARM
+support for CXL due to some fuzz in test cases).
+https://lore.kernel.org/qemu-devel/20220429144110.25167-44-Jonathan.Cameron@huawei.com/
 
-Patch also builds appropriate device tree.  Unfortunately for CXL
-we need to use ACPI (no DT bindings yet defined). Enabling this will
-either require appropriate support for MCTP on an i2c master that
-has ACPI bindings, or modifications of the kernel driver to support
-ACPI with aspeed-i2c (which might be a little controversial ;)
+FMAPI allows:
+* Management software to query switch state and capabilities (part of
+  this is implemented in this RFC)
+* Configuration of binding of physical ports to particular virtual
+  hierarchies (PCIe topologies visible to the host).
+* Configuration of the binding of MLD (Multiple Logical Device) LDs
+  to particular virtual ports within a Virtual Hierarchy (how CXL 2.0
+  handles memory pooling).
+* Lots of other stuff.
 
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- hw/arm/Kconfig        |  1 +
- hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
- include/hw/arm/virt.h |  2 ++
- 3 files changed, 80 insertions(+)
+Details in the CXL 2.0 specification and ECNs.
 
-diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
-index 219262a8da..4a733298cd 100644
---- a/hw/arm/Kconfig
-+++ b/hw/arm/Kconfig
-@@ -30,6 +30,7 @@ config ARM_VIRT
-     select ACPI_VIOT
-     select VIRTIO_MEM_SUPPORTED
-     select ACPI_CXL
-+    select I2C_MCTP_CXL_FMAPI
- 
- config CHEETAH
-     bool
-diff --git a/hw/arm/virt.c b/hw/arm/virt.c
-index d818131b57..ea04279515 100644
---- a/hw/arm/virt.c
-+++ b/hw/arm/virt.c
-@@ -80,6 +80,9 @@
- #include "hw/char/pl011.h"
- #include "hw/cxl/cxl.h"
- #include "qemu/guest-random.h"
-+#include "hw/i2c/i2c.h"
-+#include "hw/i2c/aspeed_i2c.h"
-+#include "hw/misc/i2c_mctp_cxl_fmapi.h"
- 
- #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
-     static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
-@@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
-     [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
-     [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
-     [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
-+    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
-+    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
-     /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
-     [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
-     [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
-@@ -192,6 +197,7 @@ static const int a15irqmap[] = {
-     [VIRT_GPIO] = 7,
-     [VIRT_SECURE_UART] = 8,
-     [VIRT_ACPI_GED] = 9,
-+    [VIRT_I2C] = 10,
-     [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
-     [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
-     [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
-@@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
-     }
- }
- 
-+static void create_mctp_test(MachineState *ms)
-+{
-+    VirtMachineState *vms = VIRT_MACHINE(ms);
-+    MemoryRegion *sysmem = get_system_memory();
-+    AspeedI2CState *aspeedi2c;
-+    struct DeviceState  *dev;
-+    char *nodename_i2c_master;
-+    char *nodename_i2c_sub;
-+    char *nodename_reset;
-+    uint32_t clk_phandle, reset_phandle;
-+    MemoryRegion *sysmem2;
-+   
-+    dev = qdev_new("aspeed.i2c-ast2600");
-+    aspeedi2c = ASPEED_I2C(dev);
-+    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
-+    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
-+    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
-+    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
-+
-+    /* I2C bus DT */
-+    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-+    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
-+    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
-+    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
-+    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
-+                                 2, vms->memmap[VIRT_RESET_FAKE].base,
-+                                 2, vms->memmap[VIRT_RESET_FAKE].size);
-+    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
-+    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
-+    sysmem2 =  g_new(MemoryRegion, 1);
-+    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
-+    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
-+    
-+    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
-+    
-+    qemu_fdt_add_subnode(ms->fdt, "/mclk");
-+    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
-+    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
-+    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
-+    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
-+    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
-+
-+    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
-+    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
-+    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
-+    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
-+    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
-+    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
-+    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
-+    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
-+    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
-+    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
-+                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
-+    /* Offset to the first bus is 0x80, next one at 0x100 etc */
-+    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
-+                                 2, vms->memmap[VIRT_I2C].base + 0x80,
-+                                 2, 0x80);
-+    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
-+
-+    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
-+    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
-+    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
-+    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
-+
-+        
-+    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
-+    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
-+}
-+
- static void machvirt_init(MachineState *machine)
- {
-     VirtMachineState *vms = VIRT_MACHINE(machine);
-@@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
-         create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
-     }
- 
-+    create_mctp_test(machine);
-+
-      /* connect powerdown request */
-      vms->powerdown_notifier.notify = virt_powerdown_req;
-      qemu_register_powerdown_notifier(&vms->powerdown_notifier);
-diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
-index 67c08a62af..abbfac7c48 100644
---- a/include/hw/arm/virt.h
-+++ b/include/hw/arm/virt.h
-@@ -71,6 +71,8 @@ enum {
-     VIRT_SMMU,
-     VIRT_UART,
-     VIRT_MMIO,
-+    VIRT_I2C,
-+    VIRT_RESET_FAKE,
-     VIRT_RTC,
-     VIRT_FW_CFG,
-     VIRT_PCIE,
+FMAPI could be enabled via an external interface (and might be in
+some later patch set) but the recent RFC for I2C slave mode support
+https://lore.kernel.org/qemu-devel/20220331165737.1073520-1-its@irrelevant.dk/
+provided the option to simply expose an MCTP interface to the guest.
+(normally it would be exported to a BMC or similar, but meh, that doesn't
+ matter for testing :) Ultimately emulation of all the common interfaces
+ will be needed to provide a broad test platform.
+
+Note this use of the above patch set is rather different to using it to
+communicate between two emulated machines, one of which is running firmware for
+an appropriate device.  We could do that for CXL switches, but the
+tight coupling we will want to the other parts being emulated in QEMU
+would make such an approach challenging. Also the FMAPI is simple
+enough to lend itself to implementation as a state machine as part of the device
+emulation.
+
+Given I wanted a simple test platform without separate firmware requirements
+I've added the aspeed-i2c controller to the arm virt image. There are some
+quirks around this such as the need for reset controller but overall the
+support is straight forward.  A snag here is that for rest of CXL emulation
+I need to use ACPI and the aspeed-i2c driver in Linux is currently not
+very ACPI friendly and it may be controversial to make it so.
+
+To bring up the connection:
+
+* Use a kernel with appropriate i2c controller and mctp driver support.
+  (5.18-rc1 or later should work - though there are some bugs that can
+   be if you follow particular wrong configuration flows).
+* Get mctp and mctpd from https://github.com/CodeConstruct/mctp
+  - modify the mctpd systemd init as provided and start the daemon.
+  - for 64 bit support, get latest version as a sizeof() bug was identified
+    whilst testing this.
+
+
+# Bring up the link
+mctp link set mctpi2c0 up
+# Assign an address to the aspeed-i2c controller
+mctp addr add 50 dev mctpi2c0
+# Assign a neetwork ID to the link (11)
+mctp link set mctpi2c0 net 11
+# Start the daemon that uses dbus for configuration.
+systemctl start mctpd.service
+# Assign an EID to the EP (hard coded I2C address is 0x4d)
+busctl call xyz.openbmc_project.MCTP /xyz/openbmc_project/mctp au.com.CodeConstruct.MCTP AssignEndpoint say mctpi2c0 1 0x4d
+# Check it worked by dumping some state.
+busctl introspect xyz.openbmc_project.MCTP /xyz/openbmc_project/mctp/11/8 xyz.openbmc_project.MCTP.Endpoint
+
+At this point the control protocol has been exercised.
+
+The following test program will query some information about the
+'fake' CXL switch.
+
+/*
+ * Trivial example program to exercise QEMU FMAPI Emulation over MCTP over I2C
+ */
+#include <sys/socket.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include "mctp.h"
+#include "cxl_fmapi.h"
+
+#define AF_MCTP 45
+static int parse_physical_switch_identify_switch_device(void *buf, size_t buf_len)
+{
+	struct cxl_fmapi_header *head = buf;
+	struct cxl_fmapi_ident_switch_dev_resp_pl *pl = (void *)(head + 1);
+
+	printf("Num total vppb %d\n", pl->num_total_vppb);
+	return 0;
+}
+
+int query_physical_switch_info(int sd, struct sockaddr_mctp *addr, int *tag)
+{
+	uint8_t buf[1024];
+	int rc;
+	ssize_t len;
+	struct sockaddr_mctp addrrx;
+	socklen_t addrlen = sizeof(addrrx);
+	struct cxl_fmapi_header req = {
+		.category = CXL_MCTP_CATEGORY_REQ,
+		.tag = *tag++,
+		.command = CXL_IDENTIFY_SWITCH_DEVICE,
+		.command_set = CXL_FM_API_CMD_SET_PHYSICAL_SWITCH,
+		.vendor_ext_status = 0xabcd,
+	};
+
+	len = sendto(sd, &req, sizeof(req), 0, (struct sockaddr *)addr, sizeof(*addr));
+	if (len != sizeof(req)) {
+		printf("Failed to send whole request\n");
+		return -1;
+	}
+
+	len = recvfrom(sd, buf, sizeof(buf), 0, (struct sockaddr *)&addrrx, &addrlen);
+	if (len < 0) {
+		printf("Failed to receive response\n");
+		return -1;
+	}
+	rc = parse_physical_switch_identify_switch_device(buf, len);
+	if (rc)
+		return -1;
+
+	return 0;
+}
+
+static int parse_phys_port_state_rsp(void * buf, size_t buf_len, struct cxl_fmapi_header *head)
+{
+	struct cxl_fmapi_header *rsp_head = buf;
+	struct cxl_fmapi_get_phys_port_state_resp_pl *pl = (void *)(rsp_head + 1);
+	uint32_t pl_length = rsp_head->pl_length[0] |
+		(rsp_head->pl_length[1] << 8) |
+		((rsp_head->pl_length[2] & 0xf) << 16);
+
+	if (rsp_head->category != CXL_MCTP_CATEGORY_RESP) {
+		printf("Message not a response\n");
+		return -1;
+	}
+	if (rsp_head->tag != head->tag) {
+		printf("Reply has wrong tag\n");
+		return -1;
+	}
+	if ((rsp_head->command != head->command) ||
+		(rsp_head->command_set != head->command_set)) {
+		printf("Response to wrong command\n");
+		return -1;
+	}
+
+	if (rsp_head->return_code != 0) {
+		printf("Error code in response %d\n", rsp_head);
+		return -1;
+	}
+
+	if (pl_length < 4 ||  pl_length < (pl->num_ports * sizeof(pl->ports[0]))) {
+		printf("too short\n");
+		return -1;
+	}
+
+	for (int i = 0; i < pl->num_ports; i++) {
+		struct cxl_fmapi_port_state_info_block *port = &pl->ports[i];
+		const char *port_states[] = {
+			[0x0] = "Disabled",
+			[0x1] = "Bind in progress",
+			[0x2] = "Unbind in progress",
+			[0x3] = "DSP",
+			[0x4] = "USP",
+			[0x5] = "Reserved",
+			//other values not present.
+			[0xf] = "Invalid Port ID"
+		  };
+		const char *connected_device_modes[] = {
+			[0] = "Not CXL / connected",
+			[1] = "CXL 1.1",
+			[2] = "CXL 2.0",
+		};
+		const char *connected_device_type[] = {
+			[0] = "No device detected",
+			[1] = "PCIe device",
+			[2] = "CXL type 1 device",
+			[3] = "CXL type 2 device",
+			[4] = "CXL type 3 device",
+			[5] = "CXL type 3 pooled device",
+			[6] = "Reserved",
+		};
+		const char *ltssm_states[] = {
+			[0] = "Detect",
+			[1] = "Polling",
+			[2] = "Configuration",
+			[3] = "Recovery",
+			[4] = "L0",
+			[5] = "L0s",
+			[6] = "L1",
+			[7] = "L2",
+			[8] = "Disabled",
+			[9] = "Loop Back",
+			[10] = "Hot Reset",
+		};
+		printf("Port%02d:\n ", port->port_id);
+		printf("\tPort state: ");
+		if (port_states[port->config_state & 0xf])
+			printf("%s\n", port_states[port->config_state]);
+		else
+			printf("Unknown state\n");
+
+		if (port->config_state == 3) { /* DSP so device could be there */
+			printf("\tConnected Device CXL Version: ");
+			if (port->connected_device_cxl_version > 2)
+				printf("Unknown CXL Version\n");
+			else
+				printf("%s\n", connected_device_modes[port->connected_device_cxl_version]);
+
+			printf("\tConnected Device Type: ");
+			if (port->connected_device_type > 7)
+				printf("Unknown\n");
+			else
+				printf("%s\n", connected_device_type[port->connected_device_type]);
+		}
+
+		printf("\tSupported CXL Modes:");
+		if (port->port_cxl_version_bitmask & 0x1)
+			printf(" 1.1");
+		if (port->port_cxl_version_bitmask & 0x2)
+			printf(" 2.0");
+		printf("\n");
+
+		printf("\tMaximum Link Width: %d Negotiated Width %d\n",
+			   port->max_link_width,
+			   port->negotiated_link_width);
+		printf("\tSupported Speeds: ");
+		if (port->supported_link_speeds_vector & 0x1)
+			printf(" 2.5 GT/s");
+		if (port->supported_link_speeds_vector & 0x2)
+			printf(" 5.0 GT/s");
+		if (port->supported_link_speeds_vector & 0x4)
+			printf(" 8.0 GT/s");
+		if (port->supported_link_speeds_vector & 0x8)
+			printf(" 16.0 GT/s");
+		if (port->supported_link_speeds_vector & 0x10)
+			printf(" 32.0 GT/s");
+		if (port->supported_link_speeds_vector & 0x20)
+			printf(" 64.0 GT/s");
+		printf("\n");
+
+		printf("\tLTSSM: ");
+		if (port->ltssm_state >= sizeof(ltssm_states))
+			printf("Unkown\n");
+		else
+			printf("%s\n", ltssm_states[port->ltssm_state]);
+	}
+}
+
+int query_ports(int sd, struct sockaddr_mctp *addr, int *tag)
+{
+	uint8_t buf[1024];
+	ssize_t len;
+	int num_ports = 4;
+	int rc;
+	uint8_t port_list[4] = { 0, 3, 7, 4 };
+	struct sockaddr_mctp addrrx;
+	socklen_t addrlen = sizeof(addrrx);
+	struct cxl_fmapi_header *head;
+	struct cxl_fmapi_get_phys_port_state_req_pl *reqpl;
+	size_t req_sz = sizeof(*reqpl) + num_ports + sizeof(*head) ;
+
+	head = malloc(req_sz);
+	*head = (struct cxl_fmapi_header) {
+		.category = CXL_MCTP_CATEGORY_REQ,
+		.tag = *tag++,
+		.command = CXL_GET_PHYSICAL_PORT_STATE,
+		.command_set = CXL_FM_API_CMD_SET_PHYSICAL_SWITCH,
+		.pl_length = {
+			req_sz & 0xff,
+			(req_sz >> 8) & 0xff,
+			(req_sz >> 16) & 0xf },
+		.vendor_ext_status = 0x1234,
+	};
+	reqpl = (void *)(head + 1);
+	*reqpl = (struct cxl_fmapi_get_phys_port_state_req_pl) {
+		.num_ports = num_ports,
+	};
+	for (int j = 0; j < num_ports; j++)
+		reqpl->ports[j] = port_list[j];
+
+	len = sendto(sd, head, req_sz, 0,
+				 (struct sockaddr *)addr, sizeof(*addr));
+
+	len = recvfrom(sd, buf, sizeof(buf), 0,
+				   (struct sockaddr *)&addrrx, &addrlen);
+	if (len < sizeof(struct cxl_fmapi_header)) {
+		printf("Too short for header\n");
+	}
+	//TODO generic check of reply.
+	if (addrrx.smctp_type != 0x7) {
+		printf("Reply does not match expected message type\n");
+	}
+
+	rc = parse_phys_port_state_rsp(buf, len, head);
+	if (rc)
+		return rc;
+
+	return 0;
+}
+
+int main()
+{
+	int rc, sd;
+	int tag = 0; /* will increment on each use */
+	ssize_t len;
+	struct sockaddr_mctp addr = {
+		.smctp_family = AF_MCTP,
+		.smctp_network = 11,
+		.smctp_addr.s_addr = 8,
+		.smctp_type = 0x7, /* CXL FMAPI */
+		.smctp_tag = MCTP_TAG_OWNER,
+	};
+	struct sockaddr_mctp addrrx;
+	socklen_t addrlen = sizeof(addrrx);
+
+	sd = socket(AF_MCTP, SOCK_DGRAM, 0);
+	rc = bind(sd, (struct sockaddr *)&addr, sizeof(addr));
+	if (rc) {
+		printf("Bind failed\n");
+		return -1;
+	}
+
+	rc = query_physical_switch_info(sd, &addr, &tag);
+	if (rc)
+			return rc;
+
+	/* Next query some of the ports */
+	rc = query_ports(sd, &addr, &tag);
+	if (rc)
+		return rc;
+
+	return 0;
+}
+
+All feedback welcome.
+
+Enjoy,
+
+Jonathan
+
+Jonathan Cameron (2):
+  misc/i2c_mctp_cxl_fmapi: Initial device emulation
+  arm/virt: Add aspeed-i2c controller and MCTP EP to enable MCTP testing
+
+ hw/arm/Kconfig                       |   1 +
+ hw/arm/virt.c                        |  77 +++
+ hw/misc/Kconfig                      |   3 +
+ hw/misc/i2c_mctp_cxl_fmapi.c         | 759 +++++++++++++++++++++++++++
+ hw/misc/meson.build                  |   2 +
+ include/hw/arm/virt.h                |   2 +
+ include/hw/cxl/cxl_fmapi.h           | 158 ++++++
+ include/hw/misc/i2c_mctp_cxl_fmapi.h |  17 +
+ 8 files changed, 1019 insertions(+)
+ create mode 100644 hw/misc/i2c_mctp_cxl_fmapi.c
+ create mode 100644 include/hw/cxl/cxl_fmapi.h
+ create mode 100644 include/hw/misc/i2c_mctp_cxl_fmapi.h
+
 -- 
 2.32.0
 
@@ -1466,9 +481,6 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: RO
-Content-Length: 29104
-Lines: 998
 
 The Fabric Manager API is used to configure CXL switches and
 devices. DMTF has defined an MCTP binding specification to carry
@@ -2474,29 +1486,29 @@ Return-Path: <linux-cxl-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CB00C433EF
-	for <linux-cxl@archiver.kernel.org>; Fri, 20 May 2022 17:01:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E02FC433F5
+	for <linux-cxl@archiver.kernel.org>; Fri, 20 May 2022 17:02:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351960AbiETRBb (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 20 May 2022 13:01:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51608 "EHLO
+        id S1352010AbiETRCd (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 20 May 2022 13:02:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55772 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343837AbiETRBa (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 20 May 2022 13:01:30 -0400
+        with ESMTP id S1352009AbiETRCc (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 20 May 2022 13:02:32 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0B285B3F4
-        for <linux-cxl@vger.kernel.org>; Fri, 20 May 2022 10:01:28 -0700 (PDT)
-Received: from fraeml740-chm.china.huawei.com (unknown [172.18.147.206])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4L4Xvz0fhKz687qT;
-        Sat, 21 May 2022 00:57:35 +0800 (CST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D2BA185C9B
+        for <linux-cxl@vger.kernel.org>; Fri, 20 May 2022 10:02:30 -0700 (PDT)
+Received: from fraeml736-chm.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4L4Y1J2LQ8z6H6r6;
+        Sat, 21 May 2022 01:02:12 +0800 (CST)
 Received: from lhreml710-chm.china.huawei.com (10.201.108.61) by
- fraeml740-chm.china.huawei.com (10.206.15.221) with Microsoft SMTP Server
+ fraeml736-chm.china.huawei.com (10.206.15.217) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 20 May 2022 19:01:27 +0200
+ 15.1.2375.24; Fri, 20 May 2022 19:02:28 +0200
 Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
  lhreml710-chm.china.huawei.com (10.201.108.61) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 20 May 2022 18:01:26 +0100
+ 15.1.2375.24; Fri, 20 May 2022 18:02:27 +0100
 From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 To: <qemu-devel@nongnu.org>, Klaus Jensen <its@irrelevant.dk>
 CC: <linux-cxl@vger.kernel.org>, Corey Minyard <minyard@acm.org>,
@@ -2505,10 +1517,12 @@ CC: <linux-cxl@vger.kernel.org>, Corey Minyard <minyard@acm.org>,
         =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
         =?UTF-8?q?Alex=20Benn=C3=A9e?= <alex.bennee@linaro.org>,
         Ben Widawsky <ben.widawsky@intel.com>, <linuarm@huawei.com>
-Subject: [RFC PATCH 0/2] CXL FMAPI interface over MCTP/I2C
-Date: Fri, 20 May 2022 18:01:26 +0100
-Message-ID: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
+Subject: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP to enable MCTP testing
+Date: Fri, 20 May 2022 18:01:28 +0100
+Message-ID: <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
 X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
+References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Content-Type: text/plain; charset=US-ASCII
@@ -2519,387 +1533,1352 @@ X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
-Status: O
-Content-Length: 12138
-Lines: 379
 
-A quick PoC to show the feasibility of emulating the CXL 2.0
-Fabric Manager API over MCTP over I2C as possible path to standards
-based configuration of emulated CXL switches.  Lots of missing parts
-(such as hooking this up to the upstream ports or making it actually
-do anything useful), but it's enough to establish this as a plausible
-approach. Purpose of sharing this is mostly to let people know I've
-been messing around with this (and that Klaus' work was really
-helpful :)
+As the only I2C emulation in QEMU that supports being both
+a master and a slave, suitable for MCTP over i2c is aspeed-i2c
+add this controller to the arm virt model and hook up our new
+i2c_mctp_cxl_fmapi device.
 
-The end goal is to enable emulation of more sophisticated
-CXL switches that rely on an external agent (fabric manager) configuring
-them. One likely common way of doing this is to use the DMTF defined
-CXL FMAPI over MCTP binding (message type 7).  Whilst we don't have
-multiple hosts in QEMU, that doesn't matter for exercising both
-the switch configuration elements, and the host handling of the
-resulting events (we can have multiple virtual hierarchies via
-multiple CXL root ports - similar to multiple hosts, but with a
-few additional software complexities). Note there are a load
-of other protocols that we will want to emulate in future (such as
-SPDM) but this one was a simple place to start. Note QEMU emulation
-of simple CXL switches is still under review (queued behind ARM
-support for CXL due to some fuzz in test cases).
-https://lore.kernel.org/qemu-devel/20220429144110.25167-44-Jonathan.Cameron@huawei.com/
+The current Linux driver for aspeed-i2c has a hard requirement on
+a reset controller.  Throw down the simplest reset controller
+I could find so as to avoid need to make any chance to the kernel
+code.
 
-FMAPI allows:
-* Management software to query switch state and capabilities (part of
-  this is implemented in this RFC)
-* Configuration of binding of physical ports to particular virtual
-  hierarchies (PCIe topologies visible to the host).
-* Configuration of the binding of MLD (Multiple Logical Device) LDs
-  to particular virtual ports within a Virtual Hierarchy (how CXL 2.0
-  handles memory pooling).
-* Lots of other stuff.
+Patch also builds appropriate device tree.  Unfortunately for CXL
+we need to use ACPI (no DT bindings yet defined). Enabling this will
+either require appropriate support for MCTP on an i2c master that
+has ACPI bindings, or modifications of the kernel driver to support
+ACPI with aspeed-i2c (which might be a little controversial ;)
 
-Details in the CXL 2.0 specification and ECNs.
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ hw/arm/Kconfig        |  1 +
+ hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
+ include/hw/arm/virt.h |  2 ++
+ 3 files changed, 80 insertions(+)
 
-FMAPI could be enabled via an external interface (and might be in
-some later patch set) but the recent RFC for I2C slave mode support
-https://lore.kernel.org/qemu-devel/20220331165737.1073520-1-its@irrelevant.dk/
-provided the option to simply expose an MCTP interface to the guest.
-(normally it would be exported to a BMC or similar, but meh, that doesn't
- matter for testing :) Ultimately emulation of all the common interfaces
- will be needed to provide a broad test platform.
+diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
+index 219262a8da..4a733298cd 100644
+--- a/hw/arm/Kconfig
++++ b/hw/arm/Kconfig
+@@ -30,6 +30,7 @@ config ARM_VIRT
+     select ACPI_VIOT
+     select VIRTIO_MEM_SUPPORTED
+     select ACPI_CXL
++    select I2C_MCTP_CXL_FMAPI
+ 
+ config CHEETAH
+     bool
+diff --git a/hw/arm/virt.c b/hw/arm/virt.c
+index d818131b57..ea04279515 100644
+--- a/hw/arm/virt.c
++++ b/hw/arm/virt.c
+@@ -80,6 +80,9 @@
+ #include "hw/char/pl011.h"
+ #include "hw/cxl/cxl.h"
+ #include "qemu/guest-random.h"
++#include "hw/i2c/i2c.h"
++#include "hw/i2c/aspeed_i2c.h"
++#include "hw/misc/i2c_mctp_cxl_fmapi.h"
+ 
+ #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
+     static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
+@@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
+     [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
+     [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
+     [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
++    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
++    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
+     /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
+     [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
+     [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
+@@ -192,6 +197,7 @@ static const int a15irqmap[] = {
+     [VIRT_GPIO] = 7,
+     [VIRT_SECURE_UART] = 8,
+     [VIRT_ACPI_GED] = 9,
++    [VIRT_I2C] = 10,
+     [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
+     [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
+     [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
+@@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
+     }
+ }
+ 
++static void create_mctp_test(MachineState *ms)
++{
++    VirtMachineState *vms = VIRT_MACHINE(ms);
++    MemoryRegion *sysmem = get_system_memory();
++    AspeedI2CState *aspeedi2c;
++    struct DeviceState  *dev;
++    char *nodename_i2c_master;
++    char *nodename_i2c_sub;
++    char *nodename_reset;
++    uint32_t clk_phandle, reset_phandle;
++    MemoryRegion *sysmem2;
++   
++    dev = qdev_new("aspeed.i2c-ast2600");
++    aspeedi2c = ASPEED_I2C(dev);
++    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
++    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
++    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
++    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
++
++    /* I2C bus DT */
++    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
++    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
++    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
++    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
++    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
++                                 2, vms->memmap[VIRT_RESET_FAKE].base,
++                                 2, vms->memmap[VIRT_RESET_FAKE].size);
++    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
++    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
++    sysmem2 =  g_new(MemoryRegion, 1);
++    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
++    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
++    
++    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
++    
++    qemu_fdt_add_subnode(ms->fdt, "/mclk");
++    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
++    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
++    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
++    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
++    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
++
++    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
++    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
++    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
++    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
++    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
++    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
++    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
++    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
++    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
++    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
++                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
++    /* Offset to the first bus is 0x80, next one at 0x100 etc */
++    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
++                                 2, vms->memmap[VIRT_I2C].base + 0x80,
++                                 2, 0x80);
++    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
++
++    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
++    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
++    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
++    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
++
++        
++    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
++    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
++}
++
+ static void machvirt_init(MachineState *machine)
+ {
+     VirtMachineState *vms = VIRT_MACHINE(machine);
+@@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
+         create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
+     }
+ 
++    create_mctp_test(machine);
++
+      /* connect powerdown request */
+      vms->powerdown_notifier.notify = virt_powerdown_req;
+      qemu_register_powerdown_notifier(&vms->powerdown_notifier);
+diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
+index 67c08a62af..abbfac7c48 100644
+--- a/include/hw/arm/virt.h
++++ b/include/hw/arm/virt.h
+@@ -71,6 +71,8 @@ enum {
+     VIRT_SMMU,
+     VIRT_UART,
+     VIRT_MMIO,
++    VIRT_I2C,
++    VIRT_RESET_FAKE,
+     VIRT_RTC,
+     VIRT_FW_CFG,
+     VIRT_PCIE,
+-- 
+2.32.0
 
-Note this use of the above patch set is rather different to using it to
-communicate between two emulated machines, one of which is running firmware for
-an appropriate device.  We could do that for CXL switches, but the
-tight coupling we will want to the other parts being emulated in QEMU
-would make such an approach challenging. Also the FMAPI is simple
-enough to lend itself to implementation as a state machine as part of the device
-emulation.
 
-Given I wanted a simple test platform without separate firmware requirements
-I've added the aspeed-i2c controller to the arm virt image. There are some
-quirks around this such as the need for reset controller but overall the
-support is straight forward.  A snag here is that for rest of CXL emulation
-I need to use ACPI and the aspeed-i2c driver in Linux is currently not
-very ACPI friendly and it may be controversial to make it so.
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D995C433F5
+	for <linux-cxl@archiver.kernel.org>; Tue, 24 May 2022 16:37:30 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S234266AbiEXQh3 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 24 May 2022 12:37:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40340 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233418AbiEXQh2 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 24 May 2022 12:37:28 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ED685EBD2
+        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 09:37:27 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C748F61183
+        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 16:37:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0298EC34115;
+        Tue, 24 May 2022 16:37:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1653410246;
+        bh=OtVt6xY3rD+YkacskCHASEsxEolh/JCkruqucr9MjRQ=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=i4lh1odMMXSQR5E/OEvV5nEBgABv2U2w9EqmMw96ptj/VeN3YPv8quEvDyngyh6Py
+         G4WbzzXb5TW8khPtbBtweeWEm6yTJn1NUjBhQ7jtVPEQDU19CGR9GhFj6JW3gSt2tT
+         RD6mKh96RQh/boopffgGUY/7+/Qw3WVIgXoLI23WE98jEjpw83Cr/rzrhUCHcNOMjk
+         L7bJYxG95W6KtWJLr307ulJhXPLjUOwB5cVbpb7fJq4YsGQ6j+/+TNWtM3zfPDXfxB
+         tZ8SY0L/anoxcwySVzggONanX446fhO23/dL1c6D3+J3cWOuC1jMrAxc8runXA+ClW
+         PRv9xKVVXeFzw==
+Date: Tue, 24 May 2022 09:36:44 -0700
+From: Ben Widawsky <bwidawsk@kernel.org>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: qemu-devel@nongnu.org, Klaus Jensen <its@irrelevant.dk>,
+        linux-cxl@vger.kernel.org, Corey Minyard <minyard@acm.org>,
+        Damien Hedde <damien.hedde@greensocs.com>,
+        Peter Delevoryas <pdel@fb.com>,
+        =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
+        Alex =?utf-8?Q?Benn=C3=A9e?= <alex.bennee@linaro.org>,
+        linuarm@huawei.com
+Subject: Re: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP
+ to enable MCTP testing
+Message-ID: <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
+References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
+ <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
-To bring up the connection:
+On 22-05-20 18:01:28, Jonathan Cameron wrote:
+> As the only I2C emulation in QEMU that supports being both
+> a master and a slave, suitable for MCTP over i2c is aspeed-i2c
+> add this controller to the arm virt model and hook up our new
+> i2c_mctp_cxl_fmapi device.
+> 
+> The current Linux driver for aspeed-i2c has a hard requirement on
+> a reset controller.  Throw down the simplest reset controller
+> I could find so as to avoid need to make any chance to the kernel
+> code.
 
-* Use a kernel with appropriate i2c controller and mctp driver support.
-  (5.18-rc1 or later should work - though there are some bugs that can
-   be if you follow particular wrong configuration flows).
-* Get mctp and mctpd from https://github.com/CodeConstruct/mctp
-  - modify the mctpd systemd init as provided and start the daemon.
-  - for 64 bit support, get latest version as a sizeof() bug was identified
-    whilst testing this.
+s/chance/change
 
+> 
+> Patch also builds appropriate device tree.  Unfortunately for CXL
+> we need to use ACPI (no DT bindings yet defined). Enabling this will
+> either require appropriate support for MCTP on an i2c master that
+> has ACPI bindings, or modifications of the kernel driver to support
+> ACPI with aspeed-i2c (which might be a little controversial ;)
 
-# Bring up the link
-mctp link set mctpi2c0 up
-# Assign an address to the aspeed-i2c controller
-mctp addr add 50 dev mctpi2c0
-# Assign a neetwork ID to the link (11)
-mctp link set mctpi2c0 net 11
-# Start the daemon that uses dbus for configuration.
-systemctl start mctpd.service
-# Assign an EID to the EP (hard coded I2C address is 0x4d)
-busctl call xyz.openbmc_project.MCTP /xyz/openbmc_project/mctp au.com.CodeConstruct.MCTP AssignEndpoint say mctpi2c0 1 0x4d
-# Check it worked by dumping some state.
-busctl introspect xyz.openbmc_project.MCTP /xyz/openbmc_project/mctp/11/8 xyz.openbmc_project.MCTP.Endpoint
+I'm naive to what DT defines, but I assume what's there already is insufficient
+to make the bindings for CXL. I say this because I believe it wouldn't be too
+bad at all to make a cxl_dt.ko, and it's certainly less artificial than
+providing ACPI support for things which don't naturally have ACPI support.
 
-At this point the control protocol has been exercised.
+> 
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> ---
+>  hw/arm/Kconfig        |  1 +
+>  hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
+>  include/hw/arm/virt.h |  2 ++
+>  3 files changed, 80 insertions(+)
+> 
+> diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
+> index 219262a8da..4a733298cd 100644
+> --- a/hw/arm/Kconfig
+> +++ b/hw/arm/Kconfig
+> @@ -30,6 +30,7 @@ config ARM_VIRT
+>      select ACPI_VIOT
+>      select VIRTIO_MEM_SUPPORTED
+>      select ACPI_CXL
+> +    select I2C_MCTP_CXL_FMAPI
+>  
+>  config CHEETAH
+>      bool
+> diff --git a/hw/arm/virt.c b/hw/arm/virt.c
+> index d818131b57..ea04279515 100644
+> --- a/hw/arm/virt.c
+> +++ b/hw/arm/virt.c
+> @@ -80,6 +80,9 @@
+>  #include "hw/char/pl011.h"
+>  #include "hw/cxl/cxl.h"
+>  #include "qemu/guest-random.h"
+> +#include "hw/i2c/i2c.h"
+> +#include "hw/i2c/aspeed_i2c.h"
+> +#include "hw/misc/i2c_mctp_cxl_fmapi.h"
+>  
+>  #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
+>      static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
+> @@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
+>      [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
+>      [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
+>      [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
+> +    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
+> +    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
+>      /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
+>      [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
+>      [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
+> @@ -192,6 +197,7 @@ static const int a15irqmap[] = {
+>      [VIRT_GPIO] = 7,
+>      [VIRT_SECURE_UART] = 8,
+>      [VIRT_ACPI_GED] = 9,
+> +    [VIRT_I2C] = 10,
+>      [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
+>      [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
+>      [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
+> @@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
+>      }
+>  }
+>  
+> +static void create_mctp_test(MachineState *ms)
+> +{
+> +    VirtMachineState *vms = VIRT_MACHINE(ms);
+> +    MemoryRegion *sysmem = get_system_memory();
+> +    AspeedI2CState *aspeedi2c;
+> +    struct DeviceState  *dev;
+> +    char *nodename_i2c_master;
+> +    char *nodename_i2c_sub;
+> +    char *nodename_reset;
+> +    uint32_t clk_phandle, reset_phandle;
+> +    MemoryRegion *sysmem2;
+> +   
+> +    dev = qdev_new("aspeed.i2c-ast2600");
+> +    aspeedi2c = ASPEED_I2C(dev);
+> +    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
+> +    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
+> +    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
+> +    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
+> +
+> +    /* I2C bus DT */
+> +    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
+> +    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
+> +    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
+> +    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
+> +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
+> +                                 2, vms->memmap[VIRT_RESET_FAKE].base,
+> +                                 2, vms->memmap[VIRT_RESET_FAKE].size);
+> +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
+> +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
+> +    sysmem2 =  g_new(MemoryRegion, 1);
+> +    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
+> +    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
+> +    
+> +    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
+> +    
+> +    qemu_fdt_add_subnode(ms->fdt, "/mclk");
+> +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
+> +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
+> +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
+> +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
+> +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
+> +
+> +    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
+> +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
+> +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
+> +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
+> +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
+> +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
+> +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
+> +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
+> +    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
+> +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
+> +                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
+> +    /* Offset to the first bus is 0x80, next one at 0x100 etc */
+> +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
+> +                                 2, vms->memmap[VIRT_I2C].base + 0x80,
+> +                                 2, 0x80);
+> +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
+> +
+> +    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
+> +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
+> +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
+> +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
+> +
+> +        
+> +    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
+> +    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
+> +}
+> +
+>  static void machvirt_init(MachineState *machine)
+>  {
+>      VirtMachineState *vms = VIRT_MACHINE(machine);
+> @@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
+>          create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
+>      }
+>  
+> +    create_mctp_test(machine);
+> +
+>       /* connect powerdown request */
+>       vms->powerdown_notifier.notify = virt_powerdown_req;
+>       qemu_register_powerdown_notifier(&vms->powerdown_notifier);
+> diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
+> index 67c08a62af..abbfac7c48 100644
+> --- a/include/hw/arm/virt.h
+> +++ b/include/hw/arm/virt.h
+> @@ -71,6 +71,8 @@ enum {
+>      VIRT_SMMU,
+>      VIRT_UART,
+>      VIRT_MMIO,
+> +    VIRT_I2C,
+> +    VIRT_RESET_FAKE,
+>      VIRT_RTC,
+>      VIRT_FW_CFG,
+>      VIRT_PCIE,
+> -- 
+> 2.32.0
+> 
 
-The following test program will query some information about the
-'fake' CXL switch.
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93FA5C433EF
+	for <linux-cxl@archiver.kernel.org>; Tue, 24 May 2022 16:50:51 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S237401AbiEXQuv (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 24 May 2022 12:50:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57020 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236692AbiEXQuu (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 24 May 2022 12:50:50 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 077B066FB0
+        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 09:50:47 -0700 (PDT)
+Received: from fraeml707-chm.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4L70TZ1QCzz686Gm;
+        Wed, 25 May 2022 00:46:42 +0800 (CST)
+Received: from lhreml710-chm.china.huawei.com (10.201.108.61) by
+ fraeml707-chm.china.huawei.com (10.206.15.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Tue, 24 May 2022 18:50:45 +0200
+Received: from localhost (10.202.226.42) by lhreml710-chm.china.huawei.com
+ (10.201.108.61) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Tue, 24 May
+ 2022 17:50:44 +0100
+Date: Tue, 24 May 2022 17:50:43 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Ben Widawsky <bwidawsk@kernel.org>
+CC: <qemu-devel@nongnu.org>, Klaus Jensen <its@irrelevant.dk>,
+        <linux-cxl@vger.kernel.org>, Corey Minyard <minyard@acm.org>,
+        Damien Hedde <damien.hedde@greensocs.com>,
+        Peter Delevoryas <pdel@fb.com>,
+        =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+        Alex =?ISO-8859-1?Q?B?= =?ISO-8859-1?Q?enn=E9e?= 
+        <alex.bennee@linaro.org>, <linuxarm@huawei.com>
+Subject: Re: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP
+ to enable MCTP testing
+Message-ID: <20220524175043.00002ae8@Huawei.com>
+In-Reply-To: <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
+References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
+        <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
+        <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; i686-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.226.42]
+X-ClientProxiedBy: lhreml740-chm.china.huawei.com (10.201.108.190) To
+ lhreml710-chm.china.huawei.com (10.201.108.61)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
-/*
- * Trivial example program to exercise QEMU FMAPI Emulation over MCTP over I2C
- */
-#include <sys/socket.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include "mctp.h"
-#include "cxl_fmapi.h"
+On Tue, 24 May 2022 09:36:44 -0700
+Ben Widawsky <bwidawsk@kernel.org> wrote:
 
-#define AF_MCTP 45
-static int parse_physical_switch_identify_switch_device(void *buf, size_t buf_len)
-{
-	struct cxl_fmapi_header *head = buf;
-	struct cxl_fmapi_ident_switch_dev_resp_pl *pl = (void *)(head + 1);
+> On 22-05-20 18:01:28, Jonathan Cameron wrote:
+> > As the only I2C emulation in QEMU that supports being both
+> > a master and a slave, suitable for MCTP over i2c is aspeed-i2c
+> > add this controller to the arm virt model and hook up our new
+> > i2c_mctp_cxl_fmapi device.
+> > 
+> > The current Linux driver for aspeed-i2c has a hard requirement on
+> > a reset controller.  Throw down the simplest reset controller
+> > I could find so as to avoid need to make any chance to the kernel
+> > code.  
+> 
+> s/chance/change
+oops :)
+> 
+> > 
+> > Patch also builds appropriate device tree.  Unfortunately for CXL
+> > we need to use ACPI (no DT bindings yet defined). Enabling this will
+> > either require appropriate support for MCTP on an i2c master that
+> > has ACPI bindings, or modifications of the kernel driver to support
+> > ACPI with aspeed-i2c (which might be a little controversial ;)  
+> 
+> I'm naive to what DT defines, but I assume what's there already is insufficient
+> to make the bindings for CXL. I say this because I believe it wouldn't be too
+> bad at all to make a cxl_dt.ko, and it's certainly less artificial than
+> providing ACPI support for things which don't naturally have ACPI support.
 
-	printf("Num total vppb %d\n", pl->num_total_vppb);
-	return 0;
-}
+It wouldn't be that hard to work out a CXL dt binding, but it's not
+of sufficient interest to me that I'd want to do it (I'll review if someone
+else sends patches). Platforms I'm interested in CXL with are all strictly
+ACPI only.
 
-int query_physical_switch_info(int sd, struct sockaddr_mctp *addr, int *tag)
-{
-	uint8_t buf[1024];
-	int rc;
-	ssize_t len;
-	struct sockaddr_mctp addrrx;
-	socklen_t addrlen = sizeof(addrrx);
-	struct cxl_fmapi_header req = {
-		.category = CXL_MCTP_CATEGORY_REQ,
-		.tag = *tag++,
-		.command = CXL_IDENTIFY_SWITCH_DEVICE,
-		.command_set = CXL_FM_API_CMD_SET_PHYSICAL_SWITCH,
-		.vendor_ext_status = 0xabcd,
-	};
+The trick here I think, is going to be adding ACPI support for a suitable I2C controller
+which supports the requirement for supporting master and and I2C EP needed
+for MCTP. Either I find one that already has ACPI bindings and add enough
+emulation for this functionality, or work around the lack of ACPI bindings for the
+aspeed-i2c controller.
 
-	len = sendto(sd, &req, sizeof(req), 0, (struct sockaddr *)addr, sizeof(*addr));
-	if (len != sizeof(req)) {
-		printf("Failed to send whole request\n");
-		return -1;
-	}
-
-	len = recvfrom(sd, buf, sizeof(buf), 0, (struct sockaddr *)&addrrx, &addrlen);
-	if (len < 0) {
-		printf("Failed to receive response\n");
-		return -1;
-	}
-	rc = parse_physical_switch_identify_switch_device(buf, len);
-	if (rc)
-		return -1;
-
-	return 0;
-}
-
-static int parse_phys_port_state_rsp(void * buf, size_t buf_len, struct cxl_fmapi_header *head)
-{
-	struct cxl_fmapi_header *rsp_head = buf;
-	struct cxl_fmapi_get_phys_port_state_resp_pl *pl = (void *)(rsp_head + 1);
-	uint32_t pl_length = rsp_head->pl_length[0] |
-		(rsp_head->pl_length[1] << 8) |
-		((rsp_head->pl_length[2] & 0xf) << 16);
-
-	if (rsp_head->category != CXL_MCTP_CATEGORY_RESP) {
-		printf("Message not a response\n");
-		return -1;
-	}
-	if (rsp_head->tag != head->tag) {
-		printf("Reply has wrong tag\n");
-		return -1;
-	}
-	if ((rsp_head->command != head->command) ||
-		(rsp_head->command_set != head->command_set)) {
-		printf("Response to wrong command\n");
-		return -1;
-	}
-
-	if (rsp_head->return_code != 0) {
-		printf("Error code in response %d\n", rsp_head);
-		return -1;
-	}
-
-	if (pl_length < 4 ||  pl_length < (pl->num_ports * sizeof(pl->ports[0]))) {
-		printf("too short\n");
-		return -1;
-	}
-
-	for (int i = 0; i < pl->num_ports; i++) {
-		struct cxl_fmapi_port_state_info_block *port = &pl->ports[i];
-		const char *port_states[] = {
-			[0x0] = "Disabled",
-			[0x1] = "Bind in progress",
-			[0x2] = "Unbind in progress",
-			[0x3] = "DSP",
-			[0x4] = "USP",
-			[0x5] = "Reserved",
-			//other values not present.
-			[0xf] = "Invalid Port ID"
-		  };
-		const char *connected_device_modes[] = {
-			[0] = "Not CXL / connected",
-			[1] = "CXL 1.1",
-			[2] = "CXL 2.0",
-		};
-		const char *connected_device_type[] = {
-			[0] = "No device detected",
-			[1] = "PCIe device",
-			[2] = "CXL type 1 device",
-			[3] = "CXL type 2 device",
-			[4] = "CXL type 3 device",
-			[5] = "CXL type 3 pooled device",
-			[6] = "Reserved",
-		};
-		const char *ltssm_states[] = {
-			[0] = "Detect",
-			[1] = "Polling",
-			[2] = "Configuration",
-			[3] = "Recovery",
-			[4] = "L0",
-			[5] = "L0s",
-			[6] = "L1",
-			[7] = "L2",
-			[8] = "Disabled",
-			[9] = "Loop Back",
-			[10] = "Hot Reset",
-		};
-		printf("Port%02d:\n ", port->port_id);
-		printf("\tPort state: ");
-		if (port_states[port->config_state & 0xf])
-			printf("%s\n", port_states[port->config_state]);
-		else
-			printf("Unknown state\n");
-
-		if (port->config_state == 3) { /* DSP so device could be there */
-			printf("\tConnected Device CXL Version: ");
-			if (port->connected_device_cxl_version > 2)
-				printf("Unknown CXL Version\n");
-			else
-				printf("%s\n", connected_device_modes[port->connected_device_cxl_version]);
-
-			printf("\tConnected Device Type: ");
-			if (port->connected_device_type > 7)
-				printf("Unknown\n");
-			else
-				printf("%s\n", connected_device_type[port->connected_device_type]);
-		}
-
-		printf("\tSupported CXL Modes:");
-		if (port->port_cxl_version_bitmask & 0x1)
-			printf(" 1.1");
-		if (port->port_cxl_version_bitmask & 0x2)
-			printf(" 2.0");
-		printf("\n");
-
-		printf("\tMaximum Link Width: %d Negotiated Width %d\n",
-			   port->max_link_width,
-			   port->negotiated_link_width);
-		printf("\tSupported Speeds: ");
-		if (port->supported_link_speeds_vector & 0x1)
-			printf(" 2.5 GT/s");
-		if (port->supported_link_speeds_vector & 0x2)
-			printf(" 5.0 GT/s");
-		if (port->supported_link_speeds_vector & 0x4)
-			printf(" 8.0 GT/s");
-		if (port->supported_link_speeds_vector & 0x8)
-			printf(" 16.0 GT/s");
-		if (port->supported_link_speeds_vector & 0x10)
-			printf(" 32.0 GT/s");
-		if (port->supported_link_speeds_vector & 0x20)
-			printf(" 64.0 GT/s");
-		printf("\n");
-
-		printf("\tLTSSM: ");
-		if (port->ltssm_state >= sizeof(ltssm_states))
-			printf("Unkown\n");
-		else
-			printf("%s\n", ltssm_states[port->ltssm_state]);
-	}
-}
-
-int query_ports(int sd, struct sockaddr_mctp *addr, int *tag)
-{
-	uint8_t buf[1024];
-	ssize_t len;
-	int num_ports = 4;
-	int rc;
-	uint8_t port_list[4] = { 0, 3, 7, 4 };
-	struct sockaddr_mctp addrrx;
-	socklen_t addrlen = sizeof(addrrx);
-	struct cxl_fmapi_header *head;
-	struct cxl_fmapi_get_phys_port_state_req_pl *reqpl;
-	size_t req_sz = sizeof(*reqpl) + num_ports + sizeof(*head) ;
-
-	head = malloc(req_sz);
-	*head = (struct cxl_fmapi_header) {
-		.category = CXL_MCTP_CATEGORY_REQ,
-		.tag = *tag++,
-		.command = CXL_GET_PHYSICAL_PORT_STATE,
-		.command_set = CXL_FM_API_CMD_SET_PHYSICAL_SWITCH,
-		.pl_length = {
-			req_sz & 0xff,
-			(req_sz >> 8) & 0xff,
-			(req_sz >> 16) & 0xf },
-		.vendor_ext_status = 0x1234,
-	};
-	reqpl = (void *)(head + 1);
-	*reqpl = (struct cxl_fmapi_get_phys_port_state_req_pl) {
-		.num_ports = num_ports,
-	};
-	for (int j = 0; j < num_ports; j++)
-		reqpl->ports[j] = port_list[j];
-
-	len = sendto(sd, head, req_sz, 0,
-				 (struct sockaddr *)addr, sizeof(*addr));
-
-	len = recvfrom(sd, buf, sizeof(buf), 0,
-				   (struct sockaddr *)&addrrx, &addrlen);
-	if (len < sizeof(struct cxl_fmapi_header)) {
-		printf("Too short for header\n");
-	}
-	//TODO generic check of reply.
-	if (addrrx.smctp_type != 0x7) {
-		printf("Reply does not match expected message type\n");
-	}
-
-	rc = parse_phys_port_state_rsp(buf, len, head);
-	if (rc)
-		return rc;
-
-	return 0;
-}
-
-int main()
-{
-	int rc, sd;
-	int tag = 0; /* will increment on each use */
-	ssize_t len;
-	struct sockaddr_mctp addr = {
-		.smctp_family = AF_MCTP,
-		.smctp_network = 11,
-		.smctp_addr.s_addr = 8,
-		.smctp_type = 0x7, /* CXL FMAPI */
-		.smctp_tag = MCTP_TAG_OWNER,
-	};
-	struct sockaddr_mctp addrrx;
-	socklen_t addrlen = sizeof(addrrx);
-
-	sd = socket(AF_MCTP, SOCK_DGRAM, 0);
-	rc = bind(sd, (struct sockaddr *)&addr, sizeof(addr));
-	if (rc) {
-		printf("Bind failed\n");
-		return -1;
-	}
-
-	rc = query_physical_switch_info(sd, &addr, &tag);
-	if (rc)
-			return rc;
-
-	/* Next query some of the ports */
-	rc = query_ports(sd, &addr, &tag);
-	if (rc)
-		return rc;
-
-	return 0;
-}
-
-All feedback welcome.
-
-Enjoy,
+Based on a really quick check of I2C masters for which I have docs and that
+definitely have ACPI bindings, it's not a particularly common feature set.
 
 Jonathan
 
-Jonathan Cameron (2):
-  misc/i2c_mctp_cxl_fmapi: Initial device emulation
-  arm/virt: Add aspeed-i2c controller and MCTP EP to enable MCTP testing
 
- hw/arm/Kconfig                       |   1 +
- hw/arm/virt.c                        |  77 +++
- hw/misc/Kconfig                      |   3 +
- hw/misc/i2c_mctp_cxl_fmapi.c         | 759 +++++++++++++++++++++++++++
- hw/misc/meson.build                  |   2 +
- include/hw/arm/virt.h                |   2 +
- include/hw/cxl/cxl_fmapi.h           | 158 ++++++
- include/hw/misc/i2c_mctp_cxl_fmapi.h |  17 +
- 8 files changed, 1019 insertions(+)
- create mode 100644 hw/misc/i2c_mctp_cxl_fmapi.c
- create mode 100644 include/hw/cxl/cxl_fmapi.h
- create mode 100644 include/hw/misc/i2c_mctp_cxl_fmapi.h
 
--- 
-2.32.0
+> 
+> > 
+> > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > ---
+> >  hw/arm/Kconfig        |  1 +
+> >  hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
+> >  include/hw/arm/virt.h |  2 ++
+> >  3 files changed, 80 insertions(+)
+> > 
+> > diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
+> > index 219262a8da..4a733298cd 100644
+> > --- a/hw/arm/Kconfig
+> > +++ b/hw/arm/Kconfig
+> > @@ -30,6 +30,7 @@ config ARM_VIRT
+> >      select ACPI_VIOT
+> >      select VIRTIO_MEM_SUPPORTED
+> >      select ACPI_CXL
+> > +    select I2C_MCTP_CXL_FMAPI
+> >  
+> >  config CHEETAH
+> >      bool
+> > diff --git a/hw/arm/virt.c b/hw/arm/virt.c
+> > index d818131b57..ea04279515 100644
+> > --- a/hw/arm/virt.c
+> > +++ b/hw/arm/virt.c
+> > @@ -80,6 +80,9 @@
+> >  #include "hw/char/pl011.h"
+> >  #include "hw/cxl/cxl.h"
+> >  #include "qemu/guest-random.h"
+> > +#include "hw/i2c/i2c.h"
+> > +#include "hw/i2c/aspeed_i2c.h"
+> > +#include "hw/misc/i2c_mctp_cxl_fmapi.h"
+> >  
+> >  #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
+> >      static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
+> > @@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
+> >      [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
+> >      [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
+> >      [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
+> > +    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
+> > +    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
+> >      /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
+> >      [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
+> >      [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
+> > @@ -192,6 +197,7 @@ static const int a15irqmap[] = {
+> >      [VIRT_GPIO] = 7,
+> >      [VIRT_SECURE_UART] = 8,
+> >      [VIRT_ACPI_GED] = 9,
+> > +    [VIRT_I2C] = 10,
+> >      [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
+> >      [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
+> >      [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
+> > @@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
+> >      }
+> >  }
+> >  
+> > +static void create_mctp_test(MachineState *ms)
+> > +{
+> > +    VirtMachineState *vms = VIRT_MACHINE(ms);
+> > +    MemoryRegion *sysmem = get_system_memory();
+> > +    AspeedI2CState *aspeedi2c;
+> > +    struct DeviceState  *dev;
+> > +    char *nodename_i2c_master;
+> > +    char *nodename_i2c_sub;
+> > +    char *nodename_reset;
+> > +    uint32_t clk_phandle, reset_phandle;
+> > +    MemoryRegion *sysmem2;
+> > +   
+> > +    dev = qdev_new("aspeed.i2c-ast2600");
+> > +    aspeedi2c = ASPEED_I2C(dev);
+> > +    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
+> > +    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
+> > +    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
+> > +    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
+> > +
+> > +    /* I2C bus DT */
+> > +    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
+> > +    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
+> > +    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
+> > +    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
+> > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
+> > +                                 2, vms->memmap[VIRT_RESET_FAKE].base,
+> > +                                 2, vms->memmap[VIRT_RESET_FAKE].size);
+> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
+> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
+> > +    sysmem2 =  g_new(MemoryRegion, 1);
+> > +    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
+> > +    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
+> > +    
+> > +    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
+> > +    
+> > +    qemu_fdt_add_subnode(ms->fdt, "/mclk");
+> > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
+> > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
+> > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
+> > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
+> > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
+> > +
+> > +    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
+> > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
+> > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
+> > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
+> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
+> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
+> > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
+> > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
+> > +    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
+> > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
+> > +                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
+> > +    /* Offset to the first bus is 0x80, next one at 0x100 etc */
+> > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
+> > +                                 2, vms->memmap[VIRT_I2C].base + 0x80,
+> > +                                 2, 0x80);
+> > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
+> > +
+> > +    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
+> > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
+> > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
+> > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
+> > +
+> > +        
+> > +    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
+> > +    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
+> > +}
+> > +
+> >  static void machvirt_init(MachineState *machine)
+> >  {
+> >      VirtMachineState *vms = VIRT_MACHINE(machine);
+> > @@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
+> >          create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
+> >      }
+> >  
+> > +    create_mctp_test(machine);
+> > +
+> >       /* connect powerdown request */
+> >       vms->powerdown_notifier.notify = virt_powerdown_req;
+> >       qemu_register_powerdown_notifier(&vms->powerdown_notifier);
+> > diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
+> > index 67c08a62af..abbfac7c48 100644
+> > --- a/include/hw/arm/virt.h
+> > +++ b/include/hw/arm/virt.h
+> > @@ -71,6 +71,8 @@ enum {
+> >      VIRT_SMMU,
+> >      VIRT_UART,
+> >      VIRT_MMIO,
+> > +    VIRT_I2C,
+> > +    VIRT_RESET_FAKE,
+> >      VIRT_RTC,
+> >      VIRT_FW_CFG,
+> >      VIRT_PCIE,
+> > -- 
+> > 2.32.0
+> >   
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0027C433FE
+	for <linux-cxl@archiver.kernel.org>; Tue, 24 May 2022 18:13:20 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S235348AbiEXSNS (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 24 May 2022 14:13:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32858 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238051AbiEXSNQ (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 24 May 2022 14:13:16 -0400
+Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F42346A03B
+        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 11:13:14 -0700 (PDT)
+Received: by mail-qk1-x735.google.com with SMTP id c1so15629468qkf.13
+        for <linux-cxl@vger.kernel.org>; Tue, 24 May 2022 11:13:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=sender:date:from:to:cc:subject:message-id:reply-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Tt+yoXSfaSEDtJwWBq0ccW/zcqSPyDxpK46AB1kjft4=;
+        b=mBdseHK+I3PpHzSoeFpZFjuq/Ij6DVUUp/4glqzJ70W6kQl/Kx2o5bnl5v4VSRUP16
+         psYjwyON6AgZKd1O3Q1MCPqh9nxQ0YYPhfBxvQSzJHSziKfNbuUJgNEccvRORnSBTC0e
+         eDakbmIsFJ95NVSOaNy2xdE8jkDY+QQD2ZyhlI2utzxi9fiDDk5SJVkeNTpyCMCle5l2
+         FuenAlmPTNDhsWDbSU/6Unm/3FRnNSeVFkx4mQNLD7fxEllVy5zQ0dfVpnnkjgQ/Zwqz
+         XTsAChUNh/hXs0s0ClUQwF90oJxZvmxXCSlxd23+KoohCex8H2nfbWIPX1im7VUbhPJw
+         NCQg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+         :reply-to:references:mime-version:content-disposition:in-reply-to;
+        bh=Tt+yoXSfaSEDtJwWBq0ccW/zcqSPyDxpK46AB1kjft4=;
+        b=cNfj3dfukp042ZzkKJc4xWiVL7GCfx8W/5DHPFj+0JbATiW6BveVxZfVHX6hMZxBhG
+         FejQ80yYnBNNx9zv3W33wAI6ZAKgIQnTqJ/ywKRtnFHA2JiLFnpf4Ub9qAbiq1fHGCzC
+         NZFzwABuGf1J5XrlRiGS3+V9TC9Hw5kyc42TTv73cikRPVf5FMLnnMBQ2vA1jObzApw4
+         ct0C030cDM4YGiaZN/eAqtLRCAkaznXdZYSawLKyki+Kq8QMpTXOWub8RUQZNE1sv9ht
+         DXO5neVvA5GnWEVx+hfQM2ufoSXERtKLrJJ+Zz9GY/9dPMbZIe9QUBfAYqMnpjD1pKvI
+         LNsA==
+X-Gm-Message-State: AOAM531jSpfAtwRgZZt+a3C3bevh3TYH7n5US5qCtCGBZol1QThNaNbO
+        AP0Ce+E4m8licrj6OoGFigEq9qw3ag==
+X-Google-Smtp-Source: ABdhPJw/nHHHEb3vRdcCQ1R2PCPjpbu2YzDQqfnCby7n/oT0dXv4x0wQf6lXXOqMeVgVU7lz0OL7/g==
+X-Received: by 2002:a05:620a:248f:b0:6a3:ac24:931c with SMTP id i15-20020a05620a248f00b006a3ac24931cmr5200122qkn.122.1653415993841;
+        Tue, 24 May 2022 11:13:13 -0700 (PDT)
+Received: from serve.minyard.net ([47.184.144.75])
+        by smtp.gmail.com with ESMTPSA id a13-20020a37660d000000b0069fc13ce1e8sm6561400qkc.25.2022.05.24.11.13.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 May 2022 11:13:13 -0700 (PDT)
+Sender: Corey Minyard <tcminyard@gmail.com>
+Received: from minyard.net (unknown [IPv6:2001:470:b8f6:1b:15a9:1d6a:8b02:cb8d])
+        by serve.minyard.net (Postfix) with ESMTPSA id D20D91800BB;
+        Tue, 24 May 2022 18:13:11 +0000 (UTC)
+Date: Tue, 24 May 2022 13:13:10 -0500
+From: Corey Minyard <minyard@acm.org>
+To: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+Cc: Ben Widawsky <bwidawsk@kernel.org>, qemu-devel@nongnu.org,
+        Klaus Jensen <its@irrelevant.dk>, linux-cxl@vger.kernel.org,
+        Damien Hedde <damien.hedde@greensocs.com>,
+        Peter Delevoryas <pdel@fb.com>,
+        =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
+        Alex =?utf-8?Q?Benn=C3=A9e?= <alex.bennee@linaro.org>,
+        linuxarm@huawei.com
+Subject: Re: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP
+ to enable MCTP testing
+Message-ID: <20220524181310.GI3767252@minyard.net>
+Reply-To: minyard@acm.org
+References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
+ <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
+ <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
+ <20220524175043.00002ae8@Huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220524175043.00002ae8@Huawei.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, May 24, 2022 at 05:50:43PM +0100, Jonathan Cameron wrote:
+> On Tue, 24 May 2022 09:36:44 -0700
+> Ben Widawsky <bwidawsk@kernel.org> wrote:
+> 
+> > On 22-05-20 18:01:28, Jonathan Cameron wrote:
+> > > As the only I2C emulation in QEMU that supports being both
+> > > a master and a slave, suitable for MCTP over i2c is aspeed-i2c
+> > > add this controller to the arm virt model and hook up our new
+> > > i2c_mctp_cxl_fmapi device.
+> > > 
+> > > The current Linux driver for aspeed-i2c has a hard requirement on
+> > > a reset controller.  Throw down the simplest reset controller
+> > > I could find so as to avoid need to make any chance to the kernel
+> > > code.  
+> > 
+> > s/chance/change
+> oops :)
+> > 
+> > > 
+> > > Patch also builds appropriate device tree.  Unfortunately for CXL
+> > > we need to use ACPI (no DT bindings yet defined). Enabling this will
+> > > either require appropriate support for MCTP on an i2c master that
+> > > has ACPI bindings, or modifications of the kernel driver to support
+> > > ACPI with aspeed-i2c (which might be a little controversial ;)  
+> > 
+> > I'm naive to what DT defines, but I assume what's there already is insufficient
+> > to make the bindings for CXL. I say this because I believe it wouldn't be too
+> > bad at all to make a cxl_dt.ko, and it's certainly less artificial than
+> > providing ACPI support for things which don't naturally have ACPI support.
+> 
+> It wouldn't be that hard to work out a CXL dt binding, but it's not
+> of sufficient interest to me that I'd want to do it (I'll review if someone
+> else sends patches). Platforms I'm interested in CXL with are all strictly
+> ACPI only.
+> 
+> The trick here I think, is going to be adding ACPI support for a suitable I2C controller
+> which supports the requirement for supporting master and and I2C EP needed
+> for MCTP. Either I find one that already has ACPI bindings and add enough
+> emulation for this functionality, or work around the lack of ACPI bindings for the
+> aspeed-i2c controller.
+> 
+> Based on a really quick check of I2C masters for which I have docs and that
+> definitely have ACPI bindings, it's not a particularly common feature set.
+
+Ben already got my comments.
+
+It's not common, but it's something you are using, so it obviously
+exists.  What hardware do you have?  The most natural thing might be to
+add your controller.
+
+-corey
+
+> 
+> Jonathan
+> 
+> 
+> 
+> > 
+> > > 
+> > > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > > ---
+> > >  hw/arm/Kconfig        |  1 +
+> > >  hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
+> > >  include/hw/arm/virt.h |  2 ++
+> > >  3 files changed, 80 insertions(+)
+> > > 
+> > > diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
+> > > index 219262a8da..4a733298cd 100644
+> > > --- a/hw/arm/Kconfig
+> > > +++ b/hw/arm/Kconfig
+> > > @@ -30,6 +30,7 @@ config ARM_VIRT
+> > >      select ACPI_VIOT
+> > >      select VIRTIO_MEM_SUPPORTED
+> > >      select ACPI_CXL
+> > > +    select I2C_MCTP_CXL_FMAPI
+> > >  
+> > >  config CHEETAH
+> > >      bool
+> > > diff --git a/hw/arm/virt.c b/hw/arm/virt.c
+> > > index d818131b57..ea04279515 100644
+> > > --- a/hw/arm/virt.c
+> > > +++ b/hw/arm/virt.c
+> > > @@ -80,6 +80,9 @@
+> > >  #include "hw/char/pl011.h"
+> > >  #include "hw/cxl/cxl.h"
+> > >  #include "qemu/guest-random.h"
+> > > +#include "hw/i2c/i2c.h"
+> > > +#include "hw/i2c/aspeed_i2c.h"
+> > > +#include "hw/misc/i2c_mctp_cxl_fmapi.h"
+> > >  
+> > >  #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
+> > >      static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
+> > > @@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
+> > >      [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
+> > >      [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
+> > >      [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
+> > > +    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
+> > > +    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
+> > >      /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
+> > >      [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
+> > >      [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
+> > > @@ -192,6 +197,7 @@ static const int a15irqmap[] = {
+> > >      [VIRT_GPIO] = 7,
+> > >      [VIRT_SECURE_UART] = 8,
+> > >      [VIRT_ACPI_GED] = 9,
+> > > +    [VIRT_I2C] = 10,
+> > >      [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
+> > >      [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
+> > >      [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
+> > > @@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
+> > >      }
+> > >  }
+> > >  
+> > > +static void create_mctp_test(MachineState *ms)
+> > > +{
+> > > +    VirtMachineState *vms = VIRT_MACHINE(ms);
+> > > +    MemoryRegion *sysmem = get_system_memory();
+> > > +    AspeedI2CState *aspeedi2c;
+> > > +    struct DeviceState  *dev;
+> > > +    char *nodename_i2c_master;
+> > > +    char *nodename_i2c_sub;
+> > > +    char *nodename_reset;
+> > > +    uint32_t clk_phandle, reset_phandle;
+> > > +    MemoryRegion *sysmem2;
+> > > +   
+> > > +    dev = qdev_new("aspeed.i2c-ast2600");
+> > > +    aspeedi2c = ASPEED_I2C(dev);
+> > > +    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
+> > > +    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
+> > > +    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
+> > > +    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
+> > > +
+> > > +    /* I2C bus DT */
+> > > +    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
+> > > +    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
+> > > +    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
+> > > +    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
+> > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
+> > > +                                 2, vms->memmap[VIRT_RESET_FAKE].base,
+> > > +                                 2, vms->memmap[VIRT_RESET_FAKE].size);
+> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
+> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
+> > > +    sysmem2 =  g_new(MemoryRegion, 1);
+> > > +    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
+> > > +    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
+> > > +    
+> > > +    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
+> > > +    
+> > > +    qemu_fdt_add_subnode(ms->fdt, "/mclk");
+> > > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
+> > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
+> > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
+> > > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
+> > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
+> > > +
+> > > +    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
+> > > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
+> > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
+> > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
+> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
+> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
+> > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
+> > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
+> > > +    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
+> > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
+> > > +                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
+> > > +    /* Offset to the first bus is 0x80, next one at 0x100 etc */
+> > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
+> > > +                                 2, vms->memmap[VIRT_I2C].base + 0x80,
+> > > +                                 2, 0x80);
+> > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
+> > > +
+> > > +    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
+> > > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
+> > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
+> > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
+> > > +
+> > > +        
+> > > +    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
+> > > +    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
+> > > +}
+> > > +
+> > >  static void machvirt_init(MachineState *machine)
+> > >  {
+> > >      VirtMachineState *vms = VIRT_MACHINE(machine);
+> > > @@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
+> > >          create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
+> > >      }
+> > >  
+> > > +    create_mctp_test(machine);
+> > > +
+> > >       /* connect powerdown request */
+> > >       vms->powerdown_notifier.notify = virt_powerdown_req;
+> > >       qemu_register_powerdown_notifier(&vms->powerdown_notifier);
+> > > diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
+> > > index 67c08a62af..abbfac7c48 100644
+> > > --- a/include/hw/arm/virt.h
+> > > +++ b/include/hw/arm/virt.h
+> > > @@ -71,6 +71,8 @@ enum {
+> > >      VIRT_SMMU,
+> > >      VIRT_UART,
+> > >      VIRT_MMIO,
+> > > +    VIRT_I2C,
+> > > +    VIRT_RESET_FAKE,
+> > >      VIRT_RTC,
+> > >      VIRT_FW_CFG,
+> > >      VIRT_PCIE,
+> > > -- 
+> > > 2.32.0
+> > >   
+> 
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9F68C433FE
+	for <linux-cxl@archiver.kernel.org>; Wed, 25 May 2022 11:14:45 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230270AbiEYLOn (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Wed, 25 May 2022 07:14:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57112 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S242617AbiEYLOe (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 25 May 2022 07:14:34 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2B1C8CCC5
+        for <linux-cxl@vger.kernel.org>; Wed, 25 May 2022 04:14:29 -0700 (PDT)
+Received: from fraeml715-chm.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4L7Sz1359jz681D8;
+        Wed, 25 May 2022 19:10:21 +0800 (CST)
+Received: from lhreml710-chm.china.huawei.com (10.201.108.61) by
+ fraeml715-chm.china.huawei.com (10.206.15.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Wed, 25 May 2022 13:14:26 +0200
+Received: from localhost (10.202.226.42) by lhreml710-chm.china.huawei.com
+ (10.201.108.61) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Wed, 25 May
+ 2022 12:14:25 +0100
+Date: Wed, 25 May 2022 12:14:22 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Corey Minyard <minyard@acm.org>
+CC: Ben Widawsky <bwidawsk@kernel.org>, <qemu-devel@nongnu.org>,
+        Klaus Jensen <its@irrelevant.dk>, <linux-cxl@vger.kernel.org>,
+        Damien Hedde <damien.hedde@greensocs.com>,
+        Peter Delevoryas <pdel@fb.com>,
+        =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+        Alex =?ISO-8859-1?Q?B?= =?ISO-8859-1?Q?enn=E9e?= 
+        <alex.bennee@linaro.org>, <linuxarm@huawei.com>
+Subject: Re: [RFC PATCH 2/2] arm/virt: Add aspeed-i2c controller and MCTP EP
+ to enable MCTP testing
+Message-ID: <20220525121422.00003a84@Huawei.com>
+In-Reply-To: <20220524181310.GI3767252@minyard.net>
+References: <20220520170128.4436-1-Jonathan.Cameron@huawei.com>
+ <20220520170128.4436-3-Jonathan.Cameron@huawei.com>
+ <20220524163633.gycxq6v5i5ucz4ja@bwidawsk-mobl5>
+ <20220524175043.00002ae8@Huawei.com>
+ <20220524181310.GI3767252@minyard.net>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; i686-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.226.42]
+X-ClientProxiedBy: lhreml726-chm.china.huawei.com (10.201.108.77) To
+ lhreml710-chm.china.huawei.com (10.201.108.61)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, 24 May 2022 13:13:10 -0500
+Corey Minyard <minyard@acm.org> wrote:
+
+> On Tue, May 24, 2022 at 05:50:43PM +0100, Jonathan Cameron wrote:
+> > On Tue, 24 May 2022 09:36:44 -0700
+> > Ben Widawsky <bwidawsk@kernel.org> wrote:
+> >   
+> > > On 22-05-20 18:01:28, Jonathan Cameron wrote:  
+> > > > As the only I2C emulation in QEMU that supports being both
+> > > > a master and a slave, suitable for MCTP over i2c is aspeed-i2c
+> > > > add this controller to the arm virt model and hook up our new
+> > > > i2c_mctp_cxl_fmapi device.
+> > > > 
+> > > > The current Linux driver for aspeed-i2c has a hard requirement on
+> > > > a reset controller.  Throw down the simplest reset controller
+> > > > I could find so as to avoid need to make any chance to the kernel
+> > > > code.    
+> > > 
+> > > s/chance/change  
+> > oops :)  
+> > >   
+> > > > 
+> > > > Patch also builds appropriate device tree.  Unfortunately for CXL
+> > > > we need to use ACPI (no DT bindings yet defined). Enabling this will
+> > > > either require appropriate support for MCTP on an i2c master that
+> > > > has ACPI bindings, or modifications of the kernel driver to support
+> > > > ACPI with aspeed-i2c (which might be a little controversial ;)    
+> > > 
+> > > I'm naive to what DT defines, but I assume what's there already is insufficient
+> > > to make the bindings for CXL. I say this because I believe it wouldn't be too
+> > > bad at all to make a cxl_dt.ko, and it's certainly less artificial than
+> > > providing ACPI support for things which don't naturally have ACPI support.  
+> > 
+> > It wouldn't be that hard to work out a CXL dt binding, but it's not
+> > of sufficient interest to me that I'd want to do it (I'll review if someone
+> > else sends patches). Platforms I'm interested in CXL with are all strictly
+> > ACPI only.
+> > 
+> > The trick here I think, is going to be adding ACPI support for a suitable I2C controller
+> > which supports the requirement for supporting master and and I2C EP needed
+> > for MCTP. Either I find one that already has ACPI bindings and add enough
+> > emulation for this functionality, or work around the lack of ACPI bindings for the
+> > aspeed-i2c controller.
+> > 
+> > Based on a really quick check of I2C masters for which I have docs and that
+> > definitely have ACPI bindings, it's not a particularly common feature set.  
+> 
+> Ben already got my comments.
+> 
+> It's not common, but it's something you are using, so it obviously
+> exists.  What hardware do you have?  The most natural thing might be to
+> add your controller.
+> 
+
+Right now, no hardware. My interest here isn't really in the i2c mctp thing as
+opposed to running other stuff over MCTP - it's just a convenient path
+to emulating what a Fabric Manager (probably a BMC) would be doing
+in a CXL system. I'm just making us of the existing infrastructure
+rather than rolling a different interface (I could do MCTP over PCI VDM
+for example and may well do that in future).
+
+Actual system might look something like:
+- note that I don't need to model this to be able to
+  exercise the OS support etc... (see later)
+USP - normal upstream port
+DSP - normal downstream port
+vPPB -  is sort of like a virtual downstream port. These
+    are dynamically bound to either a single logical devices (SLD)
+    which has a whole physical CXL DSP to itself, or to one logical
+    device in an Multilogical device (MLD)
+
+What a host sees is either vPPB that has link down (nothing there)
+or a vPPB that has a device below it which it can discover
+via normal enumeration.
+
+Example here has
+
+Host 0 with two root ports
+Each RP is connected to an upstream port on the switch
+with a small virtual hierarchy (VH0 and VH1) of two vPPB each
+As currently configured (and note it dynamically configuring this
+which is of interest) VH0 has one vPPB bound to a 
+
+ _________________    ________________
+|  Host 0         |  |   Host 1       |    ---------
+|                 |  |                |   | Fabric  |
+| CXLRP0  CXLRP1  |  | CXLRP0  CXLRP1 |   | Manager |
+|_________________|  |________________|   |_________|
+    |        |            |      |              |
+    | CXL    | CXL        |CXL   |CXL           | I2C 
+ ___|________|____________|______|______________|______
+|                                                      | 
+|  USP      USP          USP     USP            FM-API |
+|   |        |            |       |                    |
+|   | VH0    |VH1         |VH2    |VH3                 |
+|  / \      / \          / \     / \                   |
+| /   \        \        /   \       \                  |
+|/     \        \      /     \       \                 |
+|vPPB  vPPB    vPPB  vPPB    vPPB    vPPB              |
+| |    Unbound   |   Unbound   |      |                |
+| bound           \            LD1   LD2               |
+| |                \Bound LD0  |     /                 | 
+| |                 \          |    /                  |
+| DSP                ----DSP-MLD ---                   |
+|______________________________________________________|
+   |                           |
+  SLD Type 3                   MLD memory device
+  memory device
+
+However, to be able to poke all the OS interfaces and
+the fabric manager interfaces I just need the ability to
+model something more like.
+ _______________________________________________________
+|  Host 0                                               |
+|                                           FM Software |
+| CXLRP0  CXLRP1                            Manager     |
+|_______________________________________________________|
+    |        |                                  |
+    | CXL    | CXL        Not connected         | I2C 
+ ___|________|__________________________________|______
+|                                                      | 
+|  USP      USP          USP     USP            FM-API |
+|   |        |            |       |                    |
+|   | VH0    |VH1         |VH2    |VH3                 |
+|  / \      / \          / \     / \                   |
+| /   \        \        /   \       \                  |
+|/     \        \      /     \       \                 |
+|vPPB  vPPB    vPPB  vPPB    vPPB    vPPB              |
+| |    Unbound   |   Unbound   |      |                |
+| bound           \            LD1   LD2               |
+| |                \Bound LD0  |     /                 | 
+| |                 \          |    /                  |
+| DSP               -----DSP-MLD ---                   |
+|______________________________________________________|
+   |                           |
+  SLD Type 3                   MLD memory device
+  memory device
+
+The reason for jumping through the hoops of mctp over i2c
+is that the software support is there and standard today
++ this lets me use the existing DMTF MCTP bindings for CXL
+FM-API rather than wrapping them up in something custom.
+It's also nice and lightweight from the emulation point of view.
+
+Clearly lots to do here yet though including...
+1. Hooking the FM-API agent up to the parts of the switch
+   (probably adding links to the USPs is sufficient)
+2. Adding infrastructure for vPPBs.
+3. Wire up everything to be able to trigger appropriate
+  hotplug events to the host for CXL devices being bound
+  to the vPPBs.
+
+I'm not that bothered by the lack of suitable i2c master
+with ACPI bindings in the short term, it just makes
+testing a bit fiddlier as kernel will need patching.
+It'll be a trivial patch, particularly if I can get moving
+most of the aspeed-i2c kernel firmware handling over to the
+generic property.h infrastructure (and then use the wonder
+that is PRP0001, plus bodge the clk and reset). 
+
+Longer term I might just switch to the PCI VDM route but
+that's a bigger job in both the kernel and QEMU.
+
+Right now I'm loving the short cut other people's work gave me ;)
+
+Thanks,
+
+Jonathan
+ 
+
+> -corey
+> 
+> > 
+> > Jonathan
+> > 
+> > 
+> >   
+> > >   
+> > > > 
+> > > > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > > > ---
+> > > >  hw/arm/Kconfig        |  1 +
+> > > >  hw/arm/virt.c         | 77 +++++++++++++++++++++++++++++++++++++++++++
+> > > >  include/hw/arm/virt.h |  2 ++
+> > > >  3 files changed, 80 insertions(+)
+> > > > 
+> > > > diff --git a/hw/arm/Kconfig b/hw/arm/Kconfig
+> > > > index 219262a8da..4a733298cd 100644
+> > > > --- a/hw/arm/Kconfig
+> > > > +++ b/hw/arm/Kconfig
+> > > > @@ -30,6 +30,7 @@ config ARM_VIRT
+> > > >      select ACPI_VIOT
+> > > >      select VIRTIO_MEM_SUPPORTED
+> > > >      select ACPI_CXL
+> > > > +    select I2C_MCTP_CXL_FMAPI
+> > > >  
+> > > >  config CHEETAH
+> > > >      bool
+> > > > diff --git a/hw/arm/virt.c b/hw/arm/virt.c
+> > > > index d818131b57..ea04279515 100644
+> > > > --- a/hw/arm/virt.c
+> > > > +++ b/hw/arm/virt.c
+> > > > @@ -80,6 +80,9 @@
+> > > >  #include "hw/char/pl011.h"
+> > > >  #include "hw/cxl/cxl.h"
+> > > >  #include "qemu/guest-random.h"
+> > > > +#include "hw/i2c/i2c.h"
+> > > > +#include "hw/i2c/aspeed_i2c.h"
+> > > > +#include "hw/misc/i2c_mctp_cxl_fmapi.h"
+> > > >  
+> > > >  #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
+> > > >      static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
+> > > > @@ -156,6 +159,8 @@ static const MemMapEntry base_memmap[] = {
+> > > >      [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
+> > > >      [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
+> > > >      [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
+> > > > +    [VIRT_I2C] =                { 0x0b000000, 0x00004000 },
+> > > > +    [VIRT_RESET_FAKE] =         { 0x0b004000, 0x00000010 },
+> > > >      /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
+> > > >      [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
+> > > >      [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
+> > > > @@ -192,6 +197,7 @@ static const int a15irqmap[] = {
+> > > >      [VIRT_GPIO] = 7,
+> > > >      [VIRT_SECURE_UART] = 8,
+> > > >      [VIRT_ACPI_GED] = 9,
+> > > > +    [VIRT_I2C] = 10,
+> > > >      [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
+> > > >      [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
+> > > >      [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
+> > > > @@ -1996,6 +2002,75 @@ static void virt_cpu_post_init(VirtMachineState *vms, MemoryRegion *sysmem)
+> > > >      }
+> > > >  }
+> > > >  
+> > > > +static void create_mctp_test(MachineState *ms)
+> > > > +{
+> > > > +    VirtMachineState *vms = VIRT_MACHINE(ms);
+> > > > +    MemoryRegion *sysmem = get_system_memory();
+> > > > +    AspeedI2CState *aspeedi2c;
+> > > > +    struct DeviceState  *dev;
+> > > > +    char *nodename_i2c_master;
+> > > > +    char *nodename_i2c_sub;
+> > > > +    char *nodename_reset;
+> > > > +    uint32_t clk_phandle, reset_phandle;
+> > > > +    MemoryRegion *sysmem2;
+> > > > +   
+> > > > +    dev = qdev_new("aspeed.i2c-ast2600");
+> > > > +    aspeedi2c = ASPEED_I2C(dev);
+> > > > +    object_property_set_link(OBJECT(dev), "dram", OBJECT(ms->ram), &error_fatal);
+> > > > +    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
+> > > > +    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, vms->memmap[VIRT_I2C].base);
+> > > > +    sysbus_connect_irq(SYS_BUS_DEVICE(&aspeedi2c->busses[0]), 0, qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_I2C]));
+> > > > +
+> > > > +    /* I2C bus DT */
+> > > > +    reset_phandle = qemu_fdt_alloc_phandle(ms->fdt);
+> > > > +    nodename_reset = g_strdup_printf("/reset@%" PRIx64, vms->memmap[VIRT_RESET_FAKE].base);
+> > > > +    qemu_fdt_add_subnode(ms->fdt, nodename_reset);
+> > > > +    qemu_fdt_setprop_string(ms->fdt, nodename_reset, "compatible", "snps,dw-low-reset");
+> > > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_reset, "reg",
+> > > > +                                 2, vms->memmap[VIRT_RESET_FAKE].base,
+> > > > +                                 2, vms->memmap[VIRT_RESET_FAKE].size);
+> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "#reset-cells", 0x1);
+> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_reset, "phandle", reset_phandle);
+> > > > +    sysmem2 =  g_new(MemoryRegion, 1);
+> > > > +    memory_region_init_ram(sysmem2, NULL, "reset", vms->memmap[VIRT_RESET_FAKE].size, NULL);
+> > > > +    memory_region_add_subregion(sysmem, vms->memmap[VIRT_RESET_FAKE].base, sysmem2);
+> > > > +    
+> > > > +    clk_phandle = qemu_fdt_alloc_phandle(ms->fdt);
+> > > > +    
+> > > > +    qemu_fdt_add_subnode(ms->fdt, "/mclk");
+> > > > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "compatible", "fixed-clock");
+> > > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "#clock-cells", 0x0);
+> > > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "clock-frequency", 24000);
+> > > > +    qemu_fdt_setprop_string(ms->fdt, "/mclk", "clock-output-names", "bobsclk");
+> > > > +    qemu_fdt_setprop_cell(ms->fdt, "/mclk", "phandle", clk_phandle);
+> > > > +
+> > > > +    nodename_i2c_master = g_strdup_printf("/i2c@%" PRIx64, vms->memmap[VIRT_I2C].base);
+> > > > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_master);
+> > > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "compatible",  "aspeed,ast2600-i2c-bus");
+> > > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "multi-master");
+> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#size-cells", 0);
+> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "#address-cells", 1);
+> > > > +    qemu_fdt_setprop_cell(ms->fdt, nodename_i2c_master, "clocks", clk_phandle);
+> > > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_master, "clock-names", "bobsclk");
+> > > > +    qemu_fdt_setprop(ms->fdt, nodename_i2c_master, "mctp-controller", NULL, 0);
+> > > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "interrupts", GIC_FDT_IRQ_TYPE_SPI,
+> > > > +                           vms->irqmap[VIRT_I2C], GIC_FDT_IRQ_FLAGS_LEVEL_HI);
+> > > > +    /* Offset to the first bus is 0x80, next one at 0x100 etc */
+> > > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_master, "reg",
+> > > > +                                 2, vms->memmap[VIRT_I2C].base + 0x80,
+> > > > +                                 2, 0x80);
+> > > > +    qemu_fdt_setprop_cells(ms->fdt, nodename_i2c_master, "resets", reset_phandle,  0);
+> > > > +
+> > > > +    nodename_i2c_sub = g_strdup_printf("/i2c@%" PRIx64 "/mctp@%" PRIx64, vms->memmap[VIRT_I2C].base, 0x50l);
+> > > > +    qemu_fdt_add_subnode(ms->fdt, nodename_i2c_sub);
+> > > > +    qemu_fdt_setprop_string(ms->fdt, nodename_i2c_sub, "compatible",  "mctp-i2c-controller");
+> > > > +    qemu_fdt_setprop_sized_cells(ms->fdt, nodename_i2c_sub, "reg", 1, 0x50 | 0x40000000);
+> > > > +
+> > > > +        
+> > > > +    /* Slave device - linux doesn't use the presence of dt node for this so don't create one*/
+> > > > +    i2c_slave_create_simple(aspeed_i2c_get_bus(aspeedi2c, 0), "i2c_mctp_cxl_switch", 0x4d);
+> > > > +}
+> > > > +
+> > > >  static void machvirt_init(MachineState *machine)
+> > > >  {
+> > > >      VirtMachineState *vms = VIRT_MACHINE(machine);
+> > > > @@ -2289,6 +2364,8 @@ static void machvirt_init(MachineState *machine)
+> > > >          create_gpio_devices(vms, VIRT_SECURE_GPIO, secure_sysmem);
+> > > >      }
+> > > >  
+> > > > +    create_mctp_test(machine);
+> > > > +
+> > > >       /* connect powerdown request */
+> > > >       vms->powerdown_notifier.notify = virt_powerdown_req;
+> > > >       qemu_register_powerdown_notifier(&vms->powerdown_notifier);
+> > > > diff --git a/include/hw/arm/virt.h b/include/hw/arm/virt.h
+> > > > index 67c08a62af..abbfac7c48 100644
+> > > > --- a/include/hw/arm/virt.h
+> > > > +++ b/include/hw/arm/virt.h
+> > > > @@ -71,6 +71,8 @@ enum {
+> > > >      VIRT_SMMU,
+> > > >      VIRT_UART,
+> > > >      VIRT_MMIO,
+> > > > +    VIRT_I2C,
+> > > > +    VIRT_RESET_FAKE,
+> > > >      VIRT_RTC,
+> > > >      VIRT_FW_CFG,
+> > > >      VIRT_PCIE,
+> > > > -- 
+> > > > 2.32.0
+> > > >     
+> >   
 
 

@@ -1,0 +1,2751 @@
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <owner-linux-mm@kvack.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from kanga.kvack.org (kanga.kvack.org [205.233.56.17])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B7FCCD4853
+	for <linux-mm@archiver.kernel.org>; Wed,  4 Sep 2024 16:28:03 +0000 (UTC)
+Received: by kanga.kvack.org (Postfix)
+	id E7BFC6B00C4; Wed,  4 Sep 2024 12:28:02 -0400 (EDT)
+Received: by kanga.kvack.org (Postfix, from userid 40)
+	id E2BF06B00DA; Wed,  4 Sep 2024 12:28:02 -0400 (EDT)
+X-Delivered-To: int-list-linux-mm@kvack.org
+Received: by kanga.kvack.org (Postfix, from userid 63042)
+	id C58016B00E5; Wed,  4 Sep 2024 12:28:02 -0400 (EDT)
+X-Delivered-To: linux-mm@kvack.org
+Received: from relay.hostedemail.com (smtprelay0010.hostedemail.com [216.40.44.10])
+	by kanga.kvack.org (Postfix) with ESMTP id A29056B00C4
+	for <linux-mm@kvack.org>; Wed,  4 Sep 2024 12:28:02 -0400 (EDT)
+Received: from smtpin11.hostedemail.com (a10.router.float.18 [10.200.18.1])
+	by unirelay10.hostedemail.com (Postfix) with ESMTP id 57854C12D9
+	for <linux-mm@kvack.org>; Wed,  4 Sep 2024 16:28:02 +0000 (UTC)
+X-FDA: 82527587604.11.7BFF154
+Received: from cyan.elm.relay.mailchannels.net (cyan.elm.relay.mailchannels.net [23.83.212.47])
+	by imf02.hostedemail.com (Postfix) with ESMTP id CD6F58001B
+	for <linux-mm@kvack.org>; Wed,  4 Sep 2024 16:27:59 +0000 (UTC)
+Authentication-Results: imf02.hostedemail.com;
+	dkim=pass header.d=stgolabs.net header.s=dreamhost header.b=YmZKHcdO;
+	spf=pass (imf02.hostedemail.com: domain of dave@stgolabs.net designates 23.83.212.47 as permitted sender) smtp.mailfrom=dave@stgolabs.net;
+	dmarc=none;
+	arc=pass ("mailchannels.net:s=arc-2022:i=1")
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=hostedemail.com;
+	s=arc-20220608; t=1725467232;
+	h=from:from:sender:reply-to:subject:subject:date:date:
+	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+	 content-type:content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:references:dkim-signature;
+	bh=Bnj8QxvWO+QKerkUxLEx4EQbV8F75C/U4KSW71fPzQ4=;
+	b=AuL5nmmEfn3vyHChZ0tvb3z9ZsWsCR1vOX0gjaKn6NCieXvlSMHHGbjcsQcycsSNw1DAJ3
+	vSUa3/IZ/jSqI2EZYHcPspacmuqMVpRSA1etSB1OxHCY9GzX+urK4eyY5f1LNcXVMcufa5
+	sxcFIjy0CJSfrtWikIlBRfYUBn5HJg8=
+ARC-Authentication-Results: i=2;
+	imf02.hostedemail.com;
+	dkim=pass header.d=stgolabs.net header.s=dreamhost header.b=YmZKHcdO;
+	spf=pass (imf02.hostedemail.com: domain of dave@stgolabs.net designates 23.83.212.47 as permitted sender) smtp.mailfrom=dave@stgolabs.net;
+	dmarc=none;
+	arc=pass ("mailchannels.net:s=arc-2022:i=1")
+ARC-Seal: i=2; s=arc-20220608; d=hostedemail.com; t=1725467232; a=rsa-sha256;
+	cv=pass;
+	b=ye2ceYhsLC88eHYrSzHLpHwxJBiHZaVG1Ogp1MNgLWlju9wqqhdlFkl1P2cq14KzUqmT+r
+	k+oOrOSgOQYESPZPKFM/wAhnF4QIx4Qn88mEDJCUJmKitUXE+ZudP80u+2VX1m6tOpX80Y
+	qgABAzO7x4VuVBJkSxvBZjy5q2E/gUk=
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+Received: from relay.mailchannels.net (localhost [127.0.0.1])
+	by relay.mailchannels.net (Postfix) with ESMTP id 8C15954814F;
+	Wed,  4 Sep 2024 16:27:57 +0000 (UTC)
+Received: from pdx1-sub0-mail-a253.dreamhost.com (unknown [127.0.0.6])
+	(Authenticated sender: dreamhost)
+	by relay.mailchannels.net (Postfix) with ESMTPA id 146DE54824F;
+	Wed,  4 Sep 2024 16:27:57 +0000 (UTC)
+ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1725467277; a=rsa-sha256;
+	cv=none;
+	b=v1Gf1u1NrPYHkMv4lq1H/0Q2HaugiVDow32CYaB7vWd2FNiZPjvJrNdXmzMkf9op/T8WiJ
+	UymyY6ySffpZHiv9Ra+km1tRWVc/zWpM3podbdt/9foIvx0GEkdTSO9lJM6DdD+jWHr0Ps
+	iM2CN0KgKD9B0DtVAOwADHFEQHvnjpT99K7Ef12NHI3Q5aqK/Lu/4AB+ibPygCWGB+xkHg
+	eTemJmq7aJz3XbhWWwAbkIQbiyl5qwTLw9fGR4Q8Nf5DnN3sMwwEEe6pGWMM6qysuwVxxb
+	iyEGJi32NPzYW9PStlcFzW8GVlY+1sN0+3rGonRX/5ihjkT7+Je3FMwVBQIVLQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mailchannels.net;
+	s=arc-2022; t=1725467277;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=Bnj8QxvWO+QKerkUxLEx4EQbV8F75C/U4KSW71fPzQ4=;
+	b=ijvWpTHtRtu+Ln1cbHuYzP7jylMHsoTYYvPIw9mpblK9tyWOaCuDCI8vVFdoIuTPdlzco4
+	gBq9RkAq4UjkrPa86OAPTAK4D/erNTlIq0kDqH3AY6Q03iSjI6MoDVBHVyhmXioGTEnczf
+	ooR0SQ+Frep28EosA21zVD4Lj8G/msOB4A8M0LS5R5gsoB1+zHe1BRmhjjbO0BxhJWXXvK
+	OdxF6i3u9Tg/hISNQ0hRMb3pmt6WHHFg6Islv0r5WQWzba8nU4mpj2xFT1dnlGAHrCEKIM
+	k1Z+hpodbqA0PjNZyYmZDMDgwS2aSu8OG1z5XPd3wrUl+1RuQdw7zJc/fkQpqA==
+ARC-Authentication-Results: i=1;
+	rspamd-6bf87dd45-dm5ls;
+	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+X-MC-Relay: Neutral
+X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
+X-MailChannels-Auth-Id: dreamhost
+X-Spot-Stop: 747c84183afd9af4_1725467277447_1339958986
+X-MC-Loop-Signature: 1725467277447:3477737181
+X-MC-Ingress-Time: 1725467277446
+Received: from pdx1-sub0-mail-a253.dreamhost.com (pop.dreamhost.com
+ [64.90.62.162])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
+	by 100.110.154.197 (trex/7.0.2);
+	Wed, 04 Sep 2024 16:27:57 +0000
+Received: from localhost.localdomain (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: dave@stgolabs.net)
+	by pdx1-sub0-mail-a253.dreamhost.com (Postfix) with ESMTPSA id 4WzSb002CYz7H;
+	Wed,  4 Sep 2024 09:27:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
+	s=dreamhost; t=1725467276;
+	bh=Bnj8QxvWO+QKerkUxLEx4EQbV8F75C/U4KSW71fPzQ4=;
+	h=From:To:Cc:Subject:Date:Content-Transfer-Encoding;
+	b=YmZKHcdOCLx2oh6vd3/GTIkTADmS38xAOLhaPo/c42USON52PS0pywEX6UUpPOyqk
+	 I6x3QjfaV12DAHgldYNicm5/ybScAw8f3TC7cPuLEmDGQ1iAj23qf3Osn3HEhMvHNs
+	 jJf3rz6+41sKF/3W8h/rXthntcFsWAT/Hsh/pcvix/GoewbEuu6eACeHwaJvoXm7tw
+	 JGN84H2nklDSJCBI57H9xJI+LaIBE/l2xG8wAFMmuGCIFuTcchluro1R0peMW9IP2w
+	 OW+WSe5LgFGKzFpN7BWHrb1WHazPbilVl6VHbbIYhwPFJ8tlbAw601BjwtHqv3IFmn
+	 9eCKUzsDGgGBw==
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: linux-mm@kvack.org
+Cc: akpm@linux-foundation.org,
+	mhocko@kernel.org,
+	rientjes@google.com,
+	yosryahmed@google.com,
+	hannes@cmpxchg.org,
+	almasrymina@google.com,
+	roman.gushchin@linux.dev,
+	gthelen@google.com,
+	dseo3@uci.edu,
+	a.manzanares@samsung.com,
+	dave@stgolabs.net,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Date: Wed,  4 Sep 2024 09:27:40 -0700
+Message-Id: <20240904162740.1043168-1-dave@stgolabs.net>
+X-Mailer: git-send-email 2.39.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Server: rspam03
+X-Rspam-User: 
+X-Rspamd-Queue-Id: CD6F58001B
+X-Stat-Signature: sk4xhmfgcyak5bjb59n11t7qar3tydsj
+X-HE-Tag: 1725467279-676207
+X-HE-Meta: U2FsdGVkX186iz1mtGlwmZqEcxspPwi5wCwRIfiy85ATV4par6EzccuoSYpv2phXSLjqKuqdJ5NGXEZ1RSdIOyyfdvJprMrk/R62S+sIG9oanYVbyBT2d8UtUHE7qTPE9jv6rnN9fWf082zHFNpSYtleGSwmNL8utZiLSMan/94llA/CAtuMQibWeYb99IJ+dGH1+47Y5IMY1NkGwADE8QKXCXA+RzeC7OYxol7PagB3BhdDSXNdTvoTe+FnBNrcJN/r0EaJecLOHgG6adN9TgYhu1UEOIdXThHxZXSgkT5bCQTX6/zQzOrGc17X1OF7+i6DOepAX/i46dj7eeNqZL1r61u/FBW6e2sh2y7oB6IyYz+qQw2kGwr1WLeCZuhpRbatVxYAz3SQeWgh0nHrE1tkbsEOmwKU21DT1du6UVCe0BgVNuvqsmKc8TBgJ+6BhCOufdCLZDSrsxr2QdEum2k5dsiwDE5+rAt30ssYuEfPKvaFXWwpNtCHlIHZrkPEAgvyXWRWa24mUHY2TVCTeEVLUe3NJAgEbYvn/WQA2i5pEkAvyi8PN8MOq7COMZdcUx3/Zu773f1uA7VPgIjY9Pc04Qdjh35TszBM7Cux1Xm7LaRCexVNt6uq+l5dpbbrMX/8THNNAFxvrU8xV0FgX4cUiIW8rxA/NGSqHexhAwr0ZEatWJKuUPnh1yXytdTzvwnDKm63mf7PBQg9hizGULH97SelpdsEMX7WsyPb3b/9iabM7/pMg2CdqIdpY24JZaYfxhEQ7UlQVCvrm/5vtHLEo5n1XAPpCrciQz8lYlfjiTDQbhACSQl5+IOiA71hKDRU0cJe2ZBjHLfJjNA+yi7Q+5bZz1x4jRR3UaHRgSJbaPjBd1uJUH2yikxbsgGTPbjofDxfLpKwXHOIc+y74ynDo4sKyLwOCGvw5Nkdl1U36uUrddcTagF+XV6Vv79TDgOWi2NsZdp2iNuaDsU
+ ihuQXKV8
+ WyXHSMzT0IAzfj4vD9hbY/sCZ87oxre7pixMJqYqJva0iZuCnMds5louW1/yhWEohSRMgdm7ItpfWsvNqBuP4YY7iKxPLJ68nF18elDPGXePV4JpremGq+SD3JrNuHA/ivDiEvT0/AKqRreo0Q6vvOPUyxkPog4emvjzUickByUgu/eSddNbAzI3/1Z3kifj0V7gzOWm7Eb2i/ZmnBCBDkbAu6kZPaPv/57xj96hATnbWuURUrUQYtVpBsq5sGqJvG2Nqtllyu4EPo2mAr/sjx8z2Ah9Om3i7GowNHAmPcRB9LXtjZcs/135rr+GKZ0Esdgg4qQThS2EtHpITrxIV5/xwpqksiyJ8pPAv+l0fQbCuxS9hJyDzQEOrwzj+fE+v7Hh5Ra5kYsumWZR66seiZM0sMSyDvfBju8RSX35QZ0habCM=
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.2.4
+Sender: owner-linux-mm@kvack.org
+Precedence: bulk
+X-Loop: owner-majordomo@kvack.org
+List-ID: <linux-mm.kvack.org>
+List-Subscribe: <mailto:majordomo@kvack.org>
+List-Unsubscribe: <mailto:majordomo@kvack.org>
+Status: RO
+Content-Length: 12240
+Lines: 364
+
+This adds support for allowing proactive reclaim in general on a
+NUMA system. A per-node interface extends support for beyond a
+memcg-specific interface, respecting the current semantics of
+memory.reclaim: respecting aging LRU and not supporting
+artificially triggering eviction on nodes belonging to non-bottom
+tiers.
+
+This patch allows userspace to do:
+
+     echo 512M swappiness=10 > /sys/devices/system/node/nodeX/reclaim
+
+One of the premises for this is to semantically align as best as
+possible with memory.reclaim. During a brief time memcg did
+support nodemask until 55ab834a86a9 (Revert "mm: add nodes=
+arg to memory.reclaim"), for which semantics around reclaim
+(eviction) vs demotion were not clear, rendering charging
+expectations to be broken.
+
+With this approach:
+
+1. Users who do not use memcg can benefit from proactive reclaim.
+
+2. Proactive reclaim on top tiers will trigger demotion, for which
+memory is still byte-addressable. Reclaiming on the bottom nodes
+will trigger evicting to swap (the traditional sense of reclaim).
+This follows the semantics of what is today part of the aging process
+on tiered memory, mirroring what every other form of reclaim does
+(reactive and memcg proactive reclaim). Furthermore per-node proactive
+reclaim is not as susceptible to the memcg charging problem mentioned
+above.
+
+3. Unlike memcg, there should be no surprises of callers expecting
+reclaim but instead got a demotion. Essentially relying on behavior
+of shrink_folio_list() after 6b426d071419 (mm: disable top-tier
+fallback to reclaim on proactive reclaim), without the expectations
+of try_to_free_mem_cgroup_pages().
+
+4. Unlike the nodes= arg, this interface avoids confusing semantics,
+such as what exactly the user wants when mixing top-tier and low-tier
+nodes in the nodemask. Further per-node interface is less exposed to
+"free up memory in my container" usecases, where eviction is intended.
+
+5. Users that *really* want to free up memory can use proactive reclaim
+on nodes knowingly to be on the bottom tiers to force eviction in a
+natural way - higher access latencies are still better than swap.
+If compelled, while no guarantees and perhaps not worth the effort,
+users could also also potentially follow a ladder-like approach to
+eventually free up the memory. Alternatively, perhaps an 'evict' option
+could be added to the parameters for both memory.reclaim and per-node
+interfaces to force this action unconditionally.
+
+Signed-off-by: Davidlohr Bueso <dave@stgolabs.net>
+---
+
+This topic has been brought up in the past without much resolution.
+But today, I believe a number of semantics and expectations have become
+clearer (per the changelog), which could merit revisiting this.
+
+ Documentation/ABI/stable/sysfs-devices-node |  11 ++
+ drivers/base/node.c                         |   2 +
+ include/linux/swap.h                        |  16 ++
+ mm/vmscan.c                                 | 154 ++++++++++++++++----
+ 4 files changed, 156 insertions(+), 27 deletions(-)
+
+diff --git a/Documentation/ABI/stable/sysfs-devices-node b/Documentation/ABI/stable/sysfs-devices-node
+index 402af4b2b905..5d69ee956cf9 100644
+--- a/Documentation/ABI/stable/sysfs-devices-node
++++ b/Documentation/ABI/stable/sysfs-devices-node
+@@ -221,3 +221,14 @@ Contact:	Jiaqi Yan <jiaqiyan@google.com>
+ Description:
+ 		Of the raw poisoned pages on a NUMA node, how many pages are
+ 		recovered by memory error recovery attempt.
++
++What:		/sys/devices/system/node/nodeX/reclaim
++Date:		September 2024
++Contact:	Linux Memory Management list <linux-mm@kvack.org>
++Description:
++		This is write-only nested-keyed file which accepts the number of
++		bytes to reclaim as well as the swappiness for this particular
++		operation. Write the amount of bytes to induce memory reclaim in
++		this node. When it completes successfully, the specified amount
++		or more memory will have been reclaimed, and -EAGAIN if less
++		bytes are reclaimed than the specified amount.
+diff --git a/drivers/base/node.c b/drivers/base/node.c
+index eb72580288e6..d8ed19f8565b 100644
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -626,6 +626,7 @@ static int register_node(struct node *node, int num)
+ 	} else {
+ 		hugetlb_register_node(node);
+ 		compaction_register_node(node);
++		reclaim_register_node(node);
+ 	}
+ 
+ 	return error;
+@@ -642,6 +643,7 @@ void unregister_node(struct node *node)
+ {
+ 	hugetlb_unregister_node(node);
+ 	compaction_unregister_node(node);
++	reclaim_unregister_node(node);
+ 	node_remove_accesses(node);
+ 	node_remove_caches(node);
+ 	device_unregister(&node->dev);
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 248db1dd7812..456e3aedb964 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -423,6 +423,22 @@ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+ long remove_mapping(struct address_space *mapping, struct folio *folio);
+ 
++#if defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
++extern int reclaim_register_node(struct node *node);
++extern void reclaim_unregister_node(struct node *node);
++
++#else
++
++static inline int reclaim_register_node(struct node *node)
++{
++	return 0;
++}
++
++static inline void reclaim_unregister_node(struct node *node)
++{
++}
++#endif /* CONFIG_SYSFS && CONFIG_NUMA */
++
+ #ifdef CONFIG_NUMA
+ extern int node_reclaim_mode;
+ extern int sysctl_min_unmapped_ratio;
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 5dc96a843466..56ddf54366e4 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -56,6 +56,7 @@
+ #include <linux/khugepaged.h>
+ #include <linux/rculist_nulls.h>
+ #include <linux/random.h>
++#include <linux/parser.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/div64.h>
+@@ -92,10 +93,8 @@ struct scan_control {
+ 	unsigned long	anon_cost;
+ 	unsigned long	file_cost;
+ 
+-#ifdef CONFIG_MEMCG
+ 	/* Swappiness value for proactive reclaim. Always use sc_swappiness()! */
+ 	int *proactive_swappiness;
+-#endif
+ 
+ 	/* Can active folios be deactivated as part of reclaim? */
+ #define DEACTIVATE_ANON 1
+@@ -266,6 +265,9 @@ static bool writeback_throttling_sane(struct scan_control *sc)
+ 
+ static int sc_swappiness(struct scan_control *sc, struct mem_cgroup *memcg)
+ {
++	if (sc->proactive && sc->proactive_swappiness)
++		return *sc->proactive_swappiness;
++
+ 	return READ_ONCE(vm_swappiness);
+ }
+ #endif
+@@ -7470,36 +7472,28 @@ static unsigned long node_pagecache_reclaimable(struct pglist_data *pgdat)
+ /*
+  * Try to free up some pages from this node through reclaim.
+  */
+-static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int order)
++static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask,
++			  unsigned long nr_pages, struct scan_control *sc)
+ {
+-	/* Minimum pages needed in order to stay on node */
+-	const unsigned long nr_pages = 1 << order;
+ 	struct task_struct *p = current;
+ 	unsigned int noreclaim_flag;
+-	struct scan_control sc = {
+-		.nr_to_reclaim = max(nr_pages, SWAP_CLUSTER_MAX),
+-		.gfp_mask = current_gfp_context(gfp_mask),
+-		.order = order,
+-		.priority = NODE_RECLAIM_PRIORITY,
+-		.may_writepage = !!(node_reclaim_mode & RECLAIM_WRITE),
+-		.may_unmap = !!(node_reclaim_mode & RECLAIM_UNMAP),
+-		.may_swap = 1,
+-		.reclaim_idx = gfp_zone(gfp_mask),
+-	};
+ 	unsigned long pflags;
+ 
+-	trace_mm_vmscan_node_reclaim_begin(pgdat->node_id, order,
+-					   sc.gfp_mask);
++	trace_mm_vmscan_node_reclaim_begin(pgdat->node_id, sc->order,
++					   sc->gfp_mask);
+ 
+ 	cond_resched();
+-	psi_memstall_enter(&pflags);
++
++	if (!sc->proactive)
++		psi_memstall_enter(&pflags);
++
+ 	delayacct_freepages_start();
+-	fs_reclaim_acquire(sc.gfp_mask);
++	fs_reclaim_acquire(sc->gfp_mask);
+ 	/*
+ 	 * We need to be able to allocate from the reserves for RECLAIM_UNMAP
+ 	 */
+ 	noreclaim_flag = memalloc_noreclaim_save();
+-	set_task_reclaim_state(p, &sc.reclaim_state);
++	set_task_reclaim_state(p, &sc->reclaim_state);
+ 
+ 	if (node_pagecache_reclaimable(pgdat) > pgdat->min_unmapped_pages ||
+ 	    node_page_state_pages(pgdat, NR_SLAB_RECLAIMABLE_B) > pgdat->min_slab_pages) {
+@@ -7508,24 +7502,38 @@ static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned in
+ 		 * priorities until we have enough memory freed.
+ 		 */
+ 		do {
+-			shrink_node(pgdat, &sc);
+-		} while (sc.nr_reclaimed < nr_pages && --sc.priority >= 0);
++			shrink_node(pgdat, sc);
++		} while (sc->nr_reclaimed < nr_pages && --sc->priority >= 0);
+ 	}
+ 
+ 	set_task_reclaim_state(p, NULL);
+ 	memalloc_noreclaim_restore(noreclaim_flag);
+-	fs_reclaim_release(sc.gfp_mask);
+-	psi_memstall_leave(&pflags);
++	fs_reclaim_release(sc->gfp_mask);
+ 	delayacct_freepages_end();
+ 
+-	trace_mm_vmscan_node_reclaim_end(sc.nr_reclaimed);
++	if (!sc->proactive)
++		psi_memstall_leave(&pflags);
++
++	trace_mm_vmscan_node_reclaim_end(sc->nr_reclaimed);
+ 
+-	return sc.nr_reclaimed >= nr_pages;
++	return sc->nr_reclaimed;
+ }
+ 
+ int node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int order)
+ {
+ 	int ret;
++	/* Minimum pages needed in order to stay on node */
++	const unsigned long nr_pages = 1 << order;
++	struct scan_control sc = {
++		.nr_to_reclaim = max(nr_pages, SWAP_CLUSTER_MAX),
++		.gfp_mask = current_gfp_context(gfp_mask),
++		.order = order,
++		.priority = NODE_RECLAIM_PRIORITY,
++		.may_writepage = !!(node_reclaim_mode & RECLAIM_WRITE),
++		.may_unmap = !!(node_reclaim_mode & RECLAIM_UNMAP),
++		.may_swap = 1,
++		.reclaim_idx = gfp_zone(gfp_mask),
++	};
+ 
+ 	/*
+ 	 * Node reclaim reclaims unmapped file backed pages and
+@@ -7560,7 +7568,7 @@ int node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int order)
+ 	if (test_and_set_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags))
+ 		return NODE_RECLAIM_NOSCAN;
+ 
+-	ret = __node_reclaim(pgdat, gfp_mask, order);
++	ret = __node_reclaim(pgdat, gfp_mask, nr_pages, &sc) >= nr_pages;
+ 	clear_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags);
+ 
+ 	if (ret)
+@@ -7617,3 +7625,95 @@ void check_move_unevictable_folios(struct folio_batch *fbatch)
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(check_move_unevictable_folios);
++
++#if defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
++
++enum {
++	MEMORY_RECLAIM_SWAPPINESS = 0,
++	MEMORY_RECLAIM_NULL,
++};
++
++static const match_table_t tokens = {
++	{ MEMORY_RECLAIM_SWAPPINESS, "swappiness=%d"},
++	{ MEMORY_RECLAIM_NULL, NULL },
++};
++
++static ssize_t reclaim_store(struct device *dev,
++			     struct device_attribute *attr,
++			     const char *buf, size_t count)
++{
++	int nid = dev->id;
++	gfp_t gfp_mask = GFP_KERNEL;
++	struct pglist_data *pgdat = NODE_DATA(nid);
++	unsigned long nr_to_reclaim, nr_reclaimed = 0;
++	unsigned int nr_retries = MAX_RECLAIM_RETRIES;
++	int swappiness = -1;
++	char *old_buf, *start;
++	substring_t args[MAX_OPT_ARGS];
++	struct scan_control sc = {
++		.gfp_mask = current_gfp_context(gfp_mask),
++		.reclaim_idx = gfp_zone(gfp_mask),
++		.priority = DEF_PRIORITY,
++		.may_writepage = !laptop_mode,
++		.may_unmap = 1,
++		.may_swap = 1,
++		.proactive = 1,
++	};
++
++	buf = strstrip((char *)buf);
++
++	old_buf = (char *)buf;
++	nr_to_reclaim = memparse(buf, (char **)&buf) / PAGE_SIZE;
++	if (buf == old_buf)
++		return -EINVAL;
++
++	buf = strstrip((char *)buf);
++
++	while ((start = strsep((char **)&buf, " ")) != NULL) {
++		if (!strlen(start))
++			continue;
++		switch (match_token(start, tokens, args)) {
++		case MEMORY_RECLAIM_SWAPPINESS:
++			if (match_int(&args[0], &swappiness))
++				return -EINVAL;
++			if (swappiness < MIN_SWAPPINESS || swappiness > MAX_SWAPPINESS)
++				return -EINVAL;
++			break;
++		default:
++			return -EINVAL;
++		}
++	}
++
++	sc.nr_to_reclaim = max(nr_to_reclaim, SWAP_CLUSTER_MAX);
++	while (nr_reclaimed < nr_to_reclaim) {
++		unsigned long reclaimed;
++
++		if (test_and_set_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags))
++			return -EAGAIN;
++
++		/* does cond_resched() */
++	        reclaimed = __node_reclaim(pgdat, gfp_mask,
++					   nr_to_reclaim - nr_reclaimed, &sc);
++
++		clear_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags);
++
++		if (!reclaimed && !nr_retries--)
++			break;
++
++		nr_reclaimed += reclaimed;
++	}
++
++	return nr_reclaimed < nr_to_reclaim ? -EAGAIN : count;
++}
++
++static DEVICE_ATTR_WO(reclaim);
++int reclaim_register_node(struct node *node)
++{
++	return device_create_file(&node->dev, &dev_attr_reclaim);
++}
++
++void reclaim_unregister_node(struct node *node)
++{
++	return device_remove_file(&node->dev, &dev_attr_reclaim);
++}
++#endif
+-- 
+2.39.2
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A7556BFA3
+	for <linux-kernel@vger.kernel.org>; Wed,  4 Sep 2024 20:18:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725481093; cv=none; b=lYN16XtFd1Zo/MDVgbWAS4Wpsur6ntF1Oi/1zIF+b75mYMMwyFr3mKyQpOzWdwNygi6CS+iDeHUAUbBcBj4byiLiIUbhMl8oMTrMXpV1CD5xjqowX7V+a5A4znLiFsrMGVqkpvYelSMO/w50YSxG6vUqCmZ8OTbr/4Sj48HreGg=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725481093; c=relaxed/simple;
+	bh=CoqXSn1sTq8nn+oU+UgxqJ42Ebvl7TulVgM+ZPkzvlU=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=X1mzaf/GM4R+Rx560MIJjInP8gheUxGLejtjq1pOdxzPnqRTsrWyiMuWtvzMzSKy5NGD88dvUsVk68x+nOMqC3BToDvEfjPLq6rtco2hy/cpN3TlEIog/dCrEESoZVAuHvH45inbKFgqMvty8dWq05lPdGJyMbRPth6c6Qak45Q=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=iXFUNW9G; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="iXFUNW9G"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB95DC4CEC5;
+	Wed,  4 Sep 2024 20:18:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1725481092;
+	bh=CoqXSn1sTq8nn+oU+UgxqJ42Ebvl7TulVgM+ZPkzvlU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=iXFUNW9G1AwOdKXtwIP6OBuxUSBgSxQs5mBF/8Y17zDXrNJY/hLc2lkKuBoTwYQfg
+	 oVxjFp9IvOxUSoBRM6Guvd4dJPE6HSPkaBHA+I62YVt47wc3cO0U1t3TjFKTRm405V
+	 PyLMaxBmfp7Fs8xEnTdQUw9k9DXjB47NqrsJQBGg=
+Date: Wed, 4 Sep 2024 13:18:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: linux-mm@kvack.org, mhocko@kernel.org, rientjes@google.com,
+ yosryahmed@google.com, hannes@cmpxchg.org, almasrymina@google.com,
+ roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu,
+ a.manzanares@samsung.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim
+ interface
+Message-Id: <20240904131811.234e005307f249ef07670c20@linux-foundation.org>
+In-Reply-To: <20240904162740.1043168-1-dave@stgolabs.net>
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Status: RO
+Content-Length: 5347
+Lines: 150
+
+On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
+
+> This adds support for allowing proactive reclaim in general on a
+> NUMA system. A per-node interface extends support for beyond a
+> memcg-specific interface, respecting the current semantics of
+> memory.reclaim: respecting aging LRU and not supporting
+> artificially triggering eviction on nodes belonging to non-bottom
+> tiers.
+> 
+> This patch allows userspace to do:
+> 
+>      echo 512M swappiness=10 > /sys/devices/system/node/nodeX/reclaim
+
+One value per sysfs file is a rule.
+
+> One of the premises for this is to semantically align as best as
+> possible with memory.reclaim. During a brief time memcg did
+> support nodemask until 55ab834a86a9 (Revert "mm: add nodes=
+> arg to memory.reclaim"), for which semantics around reclaim
+> (eviction) vs demotion were not clear, rendering charging
+> expectations to be broken.
+> 
+> With this approach:
+> 
+> 1. Users who do not use memcg can benefit from proactive reclaim.
+> 
+> 2. Proactive reclaim on top tiers will trigger demotion, for which
+> memory is still byte-addressable. Reclaiming on the bottom nodes
+> will trigger evicting to swap (the traditional sense of reclaim).
+> This follows the semantics of what is today part of the aging process
+> on tiered memory, mirroring what every other form of reclaim does
+> (reactive and memcg proactive reclaim). Furthermore per-node proactive
+> reclaim is not as susceptible to the memcg charging problem mentioned
+> above.
+> 
+> 3. Unlike memcg, there should be no surprises of callers expecting
+> reclaim but instead got a demotion. Essentially relying on behavior
+> of shrink_folio_list() after 6b426d071419 (mm: disable top-tier
+> fallback to reclaim on proactive reclaim), without the expectations
+> of try_to_free_mem_cgroup_pages().
+> 
+> 4. Unlike the nodes= arg, this interface avoids confusing semantics,
+> such as what exactly the user wants when mixing top-tier and low-tier
+> nodes in the nodemask. Further per-node interface is less exposed to
+> "free up memory in my container" usecases, where eviction is intended.
+> 
+> 5. Users that *really* want to free up memory can use proactive reclaim
+> on nodes knowingly to be on the bottom tiers to force eviction in a
+> natural way - higher access latencies are still better than swap.
+> If compelled, while no guarantees and perhaps not worth the effort,
+> users could also also potentially follow a ladder-like approach to
+> eventually free up the memory. Alternatively, perhaps an 'evict' option
+> could be added to the parameters for both memory.reclaim and per-node
+> interfaces to force this action unconditionally.
+> 
+> ...
+>
+> --- a/Documentation/ABI/stable/sysfs-devices-node
+> +++ b/Documentation/ABI/stable/sysfs-devices-node
+> @@ -221,3 +221,14 @@ Contact:	Jiaqi Yan <jiaqiyan@google.com>
+>  Description:
+>  		Of the raw poisoned pages on a NUMA node, how many pages are
+>  		recovered by memory error recovery attempt.
+> +
+> +What:		/sys/devices/system/node/nodeX/reclaim
+> +Date:		September 2024
+> +Contact:	Linux Memory Management list <linux-mm@kvack.org>
+> +Description:
+> +		This is write-only nested-keyed file which accepts the number of
+
+"is a write-only".
+
+What does "nested keyed" mean?
+
+> +		bytes to reclaim as well as the swappiness for this particular
+> +		operation. Write the amount of bytes to induce memory reclaim in
+> +		this node. When it completes successfully, the specified amount
+> +		or more memory will have been reclaimed, and -EAGAIN if less
+> +		bytes are reclaimed than the specified amount.
+
+Could be that this feature would benefit from a more expansive
+treatment under Documentation/somewhere.
+
+>
+> ...
+>
+> +#if defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
+> +
+> +enum {
+> +	MEMORY_RECLAIM_SWAPPINESS = 0,
+> +	MEMORY_RECLAIM_NULL,
+> +};
+> +
+> +static const match_table_t tokens = {
+> +	{ MEMORY_RECLAIM_SWAPPINESS, "swappiness=%d"},
+> +	{ MEMORY_RECLAIM_NULL, NULL },
+> +};
+> +
+> +static ssize_t reclaim_store(struct device *dev,
+> +			     struct device_attribute *attr,
+> +			     const char *buf, size_t count)
+> +{
+> +	int nid = dev->id;
+> +	gfp_t gfp_mask = GFP_KERNEL;
+> +	struct pglist_data *pgdat = NODE_DATA(nid);
+> +	unsigned long nr_to_reclaim, nr_reclaimed = 0;
+> +	unsigned int nr_retries = MAX_RECLAIM_RETRIES;
+> +	int swappiness = -1;
+> +	char *old_buf, *start;
+> +	substring_t args[MAX_OPT_ARGS];
+> +	struct scan_control sc = {
+> +		.gfp_mask = current_gfp_context(gfp_mask),
+> +		.reclaim_idx = gfp_zone(gfp_mask),
+> +		.priority = DEF_PRIORITY,
+> +		.may_writepage = !laptop_mode,
+> +		.may_unmap = 1,
+> +		.may_swap = 1,
+> +		.proactive = 1,
+> +	};
+> +
+> +	buf = strstrip((char *)buf);
+> +
+> +	old_buf = (char *)buf;
+> +	nr_to_reclaim = memparse(buf, (char **)&buf) / PAGE_SIZE;
+> +	if (buf == old_buf)
+> +		return -EINVAL;
+> +
+> +	buf = strstrip((char *)buf);
+> +
+> +	while ((start = strsep((char **)&buf, " ")) != NULL) {
+> +		if (!strlen(start))
+> +			continue;
+> +		switch (match_token(start, tokens, args)) {
+> +		case MEMORY_RECLAIM_SWAPPINESS:
+> +			if (match_int(&args[0], &swappiness))
+> +				return -EINVAL;
+> +			if (swappiness < MIN_SWAPPINESS || swappiness > MAX_SWAPPINESS)
+> +				return -EINVAL;
+
+Code forgot to use local `swappiness' for any purpose?
+
+> +			break;
+> +		default:
+> +			return -EINVAL;
+> +		}
+> +	}
+> +
+>
+> ...
+>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FC43139D0B
+	for <linux-kernel@vger.kernel.org>; Wed,  4 Sep 2024 21:29:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.51
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725485388; cv=none; b=Bx9cAwRLYTacd+6VAkzc/mEqPlndUhCyXVmgYsT1rHIGTeabV/vgYn0XPunByPh6eDtZq9xenc7ZyPnZT0iIAPuK+8titZFO3U+cESobZuJPXjUq3OoqCSNurNmRI6lOKaXH6ldrAtb89yNTSsflWfI+gGNhdfQzu1Wm9yVlYIo=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725485388; c=relaxed/simple;
+	bh=CEFBBPjg6Dn00LpBavXK7p/gsO5NGfzlhXh214OclEs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=QQZIn2sYD8oyvq+bmsQysyzkMV0v9B5iOGCth2WcWCeXjUpnRpzdvZGqOUYRfCi0qTiCJUXE5ULXXFk3wf8qeT845dX3wghn5wt8QuffnXIoSr3DdUS4z6UGmHQpcuroz7eeIOZ88z2ix96k19oQK4I7TgrlVmcaP4Q47XCWmHw=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=H2PXI04D; arc=none smtp.client-ip=209.85.218.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="H2PXI04D"
+Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-a86abbd68ffso16691766b.0
+        for <linux-kernel@vger.kernel.org>; Wed, 04 Sep 2024 14:29:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1725485385; x=1726090185; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uPzCdvACsk+Zmurggn6HViLqvwkxy/s9QdT779lcBgY=;
+        b=H2PXI04DdXMb0hEW9snJITtXpZXYq9Mf4CbI/r9h4r4rirsd7GHp2USOM8udoEUWuB
+         PiLfC9Qe15MJOELpb4FHcREGxcu9EKI/dviEklGBepUgVTM1MKcfSB/kV0s4cguDOPOd
+         a5xinqrqB95x+hbPmyNV25lWN7tEYbOr0/GuIlv4r440DUJDH3z4jV3fmC03q273FgdH
+         PEU9cq37gSHlfBqna8VLOV4YCPUWmwte0EoHdirpZg67h9jXN8QH8dguumY+TVM3suog
+         UznDFMpB+txEARrY1dFczOI7wPegPlpbKNKU4NJj9pkQA4P97bjYlWICwLxQlU2tkgU8
+         t/JQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725485385; x=1726090185;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uPzCdvACsk+Zmurggn6HViLqvwkxy/s9QdT779lcBgY=;
+        b=Zs74a6NuLUwze/KeOCRJeH4O3TUTPMbeXeQzZAH8U1G8xVl6aCg5bPBBhuGmtmfXTr
+         JfiHW2WLmpKBnRsZJbIND1GfWFM+cAllAsT7vhbmr2nvfRI2gosIdl0F5+s0U4USWdVy
+         MeBfC2Q3H8Lzxg/Yh4plyoYMC/+EHT2rbvblAZAYF0YjH7wQKDPV+zme3NonUuvQBv7C
+         tkew3lrUu1JY5N3f6IvFQ7Pdm55yHs7HrSmH3YK7HsUtMBFL/xpTdiHP47rFCSfU6BSm
+         fS7NQzSiBWAkllXaIntVO51p+yvg2r9q3bio5ekVbt1EOmCoGxrXhkCk9h4SRNaUyCt9
+         mwLg==
+X-Forwarded-Encrypted: i=1; AJvYcCUhjqF/8oLWCxQGRTSUbqrPbCicAlS7DQJtBvFxwbjvUYCdNRk1oFjC4NVy8Kj5K2iHQmvXNRYussJ4qbg=@vger.kernel.org
+X-Gm-Message-State: AOJu0YysUXrLi+95BbPGv9rqfCgEh73hJ+pnJGAWcdv1rES+2NuHU7RU
+	P58cxx1gfCB+cmc3prC19AiznXe0rg5gsuDS9XQQnuIdSQd0Dbsmw4Vlw7UvfRprDoCAC8i58ap
+	6hMDZUtF3dISJie2784VSFD1cwDPhIrmKrSRT
+X-Google-Smtp-Source: AGHT+IFjzs/ukVqBdpAhaTS+2TK0e9/GZmzx60hOnSXxNVOe61C7h55BdbAOuOX+5o+K6ncCeF1fTMb/73d6Tamj6W8=
+X-Received: by 2002:a17:907:3da1:b0:a86:aac8:53ad with SMTP id
+ a640c23a62f3a-a8a430914d8mr334469466b.16.1725485384064; Wed, 04 Sep 2024
+ 14:29:44 -0700 (PDT)
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+In-Reply-To: <20240904162740.1043168-1-dave@stgolabs.net>
+From: Yosry Ahmed <yosryahmed@google.com>
+Date: Wed, 4 Sep 2024 14:29:08 -0700
+Message-ID: <CAJD7tkbksw1GquBout-JnLg=kCXmK6OUTvpu+8v7eyKQFUqsyQ@mail.gmail.com>
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, mhocko@kernel.org, 
+	rientjes@google.com, hannes@cmpxchg.org, almasrymina@google.com, 
+	roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu, 
+	a.manzanares@samsung.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Status: RO
+Content-Length: 15353
+Lines: 409
+
+On Wed, Sep 4, 2024 at 9:28=E2=80=AFAM Davidlohr Bueso <dave@stgolabs.net> =
+wrote:
+>
+> This adds support for allowing proactive reclaim in general on a
+> NUMA system. A per-node interface extends support for beyond a
+> memcg-specific interface, respecting the current semantics of
+> memory.reclaim: respecting aging LRU and not supporting
+> artificially triggering eviction on nodes belonging to non-bottom
+> tiers.
+>
+> This patch allows userspace to do:
+>
+>      echo 512M swappiness=3D10 > /sys/devices/system/node/nodeX/reclaim
+>
+> One of the premises for this is to semantically align as best as
+> possible with memory.reclaim. During a brief time memcg did
+> support nodemask until 55ab834a86a9 (Revert "mm: add nodes=3D
+> arg to memory.reclaim"), for which semantics around reclaim
+> (eviction) vs demotion were not clear, rendering charging
+> expectations to be broken.
+>
+> With this approach:
+>
+> 1. Users who do not use memcg can benefit from proactive reclaim.
+>
+> 2. Proactive reclaim on top tiers will trigger demotion, for which
+> memory is still byte-addressable. Reclaiming on the bottom nodes
+> will trigger evicting to swap (the traditional sense of reclaim).
+> This follows the semantics of what is today part of the aging process
+> on tiered memory, mirroring what every other form of reclaim does
+> (reactive and memcg proactive reclaim). Furthermore per-node proactive
+> reclaim is not as susceptible to the memcg charging problem mentioned
+> above.
+>
+> 3. Unlike memcg, there should be no surprises of callers expecting
+> reclaim but instead got a demotion. Essentially relying on behavior
+> of shrink_folio_list() after 6b426d071419 (mm: disable top-tier
+> fallback to reclaim on proactive reclaim), without the expectations
+> of try_to_free_mem_cgroup_pages().
+>
+> 4. Unlike the nodes=3D arg, this interface avoids confusing semantics,
+> such as what exactly the user wants when mixing top-tier and low-tier
+> nodes in the nodemask. Further per-node interface is less exposed to
+> "free up memory in my container" usecases, where eviction is intended.
+>
+> 5. Users that *really* want to free up memory can use proactive reclaim
+> on nodes knowingly to be on the bottom tiers to force eviction in a
+> natural way - higher access latencies are still better than swap.
+> If compelled, while no guarantees and perhaps not worth the effort,
+> users could also also potentially follow a ladder-like approach to
+> eventually free up the memory. Alternatively, perhaps an 'evict' option
+> could be added to the parameters for both memory.reclaim and per-node
+> interfaces to force this action unconditionally.
+>
+> Signed-off-by: Davidlohr Bueso <dave@stgolabs.net>
+> ---
+>
+> This topic has been brought up in the past without much resolution.
+> But today, I believe a number of semantics and expectations have become
+> clearer (per the changelog), which could merit revisiting this.
+>
+>  Documentation/ABI/stable/sysfs-devices-node |  11 ++
+>  drivers/base/node.c                         |   2 +
+>  include/linux/swap.h                        |  16 ++
+>  mm/vmscan.c                                 | 154 ++++++++++++++++----
+>  4 files changed, 156 insertions(+), 27 deletions(-)
+>
+> diff --git a/Documentation/ABI/stable/sysfs-devices-node b/Documentation/=
+ABI/stable/sysfs-devices-node
+> index 402af4b2b905..5d69ee956cf9 100644
+> --- a/Documentation/ABI/stable/sysfs-devices-node
+> +++ b/Documentation/ABI/stable/sysfs-devices-node
+> @@ -221,3 +221,14 @@ Contact:   Jiaqi Yan <jiaqiyan@google.com>
+>  Description:
+>                 Of the raw poisoned pages on a NUMA node, how many pages =
+are
+>                 recovered by memory error recovery attempt.
+> +
+> +What:          /sys/devices/system/node/nodeX/reclaim
+> +Date:          September 2024
+> +Contact:       Linux Memory Management list <linux-mm@kvack.org>
+> +Description:
+> +               This is write-only nested-keyed file which accepts the nu=
+mber of
+> +               bytes to reclaim as well as the swappiness for this parti=
+cular
+> +               operation. Write the amount of bytes to induce memory rec=
+laim in
+> +               this node. When it completes successfully, the specified =
+amount
+> +               or more memory will have been reclaimed, and -EAGAIN if l=
+ess
+> +               bytes are reclaimed than the specified amount.
+> diff --git a/drivers/base/node.c b/drivers/base/node.c
+> index eb72580288e6..d8ed19f8565b 100644
+> --- a/drivers/base/node.c
+> +++ b/drivers/base/node.c
+> @@ -626,6 +626,7 @@ static int register_node(struct node *node, int num)
+>         } else {
+>                 hugetlb_register_node(node);
+>                 compaction_register_node(node);
+> +               reclaim_register_node(node);
+>         }
+>
+>         return error;
+> @@ -642,6 +643,7 @@ void unregister_node(struct node *node)
+>  {
+>         hugetlb_unregister_node(node);
+>         compaction_unregister_node(node);
+> +       reclaim_unregister_node(node);
+>         node_remove_accesses(node);
+>         node_remove_caches(node);
+>         device_unregister(&node->dev);
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index 248db1dd7812..456e3aedb964 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -423,6 +423,22 @@ extern unsigned long shrink_all_memory(unsigned long=
+ nr_pages);
+>  extern int vm_swappiness;
+>  long remove_mapping(struct address_space *mapping, struct folio *folio);
+>
+> +#if defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
+> +extern int reclaim_register_node(struct node *node);
+> +extern void reclaim_unregister_node(struct node *node);
+> +
+> +#else
+> +
+> +static inline int reclaim_register_node(struct node *node)
+> +{
+> +       return 0;
+> +}
+> +
+> +static inline void reclaim_unregister_node(struct node *node)
+> +{
+> +}
+> +#endif /* CONFIG_SYSFS && CONFIG_NUMA */
+> +
+>  #ifdef CONFIG_NUMA
+>  extern int node_reclaim_mode;
+>  extern int sysctl_min_unmapped_ratio;
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 5dc96a843466..56ddf54366e4 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -56,6 +56,7 @@
+>  #include <linux/khugepaged.h>
+>  #include <linux/rculist_nulls.h>
+>  #include <linux/random.h>
+> +#include <linux/parser.h>
+>
+>  #include <asm/tlbflush.h>
+>  #include <asm/div64.h>
+> @@ -92,10 +93,8 @@ struct scan_control {
+>         unsigned long   anon_cost;
+>         unsigned long   file_cost;
+>
+> -#ifdef CONFIG_MEMCG
+>         /* Swappiness value for proactive reclaim. Always use sc_swappine=
+ss()! */
+>         int *proactive_swappiness;
+> -#endif
+>
+>         /* Can active folios be deactivated as part of reclaim? */
+>  #define DEACTIVATE_ANON 1
+> @@ -266,6 +265,9 @@ static bool writeback_throttling_sane(struct scan_con=
+trol *sc)
+>
+>  static int sc_swappiness(struct scan_control *sc, struct mem_cgroup *mem=
+cg)
+>  {
+> +       if (sc->proactive && sc->proactive_swappiness)
+> +               return *sc->proactive_swappiness;
+> +
+
+This code is already upstream, right?
+
+>         return READ_ONCE(vm_swappiness);
+>  }
+>  #endif
+> @@ -7470,36 +7472,28 @@ static unsigned long node_pagecache_reclaimable(s=
+truct pglist_data *pgdat)
+>  /*
+>   * Try to free up some pages from this node through reclaim.
+>   */
+> -static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, uns=
+igned int order)
+> +static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask,
+> +                         unsigned long nr_pages, struct scan_control *sc=
+)
+>  {
+> -       /* Minimum pages needed in order to stay on node */
+> -       const unsigned long nr_pages =3D 1 << order;
+>         struct task_struct *p =3D current;
+>         unsigned int noreclaim_flag;
+> -       struct scan_control sc =3D {
+> -               .nr_to_reclaim =3D max(nr_pages, SWAP_CLUSTER_MAX),
+> -               .gfp_mask =3D current_gfp_context(gfp_mask),
+> -               .order =3D order,
+> -               .priority =3D NODE_RECLAIM_PRIORITY,
+> -               .may_writepage =3D !!(node_reclaim_mode & RECLAIM_WRITE),
+> -               .may_unmap =3D !!(node_reclaim_mode & RECLAIM_UNMAP),
+> -               .may_swap =3D 1,
+> -               .reclaim_idx =3D gfp_zone(gfp_mask),
+> -       };
+>         unsigned long pflags;
+>
+> -       trace_mm_vmscan_node_reclaim_begin(pgdat->node_id, order,
+> -                                          sc.gfp_mask);
+> +       trace_mm_vmscan_node_reclaim_begin(pgdat->node_id, sc->order,
+> +                                          sc->gfp_mask);
+>
+>         cond_resched();
+> -       psi_memstall_enter(&pflags);
+> +
+> +       if (!sc->proactive)
+> +               psi_memstall_enter(&pflags);
+> +
+>         delayacct_freepages_start();
+> -       fs_reclaim_acquire(sc.gfp_mask);
+> +       fs_reclaim_acquire(sc->gfp_mask);
+>         /*
+>          * We need to be able to allocate from the reserves for RECLAIM_U=
+NMAP
+>          */
+>         noreclaim_flag =3D memalloc_noreclaim_save();
+> -       set_task_reclaim_state(p, &sc.reclaim_state);
+> +       set_task_reclaim_state(p, &sc->reclaim_state);
+>
+>         if (node_pagecache_reclaimable(pgdat) > pgdat->min_unmapped_pages=
+ ||
+>             node_page_state_pages(pgdat, NR_SLAB_RECLAIMABLE_B) > pgdat->=
+min_slab_pages) {
+> @@ -7508,24 +7502,38 @@ static int __node_reclaim(struct pglist_data *pgd=
+at, gfp_t gfp_mask, unsigned in
+>                  * priorities until we have enough memory freed.
+>                  */
+>                 do {
+> -                       shrink_node(pgdat, &sc);
+> -               } while (sc.nr_reclaimed < nr_pages && --sc.priority >=3D=
+ 0);
+> +                       shrink_node(pgdat, sc);
+> +               } while (sc->nr_reclaimed < nr_pages && --sc->priority >=
+=3D 0);
+>         }
+>
+>         set_task_reclaim_state(p, NULL);
+>         memalloc_noreclaim_restore(noreclaim_flag);
+> -       fs_reclaim_release(sc.gfp_mask);
+> -       psi_memstall_leave(&pflags);
+> +       fs_reclaim_release(sc->gfp_mask);
+>         delayacct_freepages_end();
+>
+> -       trace_mm_vmscan_node_reclaim_end(sc.nr_reclaimed);
+> +       if (!sc->proactive)
+> +               psi_memstall_leave(&pflags);
+> +
+> +       trace_mm_vmscan_node_reclaim_end(sc->nr_reclaimed);
+>
+> -       return sc.nr_reclaimed >=3D nr_pages;
+> +       return sc->nr_reclaimed;
+>  }
+>
+>  int node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int=
+ order)
+>  {
+>         int ret;
+> +       /* Minimum pages needed in order to stay on node */
+> +       const unsigned long nr_pages =3D 1 << order;
+> +       struct scan_control sc =3D {
+> +               .nr_to_reclaim =3D max(nr_pages, SWAP_CLUSTER_MAX),
+> +               .gfp_mask =3D current_gfp_context(gfp_mask),
+> +               .order =3D order,
+> +               .priority =3D NODE_RECLAIM_PRIORITY,
+> +               .may_writepage =3D !!(node_reclaim_mode & RECLAIM_WRITE),
+> +               .may_unmap =3D !!(node_reclaim_mode & RECLAIM_UNMAP),
+> +               .may_swap =3D 1,
+> +               .reclaim_idx =3D gfp_zone(gfp_mask),
+> +       };
+>
+>         /*
+>          * Node reclaim reclaims unmapped file backed pages and
+> @@ -7560,7 +7568,7 @@ int node_reclaim(struct pglist_data *pgdat, gfp_t g=
+fp_mask, unsigned int order)
+>         if (test_and_set_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags))
+>                 return NODE_RECLAIM_NOSCAN;
+>
+> -       ret =3D __node_reclaim(pgdat, gfp_mask, order);
+> +       ret =3D __node_reclaim(pgdat, gfp_mask, nr_pages, &sc) >=3D nr_pa=
+ges;
+>         clear_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags);
+>
+>         if (ret)
+> @@ -7617,3 +7625,95 @@ void check_move_unevictable_folios(struct folio_ba=
+tch *fbatch)
+>         }
+>  }
+>  EXPORT_SYMBOL_GPL(check_move_unevictable_folios);
+> +
+> +#if defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
+> +
+> +enum {
+> +       MEMORY_RECLAIM_SWAPPINESS =3D 0,
+> +       MEMORY_RECLAIM_NULL,
+> +};
+> +
+> +static const match_table_t tokens =3D {
+> +       { MEMORY_RECLAIM_SWAPPINESS, "swappiness=3D%d"},
+> +       { MEMORY_RECLAIM_NULL, NULL },
+> +};
+> +
+> +static ssize_t reclaim_store(struct device *dev,
+> +                            struct device_attribute *attr,
+> +                            const char *buf, size_t count)
+> +{
+> +       int nid =3D dev->id;
+> +       gfp_t gfp_mask =3D GFP_KERNEL;
+> +       struct pglist_data *pgdat =3D NODE_DATA(nid);
+> +       unsigned long nr_to_reclaim, nr_reclaimed =3D 0;
+> +       unsigned int nr_retries =3D MAX_RECLAIM_RETRIES;
+> +       int swappiness =3D -1;
+> +       char *old_buf, *start;
+> +       substring_t args[MAX_OPT_ARGS];
+> +       struct scan_control sc =3D {
+> +               .gfp_mask =3D current_gfp_context(gfp_mask),
+> +               .reclaim_idx =3D gfp_zone(gfp_mask),
+> +               .priority =3D DEF_PRIORITY,
+> +               .may_writepage =3D !laptop_mode,
+> +               .may_unmap =3D 1,
+> +               .may_swap =3D 1,
+> +               .proactive =3D 1,
+> +       };
+> +
+> +       buf =3D strstrip((char *)buf);
+> +
+> +       old_buf =3D (char *)buf;
+> +       nr_to_reclaim =3D memparse(buf, (char **)&buf) / PAGE_SIZE;
+> +       if (buf =3D=3D old_buf)
+> +               return -EINVAL;
+> +
+> +       buf =3D strstrip((char *)buf);
+> +
+> +       while ((start =3D strsep((char **)&buf, " ")) !=3D NULL) {
+> +               if (!strlen(start))
+> +                       continue;
+> +               switch (match_token(start, tokens, args)) {
+> +               case MEMORY_RECLAIM_SWAPPINESS:
+> +                       if (match_int(&args[0], &swappiness))
+> +                               return -EINVAL;
+> +                       if (swappiness < MIN_SWAPPINESS || swappiness > M=
+AX_SWAPPINESS)
+> +                               return -EINVAL;
+> +                       break;
+> +               default:
+> +                       return -EINVAL;
+> +               }
+> +       }
+> +
+> +       sc.nr_to_reclaim =3D max(nr_to_reclaim, SWAP_CLUSTER_MAX);
+> +       while (nr_reclaimed < nr_to_reclaim) {
+> +               unsigned long reclaimed;
+> +
+> +               if (test_and_set_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags)=
+)
+> +                       return -EAGAIN;
+
+Can the PGDAT_RECLAIM_LOCKED check be moved into __node_reclaim()?
+They are duplicated in node_reclaim().
+
+> +
+> +               /* does cond_resched() */
+> +               reclaimed =3D __node_reclaim(pgdat, gfp_mask,
+> +                                          nr_to_reclaim - nr_reclaimed, =
+&sc);
+> +
+> +               clear_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags);
+> +
+> +               if (!reclaimed && !nr_retries--)
+> +                       break;
+> +
+> +               nr_reclaimed +=3D reclaimed;
+> +       }
+
+In the memcg code (i.e. memory_reclaim()) we also check for pending
+signals, and drain the LRUs before the last iteration. Do we need this
+here as well?
+
+This leads to my next question: there is a lot of common code with
+memory_reclaim(). Should we refactor some of it? At least the
+arguments parsing part looks almost identical.
+
+> +
+> +       return nr_reclaimed < nr_to_reclaim ? -EAGAIN : count;
+> +}
+> +
+> +static DEVICE_ATTR_WO(reclaim);
+> +int reclaim_register_node(struct node *node)
+> +{
+> +       return device_create_file(&node->dev, &dev_attr_reclaim);
+> +}
+> +
+> +void reclaim_unregister_node(struct node *node)
+> +{
+> +       return device_remove_file(&node->dev, &dev_attr_reclaim);
+> +}
+> +#endif
+> --
+> 2.39.2
+>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from skyblue.cherry.relay.mailchannels.net (skyblue.cherry.relay.mailchannels.net [23.83.223.167])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC8908F7D
+	for <linux-kernel@vger.kernel.org>; Thu,  5 Sep 2024 01:23:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=23.83.223.167
+ARC-Seal: i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725499429; cv=fail; b=F9ACj/skcEw7Eu44rIYd/0gU32rAZuVSDUJi8S9ylpjbHo5Mjr0C5F7oURLvIkCqsKtZE0KO6QjCrlnMtC/c4hxgQZbMgq7Ag0Hf+c0Wqlx6ctbjBZVdWSmRlgMqVFdO3FcpKMbVfbKPj3stt2/Rjjw4wIm54SfIuldkAWIA7M4=
+ARC-Message-Signature: i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725499429; c=relaxed/simple;
+	bh=ZzfYZqACgthquqTa5yEnv0G+jvgg/CO1OZ9MHpeX1mg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LLlcRKhmjsh4cvpdjAmDJWfYPsGqwKUPzSXHeaNTyg+qvsOPrymSCK7oJSkaqeUR6Ex92eEbMuczCLHmwsmMf431htsm8fl4c+INiDomJDmE1BM69PJj0fdhxVxYnwXzQT6vMu+iiB83qKRatvd7mfrxiciXLx4djOl1f4QoMtk=
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net; spf=pass smtp.mailfrom=stgolabs.net; dkim=pass (2048-bit key) header.d=stgolabs.net header.i=@stgolabs.net header.b=KcjvczhZ; arc=fail smtp.client-ip=23.83.223.167
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stgolabs.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=stgolabs.net header.i=@stgolabs.net header.b="KcjvczhZ"
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+Received: from relay.mailchannels.net (localhost [127.0.0.1])
+	by relay.mailchannels.net (Postfix) with ESMTP id 8DF10C77BF;
+	Thu,  5 Sep 2024 01:08:10 +0000 (UTC)
+Received: from pdx1-sub0-mail-a310.dreamhost.com (unknown [127.0.0.6])
+	(Authenticated sender: dreamhost)
+	by relay.mailchannels.net (Postfix) with ESMTPA id 07F60C75B2;
+	Thu,  5 Sep 2024 01:08:10 +0000 (UTC)
+ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1725498490; a=rsa-sha256;
+	cv=none;
+	b=I7pmC918ScggNcVYkv9qja4dn46JsAhOFZVbCgguPd3MQ3gxYJi/pTdkVLRrLGlZgSmtkv
+	uvAQNOfkkfHUzjqwjIyHB0uDKz6WTTXNwBXDrIQI2Fl8dEh37vIPBKreZFkQvU03E7JBoV
+	WXKXZ9MJf93RQM1uqCh80jJkbySM5PfC/TdnK+J9fYgshPsvQFEdtxCyx+k/gRNnzbgXwb
+	Ox25qpXHOlPhtH0pbRjtG600kJG3Doq7ccXzbGK5SM8UvmLQtDBEJgaWORmORnophFbKV1
+	ZEDYndhhvQcBJlvdYDSP8qYQ8aLh7S7pRQBWFNhU5i0WzBewWKwSVtIupK+qtA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mailchannels.net;
+	s=arc-2022; t=1725498490;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=9GEj4OM/a2qb4uz3i0fngIpeBJBLKnbIBwE1moCNumc=;
+	b=xKl2G/GYHiJflz4W/uNO5aDH3R1MZWrf9TZQt9IDECi4fPA4i4JR9RRQ0zjd9fcM61l+wi
+	P/AfUtY2CxDRVOYzoxFrytYP+WIPM/lNHZi/+FFyUH2O/sDSPZX0IeJX3BSpALqeiO8BdA
+	zXTn/5mZkREtjLvuFNthApMKA8Qd26Q57XNzTugtH6X69isG0v3FKPy5WnmiwlLxPjySET
+	bHoKC7sedCNkkD0Om4GO6vUPcrZ+W1V/slIXxb+L1/EbS26tf8dDoK3NCh1ptqaSJJNThr
+	9yOafy1a81h+83ENLF8l5gZ12wI+6u1bUfhEYldWVIGyVqFOdGxFkLeqJoKJ3w==
+ARC-Authentication-Results: i=1;
+	rspamd-85dcd79db4-h6mk5;
+	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+X-MC-Relay: Neutral
+X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
+X-MailChannels-Auth-Id: dreamhost
+X-Attack-Print: 2eed196d76f6f3a6_1725498490397_2196151604
+X-MC-Loop-Signature: 1725498490397:669959050
+X-MC-Ingress-Time: 1725498490397
+Received: from pdx1-sub0-mail-a310.dreamhost.com (pop.dreamhost.com
+ [64.90.62.162])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
+	by 100.125.55.150 (trex/7.0.2);
+	Thu, 05 Sep 2024 01:08:10 +0000
+Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: dave@stgolabs.net)
+	by pdx1-sub0-mail-a310.dreamhost.com (Postfix) with ESMTPSA id 4Wzh7F0WkrzKl;
+	Wed,  4 Sep 2024 18:08:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
+	s=dreamhost; t=1725498489;
+	bh=LKY+eXNh+b8+ANsTonvdMbko2ru5DwhYm9x7uRWa5wQ=;
+	h=Date:From:To:Cc:Subject:Content-Type;
+	b=KcjvczhZ97oGMqoz5+R7HitoZ5hENAKtTGSk8TsLzra/tW1uCkv1pc+9uZd6U0Cm5
+	 weddqZBIm0d4RtygWsSxkty0zfsr1jDum4U2VYp+EOIDR9ViybThHv5LQxO1ixNn4N
+	 tKnMwuPONWU01ZTXOvzVBbpVfoz/HUvopu3/BW6hVy6njJ1VRhQR86iiBWpmVjlSR+
+	 jxKYMd0Q2cElU+kNM3Ujs0iuVmNTPf2SYSfI7Or13XJn21ch6UCFOtzm6myWLyDQyR
+	 tpkRyUJzkBAGR+8oKtIxKxN4OhkZERWUuld8WrM6DISllJ8umdQ5rlVRDV40zqu3WF
+	 zH+codBc7GPLQ==
+Date: Wed, 4 Sep 2024 18:08:05 -0700
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, mhocko@kernel.org, rientjes@google.com, 
+	yosryahmed@google.com, hannes@cmpxchg.org, almasrymina@google.com, 
+	roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu, a.manzanares@samsung.com, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Message-ID: <nwutv6cuuyajmakiiznb3hoao6jfhrs2clpqi76xomqbc6yymg@n7inzwjcskhf>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>, 
+	linux-mm@kvack.org, mhocko@kernel.org, rientjes@google.com, yosryahmed@google.com, 
+	hannes@cmpxchg.org, almasrymina@google.com, roman.gushchin@linux.dev, 
+	gthelen@google.com, dseo3@uci.edu, a.manzanares@samsung.com, 
+	linux-kernel@vger.kernel.org
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+ <20240904131811.234e005307f249ef07670c20@linux-foundation.org>
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20240904131811.234e005307f249ef07670c20@linux-foundation.org>
+User-Agent: NeoMutt/20240425
+Status: RO
+Content-Length: 3402
+Lines: 119
+
+On Wed, 04 Sep 2024, Andrew Morton wrote:\n
+>On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
+>
+>> This adds support for allowing proactive reclaim in general on a
+>> NUMA system. A per-node interface extends support for beyond a
+>> memcg-specific interface, respecting the current semantics of
+>> memory.reclaim: respecting aging LRU and not supporting
+>> artificially triggering eviction on nodes belonging to non-bottom
+>> tiers.
+>>
+>> This patch allows userspace to do:
+>>
+>>      echo 512M swappiness=10 > /sys/devices/system/node/nodeX/reclaim
+>
+>One value per sysfs file is a rule.
+
+I wasn't aware of it as a rule - is this documented somewhere?
+
+I ask because I see some others are using space-separated parameters, ie:
+
+/sys/bus/usb/drivers/foo/new_id
+
+... or colons. What would be acceptable? echo "512M:10" > ... ?
+
+>> +What:		/sys/devices/system/node/nodeX/reclaim
+>> +Date:		September 2024
+>> +Contact:	Linux Memory Management list <linux-mm@kvack.org>
+>> +Description:
+>> +		This is write-only nested-keyed file which accepts the number of
+>
+>"is a write-only".
+>
+>What does "nested keyed" mean?
+
+Will re-phrase.
+
+>
+>> +		bytes to reclaim as well as the swappiness for this particular
+>> +		operation. Write the amount of bytes to induce memory reclaim in
+>> +		this node. When it completes successfully, the specified amount
+>> +		or more memory will have been reclaimed, and -EAGAIN if less
+>> +		bytes are reclaimed than the specified amount.
+>
+>Could be that this feature would benefit from a more expansive
+>treatment under Documentation/somewhere.
+
+Sure.
+
+>
+>>
+>> ...
+>>
+>> +#if defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
+>> +
+>> +enum {
+>> +	MEMORY_RECLAIM_SWAPPINESS = 0,
+>> +	MEMORY_RECLAIM_NULL,
+>> +};
+>> +
+>> +static const match_table_t tokens = {
+>> +	{ MEMORY_RECLAIM_SWAPPINESS, "swappiness=%d"},
+>> +	{ MEMORY_RECLAIM_NULL, NULL },
+>> +};
+>> +
+>> +static ssize_t reclaim_store(struct device *dev,
+>> +			     struct device_attribute *attr,
+>> +			     const char *buf, size_t count)
+>> +{
+>> +	int nid = dev->id;
+>> +	gfp_t gfp_mask = GFP_KERNEL;
+>> +	struct pglist_data *pgdat = NODE_DATA(nid);
+>> +	unsigned long nr_to_reclaim, nr_reclaimed = 0;
+>> +	unsigned int nr_retries = MAX_RECLAIM_RETRIES;
+>> +	int swappiness = -1;
+>> +	char *old_buf, *start;
+>> +	substring_t args[MAX_OPT_ARGS];
+>> +	struct scan_control sc = {
+>> +		.gfp_mask = current_gfp_context(gfp_mask),
+>> +		.reclaim_idx = gfp_zone(gfp_mask),
+>> +		.priority = DEF_PRIORITY,
+>> +		.may_writepage = !laptop_mode,
+>> +		.may_unmap = 1,
+>> +		.may_swap = 1,
+>> +		.proactive = 1,
+>> +	};
+>> +
+>> +	buf = strstrip((char *)buf);
+>> +
+>> +	old_buf = (char *)buf;
+>> +	nr_to_reclaim = memparse(buf, (char **)&buf) / PAGE_SIZE;
+>> +	if (buf == old_buf)
+>> +		return -EINVAL;
+>> +
+>> +	buf = strstrip((char *)buf);
+>> +
+>> +	while ((start = strsep((char **)&buf, " ")) != NULL) {
+>> +		if (!strlen(start))
+>> +			continue;
+>> +		switch (match_token(start, tokens, args)) {
+>> +		case MEMORY_RECLAIM_SWAPPINESS:
+>> +			if (match_int(&args[0], &swappiness))
+>> +				return -EINVAL;
+>> +			if (swappiness < MIN_SWAPPINESS || swappiness > MAX_SWAPPINESS)
+>> +				return -EINVAL;
+>
+>Code forgot to use local `swappiness' for any purpose?
+
+Bleh, yeah sc.proactive_swappiness needs to be set here.
+
+>
+>> +			break;
+>> +		default:
+>> +			return -EINVAL;
+>> +		}
+>> +	}
+>> +
+>>
+>> ...
+>>
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AADA9463
+	for <linux-kernel@vger.kernel.org>; Thu,  5 Sep 2024 01:15:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725498944; cv=none; b=eH0TK7YHtK2ohajB//dZ16Bv8FILBaTT3K5l3Yyma9qaUMPp1vdgjr3u+5scmjzLhLFRTQev4FSU/qRWyApl6kblg2DpIsPMuUPvYhaUFa99h+duIa2tGI69ZVhPWuD/ZvvnLdm3mt9d46DRpPA0iawkCk6hYymKQdACEaUxgUA=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725498944; c=relaxed/simple;
+	bh=6fs2uhR2bK8qEvj+bOCFzAA4wSbevoeGQovZS7jGau4=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=nl7ELxsBg1Dwm+cwIXonJu5Kwq6EBL1Hxle5rX3Fa/ALXTty6eQqVJ7VNPoAC2o6ZQadj72+X+2eAvysWFIRuqe+fNM6QWSvhuJpBN1H+p+7DQdoPzFaiunMfD0Lf4CZlC2kuf7D8bbqN0/uHkhQgJsZ4+Kl806MdZsNFMG30U8=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=FM7LPDXG; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="FM7LPDXG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD508C4CEC2;
+	Thu,  5 Sep 2024 01:15:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1725498944;
+	bh=6fs2uhR2bK8qEvj+bOCFzAA4wSbevoeGQovZS7jGau4=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=FM7LPDXGo3+mIpdiRM7RMOVO+rQSob05rZyd1LmwtgUqeQkcdMIMmT3lNs766bu3i
+	 VMW/2e8PYfDx2scbOm8yh9p2w8ZgZnm2OYJSuMUWTkPDFby+RHbDM8ZiEbGxkDVAMp
+	 aFzOAL+fH+oE9WTvZnNoEMZPMiXBLNJt64grnTP0=
+Date: Wed, 4 Sep 2024 18:15:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: linux-mm@kvack.org, mhocko@kernel.org, rientjes@google.com,
+ yosryahmed@google.com, hannes@cmpxchg.org, almasrymina@google.com,
+ roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu,
+ a.manzanares@samsung.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim
+ interface
+Message-Id: <20240904181543.02de2242490cf233c7879697@linux-foundation.org>
+In-Reply-To: <nwutv6cuuyajmakiiznb3hoao6jfhrs2clpqi76xomqbc6yymg@n7inzwjcskhf>
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+	<20240904131811.234e005307f249ef07670c20@linux-foundation.org>
+	<nwutv6cuuyajmakiiznb3hoao6jfhrs2clpqi76xomqbc6yymg@n7inzwjcskhf>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Status: RO
+Content-Length: 1114
+Lines: 32
+
+On Wed, 4 Sep 2024 18:08:05 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
+
+> On Wed, 04 Sep 2024, Andrew Morton wrote:\n
+> >On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
+> >
+> >> This adds support for allowing proactive reclaim in general on a
+> >> NUMA system. A per-node interface extends support for beyond a
+> >> memcg-specific interface, respecting the current semantics of
+> >> memory.reclaim: respecting aging LRU and not supporting
+> >> artificially triggering eviction on nodes belonging to non-bottom
+> >> tiers.
+> >>
+> >> This patch allows userspace to do:
+> >>
+> >>      echo 512M swappiness=10 > /sys/devices/system/node/nodeX/reclaim
+> >
+> >One value per sysfs file is a rule.
+> 
+> I wasn't aware of it as a rule - is this documented somewhere?
+
+Documentation/filesystems/sysfs.rst, line 62.  Also lots of gregkh
+grumpygrams :)
+
+> I ask because I see some others are using space-separated parameters, ie:
+> 
+> /sys/bus/usb/drivers/foo/new_id
+> 
+> ... or colons. What would be acceptable? echo "512M:10" > ... ?
+
+Kinda cheating.  But the rule gets violated a lot.
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from serval.cherry.relay.mailchannels.net (serval.cherry.relay.mailchannels.net [23.83.223.163])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 806B5143759
+	for <linux-kernel@vger.kernel.org>; Thu,  5 Sep 2024 03:35:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=23.83.223.163
+ARC-Seal: i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725507329; cv=pass; b=VCAYz38cKY+z8eLdjBdr87EwVJlfi9/XD6H5PjEFj0z439J3I8eIKFIh6WpZiPHODDJACFtvHI8zzlN3dNX8iGFg75BkWMCnnsPakj/Fs5lxkSqsrOZYzaeOOIpPuvuU/Pk6xbylIazrs9PwEt9n2muEYTX1HdjH1P27ffXmAT8=
+ARC-Message-Signature: i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725507329; c=relaxed/simple;
+	bh=qtqGJKmeGYjAmolO6g//CYy841MhMDCQ5pY+e3IYnTo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UCV2a4wPIkf9BsGQBCqDopwaskjFaER7O+FSjJLCJ3wXZXxmaAwRfNygpp0gevZOYHJb3lrCdnCzTVwwSVpBgb1vreCwmnZboDZOapV5gKpkhnCtJ3zxrXubhGF6LLZ3Luclpi8I5Fi39xW0CSRZ4PWDJcXwSivllNSeVfMPJto=
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net; spf=pass smtp.mailfrom=stgolabs.net; dkim=pass (2048-bit key) header.d=stgolabs.net header.i=@stgolabs.net header.b=UsDe89tB; arc=pass smtp.client-ip=23.83.223.163
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stgolabs.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=stgolabs.net header.i=@stgolabs.net header.b="UsDe89tB"
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+Received: from relay.mailchannels.net (localhost [127.0.0.1])
+	by relay.mailchannels.net (Postfix) with ESMTP id D6EB72C6F27;
+	Thu,  5 Sep 2024 03:35:26 +0000 (UTC)
+Received: from pdx1-sub0-mail-a262.dreamhost.com (unknown [127.0.0.6])
+	(Authenticated sender: dreamhost)
+	by relay.mailchannels.net (Postfix) with ESMTPA id 6C4692C6DA2;
+	Thu,  5 Sep 2024 03:35:26 +0000 (UTC)
+ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1725507326; a=rsa-sha256;
+	cv=none;
+	b=Trz7bC3h4Yky6kz33kOgYl0pzPL911I87IwVZNyUReddSV0yENtO3PIVnKfAFMiZTcRnK8
+	ocEJONF5dM1tB5Nh7zZnr8RbtV00/ScB5GbklLJfsFYHv+3zV6xCfkgSfqtpWdsb3p3hdF
+	UDPx/8iAMMIV1punbZTXLLdQlmuaUCcbiGl7s6U+UXLxau8MNhCLlhi6jYV2wjJF0V75Vt
+	pkJ+bsPiSu+obEPBo2la0cruFxNvEmMQqXHhm/I3PW1r4nakxfLT8InGqUdUWNzix1o4Z3
+	ac8O+q/vok/S/jzOFUZXsZsaInr0Pxx66sRjXrOjZyNQl+oRI+6xJVIB9vagEA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mailchannels.net;
+	s=arc-2022; t=1725507326;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=sqv0e0qkAp5wHmZcV7cPBzn1r7u2Pw6TA23Yco90OIs=;
+	b=SjdMY07rbVcTZbkGMdqY6lhcJLUPcJ+q5BWwhvEBHddL+Q34T/7PLRe3HVWQu8uOg5/FQV
+	fSpdP/z1gDbQxRWoArRwz5GFI8o2HX/+m5qh/IOj3dOA+1AfrrrxwnyWxuo5M7XZZF44ZI
+	rQOgAic6MV3kd35/A4npPBmqL3G58xBqseegVo8DOPTg+MtmKU1V4akjMspvJ9wGBdHsvV
+	YG9BgDblT+ggBOn2YSoJiszBqquW/SVrtLP6z3pN3TQfbZWiU6SCxa9vlcGkvWoaEvzOI8
+	D4iEHFn2ZjLpTiQg71XiB/JwIpj9htjJX/zT/PQrWFI3LJfIAMY2pgTi5ahwkQ==
+ARC-Authentication-Results: i=1;
+	rspamd-6bf87dd45-4wmp5;
+	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+X-MC-Relay: Neutral
+X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
+X-MailChannels-Auth-Id: dreamhost
+X-Rock-Reaction: 5bd992fb6fd8a490_1725507326763_2866573522
+X-MC-Loop-Signature: 1725507326763:1884108718
+X-MC-Ingress-Time: 1725507326763
+Received: from pdx1-sub0-mail-a262.dreamhost.com (pop.dreamhost.com
+ [64.90.62.162])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
+	by 100.99.23.7 (trex/7.0.2);
+	Thu, 05 Sep 2024 03:35:26 +0000
+Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: dave@stgolabs.net)
+	by pdx1-sub0-mail-a262.dreamhost.com (Postfix) with ESMTPSA id 4WzlP94QRXz75;
+	Wed,  4 Sep 2024 20:35:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
+	s=dreamhost; t=1725507326;
+	bh=sqv0e0qkAp5wHmZcV7cPBzn1r7u2Pw6TA23Yco90OIs=;
+	h=Date:From:To:Cc:Subject:Content-Type;
+	b=UsDe89tBIYADnq175TNv41WyX2G/T2Tg4gDQM8Q6VMskZGZjnPVj1NkelevY+11CY
+	 WbuuCVctBRH1fypGmYzaPjRIpR51dJn0g2DjRzfQB0na89FYF8jEgwc6GC0MThG+Kc
+	 i0wm4gwrj5JABnhoumT3MgXet4lvFpGV4xgklSjiVCXbZ0gik8jpL4Ekk2rl87bwHV
+	 SZcN1Ljsi1PrMyJUzpdEpIovYJJZOoxMRGUskb/o3zA1NOtDI7+GdLoMKarK9SluW8
+	 kR3sUURMqZbRrp0fNCp2YRtL2ay865jt3piUcW3DWPmI9zh6Hca1x5H1bmBrW36RW5
+	 M8eSpFAp4XJDg==
+Date: Wed, 4 Sep 2024 20:35:22 -0700
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, mhocko@kernel.org, rientjes@google.com, 
+	yosryahmed@google.com, hannes@cmpxchg.org, almasrymina@google.com, 
+	roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu, a.manzanares@samsung.com, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Message-ID: <a2fdrnaagcgp4hllalttaxs7ckc6w5bt2j7fg4upagqhfvoc3b@jsmugftxvyyz>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>, 
+	linux-mm@kvack.org, mhocko@kernel.org, rientjes@google.com, yosryahmed@google.com, 
+	hannes@cmpxchg.org, almasrymina@google.com, roman.gushchin@linux.dev, 
+	gthelen@google.com, dseo3@uci.edu, a.manzanares@samsung.com, 
+	linux-kernel@vger.kernel.org
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+ <20240904131811.234e005307f249ef07670c20@linux-foundation.org>
+ <nwutv6cuuyajmakiiznb3hoao6jfhrs2clpqi76xomqbc6yymg@n7inzwjcskhf>
+ <20240904181543.02de2242490cf233c7879697@linux-foundation.org>
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20240904181543.02de2242490cf233c7879697@linux-foundation.org>
+User-Agent: NeoMutt/20240425
+Status: RO
+Content-Length: 1443
+Lines: 36
+
+On Wed, 04 Sep 2024, Andrew Morton wrote:\n
+>On Wed, 4 Sep 2024 18:08:05 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
+>
+>> On Wed, 04 Sep 2024, Andrew Morton wrote:\n
+>> >On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
+>> >
+>> >> This adds support for allowing proactive reclaim in general on a
+>> >> NUMA system. A per-node interface extends support for beyond a
+>> >> memcg-specific interface, respecting the current semantics of
+>> >> memory.reclaim: respecting aging LRU and not supporting
+>> >> artificially triggering eviction on nodes belonging to non-bottom
+>> >> tiers.
+>> >>
+>> >> This patch allows userspace to do:
+>> >>
+>> >>      echo 512M swappiness=10 > /sys/devices/system/node/nodeX/reclaim
+>> >
+>> >One value per sysfs file is a rule.
+>>
+>> I wasn't aware of it as a rule - is this documented somewhere?
+>
+>Documentation/filesystems/sysfs.rst, line 62.  Also lots of gregkh
+>grumpygrams :)
+>
+>> I ask because I see some others are using space-separated parameters, ie:
+>>
+>> /sys/bus/usb/drivers/foo/new_id
+>>
+>> ... or colons. What would be acceptable? echo "512M:10" > ... ?
+>
+>Kinda cheating.  But the rule gets violated a lot.
+
+The only other alternative I can think of is to have a separate file
+for swappiness, which of course sucks. So I will go with the colon
+approach unless somebody shouts - I still prefer it as is in this patch,
+if we are going to violate the rule altogether...
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA9E51925A5
+	for <linux-kernel@vger.kernel.org>; Thu,  5 Sep 2024 07:31:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.47
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725521510; cv=none; b=chF8Zid/aC/YlpXumu//hMu9x0iePtWzxnxPhqgg97L2oixrSo7L6Wqh9ctUhpsM2WUN8eRU4V1aGCVggozekgf3HYV8nFW3FTPu1BSA2US9Cl6bdQQ8smOaSCk/eyKcJ8fRLcJRQMuJTnK1kShKZWO5dxID0RafYcey9pmM/o4=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725521510; c=relaxed/simple;
+	bh=ADozzuB4aXAsuItXnHEmYbzuHMSTGkfXgDDLW7TyJfc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Content-Type; b=Kt5PsY5yPCvRben1rpMy+FEZfiGW/F/mniWoub8xOpGr86Ln6qgieJqeKApu67tAWKZxopsbobL62Hxynqy/ywQ0/9WH3UQw5UiKFxx9wLkCGaoWYpDBm9Beh4d8r+BSwV/pbSpdu3Tc3FlvrCF+524XB21DHORa4WywX/g7JUs=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=HtP8fIhS; arc=none smtp.client-ip=209.85.218.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="HtP8fIhS"
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-a86c476f679so61526266b.1
+        for <linux-kernel@vger.kernel.org>; Thu, 05 Sep 2024 00:31:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1725521507; x=1726126307; darn=vger.kernel.org;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nxpm/KRBSaCmPVGMswzvV0ymk6YQb+nmcLd9CWhDjf0=;
+        b=HtP8fIhScVJLACejSe5j4c5KRBVl8FqrrNxIHkEOpwHrNHdDNN/FyauWea7lEAoBJe
+         zCvetYMgJcqpvrdPolY92IVyGWRCJFo2qnsyQrMoguT6ttB+dA1exl1euxiD/TQ/E5vq
+         o/Ok0jUEmsd3Ynb106rocKWbfr2SYtX2qYig2cj1F+UOQTFjg77gC6giGKnKL5cGuMrh
+         8tfnZUoSv55vLiflYhhswZK8x2lGf0RrxwzJn2qvm4bFQTbjejpwjkqLNMEqCIy3B3k+
+         N28TYDj9myee7HMETIs1b71Dowr9Av716K7jlDBKJQpf2BbWwZFRIyaV46UAJqiDPvuL
+         PU+A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725521507; x=1726126307;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nxpm/KRBSaCmPVGMswzvV0ymk6YQb+nmcLd9CWhDjf0=;
+        b=kwDsH9yPXOSvtCpMj7lC6pWR8gcCyj8UXeZpxCz28INaNGwZjpi+kUflHkpEtjbvPM
+         g18K3kC3EpUJrji9MWrKXi/3yomgjuHjdG/V+sl6Q+RizuiBE5ELiSw8aFRJ7gYIzyE0
+         owA93Hx1y3ct52fUL3cf2vFQIKYykl98SBr5HBlo01SXiEMPQXXh7yEOuKaqtVxhOOuO
+         mu3kdkepJqNStH33jJl5YijAUeWLBvy8wbi9mq60/hsZ0hSaSvgaVEfR9I8nMzhRgz52
+         6gI/xC8u7YuIjaOS6sU5eLeL6tUS0WH3HhgQM5b5OjNEKHLLS+Ll3Nmz0x3CXPsLzrAk
+         7Pjw==
+X-Forwarded-Encrypted: i=1; AJvYcCX8spSDQnRxXkeUhsa3QFl5SJPo+JmQcP4tcLXqwWCWv8LZolFG68e3mjjNGkZN5Go/CgxE3agQATCF340=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyYlT4IHecexP+V293gxB2fGCXXunz952Ha7gpZM5WM1TF8Encf
+	NIaq23yUQy8jDDyoq2MxQ/WF4pap3D5tZw8haXGbWGPJ1TNoY6D8lDrJQ962CMDXvJ2TJDVm077
+	ifnM6lfIq2uCbJHDQi6QbgoP9rkEG8dXyNM+U
+X-Google-Smtp-Source: AGHT+IEckPel8FsVowyMgk8xK56rxIzk+362fVdZDaK+Gg3yRWkT+ET93Lk5H34vpbOwuDYazBwewCWUcH/bDNo10EA=
+X-Received: by 2002:a17:907:6d02:b0:a86:a866:9e25 with SMTP id
+ a640c23a62f3a-a89b9727ea8mr1341691766b.56.1725521506371; Thu, 05 Sep 2024
+ 00:31:46 -0700 (PDT)
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+References: <20240904162740.1043168-1-dave@stgolabs.net> <20240904131811.234e005307f249ef07670c20@linux-foundation.org>
+ <nwutv6cuuyajmakiiznb3hoao6jfhrs2clpqi76xomqbc6yymg@n7inzwjcskhf>
+ <20240904181543.02de2242490cf233c7879697@linux-foundation.org> <a2fdrnaagcgp4hllalttaxs7ckc6w5bt2j7fg4upagqhfvoc3b@jsmugftxvyyz>
+In-Reply-To: <a2fdrnaagcgp4hllalttaxs7ckc6w5bt2j7fg4upagqhfvoc3b@jsmugftxvyyz>
+From: Yosry Ahmed <yosryahmed@google.com>
+Date: Thu, 5 Sep 2024 00:31:08 -0700
+Message-ID: <CAJD7tkYe5xJjMw1KtHRyvCLeGKBgZpU1RNzb_Y=c_NujioYXnA@mail.gmail.com>
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+To: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org, mhocko@kernel.org, 
+	rientjes@google.com, yosryahmed@google.com, hannes@cmpxchg.org, 
+	almasrymina@google.com, roman.gushchin@linux.dev, gthelen@google.com, 
+	dseo3@uci.edu, a.manzanares@samsung.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Status: RO
+Content-Length: 1778
+Lines: 47
+
+On Wed, Sep 4, 2024 at 8:35=E2=80=AFPM Davidlohr Bueso <dave@stgolabs.net> =
+wrote:
+>
+> On Wed, 04 Sep 2024, Andrew Morton wrote:\n
+> >On Wed, 4 Sep 2024 18:08:05 -0700 Davidlohr Bueso <dave@stgolabs.net> wr=
+ote:
+> >
+> >> On Wed, 04 Sep 2024, Andrew Morton wrote:\n
+> >> >On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net=
+> wrote:
+> >> >
+> >> >> This adds support for allowing proactive reclaim in general on a
+> >> >> NUMA system. A per-node interface extends support for beyond a
+> >> >> memcg-specific interface, respecting the current semantics of
+> >> >> memory.reclaim: respecting aging LRU and not supporting
+> >> >> artificially triggering eviction on nodes belonging to non-bottom
+> >> >> tiers.
+> >> >>
+> >> >> This patch allows userspace to do:
+> >> >>
+> >> >>      echo 512M swappiness=3D10 > /sys/devices/system/node/nodeX/rec=
+laim
+> >> >
+> >> >One value per sysfs file is a rule.
+> >>
+> >> I wasn't aware of it as a rule - is this documented somewhere?
+> >
+> >Documentation/filesystems/sysfs.rst, line 62.  Also lots of gregkh
+> >grumpygrams :)
+> >
+> >> I ask because I see some others are using space-separated parameters, =
+ie:
+> >>
+> >> /sys/bus/usb/drivers/foo/new_id
+> >>
+> >> ... or colons. What would be acceptable? echo "512M:10" > ... ?
+> >
+> >Kinda cheating.  But the rule gets violated a lot.
+>
+> The only other alternative I can think of is to have a separate file
+> for swappiness, which of course sucks. So I will go with the colon
+> approach unless somebody shouts - I still prefer it as is in this patch,
+> if we are going to violate the rule altogether...
+
+I also prefer this patch's approach. It'd be really confusing if the
+per-node and per-memcg proactive reclaim interfaces have the same
+semantics but different syntax.
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail115-79.sinamail.sina.com.cn (mail115-79.sinamail.sina.com.cn [218.30.115.79])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07E6A1482E9
+	for <linux-kernel@vger.kernel.org>; Thu,  5 Sep 2024 22:40:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=218.30.115.79
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725576042; cv=none; b=pq+vH1iALS45ENXksuit3wNnC2nnxAqkRRJerZrssFHFs7FwUs7TfAsq+ULXCNTkboHmn9lqs1DsHeNSNG0s76yEwqD3HibbE2OZScLH88XTOdGObLCok0jBiVJqGDtqvlo425GC9AyPL7uRq2sA2yikRyMSCAujOb2+QI8oCp4=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725576042; c=relaxed/simple;
+	bh=w8v7RvXqT0KlDpml49QYizFPqdb4aYGrqseedqucWSU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=hViIBNgldHWsycr7mzh5duELxjOfFYBDZr1kwydozhe2WvdQ+XfYlm++v5Dngm9uNVEG3jP9LzuvNLZ9RrR7In0+t60zBY6O0tlGA67CMiz6PzchYuDI+CPR4pwkxYX4PN7dJL1NlSL7fg4kKG+84ptZ1/wgSfkhgdxMytp3WqI=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sina.com; spf=pass smtp.mailfrom=sina.com; arc=none smtp.client-ip=218.30.115.79
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sina.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sina.com
+X-SMAIL-HELO: localhost.localdomain
+Received: from unknown (HELO localhost.localdomain)([116.24.11.67])
+	by sina.com (10.185.250.22) with ESMTP
+	id 66DA29DA00006578; Thu, 6 Sep 2024 05:59:57 +0800 (CST)
+X-Sender: hdanton@sina.com
+X-Auth-ID: hdanton@sina.com
+Authentication-Results: sina.com;
+	 spf=none smtp.mailfrom=hdanton@sina.com;
+	 dkim=none header.i=none;
+	 dmarc=none action=none header.from=hdanton@sina.com
+X-SMAIL-MID: 2911437602652
+X-SMAIL-UIID: FE693CDE161143748A508DE683140C07-20240906-055957-1
+From: Hillf Danton <hdanton@sina.com>
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: yosryahmed@google.com,
+	mhocko@kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Date: Fri,  6 Sep 2024 05:59:45 +0800
+Message-Id: <20240905215945.1909-1-hdanton@sina.com>
+In-Reply-To: <20240904162740.1043168-1-dave@stgolabs.net>
+References: 
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Status: RO
+Content-Length: 711
+Lines: 16
+
+On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
+
+> This adds support for allowing proactive reclaim in general on a
+> NUMA system. A per-node interface extends support for beyond a
+> memcg-specific interface, respecting the current semantics of
+> memory.reclaim: respecting aging LRU and not supporting
+> artificially triggering eviction on nodes belonging to non-bottom
+> tiers.
+> 
+> This patch allows userspace to do:
+> 
+>      echo 512M swappiness=10 > /sys/devices/system/node/nodeX/reclaim
+>
+The proactive reclaim on the cmdline looks like waste of cpu cycles before
+the cases where kswapd fails to work are spotted. It is not correct to add
+it because you can type the code.
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from cheetah.ash.relay.mailchannels.net (cheetah.ash.relay.mailchannels.net [23.83.222.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AF262233B
+	for <linux-kernel@vger.kernel.org>; Fri,  6 Sep 2024 01:53:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=23.83.222.34
+ARC-Seal: i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725587630; cv=pass; b=RpN17+Ck7zRO0lm36xxHvug6r19wtaA/qpyANRqFtqahKyheuxhPdLUG30EJziAst7VC2cKnKdcyJfr1YNTn26pHlUk5CrhGRrjwtw7efU5GXHtoMI9e318eiQCwLVi0WVGoIWGNLpAdEfMymmQqWFidu4DqwGKRFIgu0izxZw4=
+ARC-Message-Signature: i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725587630; c=relaxed/simple;
+	bh=2S8X0xUANTwU9pJASFvGEzfejQnAoym/qG0XwbO7PsE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=b8lQLUGEuB9yaXnqQwgP56chZiLQpBhS8ZF0egpUcYfoIB1pGFsGEtt0D2lmppnZEcfBl3/fDX7WnddDRZBMxy8v/VhpSWfBHqUe+YW+pGsfJuwBNfJzT7drdovHR67rOGjhRK5K7sIjfqcOHspFLEvgtabymwTS0Lttg13Jfyk=
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net; spf=pass smtp.mailfrom=stgolabs.net; dkim=pass (2048-bit key) header.d=stgolabs.net header.i=@stgolabs.net header.b=qqyi3i8B; arc=pass smtp.client-ip=23.83.222.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stgolabs.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=stgolabs.net header.i=@stgolabs.net header.b="qqyi3i8B"
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+Received: from relay.mailchannels.net (localhost [127.0.0.1])
+	by relay.mailchannels.net (Postfix) with ESMTP id DA81EC5BC9;
+	Thu,  5 Sep 2024 23:29:44 +0000 (UTC)
+Received: from pdx1-sub0-mail-a235.dreamhost.com (unknown [127.0.0.6])
+	(Authenticated sender: dreamhost)
+	by relay.mailchannels.net (Postfix) with ESMTPA id 7522CC5440;
+	Thu,  5 Sep 2024 23:29:44 +0000 (UTC)
+ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1725578984; a=rsa-sha256;
+	cv=none;
+	b=TfCeLZsZ94X0XgUgThXmgdirNhq1lNs8KEf5GSLD2z7sGayx6KfW5+2Dx5VU+XUY0Kuk+z
+	eemJls/HsZizIXMRPwpfiNzgOCJ0kmFaqGjG/4SUh9R4HlDpqBnAf8uVKmbLGxrcMMGyjS
+	GZf67iMkXVjfOtxxOF13dE07B2TtVIOeurDU8GKkpLN+g0SUGUZJmXLFib/mUX+LmmWDxD
+	B2c003pb5teZUnn6UTuKfYvGKkS46dmkrm9rYSiaj1Mgt8uwybxQ0oKhQoHjQ3JC4KA1kj
+	ougt/a5kdGjNGO4vBLFEQiOf89xYdVntX97uA97OC+BAEenv/gmhnjKmxuXmBQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mailchannels.net;
+	s=arc-2022; t=1725578984;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=2S8X0xUANTwU9pJASFvGEzfejQnAoym/qG0XwbO7PsE=;
+	b=8FU7fqd+7U5bjunPkb6jhlB7LPlIN82fK7p9DiZw72/agyRcK0eX7XWdQ2jQdzAomwBp6o
+	U81y3iJIUIqm428GmY7pBAgrI+Ox1cHi6pq7/HOqFudF7FdzJUbdSxkKEq0bB8xORJhyNu
+	TdokuhEa17eCVK7Uq/T5xiQYh4WrRXLRxJXZpLJxCgwgLPKkEUYJ02fH+cXsdHd0BWTW0G
+	KePVGw8EGe82qM0RV+gDMfE9/0INn5o5szT4j3SzfAtENDpJrJgCIBX5zjsbaD7zANCykV
+	Q3RwJVAMaqVUfZTibDdu67EiKro6pEZkFB7+qIJJraWyiKmXAZLsVKVGCS5HyQ==
+ARC-Authentication-Results: i=1;
+	rspamd-85dcd79db4-h6mk5;
+	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+X-MC-Relay: Neutral
+X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
+X-MailChannels-Auth-Id: dreamhost
+X-Exultant-Unite: 443828df6cb4a34b_1725578984724_2528316108
+X-MC-Loop-Signature: 1725578984724:3890867753
+X-MC-Ingress-Time: 1725578984724
+Received: from pdx1-sub0-mail-a235.dreamhost.com (pop.dreamhost.com
+ [64.90.62.162])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
+	by 100.112.250.152 (trex/7.0.2);
+	Thu, 05 Sep 2024 23:29:44 +0000
+Received: from offworld (unknown [104.36.31.111])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: dave@stgolabs.net)
+	by pdx1-sub0-mail-a235.dreamhost.com (Postfix) with ESMTPSA id 4X0FvC6dVBz6h;
+	Thu,  5 Sep 2024 16:29:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
+	s=dreamhost; t=1725578984;
+	bh=2S8X0xUANTwU9pJASFvGEzfejQnAoym/qG0XwbO7PsE=;
+	h=Date:From:To:Cc:Subject:Content-Type;
+	b=qqyi3i8BBZVmKh0YZ03zuPNZSFxAI+8wfVcEQ6jWGmenQSoYDf/UDUWFlIuogCg6e
+	 rfB6Orof8n/NAD8EPE+1C5/+93LMsLNTlS/iki5GHzVKD3nMSmND5sNa5iz4PDyVdm
+	 aiNsZLt1pN+rniRZS3QdA+FYfvhwhcs8jkUla0VDeWlRhzDK99PUIa99RWeQk4lx4e
+	 aGYlkleZLbeloHwelP3XgQm6HfCgatk+SyojFrJpLD4LWoErSxLjnPJMfji+AKwxK6
+	 J+EnMWVTxQs64u8LmDxFg3up8VGbOYYo0bYitqbFBd1EbtW1wSfvxNo0q1iPo2/GkV
+	 Edny2fyeCdMug==
+Date: Thu, 5 Sep 2024 16:29:41 -0700
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Hillf Danton <hdanton@sina.com>
+Cc: yosryahmed@google.com, mhocko@kernel.org, 
+	Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Message-ID: <jw5skccxwi3u7i2ieb2l5gamekobbiankxbdzcxtctd636fh4v@wrfgdmkomiu3>
+Mail-Followup-To: Hillf Danton <hdanton@sina.com>, yosryahmed@google.com, 
+	mhocko@kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+ <20240905215945.1909-1-hdanton@sina.com>
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20240905215945.1909-1-hdanton@sina.com>
+User-Agent: NeoMutt/20240425
+Status: RO
+Content-Length: 709
+Lines: 13
+
+On Fri, 06 Sep 2024, Hillf Danton wrote:\n
+>The proactive reclaim on the cmdline looks like waste of cpu cycles before
+>the cases where kswapd fails to work are spotted. It is not correct to add
+>it because you can type the code.
+
+Are you against proactive reclaim altogether (ie: memcg) or this patch in
+particular, which extends its availability?
+
+The benefits of proactive reclaim are well documented, and the community has
+been overall favorable towards it. This operation is not meant to be generally
+used, but there are real latency benefits to be had which are completely
+unrelated to watermarks. Similarly, we have 'compact' as an alternative to
+kcompactd (which was once upon a time part of kswapd).
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail115-95.sinamail.sina.com.cn (mail115-95.sinamail.sina.com.cn [218.30.115.95])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B6E91CBE8D
+	for <linux-kernel@vger.kernel.org>; Fri,  6 Sep 2024 11:39:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=218.30.115.95
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725622799; cv=none; b=IjaitkwTbkVBpzieAQGazZbv9NZijo+Y3zyuuBRQu7Oplev6XYTofdJAYiSmqRMU05e0zkKGEsUW2ZgDpnbJLIXpoy9FVJa4uRGvkSmtNMgld3vwCOAqKPivl+lWHpeTMrcA2YNcqvAGJBRdtPbNrLjwwUSbc4/KfKCDAxrK73k=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725622799; c=relaxed/simple;
+	bh=b6EX1KbjDsbwjjyz8D2+nppHJaklNhNxOJ4QiOIDYDU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=HXdHylLH/Lm55jzytpbbL8S6VAF5WR2PSN/LCB+oOBeLctsZK0IG6S5sLHfrmXV5hrlekhip+dEos/T3OSZgTEf9enzPMzm9VwIVqecJ0AODd+su4VVGCFpDA80SvaparNuyNnvTiG+X/RIqn0CPQ/Qt7RU3ApQyyMrP7U4a+a0=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sina.com; spf=pass smtp.mailfrom=sina.com; arc=none smtp.client-ip=218.30.115.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sina.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sina.com
+X-SMAIL-HELO: localhost.localdomain
+Received: from unknown (HELO localhost.localdomain)([116.24.11.67])
+	by sina.com (10.185.250.23) with ESMTP
+	id 66DAE1BC000070D4; Fri, 6 Sep 2024 19:04:31 +0800 (CST)
+X-Sender: hdanton@sina.com
+X-Auth-ID: hdanton@sina.com
+Authentication-Results: sina.com;
+	 spf=none smtp.mailfrom=hdanton@sina.com;
+	 dkim=none header.i=none;
+	 dmarc=none action=none header.from=hdanton@sina.com
+X-SMAIL-MID: 1108818913234
+X-SMAIL-UIID: 851DCCE2AE5142398F3D38AD0207E054-20240906-190431-1
+From: Hillf Danton <hdanton@sina.com>
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: yosryahmed@google.com,
+	mhocko@kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Date: Fri,  6 Sep 2024 19:04:19 +0800
+Message-Id: <20240906110419.2079-1-hdanton@sina.com>
+In-Reply-To: <jw5skccxwi3u7i2ieb2l5gamekobbiankxbdzcxtctd636fh4v@wrfgdmkomiu3>
+References: 
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Status: RO
+Content-Length: 1044
+Lines: 20
+
+On Thu, 5 Sep 2024 16:29:41 -0700 Davidlohr Bueso <dave@stgolabs.net>
+> On Fri, 06 Sep 2024, Hillf Danton wrote:\n
+> >The proactive reclaim on the cmdline looks like waste of cpu cycles before
+> >the cases where kswapd fails to work are spotted. It is not correct to add
+> >it because you can type the code.
+> 
+> Are you against proactive reclaim altogether (ie: memcg) or this patch in
+> particular, which extends its availability?
+> 
+The against makes no sense to me because I know your patch is never able to
+escape standing ovation.
+
+> The benefits of proactive reclaim are well documented, and the community has
+> been overall favorable towards it. This operation is not meant to be generally
+> used, but there are real latency benefits to be had which are completely
+> unrelated to watermarks. Similarly, we have 'compact' as an alternative to
+> kcompactd (which was once upon a time part of kswapd).
+>
+Because kswapd is responsible for watermark instead of high order pages,
+compact does not justify proactive reclaim from the begining.
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCE471AE050
+	for <linux-kernel@vger.kernel.org>; Mon,  9 Sep 2024 07:12:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725865929; cv=none; b=QNpneY6/mF/AC4Vx00RHzU695rV0lyE7S60Q7TaKhURt1/k3pu5JmqZTEXZmNfB1tQFsoXxMY3g3Z2FdLmxSnM2p0yuLIRE5dRoOAM0bVhcUR6VjRR1IebzAdMSAqD1tWwVxbOI7ZzxisIvi6ypHoF8rRRWIPruQMJuv7KAGHRc=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725865929; c=relaxed/simple;
+	bh=3KMrUlZrz/OgJfQcNnFbHDUOETnz1FS3VBAxZc7blM4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gq6gE88Cc7csoZzes+HpO2t6RWvWWaEqvO1/5diG4MpjbjuZfFjcOvfs7DA/ZJqDA48SbNIqmljM82/2PvqCefjZexuBhAu6/jR4NSrleMjsOH1UmXZqvk8f2XXzhASsVAi69Pa3gp+2QnWAO4Bj7spoS/6PYtrvQaju7n2zQOM=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=cv3EXSVe; arc=none smtp.client-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="cv3EXSVe"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-42bbdf7f860so36186505e9.3
+        for <linux-kernel@vger.kernel.org>; Mon, 09 Sep 2024 00:12:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1725865925; x=1726470725; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=vlTYWtVvC3Cne1dBDJYb0hBguVyLh45bhCTkFwU2JeQ=;
+        b=cv3EXSVe6DtoAbb5qRyL9TuEgl1E1LeYSPkUeDQLjnGRvUDAk2/6bWt1IfKxe/M4Z/
+         Lve1hf81yqH4cGKeG8/x90iCy1ew8CZZUJxHegnXclZ35djZAQLVmWsjD9FKOaagy9YP
+         5aByY6URsUoumIUdVj02jplqbPaVo3eihT9nus5tg7ldtX7Fgj7UkpAxG6Vhjid1va+X
+         9hfhUthKMgqE+TvtNRh+j391BrabfYa34TcCKEKR+U94DjMpC6k1Sc2X23wJvCiCj3b3
+         EDax2iBIK+P1QK/W9iDzr/8cNiJ0jlsVPy/sN6FDE1hHx/vtg4q9qChszLy9kZPGniIX
+         dGiw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725865925; x=1726470725;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vlTYWtVvC3Cne1dBDJYb0hBguVyLh45bhCTkFwU2JeQ=;
+        b=Ws5IUGpFulVLzhIGPjzlN79s/V8TMTnBqKs3Jtf72REMXagRiUEBx7vuDQMH0XDnhU
+         tpFkZnJQTRv7euFBHT7OEg+WfHUwsghkXbtIebupgGJ5CfeF725eWYABsM9IoXxH1D0B
+         gQcVgueIjAYvzIHSjQBuom5jKv4dA0uJXp5Lv7peiZt6iTjuCGqN92LXYoFbuREvcaSk
+         flcopuww0K2aM6K2d+mo2vSCDzBafMG9dNz3Dcol9ugMlx6fWavoGDCfbfAFnbU4ZMug
+         s8NDUWfRVEZ4ZavyqixvsbvuMcVTcFTvLR+ddpZLwx6ZVDlmdtPbiJkO+MngakVay+p/
+         L3og==
+X-Forwarded-Encrypted: i=1; AJvYcCXCZhjtJVrWPy9YYcEHxV1WOVXcvzdI5jN2JjPHDuZOTswl1Yda6iDEDxLVwpB2T6g46/8UHdZipdhjtlI=@vger.kernel.org
+X-Gm-Message-State: AOJu0YygA0cVdszdqahY8ZpInSSD4z98+3/UTuA9DbkYAkeAgs+twJF0
+	kt3IRVEoEy3M3b2i16qohGmKU7gesAqBy7QICNogES9x9cYushJPGllkbE8mdvI=
+X-Google-Smtp-Source: AGHT+IFngtNyJrOoh2h5MtVKCpb2qCaCLNPXUbMYEkAbhHFc2yZgp3oF5lWSpd1MZ4PUJTDOX3sNJA==
+X-Received: by 2002:a05:600c:c8b:b0:42c:a8f8:1d58 with SMTP id 5b1f17b1804b1-42cae7091cfmr42247485e9.7.1725865924824;
+        Mon, 09 Sep 2024 00:12:04 -0700 (PDT)
+Received: from localhost (109-81-94-251.rct.o2.cz. [109.81.94.251])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42caeb32318sm66714455e9.17.2024.09.09.00.12.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Sep 2024 00:12:04 -0700 (PDT)
+Date: Mon, 9 Sep 2024 09:12:03 +0200
+From: Michal Hocko <mhocko@suse.com>
+To: Hillf Danton <hdanton@sina.com>
+Cc: Davidlohr Bueso <dave@stgolabs.net>, yosryahmed@google.com,
+	Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Message-ID: <Zt6fw4ibDq_XA_0q@tiehlicka>
+References: <jw5skccxwi3u7i2ieb2l5gamekobbiankxbdzcxtctd636fh4v@wrfgdmkomiu3>
+ <20240906110419.2079-1-hdanton@sina.com>
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240906110419.2079-1-hdanton@sina.com>
+Status: RO
+Content-Length: 1470
+Lines: 31
+
+On Fri 06-09-24 19:04:19, Hillf Danton wrote:
+> On Thu, 5 Sep 2024 16:29:41 -0700 Davidlohr Bueso <dave@stgolabs.net>
+> > On Fri, 06 Sep 2024, Hillf Danton wrote:\n
+> > >The proactive reclaim on the cmdline looks like waste of cpu cycles before
+> > >the cases where kswapd fails to work are spotted. It is not correct to add
+> > >it because you can type the code.
+> > 
+> > Are you against proactive reclaim altogether (ie: memcg) or this patch in
+> > particular, which extends its availability?
+> > 
+> The against makes no sense to me because I know your patch is never able to
+> escape standing ovation.
+
+I fail to understand your reasoning. Do you have any actual technical
+arguments why this is a bad idea?
+
+> > The benefits of proactive reclaim are well documented, and the community has
+> > been overall favorable towards it. This operation is not meant to be generally
+> > used, but there are real latency benefits to be had which are completely
+> > unrelated to watermarks. Similarly, we have 'compact' as an alternative to
+> > kcompactd (which was once upon a time part of kswapd).
+> >
+> Because kswapd is responsible for watermark instead of high order pages,
+> compact does not justify proactive reclaim from the begining.
+
+What do you mean? How does keeping a global watermark helps to trigger
+per NUMA node specific aging - e.g. demotion? Or do you dispute the
+overall idea and have a different idea how to achieve those usecases?
+-- 
+Michal Hocko
+SUSE Labs
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC1111AE859
+	for <linux-kernel@vger.kernel.org>; Mon,  9 Sep 2024 07:20:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725866431; cv=none; b=Kje0FflWDrUHkJREXDN7D4EY+1w0KGp/7DKRTaY9Gy/YpURnYtpaYJsjbGERcFB50jI/r3SJseEXucWBaFZOe47O18O2Wd6DOaqgMvMXI8ys/UfshybISj45pAOm6KlQciodsm8jrAA8ukgUAHA+vz3IHUUgJoSUmLHdQx9mosU=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725866431; c=relaxed/simple;
+	bh=YuIxzNfIZ3Yn0pjIGqtgmvpDDa9xlMz2MnTcytszYwU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=tcuV52nJb0iSA+R2IMiB0689aTkuVKD8cboINgx+FnzejKcjUUkh58YEG9Qc+ILcFomEUrBKkg3j/D/kFpHj6pDzGlvRfP96D5Mrir++TuHmsQ9qiDdcvcUwu6aPdqwFBGP82OEIo7QJT8EFgTsyDVU5pC1zreSz8KutWSeaqT0=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=GjzcB163; arc=none smtp.client-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="GjzcB163"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-42cb1e623d1so11962745e9.0
+        for <linux-kernel@vger.kernel.org>; Mon, 09 Sep 2024 00:20:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1725866428; x=1726471228; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=PUYgRrt73R/AzDLyM5Jg4uBo6/bxbCoymCk3p5vIpyk=;
+        b=GjzcB163OlHF5FFymVdBW/yI8TiupldbpYA0y95WotUQbQPFD+zvrC+DXBGK6vJ091
+         e9aOxhWexOo87xUcIoQ4hpdFdIQM60Rwh9HO2egRYA0mRw9UBXQ7dC7LwHxAP5NAZ+5M
+         L1Tz2G+PiPbjSkJSWPoWgKaoaRM9k9Apj4pNw64WYJV+Vnxa2Kp+0WMO96VFedDmouA3
+         QSKLpCNIwCQG1mmx+xkIIV7faPGVj46g/aU4ECyGLo0TQnmwvWIz/uUbILg7LTQmUt7R
+         SaAPiov2FwnG8BWXQxpJ2HReywcG8ugHR7P5NJ+Z7gpKX6A8DW8terL49jggVlppSByU
+         TDrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725866428; x=1726471228;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PUYgRrt73R/AzDLyM5Jg4uBo6/bxbCoymCk3p5vIpyk=;
+        b=KEsNp6xRWqn02inOjOQB1IDFgCtJlmpm336ZoEZkZQYy4kZCfBoOdJMnOd5Au4R83h
+         CcAqxlagonE49QHbLPxrNX6AH+8Pw1UFW8T67G51bzo2X9T51/Pnpo9O3vSoE4Rr91Xk
+         2/Yz1NcAgggLIwl3YU2sN0azFkAJurFxjGngoEs57NuUR7C/sHultnt7XnsMwQNaHQ2+
+         b8rPWsV7BXjnF4ij2RmnvB2mLQJjuUsz4IMfvwDXZvFSayEtTg2xZK1M7XWgWLUT/mfn
+         Ltew2yg0F544NweUmv4R2miGUAkBD1hqrxIKXgSKPKH7L3Qn9zFO0azk6oZj31UiQfY9
+         4oIw==
+X-Forwarded-Encrypted: i=1; AJvYcCWGAJ41/SduZdJOk9Xj6x2vh80AhSgRaM7yexCRoZPzr7nGMOB7hGIxBBqGJV17/c1dQIsYbmurrQSBxBg=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyXEINCEEd4DVM+nPntfvtw6ng6CXEc9GbRrzCQKZeKb+Vsvzal
+	Jl/QZhPTXXFxaWenyXaXylZoOqNmoOlhDZoCuWZ6N1GrDWQR4s3U5U6Hoqh56FU=
+X-Google-Smtp-Source: AGHT+IFIiDSRSYeBEcV92W79htAPHfJxh9us1KZqt+JswhX3Is2KoO8v4vNKGbVTCpDoomhtPcTkdw==
+X-Received: by 2002:a05:600c:22cf:b0:42c:a8cb:6a75 with SMTP id 5b1f17b1804b1-42ca8cb6c5amr55206885e9.17.1725866427774;
+        Mon, 09 Sep 2024 00:20:27 -0700 (PDT)
+Received: from localhost (109-81-94-251.rct.o2.cz. [109.81.94.251])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-42caf436998sm65861645e9.29.2024.09.09.00.20.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Sep 2024 00:20:27 -0700 (PDT)
+Date: Mon, 9 Sep 2024 09:20:26 +0200
+From: Michal Hocko <mhocko@suse.com>
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, rientjes@google.com,
+	yosryahmed@google.com, hannes@cmpxchg.org, almasrymina@google.com,
+	roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu,
+	a.manzanares@samsung.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Message-ID: <Zt6hur2TZJUrJ2IU@tiehlicka>
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240904162740.1043168-1-dave@stgolabs.net>
+Status: RO
+Content-Length: 2218
+Lines: 52
+
+On Wed 04-09-24 09:27:40, Davidlohr Bueso wrote:
+> This adds support for allowing proactive reclaim in general on a
+> NUMA system. A per-node interface extends support for beyond a
+> memcg-specific interface, respecting the current semantics of
+> memory.reclaim: respecting aging LRU and not supporting
+> artificially triggering eviction on nodes belonging to non-bottom
+> tiers.
+> 
+> This patch allows userspace to do:
+> 
+>      echo 512M swappiness=10 > /sys/devices/system/node/nodeX/reclaim
+> 
+> One of the premises for this is to semantically align as best as
+> possible with memory.reclaim. During a brief time memcg did
+> support nodemask until 55ab834a86a9 (Revert "mm: add nodes=
+> arg to memory.reclaim"), for which semantics around reclaim
+> (eviction) vs demotion were not clear, rendering charging
+> expectations to be broken.
+> 
+> With this approach:
+> 
+> 1. Users who do not use memcg can benefit from proactive reclaim.
+
+It would be great to have some specific examples here. Is there a
+specific reason memcg is not used?
+
+> 2. Proactive reclaim on top tiers will trigger demotion, for which
+> memory is still byte-addressable. Reclaiming on the bottom nodes
+> will trigger evicting to swap (the traditional sense of reclaim).
+> This follows the semantics of what is today part of the aging process
+> on tiered memory, mirroring what every other form of reclaim does
+> (reactive and memcg proactive reclaim). Furthermore per-node proactive
+> reclaim is not as susceptible to the memcg charging problem mentioned
+> above.
+> 
+> 3. Unlike memcg, there should be no surprises of callers expecting
+> reclaim but instead got a demotion. Essentially relying on behavior
+> of shrink_folio_list() after 6b426d071419 (mm: disable top-tier
+> fallback to reclaim on proactive reclaim), without the expectations
+> of try_to_free_mem_cgroup_pages().
+
+I am not sure I understand. If you demote then you effectively reclaim
+because you free up memory on the specific node. Or do I just misread
+what you mean? Maybe you meant to say that the overall memory
+consumption on all nodes is not affected?
+
+Your point 4 and 5 follows up on this so we should better clarify that
+before going there.
+
+-- 
+Michal Hocko
+SUSE Labs
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from smtp134-31.sina.com.cn (smtp134-31.sina.com.cn [180.149.134.31])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB1CE12B17C
+	for <linux-kernel@vger.kernel.org>; Mon,  9 Sep 2024 10:52:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=180.149.134.31
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725879181; cv=none; b=CFzC+Rvqbad8cy8JdYNMx6u7IUkjwPw/qXL0Biq6W4C4ka+u9x+YYZMkWFgKC8FZgETew3a5S99ePbsXgNjhcoq4gqIFSjK/TDu/MPP6/ErVdTM+QP7CpUbXFrrpOJgXlJikhuxo8sHc1jmu1r7jI59+ZTQHIRhKEYu7dj0TC9o=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725879181; c=relaxed/simple;
+	bh=k6rzkPhOo6lj4rSMToLU4dfqNi1A2723OsN/cGNSVqI=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=E1Vn3/Umn5eOXGcuYqxCCZ4S5eeQxYR3s+W5NeS4+fcvV82rUBGIuabse+sv9Sui6yCdupmvasroikFnjnYKTpjxAXLuZQ6EKPMlhSISYCAHx7inZNx/b5SZJcwOkGAL6WB0N9+aHY247mk2nsQWKIbQIUkn/V+LvIUhFeanrBo=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sina.com; spf=pass smtp.mailfrom=sina.com; arc=none smtp.client-ip=180.149.134.31
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sina.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sina.com
+X-SMAIL-HELO: localhost.localdomain
+Received: from unknown (HELO localhost.localdomain)([113.88.50.122])
+	by sina.com (10.185.250.21) with ESMTP
+	id 66DED35700006845; Mon, 9 Sep 2024 18:52:10 +0800 (CST)
+X-Sender: hdanton@sina.com
+X-Auth-ID: hdanton@sina.com
+Authentication-Results: sina.com;
+	 spf=none smtp.mailfrom=hdanton@sina.com;
+	 dkim=none header.i=none;
+	 dmarc=none action=none header.from=hdanton@sina.com
+X-SMAIL-MID: 9132623408182
+X-SMAIL-UIID: E5A1A39DA601451EA2E93BE98ABAF976-20240909-185210-1
+From: Hillf Danton <hdanton@sina.com>
+To: Michal Hocko <mhocko@suse.com>
+Cc: Davidlohr Bueso <dave@stgolabs.net>,
+	yosryahmed@google.com,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Date: Mon,  9 Sep 2024 18:51:57 +0800
+Message-Id: <20240909105157.2663-1-hdanton@sina.com>
+In-Reply-To: <Zt6fw4ibDq_XA_0q@tiehlicka>
+References: 
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Status: RO
+Content-Length: 1676
+Lines: 32
+
+On Date: Mon, 9 Sep 2024 09:12:03 +0200 Michal Hocko <mhocko@suse.com>
+> On Fri 06-09-24 19:04:19, Hillf Danton wrote:
+> > On Thu, 5 Sep 2024 16:29:41 -0700 Davidlohr Bueso <dave@stgolabs.net>
+> > > On Fri, 06 Sep 2024, Hillf Danton wrote:\n
+> > > >The proactive reclaim on the cmdline looks like waste of cpu cycles before
+> > > >the cases where kswapd fails to work are spotted. It is not correct to add
+> > > >it because you can type the code.
+> > > 
+> > > Are you against proactive reclaim altogether (ie: memcg) or this patch in
+> > > particular, which extends its availability?
+> > > 
+> > The against makes no sense to me because I know your patch is never able to
+> > escape standing ovation.
+> 
+> I fail to understand your reasoning. Do you have any actual technical
+> arguments why this is a bad idea?
+> 
+> > > The benefits of proactive reclaim are well documented, and the community has
+> > > been overall favorable towards it. This operation is not meant to be generally
+> > > used, but there are real latency benefits to be had which are completely
+> > > unrelated to watermarks. Similarly, we have 'compact' as an alternative to
+> > > kcompactd (which was once upon a time part of kswapd).
+> > >
+> > Because kswapd is responsible for watermark instead of high order pages,
+> > compact does not justify proactive reclaim from the begining.
+> 
+> What do you mean? How does keeping a global watermark helps to trigger
+> per NUMA node specific aging - e.g. demotion?
+>
+In addition to the cost of pro/demorion, the percpu pages prevent random aging
+from making any sense without memory pressue, because I think it is aging that
+rolls out red carpet for multi-gen lru.
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B71AE1B81D8
+	for <linux-kernel@vger.kernel.org>; Mon,  9 Sep 2024 14:50:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.48
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725893406; cv=none; b=ZL4CuTIqXJM/MSS7Dr3C73tJnG0eP86U/h0di3XZ8a4BHPKDwABOWHjX2xPZtCSOLlKQcsiiR1A/CMAJjYX5PL/wUvLpUDa/EbZ3t/gwiE1LySOtC2bh1sG/MP0lCmBGZ+tj8vkPzzA+RbzLZJG1AGilxAwTsM/B63Izr+4J7iA=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725893406; c=relaxed/simple;
+	bh=VyMYMatbM0ZkxcQ7JH9byFExbaiv76IZbIMr2qViwHw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZXWH4kDtbJPV/XGGXpA4seo7nOJKtw1apl01X3K1vWcRPOmmpb5+FD688WPjSqLWd4CnHShAOncrEQ3aAG7UxMWR+BfvKoINMmJEtJw9YLCR4P8cFNahSHFHd3nKR7AI2SK1gw4lOeCADvEOsQ/bL77voIb6JqlEaHjr0FMGyNc=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=JqrGPKru; arc=none smtp.client-ip=209.85.208.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="JqrGPKru"
+Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-5c3c30e663fso5087761a12.1
+        for <linux-kernel@vger.kernel.org>; Mon, 09 Sep 2024 07:50:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1725893403; x=1726498203; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=+9v2Ew7hhlLr4kMPvE7YVmpXKAISPQ2qnVJhqFoRzg8=;
+        b=JqrGPKru7XPZ68x5zlbipz+N98DpF3kUcV5OaTg4dObqzxEMjRvIp0BC1scQeP0KvR
+         HI6p8XYn2JV0JlRZZa2duLgqjkkdAbjmzoGlFYEQ0CQXsn551BhKZBZBi8G0OUQZ7i17
+         BtXX3KCKtgS7nMuMW1IiRRVXTqiQKldzU7W6fTeO+mLz3jw+2WmDkrDGu23MJ0l6VzNh
+         Ep5T3CqR+Wm1U6cOWRrdTg68y4B2FbU56yrs5saE3OUtENZuPciwYzT4mM5yx+Rdt9ro
+         aBXhHf1HJ0g2eGZ1GMLfwP7UIKLblCk6Xk8VLuznqBg0abRKmphj3tIICVv6Gd05jeD9
+         mBNg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725893403; x=1726498203;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+9v2Ew7hhlLr4kMPvE7YVmpXKAISPQ2qnVJhqFoRzg8=;
+        b=Z5MH3Fta9rXjCymv52L+3SyWZDx7P7Rkr50JIflC16H+uQ88hF2BitygaSC1Wai6+7
+         jN6TNdxdd5fIUM5M+RIg9y9xO7lIKB4ibBqcTyT2/3gcgIQoBuYIKwRokvvNt5lZZ4Vj
+         siXpSNRdKZrGcLaQGngPO7CO05+rYP9ifTPBwFUwAtQx+panqaxRltwTkE5Bf0RlqcGi
+         9c6I/M2Ml45iavF8ePHQirq/4LiAg0ktBKMlxVyjasTNpZSMeNDUIjwcbI8KOz3D9Ydq
+         65actpQOY4eZZr9O1GcCdyXsZLBKlexAlDw1IotDnrFzUlKPAKbzVaX7V6vcPfllRI/r
+         OU5Q==
+X-Forwarded-Encrypted: i=1; AJvYcCWOqzfoQ2tMJdJYa+i6PD1G+DHmVPsF36bQPxN17ubh8HqTIUAb1bBMSIJmoVnUTBvaNY/DQaotRXXVNXE=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzGCPR1NAN2yhit06h2fpprsMm2pS1SxilTV6p/HYwp1auj0x5a
+	6GxQfmAOuv4eMV3jgoGW9LDpVm6qOLWneZwZTwWpx41RyD7araTOTMqvg3MRSN8=
+X-Google-Smtp-Source: AGHT+IHf434hHzqA3na7vHiDZ07v1njm5O6rCFLa56eADhixaf8Z8IRp8g+sM15hDoTHcp+eFRE1lw==
+X-Received: by 2002:a05:6402:448a:b0:5c2:632e:fad7 with SMTP id 4fb4d7f45d1cf-5c3dc7955famr8352205a12.15.1725893402803;
+        Mon, 09 Sep 2024 07:50:02 -0700 (PDT)
+Received: from localhost ([193.86.92.181])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5c3ebd8ceccsm3086633a12.91.2024.09.09.07.50.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Sep 2024 07:50:02 -0700 (PDT)
+Date: Mon, 9 Sep 2024 16:50:02 +0200
+From: Michal Hocko <mhocko@suse.com>
+To: Hillf Danton <hdanton@sina.com>
+Cc: Davidlohr Bueso <dave@stgolabs.net>, yosryahmed@google.com,
+	Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Message-ID: <Zt8LGqwoq4dSd_Ed@tiehlicka>
+References: <Zt6fw4ibDq_XA_0q@tiehlicka>
+ <20240909105157.2663-1-hdanton@sina.com>
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240909105157.2663-1-hdanton@sina.com>
+Status: RO
+Content-Length: 1903
+Lines: 39
+
+On Mon 09-09-24 18:51:57, Hillf Danton wrote:
+> On Date: Mon, 9 Sep 2024 09:12:03 +0200 Michal Hocko <mhocko@suse.com>
+> > On Fri 06-09-24 19:04:19, Hillf Danton wrote:
+> > > On Thu, 5 Sep 2024 16:29:41 -0700 Davidlohr Bueso <dave@stgolabs.net>
+> > > > On Fri, 06 Sep 2024, Hillf Danton wrote:\n
+> > > > >The proactive reclaim on the cmdline looks like waste of cpu cycles before
+> > > > >the cases where kswapd fails to work are spotted. It is not correct to add
+> > > > >it because you can type the code.
+> > > > 
+> > > > Are you against proactive reclaim altogether (ie: memcg) or this patch in
+> > > > particular, which extends its availability?
+> > > > 
+> > > The against makes no sense to me because I know your patch is never able to
+> > > escape standing ovation.
+> > 
+> > I fail to understand your reasoning. Do you have any actual technical
+> > arguments why this is a bad idea?
+> > 
+> > > > The benefits of proactive reclaim are well documented, and the community has
+> > > > been overall favorable towards it. This operation is not meant to be generally
+> > > > used, but there are real latency benefits to be had which are completely
+> > > > unrelated to watermarks. Similarly, we have 'compact' as an alternative to
+> > > > kcompactd (which was once upon a time part of kswapd).
+> > > >
+> > > Because kswapd is responsible for watermark instead of high order pages,
+> > > compact does not justify proactive reclaim from the begining.
+> > 
+> > What do you mean? How does keeping a global watermark helps to trigger
+> > per NUMA node specific aging - e.g. demotion?
+> >
+> In addition to the cost of pro/demorion, the percpu pages prevent random aging
+> from making any sense without memory pressue, because I think it is aging that
+> rolls out red carpet for multi-gen lru.
+
+I am sorry but I do not get what you are trying to say. Can you be
+_much_more_ specific?
+-- 
+Michal Hocko
+SUSE Labs
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from beige.elm.relay.mailchannels.net (beige.elm.relay.mailchannels.net [23.83.212.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99E5118DF8C
+	for <linux-kernel@vger.kernel.org>; Tue, 10 Sep 2024 16:40:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=23.83.212.16
+ARC-Seal: i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1725986457; cv=pass; b=OSpIMfKiNk6NfwbBiYtOlKDvZAFkKD/EQo+ee6jyDpVWoyiGfk4WfjU2viH2Vdt6kCvcNtO4ZbioJ6COAW+X+cSmtdtaZ5uO/g/VTtvNfkg34jX9aKGedIFYYurGYy9Lkc+6RrHjh1KNcCoSKS9Z6bi5WJVRyLlwOvpEnQqZOxE=
+ARC-Message-Signature: i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1725986457; c=relaxed/simple;
+	bh=M21sw4QFggo2xdZPy1OShYN7xAGP0xryyJe2jxUadRw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZeeF9T++i+ClfKF4TZGXA88y7Hb8NEpnr31zInSaMFgYtJqxtsZ6Hudzk1yqamAp8CZZJhT6+23f6ZqZ3OaA6IzIBu0UPpS5QY8oRCrBC2CMwXPCZfRhoPp0WFQJb+4O75ex84WUS8KyXgvzAzgIftsVUW89oNB+39XE0ARUFHA=
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net; spf=pass smtp.mailfrom=stgolabs.net; dkim=pass (2048-bit key) header.d=stgolabs.net header.i=@stgolabs.net header.b=eJreuFlQ; arc=pass smtp.client-ip=23.83.212.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stgolabs.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=stgolabs.net header.i=@stgolabs.net header.b="eJreuFlQ"
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+Received: from relay.mailchannels.net (localhost [127.0.0.1])
+	by relay.mailchannels.net (Postfix) with ESMTP id 8CED624B00;
+	Tue, 10 Sep 2024 16:31:19 +0000 (UTC)
+Received: from pdx1-sub0-mail-a297.dreamhost.com (trex-0.trex.outbound.svc.cluster.local [100.96.218.11])
+	(Authenticated sender: dreamhost)
+	by relay.mailchannels.net (Postfix) with ESMTPA id 10BA224445;
+	Tue, 10 Sep 2024 16:31:19 +0000 (UTC)
+ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1725985879; a=rsa-sha256;
+	cv=none;
+	b=O7RtYpU1hqHEthZTw0w/JwpstOigqfSGb0Q2TQGKyHFV8MbvXimUVBXNggCITqXcFbCVoK
+	DjOW1+jn/+wNSzCjfMiPPrH0W62XlUiTtAGMRFH22mFXLdk+xDuyr6zXrXraJwcq6c8Pfr
+	ayOWn8K1m2jhpspxqWfRPja4/We8CIo3fOo3ow/9Cigl8yQ0YDC9hMnzhp+IWHv2bN2Qoc
+	HdQf3SZ0h056qo2pWRVtiKlg3M/q8uiIM/tvvrVsiunXoRt/fsO9TXf9XsCKn21GehpC6o
+	vORfwZuaR8MYIfemWYINbe8HUerMF0XVNIC1tbp5fqkC0oOUw82xa/HSNkGW7Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mailchannels.net;
+	s=arc-2022; t=1725985879;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=M21sw4QFggo2xdZPy1OShYN7xAGP0xryyJe2jxUadRw=;
+	b=g7v6hmlLuC/8skkcDAZ8CLLKsqtHB35U+gJ5HjkNBlsvBkEC97dICjM9K8Acs7Enc8MBWp
+	9qTNnW9VfxrI/IXZrox+V5MMNhfDX97HqE5vSwrGzsrr5hIhgXsqKS7Y+F2kJlopRj3xXY
+	fGpg2S7fMZ4rfYuz/Y1KlNDNm9kDYOVFXXAWL4fXp4mjB5sf5VJ53QteEh/Q+xjmBgpKPC
+	GHVEo5qY5EhCMOXkw2cYOA7yf7lCvCxs/qBKTYBU7hKgOKDAf7IAXG1e+XP6yD/YLCBLnM
+	qnw8NHZK7FbzEDOn/SBEKNJ+LJE9fSQH7rM7vd/enzhul0UTQX8fVssgAncU6Q==
+ARC-Authentication-Results: i=1;
+	rspamd-77766c4bb8-bfbzv;
+	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
+X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
+X-MC-Relay: Neutral
+X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
+X-MailChannels-Auth-Id: dreamhost
+X-Occur-Army: 1db628342698e064_1725985879372_1003662781
+X-MC-Loop-Signature: 1725985879372:3470074365
+X-MC-Ingress-Time: 1725985879372
+Received: from pdx1-sub0-mail-a297.dreamhost.com (pop.dreamhost.com
+ [64.90.62.162])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
+	by 100.96.218.11 (trex/7.0.2);
+	Tue, 10 Sep 2024 16:31:19 +0000
+Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: dave@stgolabs.net)
+	by pdx1-sub0-mail-a297.dreamhost.com (Postfix) with ESMTPSA id 4X38N61tTFz6Y;
+	Tue, 10 Sep 2024 09:31:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
+	s=dreamhost; t=1725985878;
+	bh=M21sw4QFggo2xdZPy1OShYN7xAGP0xryyJe2jxUadRw=;
+	h=Date:From:To:Cc:Subject:Content-Type;
+	b=eJreuFlQ7v6fTX30v7AsCanQEyrZM0dAVnwf+u/uAkh/SCFoSaJE59VuyC6mL+rUc
+	 pkUdU9W/AbwEktaw4Ckz1CLZY7r03k5+8ei95dVMv/yrdQrBUi+ZbgmZ2LK5sQ8pvV
+	 uW2mmzXQW5jgHPRw33HhOf2aezPs2hVoStN0rJ1dI77eNiFIgTYi5ZA2+jEqZ9pka4
+	 mblkRhOzVQVz1+zqAliwVEZtE+fFztpAoMZTegH4R/q/exKRRZ8EcczFszmhHSzLbK
+	 DJQHqcMV22eMCC9EU5zpcFrTkpaJETQUe9stqt+SlPwP9nnC4RYIqn/dcj06aHjmoJ
+	 4SgcLhNzuCeXA==
+Date: Tue, 10 Sep 2024 09:31:15 -0700
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Michal Hocko <mhocko@suse.com>
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, rientjes@google.com,
+	yosryahmed@google.com, hannes@cmpxchg.org, almasrymina@google.com,
+	roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu,
+	a.manzanares@samsung.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Message-ID: <20240910163115.cg26kenlejlkmnsp@offworld>
+Mail-Followup-To: Michal Hocko <mhocko@suse.com>, linux-mm@kvack.org,
+	akpm@linux-foundation.org, rientjes@google.com,
+	yosryahmed@google.com, hannes@cmpxchg.org, almasrymina@google.com,
+	roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu,
+	a.manzanares@samsung.com, linux-kernel@vger.kernel.org
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+ <Zt6hur2TZJUrJ2IU@tiehlicka>
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <Zt6hur2TZJUrJ2IU@tiehlicka>
+User-Agent: NeoMutt/20220429
+Status: RO
+Content-Length: 1833
+Lines: 38
+
+On Mon, 09 Sep 2024, Michal Hocko wrote:
+
+>On Wed 04-09-24 09:27:40, Davidlohr Bueso wrote:
+>> 1. Users who do not use memcg can benefit from proactive reclaim.
+>
+>It would be great to have some specific examples here. Is there a
+>specific reason memcg is not used?
+
+I know cases of people wanting to use this to free up fast memory
+without incurring in extra latency spikes before a promotion occurs.
+I do not have details as to why memcg is not used. I can also see
+this for virtual machines running on specific nodes, reclaiming "extra"
+memory based on wss and qos, as well as potential hibernation optimizations.
+
+>> 2. Proactive reclaim on top tiers will trigger demotion, for which
+>> memory is still byte-addressable. Reclaiming on the bottom nodes
+>> will trigger evicting to swap (the traditional sense of reclaim).
+>> This follows the semantics of what is today part of the aging process
+>> on tiered memory, mirroring what every other form of reclaim does
+>> (reactive and memcg proactive reclaim). Furthermore per-node proactive
+>> reclaim is not as susceptible to the memcg charging problem mentioned
+>> above.
+>>
+>> 3. Unlike memcg, there should be no surprises of callers expecting
+>> reclaim but instead got a demotion. Essentially relying on behavior
+>> of shrink_folio_list() after 6b426d071419 (mm: disable top-tier
+>> fallback to reclaim on proactive reclaim), without the expectations
+>> of try_to_free_mem_cgroup_pages().
+>
+>I am not sure I understand. If you demote then you effectively reclaim
+>because you free up memory on the specific node. Or do I just misread
+>what you mean? Maybe you meant to say that the overall memory
+>consumption on all nodes is not affected?
+
+Yes, exactly, that is what I meant to say.
+
+>Your point 4 and 5 follows up on this so we should better clarify that
+>before going there.
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E92D264A8F
+	for <linux-kernel@vger.kernel.org>; Wed, 11 Sep 2024 06:49:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1726037379; cv=none; b=tzUa0aGTZc+OKwV/qxIeiaSLUzUpn4S6Ph3VUXGMh6CxYQlCQY3oip98egnyRsE7Y/MeZyCDlJCDjogG6Jv8PVB2of7u4A4YTvrXPTsd9SO3ScpM4IneDnUM6oCL9OVGpaxjm/83Ao0JnA0HjTBeNmg1olh+4sDaGKkrYComQYU=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1726037379; c=relaxed/simple;
+	bh=7aySWBK37Utwqk8wanc4+48Xp4u966ZDNesVcFqJSMk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fZTk3NW02vPk4yqBJnYYZGjugfkLU+32M7DsnT7yMQhCGpIx2L1SC/lfJonD0/GokNSglGNizqkfS6R4fByz3P9QIYwchUtfI8wS10Ot1lvwXgtVnp7d/5mi/aGVJH47SpXUDzVxMMbZ7dFc4nicYjVUVe+WTXavjHcVmEV2d0Q=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=CPqhKdw0; arc=none smtp.client-ip=209.85.128.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="CPqhKdw0"
+Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-42cbb08a1a5so15853835e9.3
+        for <linux-kernel@vger.kernel.org>; Tue, 10 Sep 2024 23:49:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1726037375; x=1726642175; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ojANVXIIKwLfsI2BYdwc81ZHbE8Xfha5SVNFyojXl+c=;
+        b=CPqhKdw0LqFZKNHoM48Jg1wcTrD8Z7RZp7wsnINs/b5wlloXJaXeHHIVWQcY5c0MOP
+         sIpxn+2AAE/lxximqZJ4F3Mmqi3feQjqTdnjDuU0R7bQSgJ4D/bM4FaGMGHy6K/7I5G2
+         PelXjs7IKjEHMaD80moSeZwAGJgDoonieqoUhNu+d19rLubgm2Zxb+BFiC1Ca9iDc+v4
+         y8jW7cneQ4d2Ab7vchO+56jpXaZ3WGk375VyjarvIai17TSqd0RzJRJ9KFx8ihtbneGm
+         6LhbynPOLuLnoD8Jg4WyAq4PO0TniR7wPSiANo8NUNhWp4EwEITTS44n+cdDkdKrnUam
+         Sh4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1726037375; x=1726642175;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ojANVXIIKwLfsI2BYdwc81ZHbE8Xfha5SVNFyojXl+c=;
+        b=d19hJsmQJ5mY+q2V1eHjoOvPSGWT4tjEgPC1Xnae7LFjVhnhcuXB3rVhTAaDOmcFHf
+         t0+yTxzsGANsJLO3jmaamaWG9UHHu4OuXoKm5naYZrUjL8k2uYgQRFh2+kq5fezwYvuh
+         rNjnytHR3n3xOS2tl6CzXLUw/QO4Mqjs8PR9fqL4gWZOsOQvZmRzG+7imT63EfzcRj92
+         UEAjqog4CnZqrUySnp4ZhnD0otJ4o72XJoard0iQlkEgwVNd9saMLb0QeszNa9Jrv5Ym
+         dTVQnly3rJ2ooZR26CMWS4r5YDkMdOwMdqTH8Z2DFTuNtSh41ir22Zo790EFyd5MB58C
+         atnQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXgyVW8ex86KtuhEjq1P53VliKRwkkRWmEDBQoVZePUIiUsc/znpXIX76lW3e0ub/xUtyVeigwLfCZ/Uxk=@vger.kernel.org
+X-Gm-Message-State: AOJu0YztVsgaLLJA/nv6ESY2f+UMpCBGSnRkN/VCtctkrFFg8JFt9vzU
+	yJsP7W7c5sle8CXyGMZsc7um3a8P6VQTo1q5oLYeZsFYp12CoJstMgcjfnwBRvE=
+X-Google-Smtp-Source: AGHT+IEuVV2vIaPVWOkyALjjEbcsmlQGk61wj/zPhgCTAtPbhBHaiLd+dpXlGD+KU/S8zxsUL2Uf+Q==
+X-Received: by 2002:a05:600c:3ba6:b0:426:61e8:fb3b with SMTP id 5b1f17b1804b1-42ccd35b205mr14050435e9.27.1726037375133;
+        Tue, 10 Sep 2024 23:49:35 -0700 (PDT)
+Received: from localhost (109-81-83-158.rct.o2.cz. [109.81.83.158])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-378956d3765sm10691799f8f.74.2024.09.10.23.49.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Sep 2024 23:49:34 -0700 (PDT)
+Date: Wed, 11 Sep 2024 08:49:33 +0200
+From: Michal Hocko <mhocko@suse.com>
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, rientjes@google.com,
+	yosryahmed@google.com, hannes@cmpxchg.org, almasrymina@google.com,
+	roman.gushchin@linux.dev, gthelen@google.com, dseo3@uci.edu,
+	a.manzanares@samsung.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] mm: introduce per-node proactive reclaim interface
+Message-ID: <ZuE9fSvWzlUdY5z2@tiehlicka>
+References: <20240904162740.1043168-1-dave@stgolabs.net>
+ <Zt6hur2TZJUrJ2IU@tiehlicka>
+ <20240910163115.cg26kenlejlkmnsp@offworld>
+Precedence: bulk
+X-Mailing-List: linux-kernel@vger.kernel.org
+List-Id: <linux-kernel.vger.kernel.org>
+List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240910163115.cg26kenlejlkmnsp@offworld>
+Status: RO
+Content-Length: 1389
+Lines: 35
+
+On Tue 10-09-24 09:31:15, Davidlohr Bueso wrote:
+> On Mon, 09 Sep 2024, Michal Hocko wrote:
+> 
+> > On Wed 04-09-24 09:27:40, Davidlohr Bueso wrote:
+> > > 1. Users who do not use memcg can benefit from proactive reclaim.
+> > 
+> > It would be great to have some specific examples here. Is there a
+> > specific reason memcg is not used?
+> 
+> I know cases of people wanting to use this to free up fast memory
+> without incurring in extra latency spikes before a promotion occurs.
+
+Please give us more information about those because this might have an
+impact on how the interface is shaped. E.g. we might need to plan for 
+future extension.
+
+> I do not have details as to why memcg is not used.
+
+I am not saying this is crucial to clarify but it is a natural question.
+We have a ready interface to achieve preemptive reclaim, why not use
+that and introduce something new. A plausible argument could be that
+memcg interface is not NUMA aware and there are usecases that are
+focusing on NUMA balancing rather than workload memory footprint.
+
+> I can also see
+> this for virtual machines running on specific nodes, reclaiming "extra"
+> memory based on wss and qos, as well as potential hibernation optimizations.
+
+Do not virtual solutions have own ways to manage overcommit/memory
+balancing (memory balooning etc.)? Does such interface fall into the
+existing picture?
+
+-- 
+Michal Hocko
+SUSE Labs
+

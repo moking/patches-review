@@ -1,17 +1,17 @@
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1230C77B73
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 10:06:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04E8AC7EE24
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:06:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235767AbjEaKGH (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S235182AbjEaKGH (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 06:06:07 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59858 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S234859AbjEaKGG (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 06:06:06 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:06:06 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E72110B;
         Wed, 31 May 2023 03:06:01 -0700 (PDT)
@@ -45,8 +45,8 @@ X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 v3:
  - More improvements from Andy, called out in the individual patches.
@@ -191,19 +191,19 @@ Jonathan Cameron (7):
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FB86C77B7C
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 10:06:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42EBFC7EE2F
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:06:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235781AbjEaKGd (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S234859AbjEaKGd (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 06:06:33 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60154 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S235094AbjEaKGc (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 06:06:32 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:06:32 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46CB29F;
         Wed, 31 May 2023 03:06:31 -0700 (PDT)
@@ -239,8 +239,8 @@ X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 If the GenericSerialBusConnection includes the General Flag
 for slave mode set it during parsing.
@@ -273,19 +273,19 @@ index d6037a328669..7dda5eab9645 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D77FC77B73
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 10:07:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8125DC77B7C
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:07:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235094AbjEaKHR (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S235792AbjEaKHR (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 06:07:17 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60408 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233058AbjEaKHQ (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 06:07:16 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:07:16 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90F60E5;
         Wed, 31 May 2023 03:07:15 -0700 (PDT)
@@ -321,8 +321,8 @@ X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 A cleanup in its own right.
 This has the handy side effect of working for ACPI FW as well
@@ -365,19 +365,19 @@ index d3c99c5b3247..21a2f139f445 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ED85C7EE2F
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 10:07:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1CFFC77B7C
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:07:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235804AbjEaKHf (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S234934AbjEaKHf (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 06:07:35 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233058AbjEaKHe (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 06:07:34 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:07:34 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ABADE5;
         Wed, 31 May 2023 03:07:33 -0700 (PDT)
@@ -413,8 +413,8 @@ X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 The bindings have this property as optional with a default of 100kHz.
 As such the driver should not be printing an error message if it is not
@@ -452,19 +452,19 @@ index 21a2f139f445..4363bfe06f9b 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FBA4C7EE24
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 10:08:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36FA1C77B7C
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:08:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233058AbjEaKIG (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S235824AbjEaKIG (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 06:08:06 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60748 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S235819AbjEaKIE (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 06:08:04 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:08:04 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B9A111D;
         Wed, 31 May 2023 03:08:03 -0700 (PDT)
@@ -500,8 +500,8 @@ X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Rather than having to define the parameter types of this function
 in multiple places, use a single typedef.
@@ -552,19 +552,19 @@ index 4363bfe06f9b..be93de56f7e4 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0A1CC7EE2F
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 10:08:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ABB3C77B7A
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:08:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235827AbjEaKIf (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S235825AbjEaKIf (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 06:08:35 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60934 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S235819AbjEaKIe (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 06:08:34 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:08:34 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96A97E2;
         Wed, 31 May 2023 03:08:33 -0700 (PDT)
@@ -600,8 +600,8 @@ X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Moving over to generic firmware properties allows this driver to
 get closer to working out of the box with both device tree and
@@ -667,19 +667,19 @@ index be93de56f7e4..992d64acd38d 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8801FC7EE2F
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 10:09:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B772C77B7C
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:09:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235834AbjEaKJJ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S235830AbjEaKJJ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 06:09:09 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32946 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S235831AbjEaKJI (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 06:09:08 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:09:08 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 419F9E2;
         Wed, 31 May 2023 03:09:05 -0700 (PDT)
@@ -715,8 +715,8 @@ X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 This is needed for the bus matching used for ACPI based
 i2c client registration.
@@ -753,19 +753,19 @@ index 992d64acd38d..e262b06e224b 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4078C77B7A
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 10:09:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4CDFC7EE24
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:09:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235829AbjEaKJg (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S235831AbjEaKJg (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 06:09:36 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33096 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229748AbjEaKJg (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 06:09:36 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:09:36 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36192E2;
         Wed, 31 May 2023 03:09:35 -0700 (PDT)
@@ -801,8 +801,8 @@ X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Needs tidying up - hopefully can do clock right
 using on going work from Niyas
@@ -850,19 +850,19 @@ index e262b06e224b..e29e7effd911 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2209BC7EE24
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 17:42:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC542C77B73
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 17:42:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230174AbjEaRmE (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S230101AbjEaRmE (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 13:42:04 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38018 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S230270AbjEaRl7 (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 13:41:59 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 13:41:59 -0400
 Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F392126;
         Wed, 31 May 2023 10:41:47 -0700 (PDT)
@@ -918,8 +918,8 @@ Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Wed, May 31, 2023 at 1:07=E2=80=AFPM Jonathan Cameron
 <Jonathan.Cameron@huawei.com> wrote:
@@ -976,19 +976,19 @@ With Best Regards,
 Andy Shevchenko
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A133AC77B73
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 17:42:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3F63C7EE31
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 17:42:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229633AbjEaRmy (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229646AbjEaRmy (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 13:42:54 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229562AbjEaRmx (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 13:42:53 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 13:42:53 -0400
 Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com [IPv6:2607:f8b0:4864:20::f29])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0D9811D;
         Wed, 31 May 2023 10:42:52 -0700 (PDT)
@@ -1045,8 +1045,8 @@ Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Wed, May 31, 2023 at 1:08=E2=80=AFPM Jonathan Cameron
 <Jonathan.Cameron@huawei.com> wrote:
@@ -1114,19 +1114,19 @@ With Best Regards,
 Andy Shevchenko
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6595DC7EE31
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 17:45:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 407CEC77B73
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 17:45:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229718AbjEaRps (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229547AbjEaRps (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 13:45:48 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40348 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229744AbjEaRpq (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 13:45:46 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 13:45:46 -0400
 Received: from mail-qv1-xf2f.google.com (mail-qv1-xf2f.google.com [IPv6:2607:f8b0:4864:20::f2f])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD9A311D;
         Wed, 31 May 2023 10:45:45 -0700 (PDT)
@@ -1182,8 +1182,8 @@ Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Wed, May 31, 2023 at 1:08=E2=80=AFPM Jonathan Cameron
 <Jonathan.Cameron@huawei.com> wrote:
@@ -1226,19 +1226,19 @@ With Best Regards,
 Andy Shevchenko
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CB94C7EE2E
-	for <linux-acpi@archiver.kernel.org>; Wed, 31 May 2023 17:47:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFC45C7EE24
+	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 17:47:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230038AbjEaRrV (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S230007AbjEaRrV (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 31 May 2023 13:47:21 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S230061AbjEaRrU (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 31 May 2023 13:47:20 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 13:47:20 -0400
 Received: from mail-qv1-xf2b.google.com (mail-qv1-xf2b.google.com [IPv6:2607:f8b0:4864:20::f2b])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44EB2136;
         Wed, 31 May 2023 10:47:19 -0700 (PDT)
@@ -1294,8 +1294,8 @@ Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Wed, May 31, 2023 at 1:09=E2=80=AFPM Jonathan Cameron
 <Jonathan.Cameron@huawei.com> wrote:
@@ -1311,20 +1311,20 @@ With Best Regards,
 Andy Shevchenko
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50721C7EE29
-	for <linux-acpi@archiver.kernel.org>; Thu,  1 Jun 2023 09:07:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AEA7C77B7E
+	for <linux-cxl@archiver.kernel.org>; Thu,  1 Jun 2023 09:07:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232229AbjFAJHq convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231737AbjFAJHq convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-cxl@archiver.kernel.org>);
         Thu, 1 Jun 2023 05:07:46 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231910AbjFAJHP (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Thu, 1 Jun 2023 05:07:15 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 1 Jun 2023 05:07:15 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FBBDB3;
         Thu,  1 Jun 2023 02:07:14 -0700 (PDT)
@@ -1365,8 +1365,8 @@ X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Wed, 31 May 2023 20:42:15 +0300
 Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
@@ -1436,20 +1436,20 @@ Hopefully Wolfram uses b4 and that will get picked up automatically.
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81159C77B7A
-	for <linux-acpi@archiver.kernel.org>; Thu,  1 Jun 2023 09:08:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CC91C77B7E
+	for <linux-cxl@archiver.kernel.org>; Thu,  1 Jun 2023 09:08:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232434AbjFAJIf convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232548AbjFAJIf convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-cxl@archiver.kernel.org>);
         Thu, 1 Jun 2023 05:08:35 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231910AbjFAJIe (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Thu, 1 Jun 2023 05:08:34 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 1 Jun 2023 05:08:34 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D6AE128;
         Thu,  1 Jun 2023 02:08:33 -0700 (PDT)
@@ -1490,8 +1490,8 @@ X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Wed, 31 May 2023 20:45:08 +0300
 Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
@@ -1540,20 +1540,20 @@ Jonathan
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14CAEC77B7A
-	for <linux-acpi@archiver.kernel.org>; Thu,  1 Jun 2023 09:11:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CA1FC7EE23
+	for <linux-cxl@archiver.kernel.org>; Thu,  1 Jun 2023 09:11:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231956AbjFAJLD convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232046AbjFAJLD convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-cxl@archiver.kernel.org>);
         Thu, 1 Jun 2023 05:11:03 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35910 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232661AbjFAJK6 (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Thu, 1 Jun 2023 05:10:58 -0400
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 1 Jun 2023 05:10:58 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E55E9123;
         Thu,  1 Jun 2023 02:10:52 -0700 (PDT)
@@ -1594,8 +1594,8 @@ X-ClientProxiedBy: lhrpeml500005.china.huawei.com (7.191.163.240) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Wed, 31 May 2023 20:46:42 +0300
 Andy Shevchenko <andy.shevchenko@gmail.com> wrote:

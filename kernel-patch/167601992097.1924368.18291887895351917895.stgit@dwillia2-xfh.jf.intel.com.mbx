@@ -1,17 +1,17 @@
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74F83C6379F
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C497C636D3
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231774AbjBJJGQ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231777AbjBJJGQ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:06:16 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231779AbjBJJFv (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:05:51 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:05:51 -0500
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31E845FF4;
         Fri, 10 Feb 2023 01:05:24 -0800 (PST)
@@ -62,8 +62,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Changes since v1: [1]
 - Add a fix for memdev removal racing port removal (found by unit tests)
@@ -216,19 +216,19 @@ Dan Williams (20):
 base-commit: 172738bbccdb4ef76bdd72fc72a315c741c39161
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D345C636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E307C6379F
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231883AbjBJJGZ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231381AbjBJJGZ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:06:25 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39168 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231219AbjBJJF6 (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:05:58 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:05:58 -0500
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 26F9163585;
         Fri, 10 Feb 2023 01:05:29 -0800 (PST)
@@ -269,8 +269,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Testing of ram region support [1], stimulates a long standing bug in
 cxl_detach_ep() where some cxl_ep_remove() cleanup is skipped due to
@@ -445,19 +445,19 @@ index ab138004f644..c9da3c699a21 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31425C636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD465C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231877AbjBJJGf (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231878AbjBJJGf (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:06:35 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231880AbjBJJGD (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:03 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:03 -0500
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BBC391C5B2;
         Fri, 10 Feb 2023 01:05:34 -0800 (PST)
@@ -505,8 +505,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Prior to Linus deciding that the kernel that following v5.19 would be
 v6.0, the CXL ABI documentation already referenced v5.20. In preparation
@@ -667,19 +667,19 @@ index 329a7e46c805..5be032313e29 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B21DC636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28E53C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231715AbjBJJGl (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231891AbjBJJGl (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:06:41 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39268 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231708AbjBJJGI (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:08 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:08 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 308035A906;
         Fri, 10 Feb 2023 01:05:41 -0800 (PST)
@@ -725,8 +725,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 In preparation for a new region type, "ram" regions, add a mode
 attribute to clarify the mode of the decoders that can be added to a
@@ -849,19 +849,19 @@ index aa3af3bb73b2..ca76879af1de 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09D4FC05027
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2B14C636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231726AbjBJJGv (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231812AbjBJJGv (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:06:51 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231735AbjBJJGL (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:11 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:11 -0500
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25D96635B6;
         Fri, 10 Feb 2023 01:05:47 -0800 (PST)
@@ -904,8 +904,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Shipping versions of the cxl-cli utility expect all regions to have a
 'uuid' attribute. In preparation for 'ram' regions, update the 'uuid'
@@ -971,19 +971,19 @@ index 17d2d0c12725..0fc80478ff6b 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88302C05027
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72FC9C6379F
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:06:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231750AbjBJJGx (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231858AbjBJJGx (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:06:53 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39072 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231409AbjBJJGN (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:13 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:13 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 718A937713;
         Fri, 10 Feb 2023 01:05:53 -0800 (PST)
@@ -1029,8 +1029,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 In preparation for a new region mode, do not, for example, allow
 'ram' decoders to be assigned to 'pmem' regions and vice versa.
@@ -1067,19 +1067,19 @@ index 0fc80478ff6b..285835145e9b 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E655C636CD
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A1B6C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231834AbjBJJHW (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231766AbjBJJHW (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:07:22 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39706 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231567AbjBJJGd (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:33 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:33 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DA3737735;
         Fri, 10 Feb 2023 01:06:12 -0800 (PST)
@@ -1125,8 +1125,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Expand the region creation infrastructure to enable 'ram'
 (volatile-memory) regions. The internals of create_pmem_region_store()
@@ -1351,19 +1351,19 @@ index 285835145e9b..e440db8611a4 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06FA0C6379F
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17DE1C64EC4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231843AbjBJJHX (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231691AbjBJJHX (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:07:23 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231500AbjBJJGe (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:34 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:34 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0091C2313F;
         Fri, 10 Feb 2023 01:06:13 -0800 (PST)
@@ -1409,8 +1409,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Region autodiscovery is the process of kernel creating 'struct
 cxl_region' object to represent active CXL memory ranges it finds
@@ -1519,19 +1519,103 @@ index e440db8611a4..040bbd39c81d 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B63F2C6379F
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6538C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231701AbjBJJHc (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231865AbjBJJHc (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 10 Feb 2023 04:07:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39246 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231879AbjBJJGf (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:35 -0500
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BAD611EB9;
+        Fri, 10 Feb 2023 01:06:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1676019975; x=1707555975;
+  h=subject:from:to:cc:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=fhaP5oPHi1onz90GhrHdXiTbxa3g3s/6YpVTWY4pO0U=;
+  b=JSHxYX701Clq6zXbr/KYF3yvV9vve2AyF2a6BgVEk7+OkN08K/bRgRhW
+   XBfbQNhg/zp37M6Tn409rIWiPwpoI9dlVkIht5iTBbws5MdL5HZBDBrtX
+   d+he9BFR+5kMxxFKVD1chUYv5VNESK+WN1ybfTm1p1sKZlBV4g8CXlyWg
+   lmbhnIrVIR3cgGcM6597h9CDlpP2rhWoxgRoipt7Cs/29HPc+tmb/mo42
+   QAVQswxM2bkVgYK9zvSOocOt39wCtZlHZYHMKZGMxUZ7LLxi0H4R0WS9O
+   2z5GIKpR+rl1gYlpFyhB4w9eQDmPuU7iZ1yVvZmyihQhdFt5db66f+tcs
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10616"; a="416600064"
+X-IronPort-AV: E=Sophos;i="5.97,286,1669104000"; 
+   d="scan'208";a="416600064"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Feb 2023 01:06:10 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10616"; a="669930260"
+X-IronPort-AV: E=Sophos;i="5.97,286,1669104000"; 
+   d="scan'208";a="669930260"
+Received: from hrchavan-mobl.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.46.42])
+  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Feb 2023 01:06:10 -0800
+Subject: [PATCH v2 08/20] cxl/region: Cleanup target list on attach error
+From: Dan Williams <dan.j.williams@intel.com>
+To: linux-cxl@vger.kernel.org
+Cc: Jonathan Cameron <Jonathan.Cameron@Huawei.com>,
+        vishal.l.verma@intel.com, dave.hansen@linux.intel.com,
+        linux-mm@kvack.org, linux-acpi@vger.kernel.org
+Date: Fri, 10 Feb 2023 01:06:09 -0800
+Message-ID: <167601996980.1924368.390423634911157277.stgit@dwillia2-xfh.jf.intel.com>
+In-Reply-To: <167601992097.1924368.18291887895351917895.stgit@dwillia2-xfh.jf.intel.com>
+References: <167601992097.1924368.18291887895351917895.stgit@dwillia2-xfh.jf.intel.com>
+User-Agent: StGit/0.18-3-g996c
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+Jonathan noticed that the target list setup is not unwound completely
+upon error. Undo all the setup in the 'err_decrement:' exit path.
+
+Fixes: 27b3f8d13830 ("cxl/region: Program target lists")
+Reported-by: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+Link: http://lore.kernel.org/r/20230208123031.00006990@Huawei.com
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/cxl/core/region.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
+index 040bbd39c81d..ae7d3adcd41a 100644
+--- a/drivers/cxl/core/region.c
++++ b/drivers/cxl/core/region.c
+@@ -1347,6 +1347,8 @@ static int cxl_region_attach(struct cxl_region *cxlr,
+ 
+ err_decrement:
+ 	p->nr_targets--;
++	cxled->pos = -1;
++	p->targets[pos] = NULL;
+ err:
+ 	for (iter = ep_port; !is_cxl_root(iter);
+ 	     iter = to_cxl_port(iter->dev.parent))
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A462FC636D3
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:33 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S231913AbjBJJHc (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:07:32 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39820 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231476AbjBJJGj (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:39 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:39 -0500
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 26A5F2313C;
         Fri, 10 Feb 2023 01:06:16 -0800 (PST)
@@ -1574,8 +1658,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 In preparation for region autodiscovery, that needs all devices
 discovered before their relative position in the region can be
@@ -1763,103 +1847,19 @@ index ae7d3adcd41a..691605f1e120 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9C24C636CD
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AF5BC636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231911AbjBJJHc (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
-        Fri, 10 Feb 2023 04:07:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39246 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231879AbjBJJGf (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:35 -0500
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BAD611EB9;
-        Fri, 10 Feb 2023 01:06:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1676019975; x=1707555975;
-  h=subject:from:to:cc:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=fhaP5oPHi1onz90GhrHdXiTbxa3g3s/6YpVTWY4pO0U=;
-  b=JSHxYX701Clq6zXbr/KYF3yvV9vve2AyF2a6BgVEk7+OkN08K/bRgRhW
-   XBfbQNhg/zp37M6Tn409rIWiPwpoI9dlVkIht5iTBbws5MdL5HZBDBrtX
-   d+he9BFR+5kMxxFKVD1chUYv5VNESK+WN1ybfTm1p1sKZlBV4g8CXlyWg
-   lmbhnIrVIR3cgGcM6597h9CDlpP2rhWoxgRoipt7Cs/29HPc+tmb/mo42
-   QAVQswxM2bkVgYK9zvSOocOt39wCtZlHZYHMKZGMxUZ7LLxi0H4R0WS9O
-   2z5GIKpR+rl1gYlpFyhB4w9eQDmPuU7iZ1yVvZmyihQhdFt5db66f+tcs
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10616"; a="416600064"
-X-IronPort-AV: E=Sophos;i="5.97,286,1669104000"; 
-   d="scan'208";a="416600064"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Feb 2023 01:06:10 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10616"; a="669930260"
-X-IronPort-AV: E=Sophos;i="5.97,286,1669104000"; 
-   d="scan'208";a="669930260"
-Received: from hrchavan-mobl.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.46.42])
-  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Feb 2023 01:06:10 -0800
-Subject: [PATCH v2 08/20] cxl/region: Cleanup target list on attach error
-From: Dan Williams <dan.j.williams@intel.com>
-To: linux-cxl@vger.kernel.org
-Cc: Jonathan Cameron <Jonathan.Cameron@Huawei.com>,
-        vishal.l.verma@intel.com, dave.hansen@linux.intel.com,
-        linux-mm@kvack.org, linux-acpi@vger.kernel.org
-Date: Fri, 10 Feb 2023 01:06:09 -0800
-Message-ID: <167601996980.1924368.390423634911157277.stgit@dwillia2-xfh.jf.intel.com>
-In-Reply-To: <167601992097.1924368.18291887895351917895.stgit@dwillia2-xfh.jf.intel.com>
-References: <167601992097.1924368.18291887895351917895.stgit@dwillia2-xfh.jf.intel.com>
-User-Agent: StGit/0.18-3-g996c
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
-
-Jonathan noticed that the target list setup is not unwound completely
-upon error. Undo all the setup in the 'err_decrement:' exit path.
-
-Fixes: 27b3f8d13830 ("cxl/region: Program target lists")
-Reported-by: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-Link: http://lore.kernel.org/r/20230208123031.00006990@Huawei.com
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- drivers/cxl/core/region.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
-index 040bbd39c81d..ae7d3adcd41a 100644
---- a/drivers/cxl/core/region.c
-+++ b/drivers/cxl/core/region.c
-@@ -1347,6 +1347,8 @@ static int cxl_region_attach(struct cxl_region *cxlr,
- 
- err_decrement:
- 	p->nr_targets--;
-+	cxled->pos = -1;
-+	p->targets[pos] = NULL;
- err:
- 	for (iter = ep_port; !is_cxl_root(iter);
- 	     iter = to_cxl_port(iter->dev.parent))
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADAFFC636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:40 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231488AbjBJJHj (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231659AbjBJJHj (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:07:39 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39278 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231329AbjBJJGm (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:42 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:42 -0500
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9F9937736;
         Fri, 10 Feb 2023 01:06:22 -0800 (PST)
@@ -1907,8 +1907,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 In support of the CXL subsystem's use of 'struct range' to track decode
 address ranges, add a common range_contains() implementation with
@@ -1991,19 +1991,19 @@ index 4591d6cf5e01..05947a2feb93 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8540FC64EC4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6ADB9C6379F
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231923AbjBJJHk (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231921AbjBJJHk (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:07:40 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231629AbjBJJGu (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:50 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:50 -0500
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBBF33EFC5;
         Fri, 10 Feb 2023 01:06:28 -0800 (PST)
@@ -2048,8 +2048,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Add help text and a label so the CXL_REGION config option can be
 toggled. This is mainly to enable compile testing without region
@@ -2097,19 +2097,19 @@ index 0ac53c422c31..163c094e67ae 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4B83C636CD
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80D03C64EC5
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231728AbjBJJHm (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231735AbjBJJHm (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:07:42 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231741AbjBJJGv (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:06:51 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:06:51 -0500
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF48F1C5B2;
         Fri, 10 Feb 2023 01:06:34 -0800 (PST)
@@ -2151,8 +2151,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Jonathan points out that the shared code between the switch and endpoint
 case is small. Before adding another is_cxl_endpoint() conditional,
@@ -2314,19 +2314,19 @@ index 5453771bf330..a8d46a67b45e 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E8D6C636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B19CC636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:07:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231720AbjBJJHq (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231741AbjBJJHq (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:07:46 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39970 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231737AbjBJJHA (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:07:00 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:07:00 -0500
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABF84BB9A;
         Fri, 10 Feb 2023 01:06:40 -0800 (PST)
@@ -2368,8 +2368,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Region autodiscovery is an asynchronous state machine advanced by
 cxl_port_probe(). After the decoders on an endpoint port are enumerated
@@ -3202,19 +3202,19 @@ index a8d46a67b45e..d88518836c2d 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7138C636CD
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CBF7C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231788AbjBJJIE (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231791AbjBJJIE (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:08:04 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40042 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231807AbjBJJHF (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:07:05 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:07:05 -0500
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C24CC10D5;
         Fri, 10 Feb 2023 01:06:46 -0800 (PST)
@@ -3257,8 +3257,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Take two endpoints attached to the first switch on the first host-bridge
 in the cxl_test topology and define a pre-initialized region. This is a
@@ -3539,19 +3539,19 @@ index 920bd969c554..5342f69d70d2 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B16A4C636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9128EC05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231628AbjBJJIM (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231879AbjBJJIM (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:08:12 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231863AbjBJJHc (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:07:32 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:07:32 -0500
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3152BDBDF;
         Fri, 10 Feb 2023 01:06:53 -0800 (PST)
@@ -3594,8 +3594,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 In preparation for moving more filtering of "hmem" ranges into the
 dax_hmem.ko module, update the initcall levels. HMAT range registration
@@ -3648,19 +3648,19 @@ index 903325aac991..20749c7fab81 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25254C636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80C87C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231329AbjBJJIU (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231909AbjBJJIU (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:08:20 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39868 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231920AbjBJJHj (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:07:39 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:07:39 -0500
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79A4123C4B;
         Fri, 10 Feb 2023 01:06:57 -0800 (PST)
@@ -3704,8 +3704,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Empty driver remove callbacks can just be elided.
 
@@ -3741,19 +3741,19 @@ index 1bf040dbc834..c7351e0dc8ff 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BF4AC636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72DE5C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231849AbjBJJIa (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231858AbjBJJIa (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:08:30 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39926 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231894AbjBJJHk (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:07:40 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:07:40 -0500
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4205F40E9;
         Fri, 10 Feb 2023 01:07:03 -0800 (PST)
@@ -3796,8 +3796,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 In preparation for hmem platform devices to be unregistered, stop using
 platform_device_add_resources() to convey the address range. The
@@ -3964,19 +3964,19 @@ index bf83363807ac..c01321467789 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80E48C636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92570C6379F
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231777AbjBJJIh (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231782AbjBJJIh (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:08:37 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40026 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231779AbjBJJIC (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:08:02 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:08:02 -0500
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8705730B1D;
         Fri, 10 Feb 2023 01:07:09 -0800 (PST)
@@ -4019,8 +4019,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 In preparation for the CXL region driver to take over the responsibility
 of registering device-dax instances for CXL regions, move the
@@ -4346,19 +4346,19 @@ index 2b5ecb591059..bf6258472e49 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B8D4C6379F
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EDD4C636D3
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:08:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231929AbjBJJIr (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231931AbjBJJIr (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:08:47 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231603AbjBJJIL (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:08:11 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:08:11 -0500
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B0065774F;
         Fri, 10 Feb 2023 01:07:14 -0800 (PST)
@@ -4404,8 +4404,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 The default mode for device-dax instances is backwards for RAM-regions
 as evidenced by the fact that it tends to catch end users by surprise.
@@ -4674,19 +4674,19 @@ index 4852a2dbdb27..918d01d3fbaa 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CF97C636D3
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 09:09:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3506DC636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 09:09:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231912AbjBJJJE (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S231918AbjBJJJE (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 04:09:04 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39056 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231915AbjBJJIa (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 04:08:30 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 04:08:30 -0500
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 099942CFCB;
         Fri, 10 Feb 2023 01:07:19 -0800 (PST)
@@ -4728,8 +4728,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 While platform firmware takes some responsibility for mapping the RAM
 capacity of CXL devices present at boot, the OS is responsible for
@@ -5148,19 +5148,19 @@ index 5ec08f9f8a57..e5fe8b39fb94 100644
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EEEFC636CD
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 17:28:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 099C7C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 17:28:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232861AbjBJR25 (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232902AbjBJR25 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 12:28:57 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232800AbjBJR24 (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 12:28:56 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 12:28:56 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB01C7358F;
         Fri, 10 Feb 2023 09:28:54 -0800 (PST)
@@ -5192,8 +5192,8 @@ X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:05:27 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -5344,19 +5344,19 @@ description (particularly for those reading this when half asleep like me ;)
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D48B9C636D4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 17:30:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F376DC64EC4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 17:30:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232956AbjBJRaX (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232976AbjBJRaX (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 12:30:23 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232929AbjBJRaW (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 12:30:22 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 12:30:22 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE3F8735B1;
         Fri, 10 Feb 2023 09:30:19 -0800 (PST)
@@ -5390,8 +5390,8 @@ X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:05:45 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -5466,19 +5466,19 @@ Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E25C7C636D4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 17:31:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB2CC636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 17:31:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232422AbjBJRbh (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232438AbjBJRbh (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 12:31:37 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40612 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232940AbjBJRbg (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 12:31:36 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 12:31:36 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F65773958;
         Fri, 10 Feb 2023 09:31:36 -0800 (PST)
@@ -5511,8 +5511,8 @@ X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:06:09 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -5549,19 +5549,19 @@ Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C030C636D4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 17:35:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 515BDC636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 17:35:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232476AbjBJRfA (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232266AbjBJRfA (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 12:35:00 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42988 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232516AbjBJRe5 (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 12:34:57 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 12:34:57 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10D5875376;
         Fri, 10 Feb 2023 09:34:57 -0800 (PST)
@@ -5595,8 +5595,8 @@ X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:06:15 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -5624,19 +5624,19 @@ Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3816DC05027
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 17:41:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01B76C636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 17:41:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232750AbjBJRl2 (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232929AbjBJRl2 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 12:41:28 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48682 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233027AbjBJRlX (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 12:41:23 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 12:41:23 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D96D7A7D0;
         Fri, 10 Feb 2023 09:41:17 -0800 (PST)
@@ -5668,8 +5668,8 @@ X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:06:33 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -5838,19 +5838,19 @@ Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BF19C05027
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 17:54:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48FB0C636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 17:54:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232402AbjBJRyB (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232454AbjBJRyB (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 12:54:01 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56186 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232714AbjBJRxx (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 12:53:53 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 12:53:53 -0500
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4343F7BFE0;
         Fri, 10 Feb 2023 09:53:49 -0800 (PST)
@@ -5991,8 +5991,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: SjGmSra6LVpzaLVsc4LThimjHWptbiXAjni
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR11MB7347
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Dan Williams wrote:
 > Changes since v1: [1]
@@ -6047,19 +6047,19 @@ region enumeration:
 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9ea4dcf49878
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B973C636D4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 18:10:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35565C636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 18:10:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232760AbjBJSKG (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232762AbjBJSKG (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 13:10:06 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232742AbjBJSKF (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 13:10:05 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 13:10:05 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04EA8677B3;
         Fri, 10 Feb 2023 10:10:03 -0800 (PST)
@@ -6091,8 +6091,8 @@ X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:06:39 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -6299,19 +6299,19 @@ Two blank lines?
 >  {
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EAE8C636D4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 18:12:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 494F0C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 18:12:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232520AbjBJSMU (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232083AbjBJSMU (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 13:12:20 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38638 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231970AbjBJSMT (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 13:12:19 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 13:12:19 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EDA73A0AC;
         Fri, 10 Feb 2023 10:12:17 -0800 (PST)
@@ -6344,8 +6344,8 @@ X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:06:45 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -6634,19 +6634,19 @@ Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28BECC636CD
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 18:26:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08619C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 18:26:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233062AbjBJS04 (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S233070AbjBJS04 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 13:26:56 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52706 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233067AbjBJS0y (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 13:26:54 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 13:26:54 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 370C77CC95;
         Fri, 10 Feb 2023 10:26:13 -0800 (PST)
@@ -6679,8 +6679,8 @@ X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:07:07 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -6707,19 +6707,19 @@ reflect what you describe above an appear correct to me.
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7F0FC636D4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 18:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B878C636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 18:36:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232520AbjBJSgJ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
-        Fri, 10 Feb 2023 13:36:09 -0500
+        id S232178AbjBJSgI (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 10 Feb 2023 13:36:08 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58270 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232604AbjBJSgH (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 13:36:07 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 13:36:07 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CABA6D635;
         Fri, 10 Feb 2023 10:36:04 -0800 (PST)
@@ -6765,8 +6765,8 @@ In-Reply-To: <167602000547.1924368.11613151863880268868.stgit@dwillia2-xfh.jf.in
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 
@@ -7053,19 +7053,19 @@ Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E351C636D4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 18:39:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E15AC636CD
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 18:39:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232505AbjBJSjA (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232558AbjBJSjA (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 13:39:00 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232807AbjBJSjA (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 13:39:00 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 13:39:00 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED2942D16E;
         Fri, 10 Feb 2023 10:38:58 -0800 (PST)
@@ -7098,8 +7098,8 @@ X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, 10 Feb 2023 01:07:19 -0800
 Dan Williams <dan.j.williams@intel.com> wrote:
@@ -7137,19 +7137,19 @@ Jonathan
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88162C636D7
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 21:14:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69D12C636D4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 21:14:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233552AbjBJVOK (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S233341AbjBJVOK (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 16:14:10 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35830 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232764AbjBJVOJ (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 16:14:09 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 16:14:09 -0500
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C692D635B2;
         Fri, 10 Feb 2023 13:14:08 -0800 (PST)
@@ -7278,8 +7278,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: lyYwN0swIe2Pz9jSybfbw/eTtM+jJR3XGho
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR11MB4696
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Jonathan Cameron wrote:
 > On Fri, 10 Feb 2023 01:05:27 -0800
@@ -7335,19 +7335,19 @@ the subsequent put_device().
 Long day for you, I appreciate it!
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33313C636D7
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 21:36:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14C04C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 21:36:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233534AbjBJVgZ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S233341AbjBJVgZ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 16:36:25 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54064 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233284AbjBJVgY (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 16:36:24 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 16:36:24 -0500
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A0CD32CDF;
         Fri, 10 Feb 2023 13:35:49 -0800 (PST)
@@ -7480,8 +7480,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: qdiXCEjMtiEQyiCbksIb3rTtaYJGS3V1nvL
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR11MB4688
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Jonathan Cameron wrote:
 > On Fri, 10 Feb 2023 01:06:39 -0800
@@ -7716,19 +7716,19 @@ Just stashing this here so I can introduce a spurious whitespace removal
 in the next patch. Will clean up.
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0807C636D4
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 21:49:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2B71C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 21:49:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233889AbjBJVtR (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S233897AbjBJVtR (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 16:49:17 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233764AbjBJVtQ (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 16:49:16 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 16:49:16 -0500
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E702E3D09C;
         Fri, 10 Feb 2023 13:49:14 -0800 (PST)
@@ -7857,8 +7857,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: mIgmLqnNB3+g07IQI+m5nNF9gdB+GsSD/ah
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB5246
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Jonathan Cameron wrote:
 > On Fri, 10 Feb 2023 01:06:39 -0800
@@ -7990,19 +7990,19 @@ index d88518836c2d..d6c151dabaa7 100644
  	struct cxl_hdm *cxlhdm;
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46567C636D7
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 21:53:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE749C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 21:53:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232915AbjBJVxp (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232505AbjBJVxp (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 16:53:45 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38656 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232860AbjBJVxo (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 16:53:44 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 16:53:44 -0500
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB4AA36699;
         Fri, 10 Feb 2023 13:53:43 -0800 (PST)
@@ -8048,8 +8048,8 @@ In-Reply-To: <167602001107.1924368.11562316181038595611.stgit@dwillia2-xfh.jf.in
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 
@@ -8108,19 +8108,19 @@ Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25783C64ED6
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 21:57:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38553C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 21:57:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233600AbjBJV5z (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S233306AbjBJV5z (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 16:57:55 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41994 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233625AbjBJV5x (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 16:57:53 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 16:57:53 -0500
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83EA67DD22;
         Fri, 10 Feb 2023 13:57:51 -0800 (PST)
@@ -8167,8 +8167,8 @@ In-Reply-To: <448c17f6-cdfa-9422-c35e-cf95e1b99604@intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 
@@ -8233,19 +8233,19 @@ Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 >>
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E50AC636D7
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 21:59:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDFC6C636D4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 21:59:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233550AbjBJV7j (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232919AbjBJV7j (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 16:59:39 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43152 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232505AbjBJV7i (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 16:59:38 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 16:59:38 -0500
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2EFE97D8B3;
         Fri, 10 Feb 2023 13:59:38 -0800 (PST)
@@ -8292,8 +8292,8 @@ In-Reply-To: <167602001664.1924368.9102029637928071240.stgit@dwillia2-xfh.jf.int
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 
@@ -8335,19 +8335,19 @@ Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27391C636D7
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 22:03:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9A30C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 22:03:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233694AbjBJWD0 (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S233452AbjBJWD0 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 17:03:26 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232505AbjBJWDZ (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 17:03:25 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 17:03:25 -0500
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C0585ACF0;
         Fri, 10 Feb 2023 14:03:24 -0800 (PST)
@@ -8394,8 +8394,8 @@ In-Reply-To: <167602002217.1924368.7036275892522551624.stgit@dwillia2-xfh.jf.int
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 
@@ -8568,19 +8568,19 @@ Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67257C6379F
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 22:09:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47B4CC636D7
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 22:09:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233727AbjBJWJI (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232755AbjBJWJI (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 17:09:08 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46824 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233799AbjBJWJG (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 17:09:06 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 17:09:06 -0500
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06AA57E8FC;
         Fri, 10 Feb 2023 14:09:03 -0800 (PST)
@@ -8626,8 +8626,8 @@ In-Reply-To: <167602002771.1924368.5653558226424530127.stgit@dwillia2-xfh.jf.int
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 
@@ -8958,19 +8958,19 @@ Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 550B1C05027
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 22:20:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8450C636D4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 22:20:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233935AbjBJWUG (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S233556AbjBJWUG (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 17:20:06 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233937AbjBJWTv (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 17:19:51 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 17:19:51 -0500
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C669DB6D5E;
         Fri, 10 Feb 2023 14:19:16 -0800 (PST)
@@ -9019,8 +9019,8 @@ In-Reply-To: <167602003336.1924368.6809503401422267885.stgit@dwillia2-xfh.jf.int
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 
@@ -9295,19 +9295,19 @@ Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 840C0C05027
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 22:42:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B467C636D7
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 22:42:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233981AbjBJWme (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S233980AbjBJWme (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 17:42:34 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36804 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S233962AbjBJWmV (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 17:42:21 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 17:42:21 -0500
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 138CD7E8E6;
         Fri, 10 Feb 2023 14:42:16 -0800 (PST)
@@ -9352,8 +9352,8 @@ In-Reply-To: <167602003896.1924368.10335442077318970468.stgit@dwillia2-xfh.jf.in
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 
@@ -9777,19 +9777,19 @@ Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 019D9C05027
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 23:17:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD6C5C636D4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 23:17:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229479AbjBJXRN (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229588AbjBJXRN (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 18:17:13 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60350 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229461AbjBJXRM (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 18:17:12 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 18:17:12 -0500
 Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CD9E17CEE;
         Fri, 10 Feb 2023 15:17:11 -0800 (PST)
@@ -9936,8 +9936,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: JM8DLm9Ei15rXwuJa4E+Ql6iMJlq/2NcNJt
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6763
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA1IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6Cj4g
 VGVzdGluZyBvZiByYW0gcmVnaW9uIHN1cHBvcnQgWzFdLCBzdGltdWxhdGVzIGEgbG9uZyBzdGFu
@@ -10084,19 +10084,19 @@ dCBkZXB0aDsKPiDCoH07Cj4gwqAKPiDCoHN0YXRpYyBpbmxpbmUgc3RydWN0IGN4bF9tZW1kZXYg
 KnRvX2N4bF9tZW1kZXYoc3RydWN0IGRldmljZSAqZGV2KQo+IAoK
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 650D3C636D7
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 23:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52A20C636D4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 23:17:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229645AbjBJXRu (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229631AbjBJXRu (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 18:17:50 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60462 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229461AbjBJXRt (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 18:17:49 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 18:17:49 -0500
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC0A81814F;
         Fri, 10 Feb 2023 15:17:48 -0800 (PST)
@@ -10244,8 +10244,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: FTYZJdy84PJApSPbvwr9apjfOHIQhmhKSYO
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6763
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA2IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6DQo+
 IEpvbmF0aGFuIG5vdGljZWQgdGhhdCB0aGUgdGFyZ2V0IGxpc3Qgc2V0dXAgaXMgbm90IHVud291
@@ -10270,19 +10270,19 @@ cik7DQo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBpdGVyID0gdG9fY3hsX3BvcnQoaXRlci0+
 ZGV2LnBhcmVudCkpDQo+IA0KDQo=
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87325C6379F
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 23:22:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56FF5C636D4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 23:22:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229695AbjBJXWJ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229698AbjBJXWJ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 18:22:09 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33826 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229683AbjBJXWG (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 18:22:06 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 18:22:06 -0500
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B9061E284;
         Fri, 10 Feb 2023 15:21:58 -0800 (PST)
@@ -10430,8 +10430,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: egDhkChAmmsWvKPV49YiLB+VnfYIqNQ7Vuf
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6763
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA2IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6Cj4g
 Sm9uYXRoYW4gcG9pbnRzIG91dCB0aGF0IHRoZSBzaGFyZWQgY29kZSBiZXR3ZWVuIHRoZSBzd2l0
@@ -10579,19 +10579,19 @@ IMKgc3RhdGljIHNzaXplX3QgQ0RBVF9yZWFkKHN0cnVjdCBmaWxlICpmaWxwLCBzdHJ1Y3Qga29i
 amVjdCAqa29iaiwKPiAKCg==
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 841A5C636D7
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 23:37:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60AE8C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 23:37:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229653AbjBJXhJ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229647AbjBJXhJ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 18:37:09 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S230004AbjBJXgt (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 18:36:49 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 18:36:49 -0500
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AEC85840CC;
         Fri, 10 Feb 2023 15:36:00 -0800 (PST)
@@ -10723,8 +10723,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: kjDgsM2xWzrfmwXC3/eF7D2BlaR9acO1gKP
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR11MB6434
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Dan Williams wrote:
 > Shipping versions of the cxl-cli utility expect all regions to have a
@@ -10797,19 +10797,19 @@ Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E46E5C05027
-	for <linux-acpi@archiver.kernel.org>; Fri, 10 Feb 2023 23:46:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D37BBC636D4
+	for <linux-cxl@archiver.kernel.org>; Fri, 10 Feb 2023 23:46:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229921AbjBJXqk (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229891AbjBJXqk (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 18:46:40 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56734 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229956AbjBJXqg (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 18:46:36 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 18:46:36 -0500
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7734C42DF1;
         Fri, 10 Feb 2023 15:46:30 -0800 (PST)
@@ -10940,8 +10940,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: hq0z1A7G+kSfHnMG2bXjCGCznJJNMS1D2TC
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR11MB6409
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Dan Williams wrote:
 > Jonathan noticed that the target list setup is not unwound completely
@@ -10977,19 +10977,19 @@ Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FBCBC636D7
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 00:29:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E484EC636D4
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 00:29:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229457AbjBKA3R (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229479AbjBKA3R (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 19:29:17 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52448 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229473AbjBKA3Q (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 19:29:16 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 19:29:16 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5791DFB;
         Fri, 10 Feb 2023 16:29:15 -0800 (PST)
@@ -11133,8 +11133,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: 16hAgGrNkk+mZbUkJOlFsfUj/+7or+ZaEca
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB5943
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA2IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6Cj4g
 UmVnaW9uIGF1dG9kaXNjb3ZlcnkgaXMgYW4gYXN5bmNocm9ub3VzIHN0YXRlIG1hY2hpbmUgYWR2
@@ -11212,19 +11212,19 @@ ICvCoMKgwqDCoMKgwqDCoHAtPm5yX3RhcmdldHMrKzsKPiArCj4gK8KgwqDCoMKgwqDCoMKgcmV0
 dXJuIDA7Cj4gK30KPiArCj4gCgo=
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D89FDC636D7
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 00:39:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C13D5C636D4
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 00:39:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229658AbjBKAji (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229662AbjBKAji (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 19:39:38 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59630 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229447AbjBKAjg (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 19:39:36 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 19:39:36 -0500
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D19F329163;
         Fri, 10 Feb 2023 16:39:34 -0800 (PST)
@@ -11370,8 +11370,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: dTt7nh3pPY1E1FwPU2TVnG95kUzeamATCvZ
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB6031
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA2IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6Cj4g
 VGFrZSB0d28gZW5kcG9pbnRzIGF0dGFjaGVkIHRvIHRoZSBmaXJzdCBzd2l0Y2ggb24gdGhlIGZp
@@ -11609,19 +11609,19 @@ oMKgwqDCoMKgwqDCoMKgwqDCoHJjID0gZGV2aWNlX2Zvcl9lYWNoX2NoaWxkKHBvcnQtPnVwb3J0
 LCAmY3R4LAo+IAoK
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49A49C6379F
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 00:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 314A9C636D4
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 00:40:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229707AbjBKAky (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229698AbjBKAky (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 19:40:54 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229576AbjBKAkx (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 19:40:53 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 19:40:53 -0500
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE46C6C7DC;
         Fri, 10 Feb 2023 16:40:47 -0800 (PST)
@@ -11771,8 +11771,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: RnBLw5Lpw/bCYpsTFz+5psBR/xrVw7QdUdc
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB6031
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA2IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6DQo+
 IEluIHByZXBhcmF0aW9uIGZvciBtb3ZpbmcgbW9yZSBmaWx0ZXJpbmcgb2YgImhtZW0iIHJhbmdl
@@ -11816,19 +11816,19 @@ IGhtYXRfaW5pdCgpLg0KPiDCoCAqLw0KPiAtbGF0ZV9pbml0Y2FsbChobWVtX2luaXQpOw0KPiAr
 ZGV2aWNlX2luaXRjYWxsKGhtZW1faW5pdCk7DQo+IA0KDQo=
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33415C636D7
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 00:41:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B32BC636D4
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 00:41:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229645AbjBKAlJ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229667AbjBKAlJ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 19:41:09 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60326 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229676AbjBKAlI (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 19:41:08 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 19:41:08 -0500
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46F5823D86;
         Fri, 10 Feb 2023 16:41:07 -0800 (PST)
@@ -11974,8 +11974,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: rNwlxV4wbRQ14f/Y63GBrAmQUlYldu9/waW
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB6031
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA2IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6DQo+
 IEVtcHR5IGRyaXZlciByZW1vdmUgY2FsbGJhY2tzIGNhbiBqdXN0IGJlIGVsaWRlZC4NCj4gDQo+
@@ -12002,19 +12002,19 @@ ZSwNCj4gwqDCoMKgwqDCoMKgwqDCoC5kcml2ZXIgPSB7DQo+IMKgwqDCoMKgwqDCoMKgwqDCoMKg
 wqDCoMKgwqDCoMKgLm5hbWUgPSAiaG1lbSIsDQo+IMKgwqDCoMKgwqDCoMKgwqB9LA0KPiANCg0K
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C332C636D7
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 01:03:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5288EC636D4
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 01:03:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229576AbjBKBDV (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229505AbjBKBDV (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 20:03:21 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229455AbjBKBDU (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 20:03:20 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 20:03:20 -0500
 Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D02BB75F52;
         Fri, 10 Feb 2023 17:03:19 -0800 (PST)
@@ -12151,8 +12151,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: 2U1H8ALrgsO4z2l1c2gSYx27RzfxlXvaXm/
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR11MB8155
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Verma, Vishal L wrote:
 > On Fri, 2023-02-10 at 01:06 -0800, Dan Williams wrote:
@@ -12254,19 +12254,19 @@ Instead, maybe a new attribute like "origin" that returns "manual" vs
 "auto"?
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2ED5C61DA4
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 04:25:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA65DC636CC
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 04:25:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229604AbjBKEZ3 (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229597AbjBKEZ3 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 23:25:29 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229447AbjBKEZ2 (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 23:25:28 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 23:25:28 -0500
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90DD6821B6;
         Fri, 10 Feb 2023 20:25:26 -0800 (PST)
@@ -12417,8 +12417,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: 03zscMGMVvEKt79yeeAs3b8mJz4MN1QoTzT
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB6896
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA3IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6Cj4g
 SW4gcHJlcGFyYXRpb24gZm9yIGhtZW0gcGxhdGZvcm0gZGV2aWNlcyB0byBiZSB1bnJlZ2lzdGVy
@@ -12559,19 +12559,19 @@ Cj4gK8KgwqDCoMKgwqDCoMKgc3RydWN0IHJhbmdlIHJhbmdlOwo+IMKgfTsKPiDCoAo+IMKgI2lm
 ZGVmIENPTkZJR19NRU1SRUdJT04KPiAKCg==
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2FD9C636D4
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 04:41:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89DBDC61DA4
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 04:41:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229585AbjBKElQ (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229455AbjBKElQ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Fri, 10 Feb 2023 23:41:16 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39346 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229447AbjBKElP (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Fri, 10 Feb 2023 23:41:15 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 10 Feb 2023 23:41:15 -0500
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 573DD7BFF4;
         Fri, 10 Feb 2023 20:41:13 -0800 (PST)
@@ -12717,8 +12717,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: ofiQNNwQ4bWYqzFIfNGrGN6dJb9fP2ervD3
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB7099
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA3IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6Cj4g
 SW4gcHJlcGFyYXRpb24gZm9yIHRoZSBDWEwgcmVnaW9uIGRyaXZlciB0byB0YWtlIG92ZXIgdGhl
@@ -12949,19 +12949,19 @@ IHdhbGtfaG1lbV9yZXNvdXJjZXMoc3RydWN0IGRldmljZSAqZGV2LCB3YWxrX2htZW1fZm4gZm4p
 Owo+IMKgI2VuZGlmCj4gCgo=
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7D85C61DA4
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 05:57:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C894C636CC
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 05:57:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229476AbjBKF5v (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229477AbjBKF5v (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Sat, 11 Feb 2023 00:57:51 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229447AbjBKF5u (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Sat, 11 Feb 2023 00:57:50 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Sat, 11 Feb 2023 00:57:50 -0500
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F56534C1F;
         Fri, 10 Feb 2023 21:57:49 -0800 (PST)
@@ -13111,8 +13111,8 @@ X-MS-Exchange-CrossTenant-userprincipalname: genZjLe1pZnZ/rH25tX6+LfU6AUWS+oOUHY
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR11MB5414
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 T24gRnJpLCAyMDIzLTAyLTEwIGF0IDAxOjA3IC0wODAwLCBEYW4gV2lsbGlhbXMgd3JvdGU6Cj4g
 VGhlIGRlZmF1bHQgbW9kZSBmb3IgZGV2aWNlLWRheCBpbnN0YW5jZXMgaXMgYmFja3dhcmRzIGZv
@@ -13317,19 +13317,19 @@ LAo+ICvCoMKgwqDCoMKgwqDCoC50eXBlID0gREFYRFJWX0tNRU1fVFlQRSwKPiDCoH07Cj4gwqAK
 PiDCoHN0YXRpYyBpbnQgX19pbml0IGRheF9rbWVtX2luaXQodm9pZCkKPiAKCg==
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30613C636D7
-	for <linux-acpi@archiver.kernel.org>; Sat, 11 Feb 2023 14:05:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 175CBC636CC
+	for <linux-cxl@archiver.kernel.org>; Sat, 11 Feb 2023 14:05:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229692AbjBKOFN (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229676AbjBKOFN (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Sat, 11 Feb 2023 09:05:13 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58596 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229475AbjBKOFM (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Sat, 11 Feb 2023 09:05:12 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Sat, 11 Feb 2023 09:05:12 -0500
 Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2044.outbound.protection.outlook.com [40.107.244.44])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4314525B9A;
         Sat, 11 Feb 2023 06:05:07 -0800 (PST)
@@ -13433,8 +13433,8 @@ X-MS-Exchange-CrossTenant-MailboxType: HOSTED
 X-MS-Exchange-CrossTenant-UserPrincipalName: NUL1kr+6+cg6RMz0KInHwhal6f7XqbZadeP86tNr8dqWPIKJ8HDk//8HvLkT9uqpdav3EfuaKCZ/q0vQB3MFeP4RfjkkYyZUgmBZIfyLA4w=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR17MB4859
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, Feb 10, 2023 at 09:53:35AM -0800, Dan Williams wrote:
 > Dan Williams wrote:
@@ -13498,19 +13498,19 @@ poking the new kernel boot parameter and such.
 ~Gregory
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2FCDC6379F
-	for <linux-acpi@archiver.kernel.org>; Mon, 13 Feb 2023 18:23:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76247C636CC
+	for <linux-cxl@archiver.kernel.org>; Mon, 13 Feb 2023 18:23:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229716AbjBMSXB (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229768AbjBMSXB (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Mon, 13 Feb 2023 13:23:01 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43082 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229622AbjBMSWw (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Mon, 13 Feb 2023 13:22:52 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 13 Feb 2023 13:22:52 -0500
 Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2048.outbound.protection.outlook.com [40.107.223.48])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A3C31A96E;
         Mon, 13 Feb 2023 10:22:31 -0800 (PST)
@@ -13613,8 +13613,8 @@ X-MS-Exchange-CrossTenant-MailboxType: HOSTED
 X-MS-Exchange-CrossTenant-UserPrincipalName: O7sfS+vyDWUcK+CFeW3VcmP9c+Bs1p9JtsA7isJzHzVJMRsmGbna7ZOIobyUF0RlnIIuPcUZPeYMTtX21cbjKP49+r4YNE5PPXvwa0y46yI=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM8PR17MB5031
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, Feb 10, 2023 at 01:05:21AM -0800, Dan Williams wrote:
 > Changes since v1: [1]
@@ -14134,19 +14134,19 @@ cxl list output for completeness:
 ]
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46070C6379F
-	for <linux-acpi@archiver.kernel.org>; Mon, 13 Feb 2023 18:31:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 246B2C636D4
+	for <linux-cxl@archiver.kernel.org>; Mon, 13 Feb 2023 18:31:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229711AbjBMSba (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229768AbjBMSba (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Mon, 13 Feb 2023 13:31:30 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53924 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229647AbjBMSb3 (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Mon, 13 Feb 2023 13:31:29 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 13 Feb 2023 13:31:29 -0500
 Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2076.outbound.protection.outlook.com [40.107.92.76])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC914EC;
         Mon, 13 Feb 2023 10:31:28 -0800 (PST)
@@ -14250,8 +14250,8 @@ X-MS-Exchange-CrossTenant-MailboxType: HOSTED
 X-MS-Exchange-CrossTenant-UserPrincipalName: Oq9IKhYIX/ZEqA9XzEyMlG0lFycBjyYLL2D39SJ1sAGFOUcPlrfvQ+fd+3HFLw6/uAwoI0VF/LpzGZZmJYNALXrvsWIJSsrlZGaoH1hPl/k=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR17MB5531
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Mon, Feb 13, 2023 at 01:22:17PM -0500, Gregory Price wrote:
 > On Fri, Feb 10, 2023 at 01:05:21AM -0800, Dan Williams wrote:
@@ -14280,19 +14280,19 @@ this end up mapping this way, which is still further jumbled.
 Something feels like there's an off-by-one
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9FADC636CC
-	for <linux-acpi@archiver.kernel.org>; Mon, 13 Feb 2023 19:28:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FEF6C636D4
+	for <linux-cxl@archiver.kernel.org>; Mon, 13 Feb 2023 19:28:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231156AbjBMT2N (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S230077AbjBMT2N (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Mon, 13 Feb 2023 14:28:13 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S230142AbjBMT2M (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Mon, 13 Feb 2023 14:28:12 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 13 Feb 2023 14:28:12 -0500
 Received: from mailout2.w2.samsung.com (mailout2.w2.samsung.com [211.189.100.12])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69C139024;
         Mon, 13 Feb 2023 11:27:55 -0800 (PST)
@@ -14391,8 +14391,8 @@ References: <167601992097.1924368.18291887895351917895.stgit@dwillia2-xfh.jf.int
         <167601999958.1924368.9366954455835735048.stgit@dwillia2-xfh.jf.intel.com>
         <CGME20230213192752uscas1p1c49508da4b100c9ba6a1a3aa92ca03e5@uscas1p1.samsung.com>
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, Feb 10, 2023 at 01:06:39AM -0800, Dan Williams wrote:
 > Region autodiscovery is an asynchronous state machine advanced by
@@ -15259,19 +15259,19 @@ ort)
 > =
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 245E1C64EC7
-	for <linux-acpi@archiver.kernel.org>; Tue, 14 Feb 2023 13:23:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36771C677F1
+	for <linux-cxl@archiver.kernel.org>; Tue, 14 Feb 2023 13:23:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232691AbjBNNXl (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232686AbjBNNXl (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Tue, 14 Feb 2023 08:23:41 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232651AbjBNNXk (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Tue, 14 Feb 2023 08:23:40 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 14 Feb 2023 08:23:40 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7266C5FEB;
         Tue, 14 Feb 2023 05:23:39 -0800 (PST)
@@ -15305,8 +15305,8 @@ X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 
 > > 
@@ -15328,19 +15328,19 @@ describing is indicated by a return of 1.
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94B8BC05027
-	for <linux-acpi@archiver.kernel.org>; Tue, 14 Feb 2023 13:35:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE351C6379F
+	for <linux-cxl@archiver.kernel.org>; Tue, 14 Feb 2023 13:35:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231899AbjBNNfh (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S230145AbjBNNfh (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Tue, 14 Feb 2023 08:35:37 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41042 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231580AbjBNNfg (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Tue, 14 Feb 2023 08:35:36 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 14 Feb 2023 08:35:36 -0500
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D8A025958;
         Tue, 14 Feb 2023 05:35:34 -0800 (PST)
@@ -15380,8 +15380,8 @@ X-ClientProxiedBy: lhrpeml100002.china.huawei.com (7.191.160.241) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Mon, 13 Feb 2023 13:22:17 -0500
 Gregory Price <gregory.price@memverge.com> wrote:
@@ -15931,19 +15931,19 @@ Maybe try some smaller devices, just in case it's running out of memory somewher
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93D18C61DA4
-	for <linux-acpi@archiver.kernel.org>; Tue, 14 Feb 2023 16:45:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACF44C6379F
+	for <linux-cxl@archiver.kernel.org>; Tue, 14 Feb 2023 16:45:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232515AbjBNQpA (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232805AbjBNQpA (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Tue, 14 Feb 2023 11:45:00 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231355AbjBNQom (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Tue, 14 Feb 2023 11:44:42 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 14 Feb 2023 11:44:42 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 761C92CFD3;
         Tue, 14 Feb 2023 08:44:03 -0800 (PST)
@@ -16074,8 +16074,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: TowZSjUtMxzXdRV4qkGQgrZw5T7UZWGyIzL
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB5144
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Jonathan Cameron wrote:
 > 
@@ -16097,19 +16097,19 @@ Jonathan Cameron wrote:
 Got it.
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 933BCC61DA4
-	for <linux-acpi@archiver.kernel.org>; Wed, 22 Feb 2023 21:41:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A62CAC64EC7
+	for <linux-cxl@archiver.kernel.org>; Wed, 22 Feb 2023 21:41:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232831AbjBVVl4 (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232827AbjBVVl4 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 22 Feb 2023 16:41:56 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41222 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232554AbjBVVlz (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 22 Feb 2023 16:41:55 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 22 Feb 2023 16:41:55 -0500
 Received: from mailout1.w2.samsung.com (mailout1.w2.samsung.com [211.189.100.11])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D67231E2C;
         Wed, 22 Feb 2023 13:41:53 -0800 (PST)
@@ -16220,8 +16220,8 @@ References: <167601992097.1924368.18291887895351917895.stgit@dwillia2-xfh.jf.int
         <Y+p/2S4rnrOOyZ8w@memverge.com> <Y+qB9T/PCZ6TpYlK@memverge.com>
         <CGME20230222214151uscas1p26d53b2e198f63a1f382fe575c6c25070@uscas1p2.samsung.com>
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Mon, Feb 13, 2023 at 01:31:17PM -0500, Gregory Price wrote:
 
@@ -16351,19 +16351,19 @@ position for a memdev, but it is kind of annoying to do it before
 creating region.
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7F31C6379F
-	for <linux-acpi@archiver.kernel.org>; Wed, 22 Feb 2023 22:18:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0787C636D6
+	for <linux-cxl@archiver.kernel.org>; Wed, 22 Feb 2023 22:18:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232898AbjBVWS6 (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S232896AbjBVWS6 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Wed, 22 Feb 2023 17:18:58 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44998 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S232630AbjBVWSt (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Wed, 22 Feb 2023 17:18:49 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 22 Feb 2023 17:18:49 -0500
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE14E469A;
         Wed, 22 Feb 2023 14:18:26 -0800 (PST)
@@ -16511,8 +16511,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: pxcFgXNA/UQG5i/1iR8Fpg7K1nwYhiHKBle
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR11MB7884
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 Fan Ni wrote:
 > On Mon, Feb 13, 2023 at 01:31:17PM -0500, Gregory Price wrote:
@@ -16619,19 +16619,19 @@ semi-persistent / persistent naming.
 That's a conversation to have with the systemd-udev folks.
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-acpi-owner@vger.kernel.org>
+Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FF0FC7EE30
-	for <linux-acpi@archiver.kernel.org>; Tue, 28 Feb 2023 18:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB0FEC6FA8E
+	for <linux-cxl@archiver.kernel.org>; Tue, 28 Feb 2023 18:53:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229758AbjB1Sxz (ORCPT <rfc822;linux-acpi@archiver.kernel.org>);
+        id S229644AbjB1Sxz (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
         Tue, 28 Feb 2023 13:53:55 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54474 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229546AbjB1Sxy (ORCPT
-        <rfc822;linux-acpi@vger.kernel.org>); Tue, 28 Feb 2023 13:53:54 -0500
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 28 Feb 2023 13:53:54 -0500
 Received: from mailout1.w2.samsung.com (mailout1.w2.samsung.com [211.189.100.11])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD67B23DAF;
         Tue, 28 Feb 2023 10:53:50 -0800 (PST)
@@ -16729,8 +16729,8 @@ References: <167601992097.1924368.18291887895351917895.stgit@dwillia2-xfh.jf.int
         <167601999958.1924368.9366954455835735048.stgit@dwillia2-xfh.jf.intel.com>
         <CGME20230228185348uscas1p1a5314a077383ee81ac228c1b9f1da2f8@uscas1p1.samsung.com>
 Precedence: bulk
-List-ID: <linux-acpi.vger.kernel.org>
-X-Mailing-List: linux-acpi@vger.kernel.org
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
 
 On Fri, Feb 10, 2023 at 01:06:39AM -0800, Dan Williams wrote:
 > Region autodiscovery is an asynchronous state machine advanced by
