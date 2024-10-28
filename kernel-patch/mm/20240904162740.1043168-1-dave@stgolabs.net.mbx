@@ -143,9 +143,6 @@ X-Loop: owner-majordomo@kvack.org
 List-ID: <linux-mm.kvack.org>
 List-Subscribe: <mailto:majordomo@kvack.org>
 List-Unsubscribe: <mailto:majordomo@kvack.org>
-Status: RO
-Content-Length: 12240
-Lines: 364
 
 This adds support for allowing proactive reclaim in general on a
 NUMA system. A per-node interface extends support for beyond a
@@ -559,9 +556,6 @@ List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Status: RO
-Content-Length: 5347
-Lines: 150
 
 On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
 
@@ -786,9 +780,6 @@ Cc: linux-mm@kvack.org, akpm@linux-foundation.org, mhocko@kernel.org,
 	a.manzanares@samsung.com, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Status: RO
-Content-Length: 15353
-Lines: 409
 
 On Wed, Sep 4, 2024 at 9:28=E2=80=AFAM Davidlohr Bueso <dave@stgolabs.net> =
 wrote:
@@ -1304,9 +1295,6 @@ Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
 In-Reply-To: <20240904131811.234e005307f249ef07670c20@linux-foundation.org>
 User-Agent: NeoMutt/20240425
-Status: RO
-Content-Length: 3402
-Lines: 119
 
 On Wed, 04 Sep 2024, Andrew Morton wrote:\n
 >On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
@@ -1477,9 +1465,6 @@ List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Status: RO
-Content-Length: 1114
-Lines: 32
 
 On Wed, 4 Sep 2024 18:08:05 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
 
@@ -1620,9 +1605,6 @@ Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
 In-Reply-To: <20240904181543.02de2242490cf233c7879697@linux-foundation.org>
 User-Agent: NeoMutt/20240425
-Status: RO
-Content-Length: 1443
-Lines: 36
 
 On Wed, 04 Sep 2024, Andrew Morton wrote:\n
 >On Wed, 4 Sep 2024 18:08:05 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
@@ -1734,9 +1716,6 @@ To: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org, mhocko@kernel
 	dseo3@uci.edu, a.manzanares@samsung.com, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Status: RO
-Content-Length: 1778
-Lines: 47
 
 On Wed, Sep 4, 2024 at 8:35=E2=80=AFPM Davidlohr Bueso <dave@stgolabs.net> =
 wrote:
@@ -1834,9 +1813,6 @@ List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Status: RO
-Content-Length: 711
-Lines: 16
 
 On Wed,  4 Sep 2024 09:27:40 -0700 Davidlohr Bueso <dave@stgolabs.net> wrote:
 
@@ -1955,9 +1931,6 @@ Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
 In-Reply-To: <20240905215945.1909-1-hdanton@sina.com>
 User-Agent: NeoMutt/20240425
-Status: RO
-Content-Length: 709
-Lines: 13
 
 On Fri, 06 Sep 2024, Hillf Danton wrote:\n
 >The proactive reclaim on the cmdline looks like waste of cpu cycles before
@@ -2021,9 +1994,6 @@ List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Status: RO
-Content-Length: 1044
-Lines: 20
 
 On Thu, 5 Sep 2024 16:29:41 -0700 Davidlohr Bueso <dave@stgolabs.net>
 > On Fri, 06 Sep 2024, Hillf Danton wrote:\n
@@ -2119,9 +2089,6 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20240906110419.2079-1-hdanton@sina.com>
-Status: RO
-Content-Length: 1470
-Lines: 31
 
 On Fri 06-09-24 19:04:19, Hillf Danton wrote:
 > On Thu, 5 Sep 2024 16:29:41 -0700 Davidlohr Bueso <dave@stgolabs.net>
@@ -2228,9 +2195,6 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20240904162740.1043168-1-dave@stgolabs.net>
-Status: RO
-Content-Length: 2218
-Lines: 52
 
 On Wed 04-09-24 09:27:40, Davidlohr Bueso wrote:
 > This adds support for allowing proactive reclaim in general on a
@@ -2333,9 +2297,6 @@ List-Subscribe: <mailto:linux-kernel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-kernel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Status: RO
-Content-Length: 1676
-Lines: 32
 
 On Date: Mon, 9 Sep 2024 09:12:03 +0200 Michal Hocko <mhocko@suse.com>
 > On Fri 06-09-24 19:04:19, Hillf Danton wrote:
@@ -2443,9 +2404,6 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20240909105157.2663-1-hdanton@sina.com>
-Status: RO
-Content-Length: 1903
-Lines: 39
 
 On Mon 09-09-24 18:51:57, Hillf Danton wrote:
 > On Date: Mon, 9 Sep 2024 09:12:03 +0200 Michal Hocko <mhocko@suse.com>
@@ -2591,9 +2549,6 @@ Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
 In-Reply-To: <Zt6hur2TZJUrJ2IU@tiehlicka>
 User-Agent: NeoMutt/20220429
-Status: RO
-Content-Length: 1833
-Lines: 38
 
 On Mon, 09 Sep 2024, Michal Hocko wrote:
 
@@ -2709,9 +2664,6 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20240910163115.cg26kenlejlkmnsp@offworld>
-Status: RO
-Content-Length: 1389
-Lines: 35
 
 On Tue 10-09-24 09:31:15, Davidlohr Bueso wrote:
 > On Mon, 09 Sep 2024, Michal Hocko wrote:

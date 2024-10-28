@@ -3591,185 +3591,6 @@ Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DD69C3DA7D
-	for <linux-cxl@archiver.kernel.org>; Tue,  3 Jan 2023 18:15:31 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238652AbjACSPa (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Tue, 3 Jan 2023 13:15:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37610 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238550AbjACSP3 (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Tue, 3 Jan 2023 13:15:29 -0500
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF2642185
-        for <linux-cxl@vger.kernel.org>; Tue,  3 Jan 2023 10:15:27 -0800 (PST)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Nmgl91x61z686w8;
-        Wed,  4 Jan 2023 02:10:45 +0800 (CST)
-Received: from localhost (10.122.247.231) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Tue, 3 Jan
- 2023 18:15:25 +0000
-Date: Tue, 3 Jan 2023 18:15:24 +0000
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: Gregory Price <gourry.memverge@gmail.com>
-CC: Gregory Price <gregory.price@memverge.com>,
-        <qemu-devel@nongnu.org>, <linux-cxl@vger.kernel.org>,
-        Alison Schofield <alison.schofield@intel.com>,
-        Davidlohr Bueso <dave@stgolabs.net>,
-        <a.manzanares@samsung.com>, Ben Widawsky <bwidawsk@kernel.org>,
-        <hchkuo@avery-design.com.tw>, <cbrowy@avery-design.com>,
-        <ira.weiny@intel.com>
-Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
- and Persistent)
-Message-ID: <20230103181524.00003e14@huawei.com>
-In-Reply-To: <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
-References: <20221128150157.97724-1-gregory.price@memverge.com>
-        <20221128150157.97724-4-gregory.price@memverge.com>
-        <20221219124211.000032b7@Huawei.com>
-        <Y6CNcuIzUVmKL0SM@memverge.com>
-        <20221219172502.00001338@Huawei.com>
-        <Y6CloIiuruB/h7qp@memverge.com>
-        <20221220153453.00000436@Huawei.com>
-        <Y6IMoxKZOc7eUPCg@memverge.com>
-        <20230103155629.00007466@Huawei.com>
-        <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
-Organization: Huawei Technologies R&D (UK) Ltd.
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; x86_64-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml500002.china.huawei.com (7.191.160.78) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Tue, 3 Jan 2023 11:02:31 -0500
-Gregory Price <gourry.memverge@gmail.com> wrote:
-
-> The fine grained control would be a precursor to an emulated pooling
-> device.  If you can demonstrate it with a singleton attached device, you
-> could just implement an exclusivity table in a shared file, and set the
-> shared memory to a file backend as well.  Boom, shared memory pool across
-> qemu instances.
-
-For Dynamic capacity based pooling I agree, but a lot of work is needed to make that
-function correctly.  The partitioning support is a much nearer term target and
-there is no real need for them to look similar - on kernel side of things I'm
-not yet convinced it's even a sensible route to make them look similar as DCD
-is far less constrained than partitioning and expected usecases are probably
-entirely different.
-
-Hotplug based pooling (CXL 2.0 approach) is much simpler in OS because in that
-case we always get full blown hotplug events.
-
-Whilst I agree that pooling is interesting to emulate, my preference for initial
-case would be moving between virtual PCIe heirarchies attached to different
-root ports / host bridges on a single host.  That may be simpler to get going / test
-than multiple hosts.
-
-Right now I'd just like a static device with mixture of pmem / volatile plus 2+
-HDM decoders and kernel support for that.
-
-Jonathan
-
-> 
-> On Tue, Jan 3, 2023, 10:56 AM Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> wrote:
-> 
-> > On Tue, 20 Dec 2022 14:27:31 -0500
-> > Gregory Price <gregory.price@memverge.com> wrote:
-> >  
-> > > On Tue, Dec 20, 2022 at 03:34:53PM +0000, Jonathan Cameron wrote:  
-> > > > > However I don't think this is successful in creating the dax devices,
-> > > > > and therefore the reconfiguring into ram.  
-> > > >
-> > > > Sure. I only bothered testing the it in some dax modes rather than via  
-> > kmem.  
-> > > > It 'should' work but more testing needed there.
-> > > >
-> > > > However as you've noted, that only applies to the pmem regions at the  
-> > moment.  
-> > > > I wondered if you'd scripted the HDM decoder setup etc for test  
-> > purposes  
-> > > > (so what the driver will do). Alternative to that would be enabling  
-> > the driver  
-> > > > support. Not sure if anyone is looking at that yet. Final alternative  
-> > would  
-> > > > be to port the existing EDK2 based support to work on QEMU.  All non  
-> > trivial  
-> > > > jobs so may take a while,
-> > > >
-> > > > Jonathan  
-> > >
-> > > Also, I'm relatively new to this corner of the kernel (mm, regions, dax,
-> > > etc), so i need to spend a week or two with uninterrupted tinkering with
-> > > how adding new memory regions from these devices is actually "supposed
-> > > to work" in a dynamic-capacity world.
-> > >
-> > > At least in theory, the partitioning of persistent and volatile memory
-> > > regions on one of these type-3 devices should end up looking a bit like
-> > > dynamic capacity when doing runtime reconfiguring.
-> > >
-> > > For example, considering
-> > >
-> > > Device(512mb PMEM, 512 VMEM), I'd want, at least i think
-> > >
-> > > CMFW-Volatile:    max window size(1024mb) - Numa 2
-> > > CMFW-Persistent:  max window size(512mb)  - Numa 3
-> > >
-> > > Then we'd need the kernel support for
-> > >
-> > > 1) Online 2x256mb volatile regions in Numa 2
-> > > 2) Online 2x256mb persistent regions in Numa 3
-> > > 3) Offline persistent region (256mb:512mb)
-> > > 4) Reconfigure device to 256Pmem/768Volatile
-> > >    a) change decoders in device accordingly
-> > > 5) Online 1x256mb volatile region in Numa 2
-> > >
-> > > The question is whether you can do this without offlining the other
-> > > adjacent regions.  I just don't know enough about the region subsystem
-> > > to say what is "correct" behavior here.  
-> >
-> > Whilst you probably 'can' do fine grained offline / online (to some
-> > degree anyway) I'm not sure if people consider it an important
-> > usecase. If decoder reprogramming is involved things will get very fiddly
-> > so at least in first instance I'd advocate just ripping it all down and
-> > building up again.  Or in the simple case, just block attempts to
-> > reconfigure
-> > at the partitioning if either side is in use.
-> >  
-> > >
-> > > On the device side, I need to go look at the mailbox commands to go
-> > > about implementing the reconfiguration / decoder reprogramming.
-> > >
-> > > I guess the "decoder" reprogramming is essentially changing the
-> > > read/write commands to adjust based on v/pmem_active vs v/pmem_size?  
-> >
-> > Yup.  We also need multiple decoder support in general in QEMU.
-> > It's not that high on my list as my main focus this cycle is going
-> > to be on reducing the out of tree patch set by upstreaming stuff.
-> >  
-> > >
-> > > I suppose I can look at this chunk next.  
-> >
-> > Great.
-> >
-> > Jonathan
-> >
-> >
-> >  
-> 
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
 	by smtp.lore.kernel.org (Postfix) with ESMTP id D9E3EC3DA7D
 	for <linux-cxl@archiver.kernel.org>; Thu,  5 Jan 2023 14:38:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
@@ -3955,609 +3776,6 @@ This one only has one space.
 >  
 >  static void cxl_basic_hb(void)
 >  {
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBE2EC00A5A
-	for <linux-cxl@archiver.kernel.org>; Thu, 19 Jan 2023 17:15:58 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229634AbjASRP6 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Thu, 19 Jan 2023 12:15:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58284 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229771AbjASRP5 (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Thu, 19 Jan 2023 12:15:57 -0500
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2086.outbound.protection.outlook.com [40.107.92.86])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DDEA8C910
-        for <linux-cxl@vger.kernel.org>; Thu, 19 Jan 2023 09:15:54 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=C50QWXXdDqZf4V/2elmWb/D8qzGtJYhcr88G+pY9jdNEXD6K4jGk/yGn3dtuKoi1bUlaQa+OxFYf1vCTYDOX4PlTSWBRzq4o3Jze8evMEgIMKR7payaCdxZ/aFKuLzs0bq/bw1kt9xV3o88EA4d/Ocs83vT29k1r1HCrV2UtZEKpWK1+qq2Hg4DEJVE+CdHtC4V+Vq6nuGJbLZ81lK6JXegKEIfHM6/D6rBcmHt2/6md/rrx7Btm2kdyz/67IEdbhEf2P8Fmnt0x7TjmuM9NT6zJH/P4e4BZO0Vurxjf2Pe5okYhDGGe/knYURgVHmvU/mUcdZpFFc12z80BQ6/tUQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=7TAZtZYQC2r7RLC7OZPxxPxT7UGIqWQGpZX0Rxxsu0E=;
- b=NhazAtSojx9WcAAPAQ6xNXloFPURbwJR6h1xNYOE07MXFARGynfyrti6fEY4+ingcj20gmMI1XrFKAN8tYFefDUO/xiHbVe4B5qMd+cmt19FotnWb8XAjXrDysBGwZwsbgfC9baog5vmt3eATmPRGzm4YmPkMWkwk6O5sgmlulJ/txP2LMLrNWCaTZ4gOsR13oQrGvf9JkB6yn/y5N/Q5XqGUtkPlJEJya0sGZkU9eitjTrT/y2sddB1qymSI28K1NCmPy+0A2X2jshS1h4+qWMZB5CFe7xPyY2gJmis60zdyCaTH8hOAeyuNHNPCyOYPK3XFevWoLwPLoJ7dDp5sw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
- dkim=pass header.d=memverge.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=7TAZtZYQC2r7RLC7OZPxxPxT7UGIqWQGpZX0Rxxsu0E=;
- b=Wb0/TumvwBKlbA31OwgXTfS2q19MHxEFqTLkJmYAI2LJYvnY1ADzwrrM7h8dv0m2zU9gM0tIPgdkB5MakGcx1WQuAJXu+pAbdRVuC55oK9QpfroHwpP7gk3NfOdMb/cs7i1sP64FvZuKuphXcIXHRHUk79Q9+jUiR/Qo+cI8VCk=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=memverge.com;
-Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
- by BY5PR17MB3890.namprd17.prod.outlook.com (2603:10b6:a03:235::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.13; Thu, 19 Jan
- 2023 17:15:51 +0000
-Received: from BN6PR17MB3121.namprd17.prod.outlook.com
- ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
- ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.5986.023; Thu, 19 Jan 2023
- 17:15:51 +0000
-Date: Thu, 19 Jan 2023 12:15:45 -0500
-From: Gregory Price <gregory.price@memverge.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: Gregory Price <gourry.memverge@gmail.com>, qemu-devel@nongnu.org,
-        linux-cxl@vger.kernel.org,
-        Alison Schofield <alison.schofield@intel.com>,
-        Davidlohr Bueso <dave@stgolabs.net>, a.manzanares@samsung.com,
-        Ben Widawsky <bwidawsk@kernel.org>, hchkuo@avery-design.com.tw,
-        cbrowy@avery-design.com, ira.weiny@intel.com
-Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
- and Persistent)
-Message-ID: <Y8l6wYKstOB/iBzT@memverge.com>
-References: <20221128150157.97724-4-gregory.price@memverge.com>
- <20221219124211.000032b7@Huawei.com>
- <Y6CNcuIzUVmKL0SM@memverge.com>
- <20221219172502.00001338@Huawei.com>
- <Y6CloIiuruB/h7qp@memverge.com>
- <20221220153453.00000436@Huawei.com>
- <Y6IMoxKZOc7eUPCg@memverge.com>
- <20230103155629.00007466@Huawei.com>
- <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
- <20230103181524.00003e14@huawei.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230103181524.00003e14@huawei.com>
-X-ClientProxiedBy: SJ0PR13CA0115.namprd13.prod.outlook.com
- (2603:10b6:a03:2c5::30) To BN6PR17MB3121.namprd17.prod.outlook.com
- (2603:10b6:405:7c::19)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|BY5PR17MB3890:EE_
-X-MS-Office365-Filtering-Correlation-Id: 39f97610-dd2e-4cbc-0791-08dafa40d07b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: zQNuck21yp5UlZyO22fVZtepbHA5BiPi64F/2sZitFk3B9IRHPQ2KQe85KjLzM9ijdirUUQ5zsFIYcJErB5cUgoDJoPKXxm3eGBai2uG1A8j3YRkOz5sSyk5QaMXF3E5SnLnFTkcgEmD8LMRx6JbdboCg6bRdlNoyrBU5aN0zhs54RpxhioIilBj2dpWqzaB9AvZrM6SdaB4IRy+9D4qPgVslatsYIt1IzSArU4P5F/hS5O9kCae3MeC+4i4QQ6/ebB56GSUOI0P/+jnR8F9JiSAFHbxun3KzkIXZHmu1/HPE1LJ43/e6BexmsfZ08a9G5dgnQnjk4PS7fGw+ydUSQOQvNyE73PPhq77d69ag9xfCilbq4dHHgpDmIzPFAslC+3cfehKzt3xlxQFP4lmSSljb5hXSY3d2JzwvrmG7KJIaXrY9er+5p1anTxBa8uXwsxOx5VFB9Btu/JzSBRRNuivpFxr/Gq4Ajkwqo0lShU2sO02B/ANRaUV9LvOIL+ngY0cbSwMfqsHWsGbB8Fpgnnpgk0hxqAbLGQTv2HFT75nC7cS8b2/2rgFQCyKnv9Ym3pBBOIisCfCEVm+m3yU4Hpv4jv8y3LAqW4+3bY1Fm74TTzeECRngLsDjn6oBypUkY9LTnCh75tz6AUbedlFo9uMmmm+tZTwfhynUJvPa7nvi1K1ASeAkrh/Ibc8o6h8
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(376002)(366004)(346002)(136003)(39830400003)(396003)(451199015)(6486002)(26005)(66556008)(478600001)(41300700001)(6512007)(186003)(86362001)(316002)(54906003)(2616005)(38100700002)(66946007)(66476007)(6506007)(36756003)(2906002)(5660300002)(6666004)(7416002)(44832011)(4326008)(4744005)(6916009)(8936002)(8676002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?gM7rRZqp0ESSFxMqfxqWjBOb2Em98RlWl1RQW/SMR6nZrzipnCzsnh1uWr+j?=
- =?us-ascii?Q?jT05bvL6pDdpm3hjtoFwdxcOGN37x2PIBu3koMi3qs4o7ru94ITlMJQa6hWo?=
- =?us-ascii?Q?yhg4gXPKcTu7n4cmsrvtc6Uw6RFIPt1P2mI6xbQbqwgxyqrQHUuCmeUT/DbT?=
- =?us-ascii?Q?Su4TWgfjs5RozkLUdrOKcSbMA1kr0X4Q/6X506KXEe+WyrNNkmr6oytTXEy8?=
- =?us-ascii?Q?ZRgXAiVelif92xIjZn/s/p6v4c3A6NPowqJLLFX9yEMMDfp5WA7SL5xzNH2W?=
- =?us-ascii?Q?zIoj3ZpvFz4LTPAKzLG7Py68kNTExb8U27BJnrukqG8kdGFvyHYkqMoK/jCI?=
- =?us-ascii?Q?Gt1DbzfG38SMUEcRxSSQOaUcGgbBwAkHNdMtaIkfhgoQYe1XEYVobruzrCh1?=
- =?us-ascii?Q?YMbeGnnHmaHSbGmPcbt7Snra29GBnlQ4DM6RrvlTo3tUrFNnBICy3PKvmzVT?=
- =?us-ascii?Q?2njUrnscX/Dti+c5kFLUdecYuv6J2PgmgbKCgTL/yeRslWr5JxrBqxxqGVEz?=
- =?us-ascii?Q?MCSkG5DLUMuEHI4chdRMD15Z9sZ/As1CEDmqSJnQ5/2IXGKh+zF2fKIyYJu4?=
- =?us-ascii?Q?hk63kQbqa2Cr0answ97c/T6Csz6wmU528W7mfAOd97O+Cu6B1dEZ+eGmyImq?=
- =?us-ascii?Q?mpOn4pj4TUHXWM5DyJRodUtIQC5mdBQKecggtDk9CVcQrRAz71rHNAXBfoOy?=
- =?us-ascii?Q?6t2NFq+q7YnY1cATi5zOPBl7ZVp1KAF3rwcsTg7alGHaOE4qoEzseZLqDH2T?=
- =?us-ascii?Q?a+x/QTYFlXaT8frp0TvkqySMxDqmkdByVlB0aWcvNL+OjVDxcPfVkS1B72cC?=
- =?us-ascii?Q?9D/CFlTbTVEj/HYthpFw9oBLxsbOYoAvtn3gsXvEbe7/+E9T7GNvZiva9AN4?=
- =?us-ascii?Q?LSIWEw4mYtxSP4Snb1aJVStU9B27a0l9XIIZHFhPzFxAHKjJmcl22cAzneMy?=
- =?us-ascii?Q?rZ5hPRN6pQSCAjZlpFPV/oIXjAFPk4j6Ez3Z6Xhl5HBEUsWGGsk9GYv1jlZs?=
- =?us-ascii?Q?hApMKYnkpP/kK6vS8g74Ws8s1ArmeS2VnDX69ij2QFkd8wlh9lZXBRx9Irh8?=
- =?us-ascii?Q?w/YbwBT7PW0y6XodL/U3/e6jPDC90qIHJEPsc2Bw0Axhe5PkMDLYwAibQJcz?=
- =?us-ascii?Q?Xj9DeXaDhxumqeD0OOTOsXXg0ixtqzFpyoSNtiNNaCR8goLQUnxgEdYIgwrQ?=
- =?us-ascii?Q?MLG+v65Ztc2cmQwqHx9FokfnFOKw6/Fca7UIDLgHx/9HWzyu7qHXYIRL6N49?=
- =?us-ascii?Q?4a8KM7JmbckwOh+4v9yHCv2cV2A2rleMaufkZs6Gbxl7gIF63e+0M01NhGlI?=
- =?us-ascii?Q?tPIouhA8SnIDvrzhCjCLjmFuGosdcKtgSsg59lh8VJmtitUIMfnHO9yaQSEb?=
- =?us-ascii?Q?eja7LHC1iK9MRi7N74GDHgnj1GWfkOGbPE4MJ3DX8dLm0r4iMVTw37CMN8d/?=
- =?us-ascii?Q?TOg9AxsLBiXbHbASCFBG0ALUq8ssNALgMt7+xM89WL97q+F+Y96naFKMR7TL?=
- =?us-ascii?Q?08XJA36nZoczg1Uu6raLeujhP4aEXiTGGKwissAnAfLPeseDyrojDDO88sy4?=
- =?us-ascii?Q?ddDpbfraobCeAs4Bk1+tKaw5C+y//xlAeydb7LVB/zACd1btkP1pTWFotSEA?=
- =?us-ascii?Q?ew=3D=3D?=
-X-OriginatorOrg: memverge.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 39f97610-dd2e-4cbc-0791-08dafa40d07b
-X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jan 2023 17:15:51.0014
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ULJ0i+Wd2DRY1Rg0AyoDWlKR+GGKdL13WqO8kCwQzv4EwC7+9mQuDkvu7qGpPZKjliavt1DhDwLgXaxHVaIiA+cMspeBgarksPD4KJabANw=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR17MB3890
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-
-Found a bug, not sure how we missed this, probably happed with rebasing
-and some fixups. We're presently reporting the volatile region as
-non-volatile, 1 line patch.
-
-Jonathan do you want a separate patch shipped or would you rather just
-apply a fixup to the commit in your current branch?
-
-diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
-index 919cdf141e..1c5168e2e4 100644
---- a/hw/mem/cxl_type3.c
-+++ b/hw/mem/cxl_type3.c
-@@ -187,7 +187,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
-     /* Now fill them in */
-     if (volatile_mr) {
-         rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
--                                           true, 0);
-+                                           false, 0);
-         if (rc < 0) {
-             return rc;
-         }
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE3B7C004D4
-	for <linux-cxl@archiver.kernel.org>; Thu, 19 Jan 2023 17:31:18 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229568AbjASRbS (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Thu, 19 Jan 2023 12:31:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40558 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229446AbjASRbR (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Thu, 19 Jan 2023 12:31:17 -0500
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE7548693
-        for <linux-cxl@vger.kernel.org>; Thu, 19 Jan 2023 09:31:15 -0800 (PST)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4NyV1c1Mflz6J79N;
-        Fri, 20 Jan 2023 01:27:16 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 19 Jan
- 2023 17:31:13 +0000
-Date: Thu, 19 Jan 2023 17:31:12 +0000
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Gregory Price <gregory.price@memverge.com>
-CC: Gregory Price <gourry.memverge@gmail.com>, <qemu-devel@nongnu.org>,
-        <linux-cxl@vger.kernel.org>,
-        Alison Schofield <alison.schofield@intel.com>,
-        Davidlohr Bueso <dave@stgolabs.net>,
-        <a.manzanares@samsung.com>, "Ben Widawsky" <bwidawsk@kernel.org>,
-        <hchkuo@avery-design.com.tw>, <cbrowy@avery-design.com>,
-        <ira.weiny@intel.com>
-Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
- and Persistent)
-Message-ID: <20230119173112.00005acc@Huawei.com>
-In-Reply-To: <Y8l6wYKstOB/iBzT@memverge.com>
-References: <20221128150157.97724-4-gregory.price@memverge.com>
-        <20221219124211.000032b7@Huawei.com>
-        <Y6CNcuIzUVmKL0SM@memverge.com>
-        <20221219172502.00001338@Huawei.com>
-        <Y6CloIiuruB/h7qp@memverge.com>
-        <20221220153453.00000436@Huawei.com>
-        <Y6IMoxKZOc7eUPCg@memverge.com>
-        <20230103155629.00007466@Huawei.com>
-        <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
-        <20230103181524.00003e14@huawei.com>
-        <Y8l6wYKstOB/iBzT@memverge.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Thu, 19 Jan 2023 12:15:45 -0500
-Gregory Price <gregory.price@memverge.com> wrote:
-
-> Found a bug, not sure how we missed this, probably happed with rebasing
-> and some fixups. We're presently reporting the volatile region as
-> non-volatile, 1 line patch.
-> 
-> Jonathan do you want a separate patch shipped or would you rather just
-> apply a fixup to the commit in your current branch?
-I'll fix up as I'd only squash the patch in anyway.
-
-If tomorrow is slightly less crazy busy than today I'll push out a new
-tree with this and the pass through decoders support RFC
-(I'll post that to the lists as well)
-
-Jonathan
-
-> 
-> diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
-> index 919cdf141e..1c5168e2e4 100644
-> --- a/hw/mem/cxl_type3.c
-> +++ b/hw/mem/cxl_type3.c
-> @@ -187,7 +187,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
->      /* Now fill them in */
->      if (volatile_mr) {
->          rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
-> -                                           true, 0);
-> +                                           false, 0);
->          if (rc < 0) {
->              return rc;
->          }
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CE87C004D4
-	for <linux-cxl@archiver.kernel.org>; Thu, 19 Jan 2023 22:30:47 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229696AbjASWap (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Thu, 19 Jan 2023 17:30:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60966 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230331AbjASWaG (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Thu, 19 Jan 2023 17:30:06 -0500
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2040.outbound.protection.outlook.com [40.107.236.40])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B8A5A731D
-        for <linux-cxl@vger.kernel.org>; Thu, 19 Jan 2023 14:13:48 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=LaIGXbL2WjWV+KrOoWpii4cee7nXBR2Rp9JJId+vXIdHIB2Vz7p0XZH6rden6wsXfOfEa05PpgFCW3MUQamkbnm82sWqhuv8CKK0hLyEAtyWS8OR0vNEq3gST8QXJwS09YDUO5CyJqE4kGkBg1vn1zOBgcESejE2NmmQ4bl6GIn0guOsVcanGiEEQBDNXQ7+qRQRSPyZrldIShb//4vaGfDfVOxZvlLlP666VmHYWKccwTN5Eqd3Xy61u70pDJD20T4a/sMGNrN96EjfRFqCkc7LQ864UjCQP08bQU9d4FvRiBgKEF9gkmWgb1M5cXAlZJFTQJwnwPKB7+PsqhqTpg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=LYbk+yy/EM4kGOh3uhQ7vHTmarYxoItI8j67XVEfhYs=;
- b=lRNrWzuYmLz9Pptl/1ww9QvQoRhMeLJ2K0SkbG+fMAlgMZ76kPR94WulrmMfcbdkFCLGFs9OlpmaFH4C33E8LyuwZZM1+Tmk1FNd58NeOP2T66a7yWaccO/WovN/JIVjqENCfiwQzbxN+5GyuSKgDE9Dvp2TUDwCNaYoi3GpSFLO33Jjcd1MiT36lypWHoUdc4SMQJJgyvC8iMr9vk2gd7B6TZTPC5iOu76qY7XQlHxN36fq7NmmjdFWyWfNxiXVzad7J8KaWd2miy1gC3PAHyXNDt7otiawu4hrZCflE+vOP46rUaKv3BJmEViFCzG/6+q/BQY+VXFr35IuvynE0g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
- dkim=pass header.d=memverge.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=LYbk+yy/EM4kGOh3uhQ7vHTmarYxoItI8j67XVEfhYs=;
- b=ZusvfRvTfEhz2LlNd86qlmQjyNOOa3jUMGzMhOSo+0CIZCqWYt6+KlEvrBtdVstKE3C7P/MeRNQP4TDmObANHtOPdQVk4CMRavbJaF/at+aJg32qL6AHfM/MT+Jny/QEpnw5ajFKpYxAd0zn9qR4wdnMlAgqH+FX8L2qby/yOu8=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=memverge.com;
-Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
- by PH0PR17MB4472.namprd17.prod.outlook.com (2603:10b6:510:15::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.25; Thu, 19 Jan
- 2023 22:13:46 +0000
-Received: from BN6PR17MB3121.namprd17.prod.outlook.com
- ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
- ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.5986.023; Thu, 19 Jan 2023
- 22:13:46 +0000
-Date: Thu, 19 Jan 2023 17:13:40 -0500
-From: Gregory Price <gregory.price@memverge.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: Gregory Price <gourry.memverge@gmail.com>, qemu-devel@nongnu.org,
-        linux-cxl@vger.kernel.org,
-        Alison Schofield <alison.schofield@intel.com>,
-        Davidlohr Bueso <dave@stgolabs.net>, a.manzanares@samsung.com,
-        hchkuo@avery-design.com.tw, cbrowy@avery-design.com,
-        ira.weiny@intel.com, dan.j.williams@intel.com
-Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
- and Persistent)
-Message-ID: <Y8nAlDYxCtC/vINL@memverge.com>
-References: <Y6CNcuIzUVmKL0SM@memverge.com>
- <20221219172502.00001338@Huawei.com>
- <Y6CloIiuruB/h7qp@memverge.com>
- <20221220153453.00000436@Huawei.com>
- <Y6IMoxKZOc7eUPCg@memverge.com>
- <20230103155629.00007466@Huawei.com>
- <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
- <20230103181524.00003e14@huawei.com>
- <Y8l6wYKstOB/iBzT@memverge.com>
- <20230119173112.00005acc@Huawei.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230119173112.00005acc@Huawei.com>
-X-ClientProxiedBy: BY3PR05CA0058.namprd05.prod.outlook.com
- (2603:10b6:a03:39b::33) To BN6PR17MB3121.namprd17.prod.outlook.com
- (2603:10b6:405:7c::19)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|PH0PR17MB4472:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2df4b8eb-a549-496d-a997-08dafa6a6ed8
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: Vn6rQa5NuQbjPS17SlR7ZNNKRnFE5+0dgLoD0VIBtwXVBinJm+bWKfUENS+C0jeMElp7Km5Ds8/zxwLEWq7IPSw13emVQ8/NSwF+IrE6rHPet+RxVSpQQlLZnX6Q/v5fIr2UHA5c3/Q0ya2KLv1ZfPtb/Gfr3p8mJlwN338Jy/n03byBvmRIwcWYfeJ2uP+DFr00n6RUOFvygRRTxXSE1chg+1aNkL4hjsRKKtvKMiDEw9cXczGX62LDTTK7rJmgkUgODAfNPYEvPHgsE46EijG6wTYZOtNK9yPkhWyhM5Ph+iN7M/DNKpTdv+SnBHx7woi9PjNP2kKcXZdUmmkGpL827/eDXkggB9vVVte7+QjW/heno/8ZiLp4HiXjZftzAUUyA+eHYiqKqIBSRh8qKGTz3LRGMP9DLAKWrKsGJXObRdnwakRxJ9OZxMCZwFsh5sBcUgZ7ix09OCOaFNh3QeKJ3jiv5YxDaa7p7s4X7ph81bOJU+9Lyrau7RCz8TljPlSDTQsQSysnKvEQCcAO+my/QJ6KwlGQLDqZa/JbG1W3W+5xWASEnPAbJCH6DHxs41oYu0dOmOZr3BoxfLdWHShc8ZbWIjGZIp7f0NDTyRwCrTgfPJoU44yA3Quzw9qGhu8XJBpMInMYZUIWnYujMg==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(346002)(136003)(366004)(396003)(376002)(39830400003)(451199015)(86362001)(5660300002)(7416002)(41300700001)(44832011)(8936002)(38100700002)(36756003)(6486002)(186003)(54906003)(478600001)(26005)(6666004)(6512007)(6506007)(316002)(6916009)(8676002)(66476007)(4326008)(66556008)(66946007)(2616005)(2906002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?FYaBFc7Tn40/CDVShj0Pjc4xBPoKa88CQCKEL9zdu80IV4ZcHUw5K/WFtStL?=
- =?us-ascii?Q?WW9UUG/4WMc9i16+GCeX8yenMbk6vsrCpKBFO54dC5UoeB7HO7kaOuuYrFcc?=
- =?us-ascii?Q?EmbXgnM/XZAWPv1eD9TKkUmNBTx6o79bodrnVGy7SbfuVucKglBCxHLX9xHh?=
- =?us-ascii?Q?aqU72PC4AzpEmdInn8C9cCMgL8V3AYi1ByvKw/VvgQSRwQFgvjmrGa+j7uxF?=
- =?us-ascii?Q?nPgDl2ypUpkoL2p7qHl+qbssqmxUE2JgyE7yR7SXXsTrm6s/8ypOZpadUTOB?=
- =?us-ascii?Q?cmV6KuxUcFksHIswhKgRZELkULcRM+ETW/EXto3JQBliSsF1xefGO6TN35Zb?=
- =?us-ascii?Q?9ihdNtOzXjH8a/xUTe2snDQp1Kdh0FLuEA+FRHZ1NUySJitVI+R4FJz7e96K?=
- =?us-ascii?Q?cIspQxYHRAvlb88ZBch1hF/vDqsMEZnRHVobpx68CcamFa2tPFCzIT1z5Suh?=
- =?us-ascii?Q?Sa8pFX/mblqcKfWQ5p6eHVDWUhAqopzUcR6QK6XxzzLgGdHi7nkoCEsl2CXN?=
- =?us-ascii?Q?UB+/f+I+h/HU2nQon0oH7rvP0ZPeQYbCDRF6/DnFAWZ/wKNVrmIUHfRhJD+g?=
- =?us-ascii?Q?yP+outt/h6HwYYSMOZ55glppHYOlGCG2AXoir5r065GjpoODhepHODNB4WYF?=
- =?us-ascii?Q?xb1rzTn/nZsFV6xHD5Zp+WOmpHx7Th2GxRoF+/kD5/ufhTyUHV833AcZOy0C?=
- =?us-ascii?Q?WExBjQhmmBbyuhS10LhvMW5wBJw5+PrSRjAbOFstpdOyMAyM+l+y89sLszx0?=
- =?us-ascii?Q?rIfz3EAhxfEaQNXaWhReQCU2/QRjWWddryk942L98QXhdpsj0sACnm0eZpEI?=
- =?us-ascii?Q?OLTFELdQJfVkNNS1zGqbZ8abNG1V2CaLBNntPUNHkLdU8ObOstbPNLLIhc2H?=
- =?us-ascii?Q?PN/ajqhH8vl3+Lk3u6ti2UQmo+rVcSCwDtyq6Yg+TIAiLqMzrgzB4DgKck6h?=
- =?us-ascii?Q?DYLk4InY82JYFmyT2fSME4COD4wotDfjtlIYoJsyp33z7UTm/y1krozcLegW?=
- =?us-ascii?Q?53iphQAEbXlQY2oLCJZ4kl4SR/M/QQPiUEDlrsdoG3Ngxss3fsIxO4iurCMS?=
- =?us-ascii?Q?umrqYjo2UEnezYxjNxT+8Y8MP9w8Ai0aC5GUPl+Z/5q0Hnk7vtS40hR/87ME?=
- =?us-ascii?Q?cUi7Hk9SfrDYJmaqQRQl8fgBwDjYhpOrow5kURkOKBrEPrYwOAijDDhex9tu?=
- =?us-ascii?Q?8J3/vGOQ5vNtU+cs4T/kPjVqYr+N9uW2y3gO64F4Je04UVt2J+7Ud7sDLHhQ?=
- =?us-ascii?Q?aZl34ScVvdrpQv3yJNdNjuzLjog7vrubX6wjLSdr8x3OUzv7yhgNHZsbzjG5?=
- =?us-ascii?Q?oT87SasrwoxacxXyXDRvD5CGhHuMGMs6cWYPgRAh+26mvFTKzX98V0Rw75SX?=
- =?us-ascii?Q?risZY1K+oN1AOW2GEfjsfutWPIF2nzQAoO8LzBsO06C2xVa7BdGUIzu1ewjW?=
- =?us-ascii?Q?ZeFLa+bqN3uVhAzgrCj/eI7Ow1QdyssHc357saA6u5UaaleALkotQDKrdqiA?=
- =?us-ascii?Q?KBdL1IpICxCU3xkl2yfUwwfLrtEy4aSqywI9b5YExtnRJYT6F6UJMp7pVvpH?=
- =?us-ascii?Q?afnCCPHS53t0Ca3RjQMCKuEY5OzNN2URhwtVA6NayYD8lOir5mMmtiGEY6YV?=
- =?us-ascii?Q?Hw=3D=3D?=
-X-OriginatorOrg: memverge.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2df4b8eb-a549-496d-a997-08dafa6a6ed8
-X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jan 2023 22:13:46.2016
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 3enZPVUBF4R0fd4n64IuWPfDXgwe+aTVcXjtLSj1X9lrxbrnQYeI5lz3olHhAkob4W3em6+EFKPraBtAfyzDKjC4sDC0AdzA01Tt547R4U0=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR17MB4472
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Thu, Jan 19, 2023 at 05:31:12PM +0000, Jonathan Cameron wrote:
-> On Thu, 19 Jan 2023 12:15:45 -0500
-> Gregory Price <gregory.price@memverge.com> wrote:
-> 
-> > Found a bug, not sure how we missed this, probably happed with rebasing
-> > and some fixups. We're presently reporting the volatile region as
-> > non-volatile, 1 line patch.
-> > 
-> > Jonathan do you want a separate patch shipped or would you rather just
-> > apply a fixup to the commit in your current branch?
-> I'll fix up as I'd only squash the patch in anyway.
-> 
-> If tomorrow is slightly less crazy busy than today I'll push out a new
-> tree with this and the pass through decoders support RFC
-> (I'll post that to the lists as well)
-> 
-> Jonathan
-> 
-
-Aye aye! 
-
-One other change to consider: the .EFI_memory_type_attr right now is set
-to RESERVED.  Should this field actually be EFI_MEMORY_SP? Or is there a
-reason for explicitly Reserved?
-
-0: EfiConventionalMemory
-1: EfiConventionalMemory w/ EFI_MEMORY_SP Attribute
-2: EfiReservedMemoryType
-
-I remember reading a while back that the intended marking is
-special-purpose rather than reserved, but i'm hitting my wall on
-knowledge.  
-
-Dan may know, but I couldn't divine the correct setting from the kernel
-(obviously this is EFI level code, so i didn't expect to).
-
-
-
-One other thing that I am noticing:  When a CFMW is registered, an
-nvdimm_bridge device becomes present in /sys/bus/cxl/devices -
-regardless of whether the type3 device is persistent or volatile.
-
-This makes me believe we aren't setting something up correctly in the
-CDAT or something, but other than the below changes everything else
-looks correct.  This could imply a kernel driver bug, but i've been
-validating against real hardware and this behavior is not seen, even
-with functional CXL memory expander devices (which the BIOS obviously
-has a hand in setting up).
-
-I started validating the DVSECs, but likewise i didn't see any
-indication of error either.
-
-
-
-diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
-index 919cdf141e..4daa0cf0f6 100644
---- a/hw/mem/cxl_type3.c
-+++ b/hw/mem/cxl_type3.c
-@@ -132,8 +132,9 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
-             .length = sizeof(*dsemts),
-         },
-         .DSMAS_handle = dsmad_handle,
--        /* Reserved - the non volatile from DSMAS matters */
--        .EFI_memory_type_attr = 2,
-+        /* Reserved if NV - the non volatile from DSMAS matters
-+         * otherwise label this EFI_MEMORY_SP (special purpose) */
-+        .EFI_memory_type_attr = is_pmem ? 2 : 1,
-         .DPA_offset = 0,
-         .DPA_length = int128_get64(mr->size),
-     };
-@@ -187,7 +188,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
-     /* Now fill them in */
-     if (volatile_mr) {
-         rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
--                                           true, 0);
-+                                           false, 0);
-         if (rc < 0) {
-             return rc;
-         }
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8046C05027
-	for <linux-cxl@archiver.kernel.org>; Fri, 20 Jan 2023 10:59:57 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229560AbjATK75 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 20 Jan 2023 05:59:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59978 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230070AbjATK74 (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 20 Jan 2023 05:59:56 -0500
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96526CDC3
-        for <linux-cxl@vger.kernel.org>; Fri, 20 Jan 2023 02:59:54 -0800 (PST)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4NyxHY6vx3z688Kq;
-        Fri, 20 Jan 2023 18:55:53 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Fri, 20 Jan
- 2023 10:59:51 +0000
-Date: Fri, 20 Jan 2023 10:59:50 +0000
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Gregory Price <gregory.price@memverge.com>
-CC: Gregory Price <gourry.memverge@gmail.com>, <qemu-devel@nongnu.org>,
-        <linux-cxl@vger.kernel.org>,
-        Alison Schofield <alison.schofield@intel.com>,
-        Davidlohr Bueso <dave@stgolabs.net>,
-        <a.manzanares@samsung.com>, <hchkuo@avery-design.com.tw>,
-        <cbrowy@avery-design.com>, <ira.weiny@intel.com>,
-        <dan.j.williams@intel.com>
-Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
- and Persistent)
-Message-ID: <20230120105950.00004d27@Huawei.com>
-In-Reply-To: <Y8nAlDYxCtC/vINL@memverge.com>
-References: <Y6CNcuIzUVmKL0SM@memverge.com>
-        <20221219172502.00001338@Huawei.com>
-        <Y6CloIiuruB/h7qp@memverge.com>
-        <20221220153453.00000436@Huawei.com>
-        <Y6IMoxKZOc7eUPCg@memverge.com>
-        <20230103155629.00007466@Huawei.com>
-        <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
-        <20230103181524.00003e14@huawei.com>
-        <Y8l6wYKstOB/iBzT@memverge.com>
-        <20230119173112.00005acc@Huawei.com>
-        <Y8nAlDYxCtC/vINL@memverge.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Thu, 19 Jan 2023 17:13:40 -0500
-Gregory Price <gregory.price@memverge.com> wrote:
-
-> On Thu, Jan 19, 2023 at 05:31:12PM +0000, Jonathan Cameron wrote:
-> > On Thu, 19 Jan 2023 12:15:45 -0500
-> > Gregory Price <gregory.price@memverge.com> wrote:
-> >   
-> > > Found a bug, not sure how we missed this, probably happed with rebasing
-> > > and some fixups. We're presently reporting the volatile region as
-> > > non-volatile, 1 line patch.
-> > > 
-> > > Jonathan do you want a separate patch shipped or would you rather just
-> > > apply a fixup to the commit in your current branch?  
-> > I'll fix up as I'd only squash the patch in anyway.
-> > 
-> > If tomorrow is slightly less crazy busy than today I'll push out a new
-> > tree with this and the pass through decoders support RFC
-> > (I'll post that to the lists as well)
-> > 
-> > Jonathan
-> >   
-> 
-> Aye aye! 
-> 
-> One other change to consider: the .EFI_memory_type_attr right now is set
-> to RESERVED.  Should this field actually be EFI_MEMORY_SP? Or is there a
-> reason for explicitly Reserved?
-> 
-> 0: EfiConventionalMemory
-> 1: EfiConventionalMemory w/ EFI_MEMORY_SP Attribute
-> 2: EfiReservedMemoryType
-> 
-> I remember reading a while back that the intended marking is
-> special-purpose rather than reserved, but i'm hitting my wall on
-> knowledge.  
-> 
-> Dan may know, but I couldn't divine the correct setting from the kernel
-> (obviously this is EFI level code, so i didn't expect to).
-
-Yes, would be better to report as EfiConventionalMemory + SP
-Shouldn't hugely matter from practical point of view though (I haven't
-checked) as both mean driver managed and this is more about
-policy than anything else.
-
-> 
-> 
-> 
-> One other thing that I am noticing:  When a CFMW is registered, an
-> nvdimm_bridge device becomes present in /sys/bus/cxl/devices -
-> regardless of whether the type3 device is persistent or volatile.
-> 
-
-That's one for Dan.  Key here is I don't think anyone is claiming the
-kernel code yet supports 'hot plug / cold plug' of volatile type 3
-devices.  I expect a non trivial amount of work to enable that
-simply because it hasn't previously been of interest.
-
-> This makes me believe we aren't setting something up correctly in the
-> CDAT or something, but other than the below changes everything else
-> looks correct.  This could imply a kernel driver bug, but i've been
-> validating against real hardware and this behavior is not seen, even
-> with functional CXL memory expander devices (which the BIOS obviously
-> has a hand in setting up).
-> 
-> I started validating the DVSECs, but likewise i didn't see any
-> indication of error either.
-> 
-> 
-> 
-> diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
-> index 919cdf141e..4daa0cf0f6 100644
-> --- a/hw/mem/cxl_type3.c
-> +++ b/hw/mem/cxl_type3.c
-> @@ -132,8 +132,9 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
->              .length = sizeof(*dsemts),
->          },
->          .DSMAS_handle = dsmad_handle,
-> -        /* Reserved - the non volatile from DSMAS matters */
-> -        .EFI_memory_type_attr = 2,
-> +        /* Reserved if NV - the non volatile from DSMAS matters
-> +         * otherwise label this EFI_MEMORY_SP (special purpose) */
-> +        .EFI_memory_type_attr = is_pmem ? 2 : 1,
->          .DPA_offset = 0,
->          .DPA_length = int128_get64(mr->size),
->      };
-> @@ -187,7 +188,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
->      /* Now fill them in */
->      if (volatile_mr) {
->          rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
-> -                                           true, 0);
-> +                                           false, 0);
->          if (rc < 0) {
->              return rc;
->          }
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
@@ -6159,5 +5377,787 @@ index c54f18e76b..e59ba22387 100644
  {
 -- 
 2.37.3
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DD69C3DA7D
+	for <linux-cxl@archiver.kernel.org>; Tue,  3 Jan 2023 18:15:31 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S238652AbjACSPa (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Tue, 3 Jan 2023 13:15:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37610 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238550AbjACSP3 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Tue, 3 Jan 2023 13:15:29 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF2642185
+        for <linux-cxl@vger.kernel.org>; Tue,  3 Jan 2023 10:15:27 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Nmgl91x61z686w8;
+        Wed,  4 Jan 2023 02:10:45 +0800 (CST)
+Received: from localhost (10.122.247.231) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Tue, 3 Jan
+ 2023 18:15:25 +0000
+Date: Tue, 3 Jan 2023 18:15:24 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: Gregory Price <gourry.memverge@gmail.com>
+CC: Gregory Price <gregory.price@memverge.com>,
+        <qemu-devel@nongnu.org>, <linux-cxl@vger.kernel.org>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Davidlohr Bueso <dave@stgolabs.net>,
+        <a.manzanares@samsung.com>, Ben Widawsky <bwidawsk@kernel.org>,
+        <hchkuo@avery-design.com.tw>, <cbrowy@avery-design.com>,
+        <ira.weiny@intel.com>
+Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230103181524.00003e14@huawei.com>
+In-Reply-To: <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
+References: <20221128150157.97724-1-gregory.price@memverge.com>
+        <20221128150157.97724-4-gregory.price@memverge.com>
+        <20221219124211.000032b7@Huawei.com>
+        <Y6CNcuIzUVmKL0SM@memverge.com>
+        <20221219172502.00001338@Huawei.com>
+        <Y6CloIiuruB/h7qp@memverge.com>
+        <20221220153453.00000436@Huawei.com>
+        <Y6IMoxKZOc7eUPCg@memverge.com>
+        <20230103155629.00007466@Huawei.com>
+        <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
+Organization: Huawei Technologies R&D (UK) Ltd.
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml500002.china.huawei.com (7.191.160.78) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Tue, 3 Jan 2023 11:02:31 -0500
+Gregory Price <gourry.memverge@gmail.com> wrote:
+
+> The fine grained control would be a precursor to an emulated pooling
+> device.  If you can demonstrate it with a singleton attached device, you
+> could just implement an exclusivity table in a shared file, and set the
+> shared memory to a file backend as well.  Boom, shared memory pool across
+> qemu instances.
+
+For Dynamic capacity based pooling I agree, but a lot of work is needed to make that
+function correctly.  The partitioning support is a much nearer term target and
+there is no real need for them to look similar - on kernel side of things I'm
+not yet convinced it's even a sensible route to make them look similar as DCD
+is far less constrained than partitioning and expected usecases are probably
+entirely different.
+
+Hotplug based pooling (CXL 2.0 approach) is much simpler in OS because in that
+case we always get full blown hotplug events.
+
+Whilst I agree that pooling is interesting to emulate, my preference for initial
+case would be moving between virtual PCIe heirarchies attached to different
+root ports / host bridges on a single host.  That may be simpler to get going / test
+than multiple hosts.
+
+Right now I'd just like a static device with mixture of pmem / volatile plus 2+
+HDM decoders and kernel support for that.
+
+Jonathan
+
+> 
+> On Tue, Jan 3, 2023, 10:56 AM Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> wrote:
+> 
+> > On Tue, 20 Dec 2022 14:27:31 -0500
+> > Gregory Price <gregory.price@memverge.com> wrote:
+> >  
+> > > On Tue, Dec 20, 2022 at 03:34:53PM +0000, Jonathan Cameron wrote:  
+> > > > > However I don't think this is successful in creating the dax devices,
+> > > > > and therefore the reconfiguring into ram.  
+> > > >
+> > > > Sure. I only bothered testing the it in some dax modes rather than via  
+> > kmem.  
+> > > > It 'should' work but more testing needed there.
+> > > >
+> > > > However as you've noted, that only applies to the pmem regions at the  
+> > moment.  
+> > > > I wondered if you'd scripted the HDM decoder setup etc for test  
+> > purposes  
+> > > > (so what the driver will do). Alternative to that would be enabling  
+> > the driver  
+> > > > support. Not sure if anyone is looking at that yet. Final alternative  
+> > would  
+> > > > be to port the existing EDK2 based support to work on QEMU.  All non  
+> > trivial  
+> > > > jobs so may take a while,
+> > > >
+> > > > Jonathan  
+> > >
+> > > Also, I'm relatively new to this corner of the kernel (mm, regions, dax,
+> > > etc), so i need to spend a week or two with uninterrupted tinkering with
+> > > how adding new memory regions from these devices is actually "supposed
+> > > to work" in a dynamic-capacity world.
+> > >
+> > > At least in theory, the partitioning of persistent and volatile memory
+> > > regions on one of these type-3 devices should end up looking a bit like
+> > > dynamic capacity when doing runtime reconfiguring.
+> > >
+> > > For example, considering
+> > >
+> > > Device(512mb PMEM, 512 VMEM), I'd want, at least i think
+> > >
+> > > CMFW-Volatile:    max window size(1024mb) - Numa 2
+> > > CMFW-Persistent:  max window size(512mb)  - Numa 3
+> > >
+> > > Then we'd need the kernel support for
+> > >
+> > > 1) Online 2x256mb volatile regions in Numa 2
+> > > 2) Online 2x256mb persistent regions in Numa 3
+> > > 3) Offline persistent region (256mb:512mb)
+> > > 4) Reconfigure device to 256Pmem/768Volatile
+> > >    a) change decoders in device accordingly
+> > > 5) Online 1x256mb volatile region in Numa 2
+> > >
+> > > The question is whether you can do this without offlining the other
+> > > adjacent regions.  I just don't know enough about the region subsystem
+> > > to say what is "correct" behavior here.  
+> >
+> > Whilst you probably 'can' do fine grained offline / online (to some
+> > degree anyway) I'm not sure if people consider it an important
+> > usecase. If decoder reprogramming is involved things will get very fiddly
+> > so at least in first instance I'd advocate just ripping it all down and
+> > building up again.  Or in the simple case, just block attempts to
+> > reconfigure
+> > at the partitioning if either side is in use.
+> >  
+> > >
+> > > On the device side, I need to go look at the mailbox commands to go
+> > > about implementing the reconfiguration / decoder reprogramming.
+> > >
+> > > I guess the "decoder" reprogramming is essentially changing the
+> > > read/write commands to adjust based on v/pmem_active vs v/pmem_size?  
+> >
+> > Yup.  We also need multiple decoder support in general in QEMU.
+> > It's not that high on my list as my main focus this cycle is going
+> > to be on reducing the out of tree patch set by upstreaming stuff.
+> >  
+> > >
+> > > I suppose I can look at this chunk next.  
+> >
+> > Great.
+> >
+> > Jonathan
+> >
+> >
+> >  
+> 
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBE2EC00A5A
+	for <linux-cxl@archiver.kernel.org>; Thu, 19 Jan 2023 17:15:58 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229634AbjASRP6 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 19 Jan 2023 12:15:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58284 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229771AbjASRP5 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 19 Jan 2023 12:15:57 -0500
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2086.outbound.protection.outlook.com [40.107.92.86])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DDEA8C910
+        for <linux-cxl@vger.kernel.org>; Thu, 19 Jan 2023 09:15:54 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=C50QWXXdDqZf4V/2elmWb/D8qzGtJYhcr88G+pY9jdNEXD6K4jGk/yGn3dtuKoi1bUlaQa+OxFYf1vCTYDOX4PlTSWBRzq4o3Jze8evMEgIMKR7payaCdxZ/aFKuLzs0bq/bw1kt9xV3o88EA4d/Ocs83vT29k1r1HCrV2UtZEKpWK1+qq2Hg4DEJVE+CdHtC4V+Vq6nuGJbLZ81lK6JXegKEIfHM6/D6rBcmHt2/6md/rrx7Btm2kdyz/67IEdbhEf2P8Fmnt0x7TjmuM9NT6zJH/P4e4BZO0Vurxjf2Pe5okYhDGGe/knYURgVHmvU/mUcdZpFFc12z80BQ6/tUQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7TAZtZYQC2r7RLC7OZPxxPxT7UGIqWQGpZX0Rxxsu0E=;
+ b=NhazAtSojx9WcAAPAQ6xNXloFPURbwJR6h1xNYOE07MXFARGynfyrti6fEY4+ingcj20gmMI1XrFKAN8tYFefDUO/xiHbVe4B5qMd+cmt19FotnWb8XAjXrDysBGwZwsbgfC9baog5vmt3eATmPRGzm4YmPkMWkwk6O5sgmlulJ/txP2LMLrNWCaTZ4gOsR13oQrGvf9JkB6yn/y5N/Q5XqGUtkPlJEJya0sGZkU9eitjTrT/y2sddB1qymSI28K1NCmPy+0A2X2jshS1h4+qWMZB5CFe7xPyY2gJmis60zdyCaTH8hOAeyuNHNPCyOYPK3XFevWoLwPLoJ7dDp5sw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7TAZtZYQC2r7RLC7OZPxxPxT7UGIqWQGpZX0Rxxsu0E=;
+ b=Wb0/TumvwBKlbA31OwgXTfS2q19MHxEFqTLkJmYAI2LJYvnY1ADzwrrM7h8dv0m2zU9gM0tIPgdkB5MakGcx1WQuAJXu+pAbdRVuC55oK9QpfroHwpP7gk3NfOdMb/cs7i1sP64FvZuKuphXcIXHRHUk79Q9+jUiR/Qo+cI8VCk=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by BY5PR17MB3890.namprd17.prod.outlook.com (2603:10b6:a03:235::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.13; Thu, 19 Jan
+ 2023 17:15:51 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.5986.023; Thu, 19 Jan 2023
+ 17:15:51 +0000
+Date: Thu, 19 Jan 2023 12:15:45 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Gregory Price <gourry.memverge@gmail.com>, qemu-devel@nongnu.org,
+        linux-cxl@vger.kernel.org,
+        Alison Schofield <alison.schofield@intel.com>,
+        Davidlohr Bueso <dave@stgolabs.net>, a.manzanares@samsung.com,
+        Ben Widawsky <bwidawsk@kernel.org>, hchkuo@avery-design.com.tw,
+        cbrowy@avery-design.com, ira.weiny@intel.com
+Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <Y8l6wYKstOB/iBzT@memverge.com>
+References: <20221128150157.97724-4-gregory.price@memverge.com>
+ <20221219124211.000032b7@Huawei.com>
+ <Y6CNcuIzUVmKL0SM@memverge.com>
+ <20221219172502.00001338@Huawei.com>
+ <Y6CloIiuruB/h7qp@memverge.com>
+ <20221220153453.00000436@Huawei.com>
+ <Y6IMoxKZOc7eUPCg@memverge.com>
+ <20230103155629.00007466@Huawei.com>
+ <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
+ <20230103181524.00003e14@huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230103181524.00003e14@huawei.com>
+X-ClientProxiedBy: SJ0PR13CA0115.namprd13.prod.outlook.com
+ (2603:10b6:a03:2c5::30) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|BY5PR17MB3890:EE_
+X-MS-Office365-Filtering-Correlation-Id: 39f97610-dd2e-4cbc-0791-08dafa40d07b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: zQNuck21yp5UlZyO22fVZtepbHA5BiPi64F/2sZitFk3B9IRHPQ2KQe85KjLzM9ijdirUUQ5zsFIYcJErB5cUgoDJoPKXxm3eGBai2uG1A8j3YRkOz5sSyk5QaMXF3E5SnLnFTkcgEmD8LMRx6JbdboCg6bRdlNoyrBU5aN0zhs54RpxhioIilBj2dpWqzaB9AvZrM6SdaB4IRy+9D4qPgVslatsYIt1IzSArU4P5F/hS5O9kCae3MeC+4i4QQ6/ebB56GSUOI0P/+jnR8F9JiSAFHbxun3KzkIXZHmu1/HPE1LJ43/e6BexmsfZ08a9G5dgnQnjk4PS7fGw+ydUSQOQvNyE73PPhq77d69ag9xfCilbq4dHHgpDmIzPFAslC+3cfehKzt3xlxQFP4lmSSljb5hXSY3d2JzwvrmG7KJIaXrY9er+5p1anTxBa8uXwsxOx5VFB9Btu/JzSBRRNuivpFxr/Gq4Ajkwqo0lShU2sO02B/ANRaUV9LvOIL+ngY0cbSwMfqsHWsGbB8Fpgnnpgk0hxqAbLGQTv2HFT75nC7cS8b2/2rgFQCyKnv9Ym3pBBOIisCfCEVm+m3yU4Hpv4jv8y3LAqW4+3bY1Fm74TTzeECRngLsDjn6oBypUkY9LTnCh75tz6AUbedlFo9uMmmm+tZTwfhynUJvPa7nvi1K1ASeAkrh/Ibc8o6h8
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(376002)(366004)(346002)(136003)(39830400003)(396003)(451199015)(6486002)(26005)(66556008)(478600001)(41300700001)(6512007)(186003)(86362001)(316002)(54906003)(2616005)(38100700002)(66946007)(66476007)(6506007)(36756003)(2906002)(5660300002)(6666004)(7416002)(44832011)(4326008)(4744005)(6916009)(8936002)(8676002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?gM7rRZqp0ESSFxMqfxqWjBOb2Em98RlWl1RQW/SMR6nZrzipnCzsnh1uWr+j?=
+ =?us-ascii?Q?jT05bvL6pDdpm3hjtoFwdxcOGN37x2PIBu3koMi3qs4o7ru94ITlMJQa6hWo?=
+ =?us-ascii?Q?yhg4gXPKcTu7n4cmsrvtc6Uw6RFIPt1P2mI6xbQbqwgxyqrQHUuCmeUT/DbT?=
+ =?us-ascii?Q?Su4TWgfjs5RozkLUdrOKcSbMA1kr0X4Q/6X506KXEe+WyrNNkmr6oytTXEy8?=
+ =?us-ascii?Q?ZRgXAiVelif92xIjZn/s/p6v4c3A6NPowqJLLFX9yEMMDfp5WA7SL5xzNH2W?=
+ =?us-ascii?Q?zIoj3ZpvFz4LTPAKzLG7Py68kNTExb8U27BJnrukqG8kdGFvyHYkqMoK/jCI?=
+ =?us-ascii?Q?Gt1DbzfG38SMUEcRxSSQOaUcGgbBwAkHNdMtaIkfhgoQYe1XEYVobruzrCh1?=
+ =?us-ascii?Q?YMbeGnnHmaHSbGmPcbt7Snra29GBnlQ4DM6RrvlTo3tUrFNnBICy3PKvmzVT?=
+ =?us-ascii?Q?2njUrnscX/Dti+c5kFLUdecYuv6J2PgmgbKCgTL/yeRslWr5JxrBqxxqGVEz?=
+ =?us-ascii?Q?MCSkG5DLUMuEHI4chdRMD15Z9sZ/As1CEDmqSJnQ5/2IXGKh+zF2fKIyYJu4?=
+ =?us-ascii?Q?hk63kQbqa2Cr0answ97c/T6Csz6wmU528W7mfAOd97O+Cu6B1dEZ+eGmyImq?=
+ =?us-ascii?Q?mpOn4pj4TUHXWM5DyJRodUtIQC5mdBQKecggtDk9CVcQrRAz71rHNAXBfoOy?=
+ =?us-ascii?Q?6t2NFq+q7YnY1cATi5zOPBl7ZVp1KAF3rwcsTg7alGHaOE4qoEzseZLqDH2T?=
+ =?us-ascii?Q?a+x/QTYFlXaT8frp0TvkqySMxDqmkdByVlB0aWcvNL+OjVDxcPfVkS1B72cC?=
+ =?us-ascii?Q?9D/CFlTbTVEj/HYthpFw9oBLxsbOYoAvtn3gsXvEbe7/+E9T7GNvZiva9AN4?=
+ =?us-ascii?Q?LSIWEw4mYtxSP4Snb1aJVStU9B27a0l9XIIZHFhPzFxAHKjJmcl22cAzneMy?=
+ =?us-ascii?Q?rZ5hPRN6pQSCAjZlpFPV/oIXjAFPk4j6Ez3Z6Xhl5HBEUsWGGsk9GYv1jlZs?=
+ =?us-ascii?Q?hApMKYnkpP/kK6vS8g74Ws8s1ArmeS2VnDX69ij2QFkd8wlh9lZXBRx9Irh8?=
+ =?us-ascii?Q?w/YbwBT7PW0y6XodL/U3/e6jPDC90qIHJEPsc2Bw0Axhe5PkMDLYwAibQJcz?=
+ =?us-ascii?Q?Xj9DeXaDhxumqeD0OOTOsXXg0ixtqzFpyoSNtiNNaCR8goLQUnxgEdYIgwrQ?=
+ =?us-ascii?Q?MLG+v65Ztc2cmQwqHx9FokfnFOKw6/Fca7UIDLgHx/9HWzyu7qHXYIRL6N49?=
+ =?us-ascii?Q?4a8KM7JmbckwOh+4v9yHCv2cV2A2rleMaufkZs6Gbxl7gIF63e+0M01NhGlI?=
+ =?us-ascii?Q?tPIouhA8SnIDvrzhCjCLjmFuGosdcKtgSsg59lh8VJmtitUIMfnHO9yaQSEb?=
+ =?us-ascii?Q?eja7LHC1iK9MRi7N74GDHgnj1GWfkOGbPE4MJ3DX8dLm0r4iMVTw37CMN8d/?=
+ =?us-ascii?Q?TOg9AxsLBiXbHbASCFBG0ALUq8ssNALgMt7+xM89WL97q+F+Y96naFKMR7TL?=
+ =?us-ascii?Q?08XJA36nZoczg1Uu6raLeujhP4aEXiTGGKwissAnAfLPeseDyrojDDO88sy4?=
+ =?us-ascii?Q?ddDpbfraobCeAs4Bk1+tKaw5C+y//xlAeydb7LVB/zACd1btkP1pTWFotSEA?=
+ =?us-ascii?Q?ew=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 39f97610-dd2e-4cbc-0791-08dafa40d07b
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jan 2023 17:15:51.0014
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ULJ0i+Wd2DRY1Rg0AyoDWlKR+GGKdL13WqO8kCwQzv4EwC7+9mQuDkvu7qGpPZKjliavt1DhDwLgXaxHVaIiA+cMspeBgarksPD4KJabANw=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR17MB3890
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+
+Found a bug, not sure how we missed this, probably happed with rebasing
+and some fixups. We're presently reporting the volatile region as
+non-volatile, 1 line patch.
+
+Jonathan do you want a separate patch shipped or would you rather just
+apply a fixup to the commit in your current branch?
+
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index 919cdf141e..1c5168e2e4 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -187,7 +187,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+     /* Now fill them in */
+     if (volatile_mr) {
+         rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
+-                                           true, 0);
++                                           false, 0);
+         if (rc < 0) {
+             return rc;
+         }
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE3B7C004D4
+	for <linux-cxl@archiver.kernel.org>; Thu, 19 Jan 2023 17:31:18 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229568AbjASRbS (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 19 Jan 2023 12:31:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40558 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229446AbjASRbR (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 19 Jan 2023 12:31:17 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE7548693
+        for <linux-cxl@vger.kernel.org>; Thu, 19 Jan 2023 09:31:15 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4NyV1c1Mflz6J79N;
+        Fri, 20 Jan 2023 01:27:16 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 19 Jan
+ 2023 17:31:13 +0000
+Date: Thu, 19 Jan 2023 17:31:12 +0000
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Gregory Price <gregory.price@memverge.com>
+CC: Gregory Price <gourry.memverge@gmail.com>, <qemu-devel@nongnu.org>,
+        <linux-cxl@vger.kernel.org>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Davidlohr Bueso <dave@stgolabs.net>,
+        <a.manzanares@samsung.com>, "Ben Widawsky" <bwidawsk@kernel.org>,
+        <hchkuo@avery-design.com.tw>, <cbrowy@avery-design.com>,
+        <ira.weiny@intel.com>
+Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230119173112.00005acc@Huawei.com>
+In-Reply-To: <Y8l6wYKstOB/iBzT@memverge.com>
+References: <20221128150157.97724-4-gregory.price@memverge.com>
+        <20221219124211.000032b7@Huawei.com>
+        <Y6CNcuIzUVmKL0SM@memverge.com>
+        <20221219172502.00001338@Huawei.com>
+        <Y6CloIiuruB/h7qp@memverge.com>
+        <20221220153453.00000436@Huawei.com>
+        <Y6IMoxKZOc7eUPCg@memverge.com>
+        <20230103155629.00007466@Huawei.com>
+        <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
+        <20230103181524.00003e14@huawei.com>
+        <Y8l6wYKstOB/iBzT@memverge.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Thu, 19 Jan 2023 12:15:45 -0500
+Gregory Price <gregory.price@memverge.com> wrote:
+
+> Found a bug, not sure how we missed this, probably happed with rebasing
+> and some fixups. We're presently reporting the volatile region as
+> non-volatile, 1 line patch.
+> 
+> Jonathan do you want a separate patch shipped or would you rather just
+> apply a fixup to the commit in your current branch?
+I'll fix up as I'd only squash the patch in anyway.
+
+If tomorrow is slightly less crazy busy than today I'll push out a new
+tree with this and the pass through decoders support RFC
+(I'll post that to the lists as well)
+
+Jonathan
+
+> 
+> diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+> index 919cdf141e..1c5168e2e4 100644
+> --- a/hw/mem/cxl_type3.c
+> +++ b/hw/mem/cxl_type3.c
+> @@ -187,7 +187,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+>      /* Now fill them in */
+>      if (volatile_mr) {
+>          rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
+> -                                           true, 0);
+> +                                           false, 0);
+>          if (rc < 0) {
+>              return rc;
+>          }
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CE87C004D4
+	for <linux-cxl@archiver.kernel.org>; Thu, 19 Jan 2023 22:30:47 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229696AbjASWap (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Thu, 19 Jan 2023 17:30:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60966 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230331AbjASWaG (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Thu, 19 Jan 2023 17:30:06 -0500
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2040.outbound.protection.outlook.com [40.107.236.40])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B8A5A731D
+        for <linux-cxl@vger.kernel.org>; Thu, 19 Jan 2023 14:13:48 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=LaIGXbL2WjWV+KrOoWpii4cee7nXBR2Rp9JJId+vXIdHIB2Vz7p0XZH6rden6wsXfOfEa05PpgFCW3MUQamkbnm82sWqhuv8CKK0hLyEAtyWS8OR0vNEq3gST8QXJwS09YDUO5CyJqE4kGkBg1vn1zOBgcESejE2NmmQ4bl6GIn0guOsVcanGiEEQBDNXQ7+qRQRSPyZrldIShb//4vaGfDfVOxZvlLlP666VmHYWKccwTN5Eqd3Xy61u70pDJD20T4a/sMGNrN96EjfRFqCkc7LQ864UjCQP08bQU9d4FvRiBgKEF9gkmWgb1M5cXAlZJFTQJwnwPKB7+PsqhqTpg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LYbk+yy/EM4kGOh3uhQ7vHTmarYxoItI8j67XVEfhYs=;
+ b=lRNrWzuYmLz9Pptl/1ww9QvQoRhMeLJ2K0SkbG+fMAlgMZ76kPR94WulrmMfcbdkFCLGFs9OlpmaFH4C33E8LyuwZZM1+Tmk1FNd58NeOP2T66a7yWaccO/WovN/JIVjqENCfiwQzbxN+5GyuSKgDE9Dvp2TUDwCNaYoi3GpSFLO33Jjcd1MiT36lypWHoUdc4SMQJJgyvC8iMr9vk2gd7B6TZTPC5iOu76qY7XQlHxN36fq7NmmjdFWyWfNxiXVzad7J8KaWd2miy1gC3PAHyXNDt7otiawu4hrZCflE+vOP46rUaKv3BJmEViFCzG/6+q/BQY+VXFr35IuvynE0g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LYbk+yy/EM4kGOh3uhQ7vHTmarYxoItI8j67XVEfhYs=;
+ b=ZusvfRvTfEhz2LlNd86qlmQjyNOOa3jUMGzMhOSo+0CIZCqWYt6+KlEvrBtdVstKE3C7P/MeRNQP4TDmObANHtOPdQVk4CMRavbJaF/at+aJg32qL6AHfM/MT+Jny/QEpnw5ajFKpYxAd0zn9qR4wdnMlAgqH+FX8L2qby/yOu8=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by PH0PR17MB4472.namprd17.prod.outlook.com (2603:10b6:510:15::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.25; Thu, 19 Jan
+ 2023 22:13:46 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%4]) with mapi id 15.20.5986.023; Thu, 19 Jan 2023
+ 22:13:46 +0000
+Date: Thu, 19 Jan 2023 17:13:40 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Gregory Price <gourry.memverge@gmail.com>, qemu-devel@nongnu.org,
+        linux-cxl@vger.kernel.org,
+        Alison Schofield <alison.schofield@intel.com>,
+        Davidlohr Bueso <dave@stgolabs.net>, a.manzanares@samsung.com,
+        hchkuo@avery-design.com.tw, cbrowy@avery-design.com,
+        ira.weiny@intel.com, dan.j.williams@intel.com
+Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <Y8nAlDYxCtC/vINL@memverge.com>
+References: <Y6CNcuIzUVmKL0SM@memverge.com>
+ <20221219172502.00001338@Huawei.com>
+ <Y6CloIiuruB/h7qp@memverge.com>
+ <20221220153453.00000436@Huawei.com>
+ <Y6IMoxKZOc7eUPCg@memverge.com>
+ <20230103155629.00007466@Huawei.com>
+ <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
+ <20230103181524.00003e14@huawei.com>
+ <Y8l6wYKstOB/iBzT@memverge.com>
+ <20230119173112.00005acc@Huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230119173112.00005acc@Huawei.com>
+X-ClientProxiedBy: BY3PR05CA0058.namprd05.prod.outlook.com
+ (2603:10b6:a03:39b::33) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|PH0PR17MB4472:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2df4b8eb-a549-496d-a997-08dafa6a6ed8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: Vn6rQa5NuQbjPS17SlR7ZNNKRnFE5+0dgLoD0VIBtwXVBinJm+bWKfUENS+C0jeMElp7Km5Ds8/zxwLEWq7IPSw13emVQ8/NSwF+IrE6rHPet+RxVSpQQlLZnX6Q/v5fIr2UHA5c3/Q0ya2KLv1ZfPtb/Gfr3p8mJlwN338Jy/n03byBvmRIwcWYfeJ2uP+DFr00n6RUOFvygRRTxXSE1chg+1aNkL4hjsRKKtvKMiDEw9cXczGX62LDTTK7rJmgkUgODAfNPYEvPHgsE46EijG6wTYZOtNK9yPkhWyhM5Ph+iN7M/DNKpTdv+SnBHx7woi9PjNP2kKcXZdUmmkGpL827/eDXkggB9vVVte7+QjW/heno/8ZiLp4HiXjZftzAUUyA+eHYiqKqIBSRh8qKGTz3LRGMP9DLAKWrKsGJXObRdnwakRxJ9OZxMCZwFsh5sBcUgZ7ix09OCOaFNh3QeKJ3jiv5YxDaa7p7s4X7ph81bOJU+9Lyrau7RCz8TljPlSDTQsQSysnKvEQCcAO+my/QJ6KwlGQLDqZa/JbG1W3W+5xWASEnPAbJCH6DHxs41oYu0dOmOZr3BoxfLdWHShc8ZbWIjGZIp7f0NDTyRwCrTgfPJoU44yA3Quzw9qGhu8XJBpMInMYZUIWnYujMg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(346002)(136003)(366004)(396003)(376002)(39830400003)(451199015)(86362001)(5660300002)(7416002)(41300700001)(44832011)(8936002)(38100700002)(36756003)(6486002)(186003)(54906003)(478600001)(26005)(6666004)(6512007)(6506007)(316002)(6916009)(8676002)(66476007)(4326008)(66556008)(66946007)(2616005)(2906002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?FYaBFc7Tn40/CDVShj0Pjc4xBPoKa88CQCKEL9zdu80IV4ZcHUw5K/WFtStL?=
+ =?us-ascii?Q?WW9UUG/4WMc9i16+GCeX8yenMbk6vsrCpKBFO54dC5UoeB7HO7kaOuuYrFcc?=
+ =?us-ascii?Q?EmbXgnM/XZAWPv1eD9TKkUmNBTx6o79bodrnVGy7SbfuVucKglBCxHLX9xHh?=
+ =?us-ascii?Q?aqU72PC4AzpEmdInn8C9cCMgL8V3AYi1ByvKw/VvgQSRwQFgvjmrGa+j7uxF?=
+ =?us-ascii?Q?nPgDl2ypUpkoL2p7qHl+qbssqmxUE2JgyE7yR7SXXsTrm6s/8ypOZpadUTOB?=
+ =?us-ascii?Q?cmV6KuxUcFksHIswhKgRZELkULcRM+ETW/EXto3JQBliSsF1xefGO6TN35Zb?=
+ =?us-ascii?Q?9ihdNtOzXjH8a/xUTe2snDQp1Kdh0FLuEA+FRHZ1NUySJitVI+R4FJz7e96K?=
+ =?us-ascii?Q?cIspQxYHRAvlb88ZBch1hF/vDqsMEZnRHVobpx68CcamFa2tPFCzIT1z5Suh?=
+ =?us-ascii?Q?Sa8pFX/mblqcKfWQ5p6eHVDWUhAqopzUcR6QK6XxzzLgGdHi7nkoCEsl2CXN?=
+ =?us-ascii?Q?UB+/f+I+h/HU2nQon0oH7rvP0ZPeQYbCDRF6/DnFAWZ/wKNVrmIUHfRhJD+g?=
+ =?us-ascii?Q?yP+outt/h6HwYYSMOZ55glppHYOlGCG2AXoir5r065GjpoODhepHODNB4WYF?=
+ =?us-ascii?Q?xb1rzTn/nZsFV6xHD5Zp+WOmpHx7Th2GxRoF+/kD5/ufhTyUHV833AcZOy0C?=
+ =?us-ascii?Q?WExBjQhmmBbyuhS10LhvMW5wBJw5+PrSRjAbOFstpdOyMAyM+l+y89sLszx0?=
+ =?us-ascii?Q?rIfz3EAhxfEaQNXaWhReQCU2/QRjWWddryk942L98QXhdpsj0sACnm0eZpEI?=
+ =?us-ascii?Q?OLTFELdQJfVkNNS1zGqbZ8abNG1V2CaLBNntPUNHkLdU8ObOstbPNLLIhc2H?=
+ =?us-ascii?Q?PN/ajqhH8vl3+Lk3u6ti2UQmo+rVcSCwDtyq6Yg+TIAiLqMzrgzB4DgKck6h?=
+ =?us-ascii?Q?DYLk4InY82JYFmyT2fSME4COD4wotDfjtlIYoJsyp33z7UTm/y1krozcLegW?=
+ =?us-ascii?Q?53iphQAEbXlQY2oLCJZ4kl4SR/M/QQPiUEDlrsdoG3Ngxss3fsIxO4iurCMS?=
+ =?us-ascii?Q?umrqYjo2UEnezYxjNxT+8Y8MP9w8Ai0aC5GUPl+Z/5q0Hnk7vtS40hR/87ME?=
+ =?us-ascii?Q?cUi7Hk9SfrDYJmaqQRQl8fgBwDjYhpOrow5kURkOKBrEPrYwOAijDDhex9tu?=
+ =?us-ascii?Q?8J3/vGOQ5vNtU+cs4T/kPjVqYr+N9uW2y3gO64F4Je04UVt2J+7Ud7sDLHhQ?=
+ =?us-ascii?Q?aZl34ScVvdrpQv3yJNdNjuzLjog7vrubX6wjLSdr8x3OUzv7yhgNHZsbzjG5?=
+ =?us-ascii?Q?oT87SasrwoxacxXyXDRvD5CGhHuMGMs6cWYPgRAh+26mvFTKzX98V0Rw75SX?=
+ =?us-ascii?Q?risZY1K+oN1AOW2GEfjsfutWPIF2nzQAoO8LzBsO06C2xVa7BdGUIzu1ewjW?=
+ =?us-ascii?Q?ZeFLa+bqN3uVhAzgrCj/eI7Ow1QdyssHc357saA6u5UaaleALkotQDKrdqiA?=
+ =?us-ascii?Q?KBdL1IpICxCU3xkl2yfUwwfLrtEy4aSqywI9b5YExtnRJYT6F6UJMp7pVvpH?=
+ =?us-ascii?Q?afnCCPHS53t0Ca3RjQMCKuEY5OzNN2URhwtVA6NayYD8lOir5mMmtiGEY6YV?=
+ =?us-ascii?Q?Hw=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2df4b8eb-a549-496d-a997-08dafa6a6ed8
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jan 2023 22:13:46.2016
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3enZPVUBF4R0fd4n64IuWPfDXgwe+aTVcXjtLSj1X9lrxbrnQYeI5lz3olHhAkob4W3em6+EFKPraBtAfyzDKjC4sDC0AdzA01Tt547R4U0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR17MB4472
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Thu, Jan 19, 2023 at 05:31:12PM +0000, Jonathan Cameron wrote:
+> On Thu, 19 Jan 2023 12:15:45 -0500
+> Gregory Price <gregory.price@memverge.com> wrote:
+> 
+> > Found a bug, not sure how we missed this, probably happed with rebasing
+> > and some fixups. We're presently reporting the volatile region as
+> > non-volatile, 1 line patch.
+> > 
+> > Jonathan do you want a separate patch shipped or would you rather just
+> > apply a fixup to the commit in your current branch?
+> I'll fix up as I'd only squash the patch in anyway.
+> 
+> If tomorrow is slightly less crazy busy than today I'll push out a new
+> tree with this and the pass through decoders support RFC
+> (I'll post that to the lists as well)
+> 
+> Jonathan
+> 
+
+Aye aye! 
+
+One other change to consider: the .EFI_memory_type_attr right now is set
+to RESERVED.  Should this field actually be EFI_MEMORY_SP? Or is there a
+reason for explicitly Reserved?
+
+0: EfiConventionalMemory
+1: EfiConventionalMemory w/ EFI_MEMORY_SP Attribute
+2: EfiReservedMemoryType
+
+I remember reading a while back that the intended marking is
+special-purpose rather than reserved, but i'm hitting my wall on
+knowledge.  
+
+Dan may know, but I couldn't divine the correct setting from the kernel
+(obviously this is EFI level code, so i didn't expect to).
+
+
+
+One other thing that I am noticing:  When a CFMW is registered, an
+nvdimm_bridge device becomes present in /sys/bus/cxl/devices -
+regardless of whether the type3 device is persistent or volatile.
+
+This makes me believe we aren't setting something up correctly in the
+CDAT or something, but other than the below changes everything else
+looks correct.  This could imply a kernel driver bug, but i've been
+validating against real hardware and this behavior is not seen, even
+with functional CXL memory expander devices (which the BIOS obviously
+has a hand in setting up).
+
+I started validating the DVSECs, but likewise i didn't see any
+indication of error either.
+
+
+
+diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+index 919cdf141e..4daa0cf0f6 100644
+--- a/hw/mem/cxl_type3.c
++++ b/hw/mem/cxl_type3.c
+@@ -132,8 +132,9 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+             .length = sizeof(*dsemts),
+         },
+         .DSMAS_handle = dsmad_handle,
+-        /* Reserved - the non volatile from DSMAS matters */
+-        .EFI_memory_type_attr = 2,
++        /* Reserved if NV - the non volatile from DSMAS matters
++         * otherwise label this EFI_MEMORY_SP (special purpose) */
++        .EFI_memory_type_attr = is_pmem ? 2 : 1,
+         .DPA_offset = 0,
+         .DPA_length = int128_get64(mr->size),
+     };
+@@ -187,7 +188,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+     /* Now fill them in */
+     if (volatile_mr) {
+         rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
+-                                           true, 0);
++                                           false, 0);
+         if (rc < 0) {
+             return rc;
+         }
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8046C05027
+	for <linux-cxl@archiver.kernel.org>; Fri, 20 Jan 2023 10:59:57 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229560AbjATK75 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 20 Jan 2023 05:59:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59978 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230070AbjATK74 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 20 Jan 2023 05:59:56 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96526CDC3
+        for <linux-cxl@vger.kernel.org>; Fri, 20 Jan 2023 02:59:54 -0800 (PST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4NyxHY6vx3z688Kq;
+        Fri, 20 Jan 2023 18:55:53 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Fri, 20 Jan
+ 2023 10:59:51 +0000
+Date: Fri, 20 Jan 2023 10:59:50 +0000
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Gregory Price <gregory.price@memverge.com>
+CC: Gregory Price <gourry.memverge@gmail.com>, <qemu-devel@nongnu.org>,
+        <linux-cxl@vger.kernel.org>,
+        Alison Schofield <alison.schofield@intel.com>,
+        Davidlohr Bueso <dave@stgolabs.net>,
+        <a.manzanares@samsung.com>, <hchkuo@avery-design.com.tw>,
+        <cbrowy@avery-design.com>, <ira.weiny@intel.com>,
+        <dan.j.williams@intel.com>
+Subject: Re: [RFC v4 3/3] hw/cxl: Multi-Region CXL Type-3 Devices (Volatile
+ and Persistent)
+Message-ID: <20230120105950.00004d27@Huawei.com>
+In-Reply-To: <Y8nAlDYxCtC/vINL@memverge.com>
+References: <Y6CNcuIzUVmKL0SM@memverge.com>
+        <20221219172502.00001338@Huawei.com>
+        <Y6CloIiuruB/h7qp@memverge.com>
+        <20221220153453.00000436@Huawei.com>
+        <Y6IMoxKZOc7eUPCg@memverge.com>
+        <20230103155629.00007466@Huawei.com>
+        <CAD3UvdQ7nZab7Y+tbc1Ox-zqzse4C16dwv6qtOAgfe4dA6_crQ@mail.gmail.com>
+        <20230103181524.00003e14@huawei.com>
+        <Y8l6wYKstOB/iBzT@memverge.com>
+        <20230119173112.00005acc@Huawei.com>
+        <Y8nAlDYxCtC/vINL@memverge.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Thu, 19 Jan 2023 17:13:40 -0500
+Gregory Price <gregory.price@memverge.com> wrote:
+
+> On Thu, Jan 19, 2023 at 05:31:12PM +0000, Jonathan Cameron wrote:
+> > On Thu, 19 Jan 2023 12:15:45 -0500
+> > Gregory Price <gregory.price@memverge.com> wrote:
+> >   
+> > > Found a bug, not sure how we missed this, probably happed with rebasing
+> > > and some fixups. We're presently reporting the volatile region as
+> > > non-volatile, 1 line patch.
+> > > 
+> > > Jonathan do you want a separate patch shipped or would you rather just
+> > > apply a fixup to the commit in your current branch?  
+> > I'll fix up as I'd only squash the patch in anyway.
+> > 
+> > If tomorrow is slightly less crazy busy than today I'll push out a new
+> > tree with this and the pass through decoders support RFC
+> > (I'll post that to the lists as well)
+> > 
+> > Jonathan
+> >   
+> 
+> Aye aye! 
+> 
+> One other change to consider: the .EFI_memory_type_attr right now is set
+> to RESERVED.  Should this field actually be EFI_MEMORY_SP? Or is there a
+> reason for explicitly Reserved?
+> 
+> 0: EfiConventionalMemory
+> 1: EfiConventionalMemory w/ EFI_MEMORY_SP Attribute
+> 2: EfiReservedMemoryType
+> 
+> I remember reading a while back that the intended marking is
+> special-purpose rather than reserved, but i'm hitting my wall on
+> knowledge.  
+> 
+> Dan may know, but I couldn't divine the correct setting from the kernel
+> (obviously this is EFI level code, so i didn't expect to).
+
+Yes, would be better to report as EfiConventionalMemory + SP
+Shouldn't hugely matter from practical point of view though (I haven't
+checked) as both mean driver managed and this is more about
+policy than anything else.
+
+> 
+> 
+> 
+> One other thing that I am noticing:  When a CFMW is registered, an
+> nvdimm_bridge device becomes present in /sys/bus/cxl/devices -
+> regardless of whether the type3 device is persistent or volatile.
+> 
+
+That's one for Dan.  Key here is I don't think anyone is claiming the
+kernel code yet supports 'hot plug / cold plug' of volatile type 3
+devices.  I expect a non trivial amount of work to enable that
+simply because it hasn't previously been of interest.
+
+> This makes me believe we aren't setting something up correctly in the
+> CDAT or something, but other than the below changes everything else
+> looks correct.  This could imply a kernel driver bug, but i've been
+> validating against real hardware and this behavior is not seen, even
+> with functional CXL memory expander devices (which the BIOS obviously
+> has a hand in setting up).
+> 
+> I started validating the DVSECs, but likewise i didn't see any
+> indication of error either.
+> 
+> 
+> 
+> diff --git a/hw/mem/cxl_type3.c b/hw/mem/cxl_type3.c
+> index 919cdf141e..4daa0cf0f6 100644
+> --- a/hw/mem/cxl_type3.c
+> +++ b/hw/mem/cxl_type3.c
+> @@ -132,8 +132,9 @@ static int ct3_build_cdat_entries_for_mr(CDATSubHeader **cdat_table,
+>              .length = sizeof(*dsemts),
+>          },
+>          .DSMAS_handle = dsmad_handle,
+> -        /* Reserved - the non volatile from DSMAS matters */
+> -        .EFI_memory_type_attr = 2,
+> +        /* Reserved if NV - the non volatile from DSMAS matters
+> +         * otherwise label this EFI_MEMORY_SP (special purpose) */
+> +        .EFI_memory_type_attr = is_pmem ? 2 : 1,
+>          .DPA_offset = 0,
+>          .DPA_length = int128_get64(mr->size),
+>      };
+> @@ -187,7 +188,7 @@ static int ct3_build_cdat_table(CDATSubHeader ***cdat_table, void *priv)
+>      /* Now fill them in */
+>      if (volatile_mr) {
+>          rc = ct3_build_cdat_entries_for_mr(table, dsmad_handle++, volatile_mr,
+> -                                           true, 0);
+> +                                           false, 0);
+>          if (rc < 0) {
+>              return rc;
+>          }
 
 
