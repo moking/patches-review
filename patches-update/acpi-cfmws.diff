@@ -1,0 +1,141 @@
+diff --git a/drivers/cxl/acpi.c b/drivers/cxl/acpi.c
+index cb14829bb9be..06f39256d012 100644
+--- a/drivers/cxl/acpi.c
++++ b/drivers/cxl/acpi.c
+@@ -349,6 +349,8 @@ static int __cxl_parse_cfmws(struct acpi_cedt_cfmws *cfmws,
+ 	struct device *dev = ctx->dev;
+ 	struct cxl_decoder *cxld;
+ 	unsigned int ways, i, ig;
++        unsigned long long base = cfmws->base_hpa;
++        unsigned long long  wsize;
+ 	int rc;
+ 
+ 	rc = cxl_acpi_cfmws_verify(dev, cfmws);
+@@ -364,64 +366,69 @@ static int __cxl_parse_cfmws(struct acpi_cedt_cfmws *cfmws,
+ 	for (i = 0; i < ways; i++)
+ 		target_map[i] = cfmws->interleave_targets[i];
+ 
+-	struct resource *res __free(del_cxl_resource) = alloc_cxl_resource(
+-		cfmws->base_hpa, cfmws->window_size, ctx->id++);
+-	if (!res)
+-		return -ENOMEM;
+-
+-	/* add to the local resource tracking to establish a sort order */
+-	rc = add_or_reset_cxl_resource(ctx->cxl_res, no_free_ptr(res));
+-	if (rc)
+-		return rc;
+-
+-	struct cxl_root_decoder *cxlrd __free(put_cxlrd) =
+-		cxl_root_decoder_alloc(root_port, ways);
+-
+-	if (IS_ERR(cxlrd))
+-		return PTR_ERR(cxlrd);
+-
+-	cxld = &cxlrd->cxlsd.cxld;
+-	cxld->flags = cfmws_to_decoder_flags(cfmws->restrictions);
+-	cxld->target_type = CXL_DECODER_HOSTONLYMEM;
+-	cxld->hpa_range = (struct range) {
+-		.start = cfmws->base_hpa,
+-		.end = cfmws->base_hpa + cfmws->window_size - 1,
+-	};
+-	cxld->interleave_ways = ways;
+-	/*
+-	 * Minimize the x1 granularity to advertise support for any
+-	 * valid region granularity
+-	 */
+-	if (ways == 1)
+-		ig = CXL_DECODER_MIN_GRANULARITY;
+-	cxld->interleave_granularity = ig;
+-
+-	if (cfmws->interleave_arithmetic == ACPI_CEDT_CFMWS_ARITHMETIC_XOR) {
+-		if (ways != 1 && ways != 3) {
+-			cxims_ctx = (struct cxl_cxims_context) {
+-				.dev = dev,
+-				.cxlrd = cxlrd,
+-			};
+-			rc = acpi_table_parse_cedt(ACPI_CEDT_TYPE_CXIMS,
+-						   cxl_parse_cxims, &cxims_ctx);
+-			if (rc < 0)
+-				return rc;
+-			if (!cxlrd->platform_data) {
+-				dev_err(dev, "No CXIMS for HBIG %u\n", ig);
+-				return -EINVAL;
+-			}
+-		}
+-	}
+-
+-	cxlrd->qos_class = cfmws->qtg_id;
+-
+-	if (cfmws->interleave_arithmetic == ACPI_CEDT_CFMWS_ARITHMETIC_XOR)
+-		cxlrd->hpa_to_spa = cxl_xor_hpa_to_spa;
+-
+-	rc = cxl_decoder_add(cxld, target_map);
+-	if (rc)
+-		return rc;
+-	return cxl_root_decoder_autoremove(dev, no_free_ptr(cxlrd));
++        wsize = cfmws->window_size / ways;
++	for (i = 0; i < ways; i++, base += wsize) {
++                dev_dbg(dev, "window range: base: %llx size: %llx\n", base, wsize);
++                struct resource *res __free(del_cxl_resource) = alloc_cxl_resource(
++                        base, wsize, ctx->id++);
++                if (!res)
++                        return -ENOMEM;
++
++                /* add to the local resource tracking to establish a sort order */
++                rc = add_or_reset_cxl_resource(ctx->cxl_res, no_free_ptr(res));
++                if (rc)
++                        return rc;
++
++                struct cxl_root_decoder *cxlrd __free(put_cxlrd) =
++                        cxl_root_decoder_alloc(root_port, 1);
++
++                if (IS_ERR(cxlrd))
++                        return PTR_ERR(cxlrd);
++
++                cxld = &cxlrd->cxlsd.cxld;
++                cxld->flags = cfmws_to_decoder_flags(cfmws->restrictions);
++                cxld->target_type = CXL_DECODER_HOSTONLYMEM;
++                cxld->hpa_range = (struct range) {
++                        .start = base,
++                        .end = base + wsize - 1,
++                };
++                cxld->interleave_ways = 1;
++                /*
++                 * Minimize the x1 granularity to advertise support for any
++                 * valid region granularity
++                 */
++                if (ways == 1)
++                        ig = CXL_DECODER_MIN_GRANULARITY;
++                cxld->interleave_granularity = ig;
++
++                if (cfmws->interleave_arithmetic == ACPI_CEDT_CFMWS_ARITHMETIC_XOR) {
++                        if (ways != 1 && ways != 3) {
++                                cxims_ctx = (struct cxl_cxims_context) {
++                                        .dev = dev,
++                                        .cxlrd = cxlrd,
++                                };
++                                rc = acpi_table_parse_cedt(ACPI_CEDT_TYPE_CXIMS,
++                                                           cxl_parse_cxims, &cxims_ctx);
++                                if (rc < 0)
++                                        return rc;
++                                if (!cxlrd->platform_data) {
++                                        dev_err(dev, "No CXIMS for HBIG %u\n", ig);
++                                        return -EINVAL;
++                                }
++                        }
++                }
++
++                cxlrd->qos_class = cfmws->qtg_id;
++
++                if (cfmws->interleave_arithmetic == ACPI_CEDT_CFMWS_ARITHMETIC_XOR)
++                        cxlrd->hpa_to_spa = cxl_xor_hpa_to_spa;
++
++                rc = cxl_decoder_add(cxld, &target_map[i]);
++                if (rc)
++                        return rc;
++                cxl_root_decoder_autoremove(dev, no_free_ptr(cxlrd));
++        }
++        return 0;
+ }
+ 
+ static int cxl_parse_cfmws(union acpi_subtable_headers *header, void *arg,
