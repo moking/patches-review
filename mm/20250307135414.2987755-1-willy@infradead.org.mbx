@@ -1,0 +1,1982 @@
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9F9A21ABDF
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355659; cv=none; b=ctSIvZurg3dsM5h10EHqMcabCBhh7CTb7B2gOtg6jbY6rc70AwjMLtFEHSkOuPL/F9Lj1tl3hpic10ozigjykpydLrplwv/p0zBoKFqdxnDtcG0KFuENnnKw9QZp1t2IJUDkMQK590iY1RuvkOLYxOllc7zflUyT70DnRKQgjLk=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355659; c=relaxed/simple;
+	bh=xqaO8oqNncJyRRJ4jaLixe2YEvyiUrNlle1x9vdAEW0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=T5qPL3GBV5cK0sUCfG3tkCh5TSCKQUWglco6yS0KgAkbaxFd0J5DZSmjPyiDRWT1PCffHU8J2fWQp1sDLXscx3aynaxo5Tj/R8C5pX65XX9FsKX/D4fcfxQV5h7EZWXszWTVu3kLageL/CmloeDWZ/+N+U/zGDOWApx5mqdwKSY=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=P+fhR0DJ; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="P+fhR0DJ"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=BT6OjbtDCOFHHAijJpjMRbh4BDIQM0uytaFHqbNbas4=; b=P+fhR0DJRyfUD/uNdzZFl7spFN
+	s9WEWvyhYKjqMt2ZkZIw8P2H8WA9PRUelUHbNbUHUAD74hf7doJwzbkO5RVpwh1XkHE/3eWl4EgAR
+	LByuBb7d7QakRILNQYu2zosdstSG2OVQKc8zyUTjASsG/6/FG2aKG5MZ1QnmEiNzxNlLdogOTcFpU
+	rgdT+FGNEqYgWAyLW+dRtDMkhZXF+9s+H8tMynfWyjchQ7zGjOtAB+i5XJHklJ9mPx1w8iYJ0xBRJ
+	KXvnFMlFbIF1YTpxibbA24zR/zRAq8aVvFNXIby2MHWPnxKh1O0U9YKiSqA0bIUCw55fMQWF4gEki
+	y7yrID1w==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9Y-0000000CXG8-0H5t;
+	Fri, 07 Mar 2025 13:54:16 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 04/11] f2fs: Remove f2fs_write_node_page()
+Date: Fri,  7 Mar 2025 13:54:04 +0000
+Message-ID: <20250307135414.2987755-5-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Mappings which implement writepages should not implement writepage
+as it can only harm writeback patterns.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ fs/f2fs/node.c | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/fs/f2fs/node.c b/fs/f2fs/node.c
+index 36614a1c2590..b78c1f95bc04 100644
+--- a/fs/f2fs/node.c
++++ b/fs/f2fs/node.c
+@@ -1784,13 +1784,6 @@ int f2fs_move_node_page(struct page *node_page, int gc_type)
+ 	return err;
+ }
+ 
+-static int f2fs_write_node_page(struct page *page,
+-				struct writeback_control *wbc)
+-{
+-	return __write_node_page(page, false, NULL, wbc, false,
+-						FS_NODE_IO, NULL);
+-}
+-
+ int f2fs_fsync_node_pages(struct f2fs_sb_info *sbi, struct inode *inode,
+ 			struct writeback_control *wbc, bool atomic,
+ 			unsigned int *seq_id)
+@@ -2217,7 +2210,6 @@ static bool f2fs_dirty_node_folio(struct address_space *mapping,
+  * Structure of the f2fs node operations
+  */
+ const struct address_space_operations f2fs_node_aops = {
+-	.writepage	= f2fs_write_node_page,
+ 	.writepages	= f2fs_write_node_pages,
+ 	.dirty_folio	= f2fs_dirty_node_folio,
+ 	.invalidate_folio = f2fs_invalidate_folio,
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE82721ADCC
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355660; cv=none; b=FbQXGDlKDLhGh22rMSlqMC3woNIKnKv3Vrfqor/tTCAJ8Hv3SuH9VDPMSLwN69txjOusVMrN2fDd2RqKExOEfVvUFKTNr7orDc+404BovQ7elMLcharIqOq37L4tyRdtFe6UtJv2bh3AlPywAnXIAjUzL4Gba8uPe8MPUNKAT6E=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355660; c=relaxed/simple;
+	bh=WqoaqK2220wbPMR0PQQxeQPvHneXugzNLcOobGh4Hdk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=B3Z3JgoagvrTsogPNIs8CFhW8PpyDSD+5B4z8BIfRdvqyFjWRUGNuQyMh2pHuVRYdDncafpmTlCjw8pMQvgdPmSyJqr0XO3plGnQz9sH1rkTc5tojp37LXfe7qjYiqWO0MhncBhd1XmL2Ev8A6ckkDmipWU+zzsr68hH/n9p5Qw=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=A+/9m6Uf; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="A+/9m6Uf"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=pdDoc31AYz0Km57d074XqJjBHjWG/S2bDrTdZj34V7Q=; b=A+/9m6Uf/a+/tD6ztG/rZziHTP
+	1IhO34O6I+2P9dHhsoJUSaiFTqJvVQErwuOhcDXs7smfJSUIAOygBiQnmSES621ruuCzYVJxtGcNt
+	otnKlNBCo7ctzuILAzwBysZMP3EdKPP6NURSiBiRnUhttHxO+wFmtI/oc5J3DDOQKsAZVkcniQsT9
+	4YqNtJciRDA+t9qcI7yJIqppkvig2G5Lfi40TYXscb/abn1sQbuVUQua+NpFFVIAlg1bC5eZ2kRhs
+	BF1z/shsY8506ppED+xZwWSwNZS9iVcjAch9aDECHL00YohPBTYLFduomT3iilEYAQtT04Gck63oq
+	V6kKqb1A==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9Y-0000000CXGv-3vgY;
+	Fri, 07 Mar 2025 13:54:16 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 11/11] fs: Remove aops->writepage
+Date: Fri,  7 Mar 2025 13:54:11 +0000
+Message-ID: <20250307135414.2987755-12-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+All callers and implementations are now removed, so remove the operation
+and update the documentation to match.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ Documentation/admin-guide/cgroup-v2.rst |  2 +-
+ Documentation/filesystems/fscrypt.rst   |  2 +-
+ Documentation/filesystems/locking.rst   | 54 +------------------------
+ Documentation/filesystems/vfs.rst       | 39 +++++-------------
+ fs/buffer.c                             |  4 +-
+ include/linux/fs.h                      |  1 -
+ mm/vmscan.c                             |  1 -
+ 7 files changed, 15 insertions(+), 88 deletions(-)
+
+diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
+index 77d80a7e975b..4e10b4084381 100644
+--- a/Documentation/admin-guide/cgroup-v2.rst
++++ b/Documentation/admin-guide/cgroup-v2.rst
+@@ -3028,7 +3028,7 @@ Filesystem Support for Writeback
+ --------------------------------
+ 
+ A filesystem can support cgroup writeback by updating
+-address_space_operations->writepage[s]() to annotate bio's using the
++address_space_operations->writepages() to annotate bio's using the
+ following two functions.
+ 
+   wbc_init_bio(@wbc, @bio)
+diff --git a/Documentation/filesystems/fscrypt.rst b/Documentation/filesystems/fscrypt.rst
+index e80329908549..3d22e2db732d 100644
+--- a/Documentation/filesystems/fscrypt.rst
++++ b/Documentation/filesystems/fscrypt.rst
+@@ -1409,7 +1409,7 @@ read the ciphertext into the page cache and decrypt it in-place.  The
+ folio lock must be held until decryption has finished, to prevent the
+ folio from becoming visible to userspace prematurely.
+ 
+-For the write path (->writepage()) of regular files, filesystems
++For the write path (->writepages()) of regular files, filesystems
+ cannot encrypt data in-place in the page cache, since the cached
+ plaintext must be preserved.  Instead, filesystems must encrypt into a
+ temporary buffer or "bounce page", then write out the temporary
+diff --git a/Documentation/filesystems/locking.rst b/Documentation/filesystems/locking.rst
+index 0ec0bb6eb0fb..2e567e341c3b 100644
+--- a/Documentation/filesystems/locking.rst
++++ b/Documentation/filesystems/locking.rst
+@@ -249,7 +249,6 @@ address_space_operations
+ ========================
+ prototypes::
+ 
+-	int (*writepage)(struct page *page, struct writeback_control *wbc);
+ 	int (*read_folio)(struct file *, struct folio *);
+ 	int (*writepages)(struct address_space *, struct writeback_control *);
+ 	bool (*dirty_folio)(struct address_space *, struct folio *folio);
+@@ -280,7 +279,6 @@ locking rules:
+ ======================	======================== =========	===============
+ ops			folio locked		 i_rwsem	invalidate_lock
+ ======================	======================== =========	===============
+-writepage:		yes, unlocks (see below)
+ read_folio:		yes, unlocks				shared
+ writepages:
+ dirty_folio:		maybe
+@@ -309,54 +307,6 @@ completion.
+ 
+ ->readahead() unlocks the folios that I/O is attempted on like ->read_folio().
+ 
+-->writepage() is used for two purposes: for "memory cleansing" and for
+-"sync".  These are quite different operations and the behaviour may differ
+-depending upon the mode.
+-
+-If writepage is called for sync (wbc->sync_mode != WBC_SYNC_NONE) then
+-it *must* start I/O against the page, even if that would involve
+-blocking on in-progress I/O.
+-
+-If writepage is called for memory cleansing (sync_mode ==
+-WBC_SYNC_NONE) then its role is to get as much writeout underway as
+-possible.  So writepage should try to avoid blocking against
+-currently-in-progress I/O.
+-
+-If the filesystem is not called for "sync" and it determines that it
+-would need to block against in-progress I/O to be able to start new I/O
+-against the page the filesystem should redirty the page with
+-redirty_page_for_writepage(), then unlock the page and return zero.
+-This may also be done to avoid internal deadlocks, but rarely.
+-
+-If the filesystem is called for sync then it must wait on any
+-in-progress I/O and then start new I/O.
+-
+-The filesystem should unlock the page synchronously, before returning to the
+-caller, unless ->writepage() returns special WRITEPAGE_ACTIVATE
+-value. WRITEPAGE_ACTIVATE means that page cannot really be written out
+-currently, and VM should stop calling ->writepage() on this page for some
+-time. VM does this by moving page to the head of the active list, hence the
+-name.
+-
+-Unless the filesystem is going to redirty_page_for_writepage(), unlock the page
+-and return zero, writepage *must* run set_page_writeback() against the page,
+-followed by unlocking it.  Once set_page_writeback() has been run against the
+-page, write I/O can be submitted and the write I/O completion handler must run
+-end_page_writeback() once the I/O is complete.  If no I/O is submitted, the
+-filesystem must run end_page_writeback() against the page before returning from
+-writepage.
+-
+-That is: after 2.5.12, pages which are under writeout are *not* locked.  Note,
+-if the filesystem needs the page to be locked during writeout, that is ok, too,
+-the page is allowed to be unlocked at any point in time between the calls to
+-set_page_writeback() and end_page_writeback().
+-
+-Note, failure to run either redirty_page_for_writepage() or the combination of
+-set_page_writeback()/end_page_writeback() on a page submitted to writepage
+-will leave the page itself marked clean but it will be tagged as dirty in the
+-radix tree.  This incoherency can lead to all sorts of hard-to-debug problems
+-in the filesystem like having dirty inodes at umount and losing written data.
+-
+ ->writepages() is used for periodic writeback and for syscall-initiated
+ sync operations.  The address_space should start I/O against at least
+ ``*nr_to_write`` pages.  ``*nr_to_write`` must be decremented for each page
+@@ -364,8 +314,8 @@ which is written.  The address_space implementation may write more (or less)
+ pages than ``*nr_to_write`` asks for, but it should try to be reasonably close.
+ If nr_to_write is NULL, all dirty pages must be written.
+ 
+-writepages should _only_ write pages which are present on
+-mapping->io_pages.
++writepages should _only_ write pages which are present in
++mapping->i_pages.
+ 
+ ->dirty_folio() is called from various places in the kernel when
+ the target folio is marked as needing writeback.  The folio cannot be
+diff --git a/Documentation/filesystems/vfs.rst b/Documentation/filesystems/vfs.rst
+index ae79c30b6c0c..f66a4e706b17 100644
+--- a/Documentation/filesystems/vfs.rst
++++ b/Documentation/filesystems/vfs.rst
+@@ -716,9 +716,8 @@ page lookup by address, and keeping track of pages tagged as Dirty or
+ Writeback.
+ 
+ The first can be used independently to the others.  The VM can try to
+-either write dirty pages in order to clean them, or release clean pages
+-in order to reuse them.  To do this it can call the ->writepage method
+-on dirty pages, and ->release_folio on clean folios with the private
++release clean pages in order to reuse them.  To do this it can call 
++->release_folio on clean folios with the private
+ flag set.  Clean pages without PagePrivate and with no external references
+ will be released without notice being given to the address_space.
+ 
+@@ -731,8 +730,8 @@ maintains information about the PG_Dirty and PG_Writeback status of each
+ page, so that pages with either of these flags can be found quickly.
+ 
+ The Dirty tag is primarily used by mpage_writepages - the default
+-->writepages method.  It uses the tag to find dirty pages to call
+-->writepage on.  If mpage_writepages is not used (i.e. the address
++->writepages method.  It uses the tag to find dirty pages to
++write back.  If mpage_writepages is not used (i.e. the address
+ provides its own ->writepages) , the PAGECACHE_TAG_DIRTY tag is almost
+ unused.  write_inode_now and sync_inode do use it (through
+ __sync_single_inode) to check if ->writepages has been successful in
+@@ -756,23 +755,23 @@ pages, however the address_space has finer control of write sizes.
+ 
+ The read process essentially only requires 'read_folio'.  The write
+ process is more complicated and uses write_begin/write_end or
+-dirty_folio to write data into the address_space, and writepage and
++dirty_folio to write data into the address_space, and
+ writepages to writeback data to storage.
+ 
+ Adding and removing pages to/from an address_space is protected by the
+ inode's i_mutex.
+ 
+ When data is written to a page, the PG_Dirty flag should be set.  It
+-typically remains set until writepage asks for it to be written.  This
++typically remains set until writepages asks for it to be written.  This
+ should clear PG_Dirty and set PG_Writeback.  It can be actually written
+ at any point after PG_Dirty is clear.  Once it is known to be safe,
+ PG_Writeback is cleared.
+ 
+ Writeback makes use of a writeback_control structure to direct the
+-operations.  This gives the writepage and writepages operations some
++operations.  This gives the writepages operation some
+ information about the nature of and reason for the writeback request,
+ and the constraints under which it is being done.  It is also used to
+-return information back to the caller about the result of a writepage or
++return information back to the caller about the result of a
+ writepages request.
+ 
+ 
+@@ -819,7 +818,6 @@ cache in your filesystem.  The following members are defined:
+ .. code-block:: c
+ 
+ 	struct address_space_operations {
+-		int (*writepage)(struct page *page, struct writeback_control *wbc);
+ 		int (*read_folio)(struct file *, struct folio *);
+ 		int (*writepages)(struct address_space *, struct writeback_control *);
+ 		bool (*dirty_folio)(struct address_space *, struct folio *);
+@@ -848,25 +846,6 @@ cache in your filesystem.  The following members are defined:
+ 		int (*swap_rw)(struct kiocb *iocb, struct iov_iter *iter);
+ 	};
+ 
+-``writepage``
+-	called by the VM to write a dirty page to backing store.  This
+-	may happen for data integrity reasons (i.e. 'sync'), or to free
+-	up memory (flush).  The difference can be seen in
+-	wbc->sync_mode.  The PG_Dirty flag has been cleared and
+-	PageLocked is true.  writepage should start writeout, should set
+-	PG_Writeback, and should make sure the page is unlocked, either
+-	synchronously or asynchronously when the write operation
+-	completes.
+-
+-	If wbc->sync_mode is WB_SYNC_NONE, ->writepage doesn't have to
+-	try too hard if there are problems, and may choose to write out
+-	other pages from the mapping if that is easier (e.g. due to
+-	internal dependencies).  If it chooses not to start writeout, it
+-	should return AOP_WRITEPAGE_ACTIVATE so that the VM will not
+-	keep calling ->writepage on that page.
+-
+-	See the file "Locking" for more details.
+-
+ ``read_folio``
+ 	Called by the page cache to read a folio from the backing store.
+ 	The 'file' argument supplies authentication information to network
+@@ -909,7 +888,7 @@ cache in your filesystem.  The following members are defined:
+ 	given and that many pages should be written if possible.  If no
+ 	->writepages is given, then mpage_writepages is used instead.
+ 	This will choose pages from the address space that are tagged as
+-	DIRTY and will pass them to ->writepage.
++	DIRTY and will write them back.
+ 
+ ``dirty_folio``
+ 	called by the VM to mark a folio as dirty.  This is particularly
+diff --git a/fs/buffer.c b/fs/buffer.c
+index c7abb4a029dc..b99dc69dba37 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -2695,7 +2695,7 @@ int block_truncate_page(struct address_space *mapping,
+ EXPORT_SYMBOL(block_truncate_page);
+ 
+ /*
+- * The generic ->writepage function for buffer-backed address_spaces
++ * The generic write folio function for buffer-backed address_spaces
+  */
+ int block_write_full_folio(struct folio *folio, struct writeback_control *wbc,
+ 		void *get_block)
+@@ -2715,7 +2715,7 @@ int block_write_full_folio(struct folio *folio, struct writeback_control *wbc,
+ 
+ 	/*
+ 	 * The folio straddles i_size.  It must be zeroed out on each and every
+-	 * writepage invocation because it may be mmapped.  "A file is mapped
++	 * writeback invocation because it may be mmapped.  "A file is mapped
+ 	 * in multiples of the page size.  For a file that is not a multiple of
+ 	 * the page size, the remaining memory is zeroed when mapped, and
+ 	 * writes to that region are not written out to the file."
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 110d95d04299..26ce65c4a003 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -433,7 +433,6 @@ static inline bool is_sync_kiocb(struct kiocb *kiocb)
+ }
+ 
+ struct address_space_operations {
+-	int (*writepage)(struct page *page, struct writeback_control *wbc);
+ 	int (*read_folio)(struct file *, struct folio *);
+ 
+ 	/* Write back some dirty pages from this mapping. */
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index e9f84fa31b9a..7e79ca975c9d 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -643,7 +643,6 @@ typedef enum {
+ 
+ /*
+  * pageout is called by shrink_folio_list() for each dirty folio.
+- * Calls ->writepage().
+  */
+ static pageout_t pageout(struct folio *folio, struct address_space *mapping,
+ 			 struct swap_iocb **plug, struct list_head *folio_list)
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FF1221ADA4
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355660; cv=none; b=gWCjJc6sfX5hRuFyHeDXrKXyrvNDg5u8Gs4hpDpGFId5TvKFg7rkMU/+SC02OLiE4WOaK0mt1pHZB89SUWHEEXpNbA7xiTnYlkn9dQeUMLLbXxFiqKZHEbECxE98W55Cs97nwnt2rRGLLoq8cz+jUD/L1PrOhyMQN402w21Ofl8=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355660; c=relaxed/simple;
+	bh=GP5Ddi/5B/pGaXC397iVxa56WO7oihm+nV64sVM8/f4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=i5cWOgTGW+J3hlGonvAGs/mA3VQi286wtDQpR/UkZivpGWqgvB+VfN54/KXg6rJ9b1y7qFdc3O1ghO7Cwt2eal2a9sXBo9oXAjX25XUSo8CaJ8O3zmbxn+PKes3cgOW/haFgqYfiVqIMPItNVOIH+p5TtRNVQGbdddC6w6YNUxU=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=X62+uKJW; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="X62+uKJW"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=TkS8MMSXr1V47Aygjy0xD3fBh6jvlfrlC7n0css79m8=; b=X62+uKJW5uRc3AljrZOB8IJcR5
+	FcWRKLLJWmGSKzfnl4nxJjjgjv9O1gFQr2Szy9TLcBuGwadTSn34XR9hOcZkcZB41Pi+9vltTSGsj
+	I5/5wHK5D1RaK79iQCgyfbAFpEJuEk5yD2wnvMggodf32rYwV4qgFknQP1XxeJieUk5Dffkwer1v0
+	P1PMhVwX0aSgYrj9gT+Fdm8zYV1k4WH7jzshbgcNhuIWt3B2Qu/RHhF1rKuIRU4FoMfpkyTN43Cmm
+	kXhVONT5gXXOwk7DWD7OpEqI5fKlE2Ht6lIInk/kTeTe6+SDyXkE3Lxa5g5W15n2omOLZ1ep3SK1d
+	bhjLPAUw==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9Y-0000000CXGa-2Mrx;
+	Fri, 07 Mar 2025 13:54:16 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 08/11] shmem: Add shmem_writeout()
+Date: Fri,  7 Mar 2025 13:54:08 +0000
+Message-ID: <20250307135414.2987755-9-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+This will be the replacement for shmem_writepage().
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ include/linux/shmem_fs.h |  7 ++++---
+ mm/shmem.c               | 20 ++++++++++++++------
+ 2 files changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/include/linux/shmem_fs.h b/include/linux/shmem_fs.h
+index 0b273a7b9f01..5f03a39a26f7 100644
+--- a/include/linux/shmem_fs.h
++++ b/include/linux/shmem_fs.h
+@@ -104,10 +104,11 @@ static inline bool shmem_mapping(struct address_space *mapping)
+ 	return false;
+ }
+ #endif /* CONFIG_SHMEM */
+-extern void shmem_unlock_mapping(struct address_space *mapping);
+-extern struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
++void shmem_unlock_mapping(struct address_space *mapping);
++struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
+ 					pgoff_t index, gfp_t gfp_mask);
+-extern void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
++int shmem_writeout(struct folio *folio, struct writeback_control *wbc);
++void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
+ int shmem_unuse(unsigned int type);
+ 
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+diff --git a/mm/shmem.c b/mm/shmem.c
+index ba162e991285..427b7f70fffb 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -1536,12 +1536,20 @@ int shmem_unuse(unsigned int type)
+ 	return error;
+ }
+ 
+-/*
+- * Move the page from the page cache to the swap cache.
+- */
+ static int shmem_writepage(struct page *page, struct writeback_control *wbc)
+ {
+-	struct folio *folio = page_folio(page);
++	return shmem_writeout(page_folio(page), wbc);
++}
++
++/**
++ * shmem_writeout - Write the folio to swap
++ * @folio: The folio to write
++ * @wbc: How writeback is to be done
++ *
++ * Move the folio from the page cache to the swap cache.
++ */
++int shmem_writeout(struct folio *folio, struct writeback_control *wbc)
++{
+ 	struct address_space *mapping = folio->mapping;
+ 	struct inode *inode = mapping->host;
+ 	struct shmem_inode_info *info = SHMEM_I(inode);
+@@ -1586,9 +1594,8 @@ static int shmem_writepage(struct page *page, struct writeback_control *wbc)
+ try_split:
+ 		/* Ensure the subpages are still dirty */
+ 		folio_test_set_dirty(folio);
+-		if (split_huge_page_to_list_to_order(page, wbc->list, 0))
++		if (split_folio_to_list(folio, wbc->list))
+ 			goto redirty;
+-		folio = page_folio(page);
+ 		folio_clear_dirty(folio);
+ 	}
+ 
+@@ -1660,6 +1667,7 @@ static int shmem_writepage(struct page *page, struct writeback_control *wbc)
+ 	folio_unlock(folio);
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(shmem_writeout);
+ 
+ #if defined(CONFIG_NUMA) && defined(CONFIG_TMPFS)
+ static void shmem_show_mpol(struct seq_file *seq, struct mempolicy *mpol)
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E904921ADBA
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355661; cv=none; b=dRfHET+TvVoZRest/dQBp32N40RIt71nmJQxpAD5oJicxViCW65vTndgEVAQAbXBvsVR5M/ObzPSeIHee1NTBVDlQopLjQK2O4cTQkd8AuAjUtjqKIIFtcd0AeVsgHl8qcf0MyTLdiYDza5CVJoIQDJW83em2yOL6RQg5OxDiP4=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355661; c=relaxed/simple;
+	bh=yv9KDY11w60y2th+hEZuhoMlihA50bxeq6BI5TEy2nY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=nMJlZ4Op2H/8Hrt7uMyKN8cAYfmO4CCPOg2mkkIs2BdgsbVWJIlAASOcq6VJnvqKbXQBkhjMjokviRCYsHvNWMU2plE/rJXSglO8m7nkdNxuwCzqig4EBbvRucF0Y7Yc9/8KXFKA1LwpYayRdaNMDm57gR28stkjWHq0ftM0KN0=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=NXceUjf/; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NXceUjf/"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=mvaOn1iNfnHJjc4gSgVD8D2wLxi5A95q8CNsEb5mKOk=; b=NXceUjf/rN/nE14KGNhSPpVAVh
+	KHf0pdp8XBGLyZVSxh21bmLjKks7mhrikiMkVY1Slftde2kxARF1sJEHTLzOrFGSlukw5i9KQ704K
+	HpJO7LPaZK2IlUHtYN/tQhAJgrAyzc+WxQUajwcgShyq/1aIaCEAJfTAuV7yD4h+h7z+78IzYmkts
+	iIs9QJxhHbfpeAiB7XWLbzfH09Dci81NPYhBAXhqSO0epSfc6DyK+OEyVmuTyMkQAG9MIm2+gXgfC
+	tVBM5KM5M5hTdxnpnhCqQe7XILBlgcx5L1oqVTA5k1Lytpp0twq+bYWonIYYS3fA09Dv730/UJId5
+	QK1+O/Ig==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9Y-0000000CXGM-1NhP;
+	Fri, 07 Mar 2025 13:54:16 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 06/11] migrate: Remove call to ->writepage
+Date: Fri,  7 Mar 2025 13:54:06 +0000
+Message-ID: <20250307135414.2987755-7-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+The writepage callback is going away; filesystems must implement
+migrate_folio or else dirty folios will not be migratable.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ mm/migrate.c | 57 ++++------------------------------------------------
+ 1 file changed, 4 insertions(+), 53 deletions(-)
+
+diff --git a/mm/migrate.c b/mm/migrate.c
+index c0adea67cd62..3d1d9d49fb8e 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -944,67 +944,18 @@ int filemap_migrate_folio(struct address_space *mapping,
+ }
+ EXPORT_SYMBOL_GPL(filemap_migrate_folio);
+ 
+-/*
+- * Writeback a folio to clean the dirty state
+- */
+-static int writeout(struct address_space *mapping, struct folio *folio)
+-{
+-	struct writeback_control wbc = {
+-		.sync_mode = WB_SYNC_NONE,
+-		.nr_to_write = 1,
+-		.range_start = 0,
+-		.range_end = LLONG_MAX,
+-		.for_reclaim = 1
+-	};
+-	int rc;
+-
+-	if (!mapping->a_ops->writepage)
+-		/* No write method for the address space */
+-		return -EINVAL;
+-
+-	if (!folio_clear_dirty_for_io(folio))
+-		/* Someone else already triggered a write */
+-		return -EAGAIN;
+-
+-	/*
+-	 * A dirty folio may imply that the underlying filesystem has
+-	 * the folio on some queue. So the folio must be clean for
+-	 * migration. Writeout may mean we lose the lock and the
+-	 * folio state is no longer what we checked for earlier.
+-	 * At this point we know that the migration attempt cannot
+-	 * be successful.
+-	 */
+-	remove_migration_ptes(folio, folio, 0);
+-
+-	rc = mapping->a_ops->writepage(&folio->page, &wbc);
+-
+-	if (rc != AOP_WRITEPAGE_ACTIVATE)
+-		/* unlocked. Relock */
+-		folio_lock(folio);
+-
+-	return (rc < 0) ? -EIO : -EAGAIN;
+-}
+-
+ /*
+  * Default handling if a filesystem does not provide a migration function.
+  */
+ static int fallback_migrate_folio(struct address_space *mapping,
+ 		struct folio *dst, struct folio *src, enum migrate_mode mode)
+ {
+-	if (folio_test_dirty(src)) {
+-		/* Only writeback folios in full synchronous migration */
+-		switch (mode) {
+-		case MIGRATE_SYNC:
+-			break;
+-		default:
+-			return -EBUSY;
+-		}
+-		return writeout(mapping, src);
+-	}
++	if (folio_test_dirty(src))
++		return -EBUSY;
+ 
+ 	/*
+-	 * Buffers may be managed in a filesystem specific way.
+-	 * We must have no buffers or drop them.
++	 * Filesystem may have private data at folio->private that we
++	 * can't migrate automatically.
+ 	 */
+ 	if (!filemap_release_folio(src, GFP_KERNEL))
+ 		return mode == MIGRATE_SYNC ? -EAGAIN : -EBUSY;
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95AF021ABB5
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355659; cv=none; b=s9yPrRcm1d9b2JkfzvgUVLK7CAPBrEZbuZygLcCJ6GTDiBZAdyU3UVlYZzAgBCUpvhPNi7cql8G3ygjOjp88Wg3FFSgOAq60dS7SGHTj5DUX1BTAtbBt8n95cT5LOYzdantNMUN1Yz/nw93GPTpzv7cRdSAnsOXZJ7kRZQtEMto=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355659; c=relaxed/simple;
+	bh=b2aCBsRuNCnxXbfqx1KMyiXiBzciBCbR0uJx02S9RPs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=XptWrcjkWUHhCHXK6W7lDcC3/bOx8c2QX+/wDURjgIlbot77mhocJRvLtpLP9kKHs1+QHAMK5rI5R/iC98i7JLN9mSyuqyjPK6HBXOMtNU33LcHpJsgnHESBBwTdLihgT4xchkfHRYxpAR0DxEOxNgo1zXHs/dArFxUi2WUxHhw=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=P2q4tSdD; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="P2q4tSdD"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:In-Reply-To:References;
+	bh=+taT2QSuxL8BkaKw5rATlyAdw/O8TmblfYyY8TlzKtQ=; b=P2q4tSdDk1vTyS4yQ8UtnlEgiT
+	rTSbqcb1hggXVwczLfNokNr5lTyrPEmcEg9r2Fiddr8Ss/ztL1ISAkKwd3Xp1h1AdltBA8yHGj0zq
+	fAN0Aafq6BV5Vzl0gPlbyi25y20AX4pC76CprIgFG86Uo0cmkBkdXFm0Du0za+Tvhkb6/RPJ3uDXo
+	LtkaIPnCP5Q8dWNheEuAj2hBm+3seeDOOjbHCSXry/3tcU9f/goxuo4P7bpoQ5glrzpezR87yhSwN
+	3RxFVJGiIlAO3KufL58simBwsjQ9qquBDzYKK5vbatEuLXrmO5uy8zipnmf78uNCrh7kCDzmgrsFg
+	cGvenHsA==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9X-0000000CXFp-1xdu;
+	Fri, 07 Mar 2025 13:54:15 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 00/11] Remove aops->writepage
+Date: Fri,  7 Mar 2025 13:54:00 +0000
+Message-ID: <20250307135414.2987755-1-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+I was preparing for LSFMM and noticed that actually we're almost done
+with the writepage conversion.  This patchset finishes it off.
+Something changed in my test environment and now it crashes before
+even starting a run, so this is only build tested.
+
+The first five patches (f2fs and vboxsf) are uninteresting.  I'll try
+and get those into linux-next for the imminent merge window.  I think
+the migrate and writeback patches are good, but maybe I've missed
+something.  Then we come to i915 needing to tell shmem to do writeout,
+so I added a module-accessible function to do that.  I also removed
+the setting/clearing of reclaim, which would be easy to bring back if
+it's really needed.  Patch 10 is probably the exciting one where
+pageout() calls swap or shmem directly.  And then patch 11 really just
+removes the op itself and the documentation for it.  I may have
+over-trimmed here, but some of the documentation was so out of date it
+was hard to tell what was worth preserving.
+
+Anyway, let's see what the bots make of this.  This is against
+next-20250307.
+
+Matthew Wilcox (Oracle) (11):
+  f2fs: Remove check for ->writepage
+  f2fs: Remove f2fs_write_data_page()
+  f2fs: Remove f2fs_write_meta_page()
+  f2fs: Remove f2fs_write_node_page()
+  vboxsf: Convert to writepages
+  migrate: Remove call to ->writepage
+  writeback: Remove writeback_use_writepage()
+  shmem: Add shmem_writeout()
+  i915: Use writeback_iter()
+  mm: Remove swap_writepage() and shmem_writepage()
+  fs: Remove aops->writepage
+
+ Documentation/admin-guide/cgroup-v2.rst   |  2 +-
+ Documentation/filesystems/fscrypt.rst     |  2 +-
+ Documentation/filesystems/locking.rst     | 54 +--------------------
+ Documentation/filesystems/vfs.rst         | 39 ++++------------
+ block/blk-wbt.c                           |  2 +-
+ drivers/gpu/drm/i915/gem/i915_gem_shmem.c | 32 ++++---------
+ fs/buffer.c                               |  4 +-
+ fs/f2fs/checkpoint.c                      |  7 ---
+ fs/f2fs/data.c                            | 28 -----------
+ fs/f2fs/node.c                            |  8 ----
+ fs/vboxsf/file.c                          | 47 ++++++++++---------
+ include/linux/fs.h                        |  1 -
+ include/linux/shmem_fs.h                  |  7 +--
+ mm/migrate.c                              | 57 ++---------------------
+ mm/page-writeback.c                       | 28 +----------
+ mm/page_io.c                              |  3 +-
+ mm/shmem.c                                | 33 ++++++-------
+ mm/swap.h                                 |  4 +-
+ mm/swap_state.c                           |  1 -
+ mm/swapfile.c                             |  2 +-
+ mm/vmscan.c                               | 29 ++++++------
+ 21 files changed, 93 insertions(+), 297 deletions(-)
+
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 606A421ADC4
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355660; cv=none; b=g/wisMDFimH0kvHZaxrjWu/QagzlfIxfbkvKpK27/V7fwu0VvoCPrsnDXDjQbsYD83TlX6imgBMC5zU49nFzAxFSOJVE8UcKtlhgsxBYFH7YjCt9lIdMniSzs+qSgLLy1i2z53XNL6EQJeWmw6BGS0YEL6vDhvvoB8TnPz7sNeI=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355660; c=relaxed/simple;
+	bh=79boLRtLNSezE3NHdNOhLXTaQKPMPwDQxvuXOCfhRl4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=K0qDX3KzqYitOL5ihhWGDn9XZbBLlEhcQNhAAqGUJDMbUbIT9dLHcK5D9EPhA+fCDZbe5McHMmlUoIjcXfekJ/39kgJVByJc9+5lRTtly/R8dUaQw4w+PawKtKfO4FuxwEsArJfYa5zvJSec1p6eMjfce1BrbAWQLqMV7ZpR2+U=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=bKfpkTCm; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="bKfpkTCm"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=MCnjYQ2acBJQekNMxLqjVlaD6rzjLtTKGq0ILj29RFk=; b=bKfpkTCmPxeSbXcJ7VM2ipo40+
+	XhaUhwgXUh45osKdAPlOYImlO/cUXTUKj1rso0Nxr5kg3xJMtFI7iBuHFUbWDu297CZZ4WUdie9nI
+	xUBagCMx7AExicE0jt1iSaDzkrB5ZwfMad0uC0IwsOgjsoSnrLHpB5Zr4eAjyUA5hd1Uiib+p1cjV
+	0WoALUdFcA3onPZONfN9vs80yhz9/HM6oEUdmf5S5M8tGA9UTzC+TqXEVdeh3hen/BGWub0VD8M0l
+	y9vURrdeEI/VW7zSD9Y9JamRMCTciMSodw1MXCCTm6yaz1xnNv4UzbkTk8yYaVIC5QoEEo65MUWcL
+	dtFzcuRw==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9Y-0000000CXGo-3MSz;
+	Fri, 07 Mar 2025 13:54:16 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 10/11] mm: Remove swap_writepage() and shmem_writepage()
+Date: Fri,  7 Mar 2025 13:54:10 +0000
+Message-ID: <20250307135414.2987755-11-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Call swap_writeout() and shmem_writeout() from pageout() instead.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ block/blk-wbt.c |  2 +-
+ mm/page_io.c    |  3 +--
+ mm/shmem.c      | 23 +++++------------------
+ mm/swap.h       |  4 ++--
+ mm/swap_state.c |  1 -
+ mm/swapfile.c   |  2 +-
+ mm/vmscan.c     | 28 ++++++++++++++++------------
+ 7 files changed, 26 insertions(+), 37 deletions(-)
+
+diff --git a/block/blk-wbt.c b/block/blk-wbt.c
+index f1754d07f7e0..60885731e8ab 100644
+--- a/block/blk-wbt.c
++++ b/block/blk-wbt.c
+@@ -37,7 +37,7 @@
+ enum wbt_flags {
+ 	WBT_TRACKED		= 1,	/* write, tracked for throttling */
+ 	WBT_READ		= 2,	/* read */
+-	WBT_SWAP		= 4,	/* write, from swap_writepage() */
++	WBT_SWAP		= 4,	/* write, from swap_writeout() */
+ 	WBT_DISCARD		= 8,	/* discard */
+ 
+ 	WBT_NR_BITS		= 4,	/* number of bits */
+diff --git a/mm/page_io.c b/mm/page_io.c
+index 9b983de351f9..e9151952c514 100644
+--- a/mm/page_io.c
++++ b/mm/page_io.c
+@@ -237,9 +237,8 @@ static void swap_zeromap_folio_clear(struct folio *folio)
+  * We may have stale swap cache pages in memory: notice
+  * them here and get rid of the unnecessary final write.
+  */
+-int swap_writepage(struct page *page, struct writeback_control *wbc)
++int swap_writeout(struct folio *folio, struct writeback_control *wbc)
+ {
+-	struct folio *folio = page_folio(page);
+ 	int ret;
+ 
+ 	if (folio_free_swap(folio)) {
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 427b7f70fffb..a786b94a468a 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -98,7 +98,7 @@ static struct vfsmount *shm_mnt __ro_after_init;
+ #define SHORT_SYMLINK_LEN 128
+ 
+ /*
+- * shmem_fallocate communicates with shmem_fault or shmem_writepage via
++ * shmem_fallocate communicates with shmem_fault or shmem_writeout via
+  * inode->i_private (with i_rwsem making sure that it has only one user at
+  * a time): we would prefer not to enlarge the shmem inode just for that.
+  */
+@@ -107,7 +107,7 @@ struct shmem_falloc {
+ 	pgoff_t start;		/* start of range currently being fallocated */
+ 	pgoff_t next;		/* the next page offset to be fallocated */
+ 	pgoff_t nr_falloced;	/* how many new pages have been fallocated */
+-	pgoff_t nr_unswapped;	/* how often writepage refused to swap out */
++	pgoff_t nr_unswapped;	/* how often writeout refused to swap out */
+ };
+ 
+ struct shmem_options {
+@@ -446,7 +446,7 @@ static void shmem_recalc_inode(struct inode *inode, long alloced, long swapped)
+ 	/*
+ 	 * Special case: whereas normally shmem_recalc_inode() is called
+ 	 * after i_mapping->nrpages has already been adjusted (up or down),
+-	 * shmem_writepage() has to raise swapped before nrpages is lowered -
++	 * shmem_writeout() has to raise swapped before nrpages is lowered -
+ 	 * to stop a racing shmem_recalc_inode() from thinking that a page has
+ 	 * been freed.  Compensate here, to avoid the need for a followup call.
+ 	 */
+@@ -1536,11 +1536,6 @@ int shmem_unuse(unsigned int type)
+ 	return error;
+ }
+ 
+-static int shmem_writepage(struct page *page, struct writeback_control *wbc)
+-{
+-	return shmem_writeout(page_folio(page), wbc);
+-}
+-
+ /**
+  * shmem_writeout - Write the folio to swap
+  * @folio: The folio to write
+@@ -1558,13 +1553,6 @@ int shmem_writeout(struct folio *folio, struct writeback_control *wbc)
+ 	int nr_pages;
+ 	bool split = false;
+ 
+-	/*
+-	 * Our capabilities prevent regular writeback or sync from ever calling
+-	 * shmem_writepage; but a stacking filesystem might use ->writepage of
+-	 * its underlying filesystem, in which case tmpfs should write out to
+-	 * swap only in response to memory pressure, and not for the writeback
+-	 * threads or sync.
+-	 */
+ 	if (WARN_ON_ONCE(!wbc->for_reclaim))
+ 		goto redirty;
+ 
+@@ -1653,7 +1641,7 @@ int shmem_writeout(struct folio *folio, struct writeback_control *wbc)
+ 
+ 		mutex_unlock(&shmem_swaplist_mutex);
+ 		BUG_ON(folio_mapped(folio));
+-		return swap_writepage(&folio->page, wbc);
++		return swap_writeout(folio, wbc);
+ 	}
+ 
+ 	list_del_init(&info->swaplist);
+@@ -3780,7 +3768,7 @@ static long shmem_fallocate(struct file *file, int mode, loff_t offset,
+ 			index--;
+ 
+ 		/*
+-		 * Inform shmem_writepage() how far we have reached.
++		 * Inform shmem_writeout() how far we have reached.
+ 		 * No need for lock or barrier: we have the page lock.
+ 		 */
+ 		if (!folio_test_uptodate(folio))
+@@ -5203,7 +5191,6 @@ static int shmem_error_remove_folio(struct address_space *mapping,
+ }
+ 
+ static const struct address_space_operations shmem_aops = {
+-	.writepage	= shmem_writepage,
+ 	.dirty_folio	= noop_dirty_folio,
+ #ifdef CONFIG_TMPFS
+ 	.write_begin	= shmem_write_begin,
+diff --git a/mm/swap.h b/mm/swap.h
+index 6f4a3f927edb..aa62463976d5 100644
+--- a/mm/swap.h
++++ b/mm/swap.h
+@@ -20,7 +20,7 @@ static inline void swap_read_unplug(struct swap_iocb *plug)
+ 		__swap_read_unplug(plug);
+ }
+ void swap_write_unplug(struct swap_iocb *sio);
+-int swap_writepage(struct page *page, struct writeback_control *wbc);
++int swap_writeout(struct folio *folio, struct writeback_control *wbc);
+ void __swap_writepage(struct folio *folio, struct writeback_control *wbc);
+ 
+ /* linux/mm/swap_state.c */
+@@ -141,7 +141,7 @@ static inline struct folio *swapin_readahead(swp_entry_t swp, gfp_t gfp_mask,
+ 	return NULL;
+ }
+ 
+-static inline int swap_writepage(struct page *p, struct writeback_control *wbc)
++static inline int swap_writeout(struct folio *f, struct writeback_control *wbc)
+ {
+ 	return 0;
+ }
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 68fd981b514f..ec2b1c9c9926 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -30,7 +30,6 @@
+  * vmscan's shrink_folio_list.
+  */
+ static const struct address_space_operations swap_aops = {
+-	.writepage	= swap_writepage,
+ 	.dirty_folio	= noop_dirty_folio,
+ #ifdef CONFIG_MIGRATION
+ 	.migrate_folio	= migrate_folio,
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 628f67974a7c..60c994f84842 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -2360,7 +2360,7 @@ static int try_to_unuse(unsigned int type)
+ 	 * Limit the number of retries? No: when mmget_not_zero()
+ 	 * above fails, that mm is likely to be freeing swap from
+ 	 * exit_mmap(), which proceeds at its own independent pace;
+-	 * and even shmem_writepage() could have been preempted after
++	 * and even shmem_writeout() could have been preempted after
+ 	 * folio_alloc_swap(), temporarily hiding that swap.  It's easy
+ 	 * and robust (though cpu-intensive) just to keep retrying.
+ 	 */
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 34410d24dc15..e9f84fa31b9a 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -648,16 +648,16 @@ typedef enum {
+ static pageout_t pageout(struct folio *folio, struct address_space *mapping,
+ 			 struct swap_iocb **plug, struct list_head *folio_list)
+ {
++	int (*writeout)(struct folio *, struct writeback_control *);
++
+ 	/*
+-	 * If the folio is dirty, only perform writeback if that write
+-	 * will be non-blocking.  To prevent this allocation from being
+-	 * stalled by pagecache activity.  But note that there may be
+-	 * stalls if we need to run get_block().  We could test
+-	 * PagePrivate for that.
+-	 *
+-	 * If this process is currently in __generic_file_write_iter() against
+-	 * this folio's queue, we can perform writeback even if that
+-	 * will block.
++	 * We no longer attempt to writeback filesystem folios here, other
++	 * than tmpfs/shmem.  That's taken care of in page-writeback.
++	 * If we find a dirty filesystem folio at the end of the LRU list,
++	 * typically that means the filesystem is saturating the storage
++	 * with contiguous writes and telling it to write a folio here
++	 * would only make the situation worse by injecting an element
++	 * of random access.
+ 	 *
+ 	 * If the folio is swapcache, write it back even if that would
+ 	 * block, for some throttling. This happens by accident, because
+@@ -680,7 +680,11 @@ static pageout_t pageout(struct folio *folio, struct address_space *mapping,
+ 		}
+ 		return PAGE_KEEP;
+ 	}
+-	if (mapping->a_ops->writepage == NULL)
++	if (shmem_mapping(mapping))
++		writeout = shmem_writeout;
++	else if (folio_test_anon(folio))
++		writeout = swap_writeout;
++	else
+ 		return PAGE_ACTIVATE;
+ 
+ 	if (folio_clear_dirty_for_io(folio)) {
+@@ -703,7 +707,7 @@ static pageout_t pageout(struct folio *folio, struct address_space *mapping,
+ 			wbc.list = folio_list;
+ 
+ 		folio_set_reclaim(folio);
+-		res = mapping->a_ops->writepage(&folio->page, &wbc);
++		res = writeout(folio, &wbc);
+ 		if (res < 0)
+ 			handle_write_error(mapping, folio, res);
+ 		if (res == AOP_WRITEPAGE_ACTIVATE) {
+@@ -712,7 +716,7 @@ static pageout_t pageout(struct folio *folio, struct address_space *mapping,
+ 		}
+ 
+ 		if (!folio_test_writeback(folio)) {
+-			/* synchronous write or broken a_ops? */
++			/* synchronous write? */
+ 			folio_clear_reclaim(folio);
+ 		}
+ 		trace_mm_vmscan_write_folio(folio);
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95A8821ABA6
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355659; cv=none; b=B1mFNBPSJWJ0CQmSvlXAiAJsQGtzZn5tGwk7wSkwnIz+9+DqaMFm9D1jec1arSw5bSuHlK1YD8a+RkgAtuwPiBz+eVjSQLVNOErQ6j5S/z0Njs1j56xVzE7KsiDmPoCiLYq1enQNLPU0yWVLiI1dbvbmXdEZDWBzWqySMCT0YS8=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355659; c=relaxed/simple;
+	bh=gter1NFbZ38ah1sF/59SYEtqogFPFh18jqqTiM64GFc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=RJMGJR6bt5QuED4q3dYvidj13B3le2Xba+rO6F9WnGpPHv0KFEmNuwWD7z7DaE/67CSY7Z/FFvYeItNAqik22xGrJek6q3cP9YispmHpoFg0aa1xXSz/PCUoV2wNQIqJhNcURS94PTGWYJ7b8KGxgx984BrH9m+KDa/fiP+Rb8E=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=K0rUlg3+; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="K0rUlg3+"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=gYAlq/IZDrN3gAui/tjJNHWS0bZWyHE15MvZlcNIc7w=; b=K0rUlg3+uTjZX3ud/LW+9LOept
+	eIWClltyGb551+sTtSjHCSZEBJNGkuChoXa74eq4oYYIuEdEAfgeArfvO3oklLkFCn/EYC7h2mCqI
+	E75wHlKErYegjFzgWWReHWhUTQqWQ2FhM1ffcbZgz4t1t3Z7Tnu3hFNPX72K23UrXm1Oyka/m4Ymu
+	vOjmwRLhefSEPrfeUv0U9xEZLAmnegRAjGVleZzIUtp00VM2cT/JnPGqEZzXEAyA3nCx5In+W7si8
+	K4V51BwGYhJgz2F/Pbnsyc3xyQ0uwSUWzyVps7NBtGXl7vNBcGZ79Mfg4Lgzs6lW8WsUWx55917/c
+	pqF/8D4w==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9X-0000000CXFt-2gHs;
+	Fri, 07 Mar 2025 13:54:15 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 02/11] f2fs: Remove f2fs_write_data_page()
+Date: Fri,  7 Mar 2025 13:54:02 +0000
+Message-ID: <20250307135414.2987755-3-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Mappings which implement writepages should not implement writepage
+as it can only harm writeback patterns.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ fs/f2fs/data.c | 24 ------------------------
+ 1 file changed, 24 deletions(-)
+
+diff --git a/fs/f2fs/data.c b/fs/f2fs/data.c
+index a80d5ef9acbb..cdd63e8ad42e 100644
+--- a/fs/f2fs/data.c
++++ b/fs/f2fs/data.c
+@@ -2935,29 +2935,6 @@ int f2fs_write_single_data_page(struct folio *folio, int *submitted,
+ 	return err;
+ }
+ 
+-static int f2fs_write_data_page(struct page *page,
+-					struct writeback_control *wbc)
+-{
+-	struct folio *folio = page_folio(page);
+-#ifdef CONFIG_F2FS_FS_COMPRESSION
+-	struct inode *inode = folio->mapping->host;
+-
+-	if (unlikely(f2fs_cp_error(F2FS_I_SB(inode))))
+-		goto out;
+-
+-	if (f2fs_compressed_file(inode)) {
+-		if (f2fs_is_compressed_cluster(inode, folio->index)) {
+-			folio_redirty_for_writepage(wbc, folio);
+-			return AOP_WRITEPAGE_ACTIVATE;
+-		}
+-	}
+-out:
+-#endif
+-
+-	return f2fs_write_single_data_page(folio, NULL, NULL, NULL,
+-						wbc, FS_DATA_IO, 0, true);
+-}
+-
+ /*
+  * This function was copied from write_cache_pages from mm/page-writeback.c.
+  * The major change is making write step of cold data page separately from
+@@ -4111,7 +4088,6 @@ static void f2fs_swap_deactivate(struct file *file)
+ const struct address_space_operations f2fs_dblock_aops = {
+ 	.read_folio	= f2fs_read_data_folio,
+ 	.readahead	= f2fs_readahead,
+-	.writepage	= f2fs_write_data_page,
+ 	.writepages	= f2fs_write_data_pages,
+ 	.write_begin	= f2fs_write_begin,
+ 	.write_end	= f2fs_write_end,
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4919A21ADC3
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355660; cv=none; b=Aqli6CYhKTe6VXDT6hvjQsPHlXyWk8Qjr49+1RVywvJUCD4hrffuVqphyBZILCQ7DO0omxGbEXK4+xMfrWrhFkSuN7Lw0aghcCxVIQcf8l1aGzwc/gV7tQ9R6NBAMSd/9m1B1KkqxStdPHaKvjmAy0ZLr1qvQcA2Jn1Q4y6PYaA=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355660; c=relaxed/simple;
+	bh=1oyQwolfHOaScVoIGXCbf04phmU13qPnlRDJGsrwQNE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=CGTOZjKqZdP+TWeD18Fd2A7aKh64nC4s/XERKZNBNU+1zb1+WNzAejgDc8s56QEaZSB2n/9hoq3Cw9hrky4bD32dZUWOG+ATLWaldkvjLSnpwIZD3qIJyHrL4r0Ra3jOjzjw46389LqBvHdNBHhVAweDPwzvWztH+M5h4LMrXtQ=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=bCVkhALH; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="bCVkhALH"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=HxorfBgE1Uv1byaGENr7pDp1WuWnctNAqk3G3c3CU84=; b=bCVkhALHyYVYY1ZRHBnGCe1QqL
+	8t9wy2R3quPKYY4KBJyKMDggEYqBMvyCoNB8ICvghWixxhaz2jHMV6kVsIBsS+bOqoviiM8jrxF93
+	KK7250g/MVmbkejykejPIZUR7m1LWlifvA2DGHN9yI6tQfjMfPBUXmF/5ACR0oDEtKoUqUhDtY5EP
+	qLR1PHgla+HM0OaedXb5zEhjTMpfsPsUkAk/EYR0zSWDnyo9UaJNpVmVJeHbpksEvmq8VwlSllVEm
+	FPc66REQWUxZNFcxxaKY7WUBtHPkb9W77w4/IYg+4Xb6ET1gl7Tnsyb1P0/KRqSHbLzl4c8QG/TFQ
+	dVrqbC0A==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9Y-0000000CXGh-2pLo;
+	Fri, 07 Mar 2025 13:54:16 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 09/11] i915: Use writeback_iter()
+Date: Fri,  7 Mar 2025 13:54:09 +0000
+Message-ID: <20250307135414.2987755-10-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Convert from an inefficient loop to the standard writeback iterator.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ drivers/gpu/drm/i915/gem/i915_gem_shmem.c | 32 ++++++-----------------
+ 1 file changed, 8 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/gem/i915_gem_shmem.c b/drivers/gpu/drm/i915/gem/i915_gem_shmem.c
+index ae3343c81a64..5e784db9f315 100644
+--- a/drivers/gpu/drm/i915/gem/i915_gem_shmem.c
++++ b/drivers/gpu/drm/i915/gem/i915_gem_shmem.c
+@@ -305,36 +305,20 @@ void __shmem_writeback(size_t size, struct address_space *mapping)
+ 		.range_end = LLONG_MAX,
+ 		.for_reclaim = 1,
+ 	};
+-	unsigned long i;
++	struct folio *folio = NULL;
++	int error = 0;
+ 
+ 	/*
+ 	 * Leave mmapings intact (GTT will have been revoked on unbinding,
+-	 * leaving only CPU mmapings around) and add those pages to the LRU
++	 * leaving only CPU mmapings around) and add those folios to the LRU
+ 	 * instead of invoking writeback so they are aged and paged out
+ 	 * as normal.
+ 	 */
+-
+-	/* Begin writeback on each dirty page */
+-	for (i = 0; i < size >> PAGE_SHIFT; i++) {
+-		struct page *page;
+-
+-		page = find_lock_page(mapping, i);
+-		if (!page)
+-			continue;
+-
+-		if (!page_mapped(page) && clear_page_dirty_for_io(page)) {
+-			int ret;
+-
+-			SetPageReclaim(page);
+-			ret = mapping->a_ops->writepage(page, &wbc);
+-			if (!PageWriteback(page))
+-				ClearPageReclaim(page);
+-			if (!ret)
+-				goto put;
+-		}
+-		unlock_page(page);
+-put:
+-		put_page(page);
++	while ((folio = writeback_iter(mapping, &wbc, folio, &error))) {
++		if (folio_mapped(folio))
++			folio_redirty_for_writepage(&wbc, folio);
++		else
++			error = shmem_writeout(folio, &wbc);
+ 	}
+ }
+ 
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FFC021ADC1
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355660; cv=none; b=sVauuj80cwLJjltr86Rp12GrfTdZHoC2QJy1bcIkmescOi6VYvLeYRNnEx9tTEukPRZQTwQSKKCHJjn/OTfytGZkfkRO6ZX59URJWM+iUgPNJDNYit0YrMYi9s/uFrkZP/XKrwScw4PjTDneIOoHQS6lac7g3C2vwHr73eDbpaY=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355660; c=relaxed/simple;
+	bh=T4wen+mzP89COR4DINuYxPNM7XJrfp1stHwFRaAnBW8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=G49ZYyboFJiT9ox7d0THz/C/E7rFaMyF1oc7ZHxvI/qbe7FlkEELXODZg9sSApzv+68PqcwOUtX7C/jWHh0LlZtOZfJDA+9Q+rQlOR3tyJsLb5T7brKabX1wIsSKoI8zjMzm/eEd05qkYav8HPy+2dmxtz+Rkvc9rmA9id9Ovz8=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=XZn6/qRR; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="XZn6/qRR"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=/z5i0Mk9Cv2/sY4L3FZ7BIchCOXs9aYcNdg4XHBiico=; b=XZn6/qRRlZuA8W/65iLtP+DmJA
+	0a6R3g2imvgF9NFcjTV1wjItQb+Gm+iOmA3lKwb4uzXzpnGk1s+xHDW1io4ZlfX02BHlNf6G97ThN
+	u2X2fj2Fs/PyNipIEfklLIt1qS6Yvysi39dBIgGZs19uBqdkje0otPp8X6WgmP4CQcUcfk3S/55aI
+	T69BjppGgpcnsa2I1E5z1bACCLuqc1dYu/JT0Ao97YkukJGpxyiE6WN8iCl0IVdAD/ikqUSAgUX6q
+	JHN4JQhhgTuWrUFBmcQinFwhgbp7J+0zmTpBe8abLU2VrxruKpPU3fThzjwCY8FxIcJckOvoQy44X
+	nq+E4ZlA==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9Y-0000000CXGT-1pj8;
+	Fri, 07 Mar 2025 13:54:16 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 07/11] writeback: Remove writeback_use_writepage()
+Date: Fri,  7 Mar 2025 13:54:07 +0000
+Message-ID: <20250307135414.2987755-8-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+The ->writepage operation is going away.  Remove this alternative to
+calling ->writepages.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ mm/page-writeback.c | 28 ++--------------------------
+ 1 file changed, 2 insertions(+), 26 deletions(-)
+
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 18456ddd463b..3cf7ae45be58 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -2621,27 +2621,6 @@ int write_cache_pages(struct address_space *mapping,
+ }
+ EXPORT_SYMBOL(write_cache_pages);
+ 
+-static int writeback_use_writepage(struct address_space *mapping,
+-		struct writeback_control *wbc)
+-{
+-	struct folio *folio = NULL;
+-	struct blk_plug plug;
+-	int err;
+-
+-	blk_start_plug(&plug);
+-	while ((folio = writeback_iter(mapping, wbc, folio, &err))) {
+-		err = mapping->a_ops->writepage(&folio->page, wbc);
+-		if (err == AOP_WRITEPAGE_ACTIVATE) {
+-			folio_unlock(folio);
+-			err = 0;
+-		}
+-		mapping_set_error(mapping, err);
+-	}
+-	blk_finish_plug(&plug);
+-
+-	return err;
+-}
+-
+ int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
+ {
+ 	int ret;
+@@ -2652,14 +2631,11 @@ int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
+ 	wb = inode_to_wb_wbc(mapping->host, wbc);
+ 	wb_bandwidth_estimate_start(wb);
+ 	while (1) {
+-		if (mapping->a_ops->writepages) {
++		if (mapping->a_ops->writepages)
+ 			ret = mapping->a_ops->writepages(mapping, wbc);
+-		} else if (mapping->a_ops->writepage) {
+-			ret = writeback_use_writepage(mapping, wbc);
+-		} else {
++		else
+ 			/* deal with chardevs and other special files */
+ 			ret = 0;
+-		}
+ 		if (ret != -ENOMEM || wbc->sync_mode != WB_SYNC_ALL)
+ 			break;
+ 
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95A1121A92F
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355660; cv=none; b=Rx5rjEANWDhKUGCGOdahf/ue85bclO0eNaaeC6yYp8IsnskpVV+RJ+8a5lHoRJJ788ogF6cL2rayrjzlkbDx0a+P1D9sCNJXIZf32dkOFAuia7SJAE5WxL7xKc2ojP14dXMUAatBrel3xFhPLcy2/9kSDDxn92fQjufntjtAVc4=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355660; c=relaxed/simple;
+	bh=CEGXIWn/1l5S0j/7hNwbS5YhciyTTzqptoAUkwUhhRM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=oRDejYWwl42hDFzapZV3UKVRGWuQUjyG1JVseihmKWj7b41Edk5KAESbv3rxgoeXPxciZ4hFnlbvNe9RHa+CSlIMLMhZWqeGMvcfvYpPtAThBGo1fgUUWZo93M5t8aZi9UqzOwwaekcJ98r7exCeplgm37pFSvqFiI5b+WVN6TU=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=nnGr+Xt3; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="nnGr+Xt3"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=T8fXRyaYOssoLEG59sUpr97PSMqTmPmVh2Clh/QPZVU=; b=nnGr+Xt3+97jZBGQECj87NaDqI
+	XK8uVQj8thhehM0zZlfDnmvlOXcBQ7SO/K8NTEb3FRquZXAarnz7wDTJEkwev+safNXqNwMRfnaif
+	+pAsjoSitQfyymKZLmoU50i4NHcwZ0cC5EuNc9jfgqDK6BdkWuzJg40ZAJJ3uBIMmknep94icuZG/
+	C6WPgd5F3oI4SCW3MO4/ii3C5CxeWkeuBT+bEHgvTn8os3y6u2ttvT+5+8RkNI7GuVwyyXf3aIW0y
+	qaE5ugvrhoXw5fNciwFpeMMJFukQfyGGRVImUAaBUB6ZgY8zt4atiw2YWormv0v03A69cDNPIGN6s
+	cML+42aA==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9X-0000000CXG1-3uYy;
+	Fri, 07 Mar 2025 13:54:15 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 03/11] f2fs: Remove f2fs_write_meta_page()
+Date: Fri,  7 Mar 2025 13:54:03 +0000
+Message-ID: <20250307135414.2987755-4-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Mappings which implement writepages should not implement writepage
+as it can only harm writeback patterns.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ fs/f2fs/checkpoint.c | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/fs/f2fs/checkpoint.c b/fs/f2fs/checkpoint.c
+index a35595f8d3f5..412282f50cbb 100644
+--- a/fs/f2fs/checkpoint.c
++++ b/fs/f2fs/checkpoint.c
+@@ -381,12 +381,6 @@ static int __f2fs_write_meta_page(struct page *page,
+ 	return AOP_WRITEPAGE_ACTIVATE;
+ }
+ 
+-static int f2fs_write_meta_page(struct page *page,
+-				struct writeback_control *wbc)
+-{
+-	return __f2fs_write_meta_page(page, wbc, FS_META_IO);
+-}
+-
+ static int f2fs_write_meta_pages(struct address_space *mapping,
+ 				struct writeback_control *wbc)
+ {
+@@ -507,7 +501,6 @@ static bool f2fs_dirty_meta_folio(struct address_space *mapping,
+ }
+ 
+ const struct address_space_operations f2fs_meta_aops = {
+-	.writepage	= f2fs_write_meta_page,
+ 	.writepages	= f2fs_write_meta_pages,
+ 	.dirty_folio	= f2fs_dirty_meta_folio,
+ 	.invalidate_folio = f2fs_invalidate_folio,
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E915C21ADBC
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355661; cv=none; b=MLKbvWLvwlpJF435K13qStqAYvN2LZT2MOZGCHv1JHdUbWk4VqgKcshZ/i+zVevk6hptQLuJx1vPIwkR+2DgoYp6f/u7WYS4ZBu+46lp06oZ47Q614Y7qGyisYsFkq+PnbV7xJ8EW3zazQ6A1u1fTHflgkpH4o31Fr5Oi0smGx0=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355661; c=relaxed/simple;
+	bh=EC8mkrJKFYe9rnrkJN6E8xeNqC15+IMWVPIuaI/TsPc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=efbGGIsxx29IdPnll0ahBOJ14XC88xFRR+eSyMpNqDhL7YzM7rhqHea0IoBEwYZ2YMwGp/hM3u7LaHYcebOqUtH+mVE3C3vjAYUZG+vrxtbJQjuxryI+jUesJmq+BOK9ScMJCm0qmtE+LTZarC5oZUwT9XWYcqPt2Bheg3l11hE=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=AiRyjb9p; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="AiRyjb9p"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=MofhovjlADQCQPqeYMIVdQLieQlnl0tttbSu0oh4ZYs=; b=AiRyjb9pnJivKUulf3/TkIqiUa
+	7bhUXqQ56kgH5be5/6hPtgs3OfvkXoqoxzjwP6dDK1dCxb8eB+fgx4Si+OXoXbWx/4QXbPkcf2f8H
+	Tx5q9E1QnRnNoJzPSNY/L6g0oQta0BR7vhffZTsRhpB93XUAkEOKHR0z5mH+o6gXbRpVJdaWM4Uo9
+	5UUVoisF5QVZ5H8bexl780zg4hPo3PCV+RPFrP9zQf2Hk34Mi7a9GHfCGByUnfGbeU/WpgTVjsbcW
+	MvndBuaq0WiuOxnS0t0xcPqBydhg6nU8rOrVyZMSsSxwtvudPIMEXontGuVzP4owwFrlrBVWrTH/l
+	x4M1cLcA==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9Y-0000000CXGF-0qyX;
+	Fri, 07 Mar 2025 13:54:16 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 05/11] vboxsf: Convert to writepages
+Date: Fri,  7 Mar 2025 13:54:05 +0000
+Message-ID: <20250307135414.2987755-6-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+If we add a migrate_folio operation, we can convert the writepage
+operation to writepages.  Further, this lets us optimise by using
+the same write handle for multiple folios.  The large folio support here
+is illusory; we would need to kmap each page in turn for proper support.
+But we do remove a few hidden calls to compound_head().
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ fs/vboxsf/file.c | 47 +++++++++++++++++++++++++----------------------
+ 1 file changed, 25 insertions(+), 22 deletions(-)
+
+diff --git a/fs/vboxsf/file.c b/fs/vboxsf/file.c
+index b780deb81b02..b492794f8e9a 100644
+--- a/fs/vboxsf/file.c
++++ b/fs/vboxsf/file.c
+@@ -262,40 +262,42 @@ static struct vboxsf_handle *vboxsf_get_write_handle(struct vboxsf_inode *sf_i)
+ 	return sf_handle;
+ }
+ 
+-static int vboxsf_writepage(struct page *page, struct writeback_control *wbc)
++static int vboxsf_writepages(struct address_space *mapping,
++		struct writeback_control *wbc)
+ {
+-	struct inode *inode = page->mapping->host;
++	struct inode *inode = mapping->host;
++	struct folio *folio = NULL;
+ 	struct vboxsf_inode *sf_i = VBOXSF_I(inode);
+ 	struct vboxsf_handle *sf_handle;
+-	loff_t off = page_offset(page);
+ 	loff_t size = i_size_read(inode);
+-	u32 nwrite = PAGE_SIZE;
+-	u8 *buf;
+-	int err;
+-
+-	if (off + PAGE_SIZE > size)
+-		nwrite = size & ~PAGE_MASK;
++	int error;
+ 
+ 	sf_handle = vboxsf_get_write_handle(sf_i);
+ 	if (!sf_handle)
+ 		return -EBADF;
+ 
+-	buf = kmap(page);
+-	err = vboxsf_write(sf_handle->root, sf_handle->handle,
+-			   off, &nwrite, buf);
+-	kunmap(page);
++	while ((folio = writeback_iter(mapping, wbc, folio, &error))) {
++		loff_t off = folio_pos(folio);
++		u32 nwrite = folio_size(folio);
++		u8 *buf;
+ 
+-	kref_put(&sf_handle->refcount, vboxsf_handle_release);
++		if (nwrite > size - off)
++			nwrite = size - off;
+ 
+-	if (err == 0) {
+-		/* mtime changed */
+-		sf_i->force_restat = 1;
+-	} else {
+-		ClearPageUptodate(page);
++		buf = kmap_local_folio(folio, 0);
++		error = vboxsf_write(sf_handle->root, sf_handle->handle,
++				off, &nwrite, buf);
++		kunmap_local(buf);
++
++		folio_unlock(folio);
+ 	}
+ 
+-	unlock_page(page);
+-	return err;
++	kref_put(&sf_handle->refcount, vboxsf_handle_release);
++
++	/* mtime changed */
++	if (error == 0)
++		sf_i->force_restat = 1;
++	return error;
+ }
+ 
+ static int vboxsf_write_end(struct file *file, struct address_space *mapping,
+@@ -347,10 +349,11 @@ static int vboxsf_write_end(struct file *file, struct address_space *mapping,
+  */
+ const struct address_space_operations vboxsf_reg_aops = {
+ 	.read_folio = vboxsf_read_folio,
+-	.writepage = vboxsf_writepage,
++	.writepages = vboxsf_writepages,
+ 	.dirty_folio = filemap_dirty_folio,
+ 	.write_begin = simple_write_begin,
+ 	.write_end = vboxsf_write_end,
++	.migrate_folio = filemap_migrate_folio,
+ };
+ 
+ static const char *vboxsf_get_link(struct dentry *dentry, struct inode *inode,
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C8BE21C184
+	for <linux-fsdevel@vger.kernel.org>; Fri,  7 Mar 2025 13:54:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741355661; cv=none; b=WWifcSBOEn5GNv8gZi/oufyS+MVRcT7Q3Ajg4cQSN/94pWbDmnnDUBqkcbS+cr0LAseehigulESWBAjgkWuM54DsJzeIxMYOowcBwgiTf3gI9+tDwU9QF2g16JbUWY6VjrRE3POL7FP+X/3xFqQJns/p1cf4oTeeKCjDQ+dyd2E=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741355661; c=relaxed/simple;
+	bh=UcA8dQ9dN/as5K6+9kix004tEHRhWOYzqw7vVV7Fjis=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=o4E5+1e80N73qgWID7pramownsyZ/Sv1G6onOcmr8H1yXHctOkvTkBUd3yRm7AsVk3kMmYd6npSmz5EDFTCov4ps24uaoAXzk75EQFN8BMFApx0GX+vl0HjS9sgFqeMgRMEX/r8MmDTkvUce3LULxsM9gju8d4JyZDKTaiFD258=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=XY7U93Dx; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="XY7U93Dx"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=nbz+BLNYgFlD4q+RSS71Ot7C9TdXZjDl9SBqkDnbsow=; b=XY7U93DxQ+cGHvN+aCVMwhd7bD
+	Q5omSA/aDlZZUo4fX5k0l7Bt7oZCdWZFxn3uYSrmnYsV+05wv3PbwCywdxZM18Sbk0MwOcLQWaWIK
+	jKYjpk2VpjpmGP7AC7Z4KtBd4OE8uUFu1LVAs78sznRKKHgeC2KI5uPo6riG9jppW70Zfw1HDACxB
+	zk3tAtFduAuGZ+lMVcXsHpAbD9dU+69tKdaGcCcUAOKATP3I/UZogeaTFNZZQLxYF8VYQ+QBwnzKx
+	727elCnkPaDIaHy3WvwUUkIBt3aQh6YLeCVtLpZK5MWWOWijpRqVdUkyPZwR/Ml0adWX/Bn9Hud/f
+	/BzBL14g==;
+Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
+	id 1tqY9X-0000000CXFr-2KOb;
+	Fri, 07 Mar 2025 13:54:15 +0000
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-mm@kvack.org,
+	intel-gfx@lists.freedesktop.org
+Subject: [PATCH 01/11] f2fs: Remove check for ->writepage
+Date: Fri,  7 Mar 2025 13:54:01 +0000
+Message-ID: <20250307135414.2987755-2-willy@infradead.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+References: <20250307135414.2987755-1-willy@infradead.org>
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+We're almost able to remove a_ops->writepage.  This check is unnecessary
+as we'll never call into __f2fs_write_data_pages() for character
+devices.
+
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ fs/f2fs/data.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/fs/f2fs/data.c b/fs/f2fs/data.c
+index c82d949709f4..a80d5ef9acbb 100644
+--- a/fs/f2fs/data.c
++++ b/fs/f2fs/data.c
+@@ -3280,10 +3280,6 @@ static int __f2fs_write_data_pages(struct address_space *mapping,
+ 	int ret;
+ 	bool locked = false;
+ 
+-	/* deal with chardevs and other special file */
+-	if (!mapping->a_ops->writepage)
+-		return 0;
+-
+ 	/* skip writing if there is no dirty page in this inode */
+ 	if (!get_dirty_pages(inode) && wbc->sync_mode == WB_SYNC_NONE)
+ 		return 0;
+-- 
+2.47.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <intel-gfx-bounces@lists.freedesktop.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from gabe.freedesktop.org (gabe.freedesktop.org [131.252.210.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8661BC19F32
+	for <intel-gfx@archiver.kernel.org>; Fri,  7 Mar 2025 15:45:28 +0000 (UTC)
+Received: from gabe.freedesktop.org (localhost [127.0.0.1])
+	by gabe.freedesktop.org (Postfix) with ESMTP id 2146C10E18A;
+	Fri,  7 Mar 2025 15:45:28 +0000 (UTC)
+Received: from 18a75f3d1eae (emeril.freedesktop.org [131.252.210.167])
+ by gabe.freedesktop.org (Postfix) with ESMTPS id BD78910E0F0;
+ Fri,  7 Mar 2025 15:45:27 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: =?utf-8?q?=E2=9C=97_Fi=2ECI=2EBUILD=3A_failure_for_Remove_aops-=3Ewritepage?=
+From: Patchwork <patchwork@emeril.freedesktop.org>
+To: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+Cc: intel-gfx@lists.freedesktop.org
+Date: Fri, 07 Mar 2025 15:45:27 -0000
+Message-ID: <174136232777.2993.16272173862545754425@18a75f3d1eae>
+X-Patchwork-Hint: ignore
+References: <20250307135414.2987755-1-willy@infradead.org>
+In-Reply-To: <20250307135414.2987755-1-willy@infradead.org>
+X-BeenThere: intel-gfx@lists.freedesktop.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: Intel graphics driver community testing & development
+ <intel-gfx.lists.freedesktop.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Reply-To: intel-gfx@lists.freedesktop.org
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+
+== Series Details ==
+
+Series: Remove aops->writepage
+URL   : https://patchwork.freedesktop.org/series/145995/
+State : failure
+
+== Summary ==
+
+Error: patch https://patchwork.freedesktop.org/api/1.0/series/145995/revisions/1/mbox/ not applied
+Applying: f2fs: Remove check for ->writepage
+Applying: f2fs: Remove f2fs_write_data_page()
+Applying: f2fs: Remove f2fs_write_meta_page()
+Applying: f2fs: Remove f2fs_write_node_page()
+Applying: vboxsf: Convert to writepages
+Applying: migrate: Remove call to ->writepage
+Applying: writeback: Remove writeback_use_writepage()
+Applying: shmem: Add shmem_writeout()
+Applying: i915: Use writeback_iter()
+Applying: mm: Remove swap_writepage() and shmem_writepage()
+error: sha1 information is lacking or useless (mm/shmem.c).
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+Patch failed at 0010 mm: Remove swap_writepage() and shmem_writepage()
+When you have resolved this problem, run "git am --continue".
+If you prefer to skip this patch, run "git am --skip" instead.
+To restore the original branch and stop patching, run "git am --abort".
+Build failed, no error log produced
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from out30-132.freemail.mail.aliyun.com (out30-132.freemail.mail.aliyun.com [115.124.30.132])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8979E196
+	for <linux-fsdevel@vger.kernel.org>; Sat,  8 Mar 2025 05:31:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.132
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741411922; cv=none; b=FJriqAsx8BOyzrqM3GHmPlllAtcbvzJXgf12t31TwpOXI5tvzDGEsXZ8wtnCnEL1PYLG7ryvTc8uqA1yqCOdAVddWvUxiR/l8t7bBXlfwTpu/pMiEuCEhwiQoL42kI3tcBu18YqN99yN1fLteyBwu2i1U37pmjtFvbL1wxxXtHs=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741411922; c=relaxed/simple;
+	bh=r3WmQzKBN5y6VbEOdWMIT8xbnZLiiBRRi1vK4WFLKIU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=It3VUyGJpughN3uF3Ao0mFkz3/uxZejr+GY/5PEeF0Kkq7RDT7apt7A6AVe+jUetildX7OIPM3l771JswkaOU2LJILXnYdrncF8hx5UwrZ2eS6d08LYaz9iQtCOdajseexVvsnvlwkZAdr0qALTEVQAwD4q5+M4AS75rfoTu1Bc=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=DwDzzk3T; arc=none smtp.client-ip=115.124.30.132
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="DwDzzk3T"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1741411915; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=QwGokHK8MWELbszfeUznitYDMBt/G0N6Dzae0aons/k=;
+	b=DwDzzk3TsYNZrCbUqCaW5g2xtYFbyOjWMtd+tWgrkSle5SdDeFE3coeQRSRX9KaUXxpzDAh6cqDRtkJpsGL5rCnI6ks1zbMVgBSXOgw2GEGSC1/GrMx+X4Eljoj0fcNUbsus0SdWxMYLYeE0c04e8YsqF4fQv2lm6BSa87bzq/I=
+Received: from 30.221.80.100(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0WQu7mhO_1741411914 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Sat, 08 Mar 2025 13:31:55 +0800
+Message-ID: <88098e5c-1514-4d8d-a220-531a9b473ae3@linux.alibaba.com>
+Date: Sat, 8 Mar 2025 13:31:54 +0800
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 08/11] shmem: Add shmem_writeout()
+To: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ linux-fsdevel@vger.kernel.org
+Cc: linux-mm@kvack.org, intel-gfx@lists.freedesktop.org
+References: <20250307135414.2987755-1-willy@infradead.org>
+ <20250307135414.2987755-9-willy@infradead.org>
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+In-Reply-To: <20250307135414.2987755-9-willy@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+On 2025/3/7 21:54, Matthew Wilcox (Oracle) wrote:
+> This will be the replacement for shmem_writepage().
+> 
+> Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+
+LGTM.
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+
+> ---
+>   include/linux/shmem_fs.h |  7 ++++---
+>   mm/shmem.c               | 20 ++++++++++++++------
+>   2 files changed, 18 insertions(+), 9 deletions(-)
+> 
+> diff --git a/include/linux/shmem_fs.h b/include/linux/shmem_fs.h
+> index 0b273a7b9f01..5f03a39a26f7 100644
+> --- a/include/linux/shmem_fs.h
+> +++ b/include/linux/shmem_fs.h
+> @@ -104,10 +104,11 @@ static inline bool shmem_mapping(struct address_space *mapping)
+>   	return false;
+>   }
+>   #endif /* CONFIG_SHMEM */
+> -extern void shmem_unlock_mapping(struct address_space *mapping);
+> -extern struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
+> +void shmem_unlock_mapping(struct address_space *mapping);
+> +struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
+>   					pgoff_t index, gfp_t gfp_mask);
+> -extern void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
+> +int shmem_writeout(struct folio *folio, struct writeback_control *wbc);
+> +void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
+>   int shmem_unuse(unsigned int type);
+>   
+>   #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> diff --git a/mm/shmem.c b/mm/shmem.c
+> index ba162e991285..427b7f70fffb 100644
+> --- a/mm/shmem.c
+> +++ b/mm/shmem.c
+> @@ -1536,12 +1536,20 @@ int shmem_unuse(unsigned int type)
+>   	return error;
+>   }
+>   
+> -/*
+> - * Move the page from the page cache to the swap cache.
+> - */
+>   static int shmem_writepage(struct page *page, struct writeback_control *wbc)
+>   {
+> -	struct folio *folio = page_folio(page);
+> +	return shmem_writeout(page_folio(page), wbc);
+> +}
+> +
+> +/**
+> + * shmem_writeout - Write the folio to swap
+> + * @folio: The folio to write
+> + * @wbc: How writeback is to be done
+> + *
+> + * Move the folio from the page cache to the swap cache.
+> + */
+> +int shmem_writeout(struct folio *folio, struct writeback_control *wbc)
+> +{
+>   	struct address_space *mapping = folio->mapping;
+>   	struct inode *inode = mapping->host;
+>   	struct shmem_inode_info *info = SHMEM_I(inode);
+> @@ -1586,9 +1594,8 @@ static int shmem_writepage(struct page *page, struct writeback_control *wbc)
+>   try_split:
+>   		/* Ensure the subpages are still dirty */
+>   		folio_test_set_dirty(folio);
+> -		if (split_huge_page_to_list_to_order(page, wbc->list, 0))
+> +		if (split_folio_to_list(folio, wbc->list))
+>   			goto redirty;
+> -		folio = page_folio(page);
+>   		folio_clear_dirty(folio);
+>   	}
+>   
+> @@ -1660,6 +1667,7 @@ static int shmem_writepage(struct page *page, struct writeback_control *wbc)
+>   	folio_unlock(folio);
+>   	return 0;
+>   }
+> +EXPORT_SYMBOL_GPL(shmem_writeout);
+>   
+>   #if defined(CONFIG_NUMA) && defined(CONFIG_TMPFS)
+>   static void shmem_show_mpol(struct seq_file *seq, struct mempolicy *mpol)
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from out30-100.freemail.mail.aliyun.com (out30-100.freemail.mail.aliyun.com [115.124.30.100])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2C4625569
+	for <linux-fsdevel@vger.kernel.org>; Sat,  8 Mar 2025 05:34:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.100
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741412077; cv=none; b=p4hjekIxOC4A7Bx2W+W2QkaRzL26hlyUWT7JaRiO7teiGXPC2Yks13v0lHumrghBvJiNbTy2zrjy9qvq9z6iVdblPbMpffizohv1ZG1nL4BxHZiYYW5KoxPArSnP1Qq2fkDq3NLBvEXDYNjcluO7VvmoHk0KUIVj4mhI3NRhY8k=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741412077; c=relaxed/simple;
+	bh=SAXAuYbXMMFMJLoTsuBBs6OSLgFBbT+9RfXfIOtNu+c=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gDigsRwCkUiIB2YStYcE9NY+Iv45WGI85uctPZ049LKCqITSulzqW86LlYRHmQSTHK5VwzwJ1qvEx2MEfJbDn1kVH+TR6ctE9zmI5mycxDvkHg+VwvNytXxQ1Q6tHeqmH7yXKweT5fUyy9c6b3ZHSoWdmAVqi+ucAnUi8lk206s=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=ciKEGUSW; arc=none smtp.client-ip=115.124.30.100
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="ciKEGUSW"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1741412070; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=HTIcER/dyIswpMrv6blznZFW77d+UzEIvHyZ7/F+fAM=;
+	b=ciKEGUSWshNO+IncrIsiy0v5euVuKNgvR48S/WwNnt4CsGNrNamiZ1JDAGLqfxuc9G19ynY3L8Z42EE3albwvWkJ6MKBpulgO8EGJF1DtFL+rOVtF1cPyqCa8J+WdxqwcIHcCgD3oleke6hanzS8oUzc7FHY4vxr4gV66Eo7i0U=
+Received: from 30.221.80.100(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0WQu4qrn_1741412069 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Sat, 08 Mar 2025 13:34:30 +0800
+Message-ID: <315f4426-0ed0-4ce6-8b12-ca4e79ee00ee@linux.alibaba.com>
+Date: Sat, 8 Mar 2025 13:34:29 +0800
+Precedence: bulk
+X-Mailing-List: linux-fsdevel@vger.kernel.org
+List-Id: <linux-fsdevel.vger.kernel.org>
+List-Subscribe: <mailto:linux-fsdevel+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fsdevel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 10/11] mm: Remove swap_writepage() and shmem_writepage()
+To: "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ linux-fsdevel@vger.kernel.org
+Cc: linux-mm@kvack.org, intel-gfx@lists.freedesktop.org
+References: <20250307135414.2987755-1-willy@infradead.org>
+ <20250307135414.2987755-11-willy@infradead.org>
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+In-Reply-To: <20250307135414.2987755-11-willy@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+On 2025/3/7 21:54, Matthew Wilcox (Oracle) wrote:
+> Call swap_writeout() and shmem_writeout() from pageout() instead.
+> 
+> Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+
+I tested shmem swap-out and swap-in with your patch set, and works well. 
+So feel free to add:
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Tested-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+
