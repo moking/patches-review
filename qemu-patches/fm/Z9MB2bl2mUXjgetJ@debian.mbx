@@ -1,0 +1,1649 @@
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA4E92698AE
+	for <linux-cxl@vger.kernel.org>; Thu, 13 Mar 2025 16:03:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.41
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741881826; cv=none; b=onYMP1WsOFBvCVVNnnpL3wGKe6qNpyQPfxg6V6FW6J+HWveeaxLYDFyoKLJJgx1sbE4DJZfMYTMy9eweBP4s4uPxX5JHVl/6mysHPpdC7XRTggQJYgXbVEeLsp3eXKXOo6/65nOhlTC/2Vfl2yvG/F1TgIQ0/KYa+SjwxQKHT+g=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741881826; c=relaxed/simple;
+	bh=NTwKdweeXghmMb8e5gqNnBO78ci15QwSO8R0xG0Qo5U=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lxLTFyO7IcugE3ZwnFl+2NqpLuK7a9XMNTjxz4ct+SbPmh33EGdYH38KK+bu4Aew+WSyO0Kpjb8TcMwVeizE83BU2wlqC9R6tWJ/YwiVNoDFAvjujaVyVgqQPTdojFC8UBFxm4lsmMzwHgqZoPWHApBU+77LQPn7JrzTpL8Pr1A=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=I2woZiJZ; arc=none smtp.client-ip=209.85.216.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="I2woZiJZ"
+Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-301302a328bso2428128a91.2
+        for <linux-cxl@vger.kernel.org>; Thu, 13 Mar 2025 09:03:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1741881822; x=1742486622; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=sIkb5arOEkqODDz9dzsL9/lmEx2EyxAguJsBahIivbs=;
+        b=I2woZiJZNXqgMeeMFuDe21Ipg9bBevisTkOscolfeoNAhYsfulthYEPoYC64x43Qda
+         5ZeD3nRIGwLHbVxrJLbEESwps7VbSh83FzYOmRXsfXiKyhtpzjxGi/qddNUxL+JnYOpc
+         c0yRvENy2hfLD7iWXHPr6rOSupS6b+76+LumG2xz1LmUWfEPk5GGauJ/JhttMoUCpzGA
+         skH+XJ5R1s1W0U5zeanm0gLmMjk/IicPZ3Lv1vvhai9lBgRDGlCykVuqQbo0jIRyvLJ2
+         G+qqyUCXU6MMA9fDalvE9l2TRb28GAZZjS4z9U8xN6DlEEbspmHL6i6wOIGH5utNY2AL
+         EQTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1741881822; x=1742486622;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:date:from:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=sIkb5arOEkqODDz9dzsL9/lmEx2EyxAguJsBahIivbs=;
+        b=EzGwM+DJl/QPMWA5HRicGnwSvSlhTv592kOBwF8xImrGtOLNYdYWBClPkbUapkK6IO
+         +Xa+fL8P9ioQIbsmHISG6512X8Obx1mvCJVGZicabsKp1ZNx4hffXlrZSeMh8C2TyYVR
+         6zYXS5MBAIs54+z3XCD5XotnP8Ibp+dT+9qNQQUHwDOmuVfAWMZb25WWCf5hvbQWvWJ0
+         swI+H0RUnMx2lLiJ8ZMctv/SzvpfqLmlfjRuMPHM3otTdNJlKu9izo8hWJt/aGvtrcu4
+         I3avQvV/lHoAaCP1KmTILecTAmiNcWEZqZpK/Onw3rrDLTZsiVe8H1uuCeuaEwXuhiNg
+         /HPg==
+X-Forwarded-Encrypted: i=1; AJvYcCXXxso1gjOH64sq9ydl1TpAQnQ4/Ek5fvsK2yWhgNJa1nNA5iqvMx+9WAdRTDrg2Q6b6l6Ql/4jHoE=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxIHFwvIuv5szV9AyiefuJR1e7EUAmuEQW++ttrJC4v21UBb6Uq
+	RaxAT/WLQqbYv2HaVFUPe2wbItQQayuQ6rMo55ZkEixyTMTxBoz8
+X-Gm-Gg: ASbGncsafjmGGtS9FWEcWXppVP0tiLJhf287bYmnhY50m7DkulVtsgG3L/LXmNkA8hz
+	mYpRTod8u+QUz9Dad1QPO9CY4vu0SD0Th2QRNDNTCVkt5DZEvx4dxdUWzidTU3E35pvjq7jdNjD
+	fK3lzc3xtJMclpiwGUTYCk5kdE12hAr586Sz7A5Dxv3OagNALEfxtRea4IC+o1ki0v3twwBOOfu
+	aJ39+mxsApkb+FjLxtnwnrIJVXc9aPw3tX18NH4XLXd9qDwP7L3FnGU3ZCV2j2OtBBgO2BuOC9S
+	jiSDQJ28kPoMghqJE7UT1u9aiC1xZY3DwQl3uyURWgyvVo+I+g==
+X-Google-Smtp-Source: AGHT+IFUWruZuGkMW1jbmnyjoZN66WwgopSQq4sJ/Fn8+F7Mq8lCY19EnN8b/20bLhsAxbkUdjfqew==
+X-Received: by 2002:a17:90b:2802:b0:2ef:2f49:7d7f with SMTP id 98e67ed59e1d1-3014e861a2dmr108612a91.18.1741881821778;
+        Thu, 13 Mar 2025 09:03:41 -0700 (PDT)
+Received: from debian ([2601:646:8f03:9fee:1e89:f144:8d88:9d5c])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30138b3b2bdsm1688969a91.5.2025.03.13.09.03.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 13 Mar 2025 09:03:41 -0700 (PDT)
+From: Fan Ni <nifan.cxl@gmail.com>
+X-Google-Original-From: Fan Ni <fan.ni@samsung.com>
+Date: Thu, 13 Mar 2025 09:03:37 -0700
+To: Gregory Price <gourry@gourry.net>
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Junjie Fu <fujunjie1@qq.com>, qemu-devel@nongnu.org,
+	linux-cxl@vger.kernel.org, viacheslav.dubeyko@bytedance.com,
+	zhitingz@cs.utexas.edu, svetly.todorov@memverge.com,
+	a.manzanares@samsung.com, fan.ni@samsung.com, anisa.su887@gmail.com,
+	dave@stgolabs.net
+Subject: Re: CXL memory pooling emulation inqury
+Message-ID: <Z9MB2bl2mUXjgetJ@debian>
+References: <20230215151854.00003e34@Huawei.com>
+ <tencent_E9F3F01E0D2303378E16505CE4CF208AA908@qq.com>
+ <20250312180543.00002132@huawei.com>
+ <Z9HheFFgOdGE9BcW@gourry-fedora-PF4VCD3F>
+Precedence: bulk
+X-Mailing-List: linux-cxl@vger.kernel.org
+List-Id: <linux-cxl.vger.kernel.org>
+List-Subscribe: <mailto:linux-cxl+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-cxl+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Z9HheFFgOdGE9BcW@gourry-fedora-PF4VCD3F>
+Status: O
+Content-Length: 4340
+Lines: 100
+
+On Wed, Mar 12, 2025 at 03:33:12PM -0400, Gregory Price wrote:
+> On Wed, Mar 12, 2025 at 06:05:43PM +0000, Jonathan Cameron wrote:
+> > 
+> > Longer term I remain a little unconvinced by whether this is the best approach
+> > because I also want a single management path (so fake CCI etc) and that may
+> > need to be exposed to one of the hosts for tests purposes.  In the current
+> > approach commands are issued to each host directly to surface memory.
+> >
+> 
+> Lets say we implement this
+> 
+>   -----------         -----------
+>   |  Host 1 |         | Host 2  |
+>   |    |    |         |         |
+>   |    v    |   Add   |         |
+>   |   CCI   | ------> | Evt Log |
+>   -----------         -----------
+>                  ^ 
+> 	    What mechanism
+> 	   do you use here?
+> 
+> And how does it not just replicate QMP logic?
+> 
+> Not arguing against it, I just see what amounts to more code than
+> required to test the functionality.  QMP fits the bill so split the CCI
+> interface for single-host management testing and the MHSLD interface.
+
+We have recently discussed the approach internally. Our idea is to do
+something similar to what you have done with MHSLD emulation, use shmem
+dev to share information (mailbox???) between the two devices. 
+> 
+> Why not leave the 1-node DCD with inbound CCI interface for testing and
+> leave QMP interface for development of a reference fabric manager
+> outside the scope of another host?
+
+For this two hosts setup, for now I can see benefits,
+the two hosts can have different kernel, that is to say, the one served
+as FM only need to support for exmaple out-of-band communication with
+the hardware (MCTP over i2c), and do not need to evolve with what we
+want to test on the target host (boot with kernel with features we care).
+That is very important at least for test purpose, as mctp over i2c
+support for x86 support is not upstreamed yet, we do not want to rebase
+whenever the kernel is updated.
+
+More speficially, let's say, we deploy libcxlmi test framework on the FM
+host, and then we can test the target host whatever features needed to
+test (DCD etc). Again the FM host does not need to have dcd kernel support.
+
+Compared to qmp interface, since libcxlmi already supports a lot of
+commands and more commands are being included. It should be much more
+convinient than implementing them with qmp interface.
+
+Fan
+
+
+> 
+> TL;DR:  :[ distributed systems are hard to test
+> 
+> > > 
+> > > 2.If not fully supported yet, are there any available development branches 
+> > > or patches that implement this functionality?
+> > > 
+> > > 3.Are there any guidelines or considerations for configuring and testing CXL memory pooling in QEMU?
+> > 
+> > There is some information in that patch series cover letter.
+> >
+> 
+> The attached series implements an MHSLD, but implementing the pooling
+> mechanism (i.e. fabric manager logic) is left to the imagination of the
+> reader.   You will want to look at Fan Ni's DCD patch set to understand
+> the QMP Add/Remove logic for DCD capacity.  This patch set just enables
+> you to manage 2+ QEMU Guests sharing a DCD State in shared memory.
+> 
+> So you'll have to send DCD commands individual guest QEMU via QMP, but
+> the underlying logic manages the shared state via locks to emulate real
+> MHSLD behavior.
+>                      QMP|---> Host 1 --------v
+>                [FM]-----|              [Shared State]
+> 	             QMP|---> Host 2 --------^
+> 
+> This differs from a real DCD in that a real DCD is a single endpoint for
+> management, rather than N endpoints (1 per vm).
+> 
+>                                   |---> Host 1
+>                 [FM] ---> [DCD] --|
+> 		                  |---> Host 2
+> 
+> However this is an implementation detail on the FM side, so I chose to
+> do it this way to simplify the QEMU MHSLD implementation.  There's far
+> fewer interactions this way - with the downside that having one of the
+> hosts manage the shared state isn't possible via the current emulation.
+> 
+> It could probably be done, but I'm not sure what value it has since the
+> FM implementation difference is a matter a small amount of python.
+> 
+> It's been a while since I played with this patch set and I do not have a
+> reference pooling manager available to me any longer unfortunately. But
+> I'm happy to provide some guidance where I can.
+> 
+> ~Gregory
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from mail-qv1-f47.google.com (mail-qv1-f47.google.com [209.85.219.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7882E1ACEB0
+	for <linux-cxl@vger.kernel.org>; Wed, 12 Mar 2025 19:33:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.47
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741807999; cv=none; b=lCloIDo/VdB1i+JUvMAdrIAvDSIl0intXf3jpnUOPL9g5CQeO57tbzxAXQR10ZSczevTy9V98a8tIouRep3RrpsHYANSo22o0X/kUKTU6dyDR9aVeju4bZGnhKMil0HP9m7ZUD3dxhhuEA3lyC4uCpUzVp94vRS0/boB+pisnWw=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741807999; c=relaxed/simple;
+	bh=76T8NNNNn0Adxoh38qDdyHZqJcE1/kXuzYRX2EWQJXA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Set5TQA+UibJRWFp5Mb73TNuiXNvxWJSDJZUMSLr7KczKuWRKOfEwd1v8oGFQz4bNz//M/Z4hxw0kitdf3yK4zZ5syaNzJ1UB5k04Dl3+lxphwrex+SJEMZaUuRshmkihzkh/XQJOwPnXkAGC4lk7DE1rZRCdN8tdESt0TK7bRg=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net; spf=pass smtp.mailfrom=gourry.net; dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.b=AjRGJycW; arc=none smtp.client-ip=209.85.219.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gourry.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.b="AjRGJycW"
+Received: by mail-qv1-f47.google.com with SMTP id 6a1803df08f44-6ddcff5a823so2513506d6.0
+        for <linux-cxl@vger.kernel.org>; Wed, 12 Mar 2025 12:33:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gourry.net; s=google; t=1741807995; x=1742412795; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=4lSj5k8zELNyNV8ADskYGKCYpCr2239a+4acaXM4eO0=;
+        b=AjRGJycW066PM/cLKYVosD1gxbu7DkVpdNrXSetoBusVX7viVhthVuujiHrHjg5GfY
+         u026KUjj5i6Vow9oqOMn/zaqUlwf9aVRmLvvSIHVU07YfQkE4fumDbiGvaHZqADF0vP5
+         G3C+AAO7smv/jCjyWTRf9963rDMoBLMM3zTX+geWOOL7aC+lJ0NTq+EEl81NTgPoRyso
+         a4d2nbKRSUM+67yk7qlGVZIIDo7MUQC+BpYUa4zlZXKAgwgLQzNusqAuu+l8hynv0BOd
+         gFApnhCMhz4Q4LqO6BwZWwY9Ij8S9IO7rDqu1BUx7xLpt3wiyEJVHzmtdEHLas5BigW3
+         mwZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1741807995; x=1742412795;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4lSj5k8zELNyNV8ADskYGKCYpCr2239a+4acaXM4eO0=;
+        b=XCrmc05+BrQeoupImKWbjx7WrUGI3NwXNH7AXVuwI+BFfMBpAPGLdVWLxls81/Nnfw
+         OHY82JRUQA/Of+ep1ROpnK9sNBjxjQq6JntIlTresn6UkLXzpyJPfMkL7Ksjo/8vM8Rn
+         FfePAtYYffroy4fFuYcUCodUOzRGwt/xu47lBBZHgCsjt1hZOsVRgtRksr5Ew2TEpll0
+         qVT8ukbiE8sFuNT6YYMfQ4kix0NE9tBqd3aJWwvTdhwTdagQxxRcLFw4iLGIwX77pXEN
+         2wC+o2as0hXaXYUjP+oAh2Bt4jSKL6A2Bj/qyMLVqLK+hq0hQ75rScmb50j/kw1EXB19
+         mMaw==
+X-Forwarded-Encrypted: i=1; AJvYcCU7oI8JNbQGphbLtw6l+elpkgBKZQ5FVsP0GbxigBEUgrjyqKhK5eXbnNxVNzLqDWfRx6HNTFSSvlQ=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwDHSdioSfIB1Z2k1YETKhIb9s7cDm5rcsTEVhN7tL8eGjpOZ15
+	qZYmhlweUxPFFdfWnOeE5jjv76aF6d//mRbVdpvBM9eM/TTVuJzpFN+8iHWZKes=
+X-Gm-Gg: ASbGncsC4ndQUVFvCo3cIXW9vHmYXGqlh0e2LbvIXlzp/IUpzUcV1EDA2boX/Vt0aZ9
+	H8p8uItw1tMfVl5io3kyqGXn+0f8XYdnYRs6WwDtk+5dyqZdkiJSipYRcKKZw9qmwZCAYpy3yjv
+	yZAArTGCL+k1nt9YIE0bIVAsnY+R1LUMI46Ufaa0f0O74WjMCmmmoiQRxgcIt4qeO4yyHmIWtL4
+	FJqJDsfJbf47ZwhAhRNBOF9mOMl1f7M+zSzAG6RFSDpghzZ+Z7kA+1t3TjEDwI4/MW2/E/g1L6w
+	Fe6mlc5SNN8SESRviHbB+opTSfvM55ZNX7FbqopGRxrQijFg6S6k9P4CAcB+EV4K8IXTQ5p3Fsy
+	265bUHhTCo1+sma6nmEVq4og708Q=
+X-Google-Smtp-Source: AGHT+IE8Wv9W2LFd3SjqsjDb1ASTUBm3QlDnMDYoy+21dIVTqr1Ac3ElC6HUJGyQiIjvs6vR9X715A==
+X-Received: by 2002:a05:6214:29ef:b0:6e8:9d00:3d71 with SMTP id 6a1803df08f44-6e90063cdc2mr301059276d6.21.1741807995269;
+        Wed, 12 Mar 2025 12:33:15 -0700 (PDT)
+Received: from gourry-fedora-PF4VCD3F (pool-173-79-56-208.washdc.fios.verizon.net. [173.79.56.208])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6e8f7185065sm88409476d6.124.2025.03.12.12.33.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 12 Mar 2025 12:33:14 -0700 (PDT)
+Date: Wed, 12 Mar 2025 15:33:12 -0400
+From: Gregory Price <gourry@gourry.net>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Junjie Fu <fujunjie1@qq.com>, qemu-devel@nongnu.org,
+	linux-cxl@vger.kernel.org, viacheslav.dubeyko@bytedance.com,
+	zhitingz@cs.utexas.edu, svetly.todorov@memverge.com
+Subject: Re: CXL memory pooling emulation inqury
+Message-ID: <Z9HheFFgOdGE9BcW@gourry-fedora-PF4VCD3F>
+References: <20230215151854.00003e34@Huawei.com>
+ <tencent_E9F3F01E0D2303378E16505CE4CF208AA908@qq.com>
+ <20250312180543.00002132@huawei.com>
+Precedence: bulk
+X-Mailing-List: linux-cxl@vger.kernel.org
+List-Id: <linux-cxl.vger.kernel.org>
+List-Subscribe: <mailto:linux-cxl+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-cxl+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250312180543.00002132@huawei.com>
+Status: RO
+X-Status: A
+Content-Length: 2990
+Lines: 74
+
+On Wed, Mar 12, 2025 at 06:05:43PM +0000, Jonathan Cameron wrote:
+> 
+> Longer term I remain a little unconvinced by whether this is the best approach
+> because I also want a single management path (so fake CCI etc) and that may
+> need to be exposed to one of the hosts for tests purposes.  In the current
+> approach commands are issued to each host directly to surface memory.
+>
+
+Lets say we implement this
+
+  -----------         -----------
+  |  Host 1 |         | Host 2  |
+  |    |    |         |         |
+  |    v    |   Add   |         |
+  |   CCI   | ------> | Evt Log |
+  -----------         -----------
+                 ^ 
+	    What mechanism
+	   do you use here?
+
+And how does it not just replicate QMP logic?
+
+Not arguing against it, I just see what amounts to more code than
+required to test the functionality.  QMP fits the bill so split the CCI
+interface for single-host management testing and the MHSLD interface.
+
+Why not leave the 1-node DCD with inbound CCI interface for testing and
+leave QMP interface for development of a reference fabric manager
+outside the scope of another host?
+
+TL;DR:  :[ distributed systems are hard to test
+
+> > 
+> > 2.If not fully supported yet, are there any available development branches 
+> > or patches that implement this functionality?
+> > 
+> > 3.Are there any guidelines or considerations for configuring and testing CXL memory pooling in QEMU?
+> 
+> There is some information in that patch series cover letter.
+>
+
+The attached series implements an MHSLD, but implementing the pooling
+mechanism (i.e. fabric manager logic) is left to the imagination of the
+reader.   You will want to look at Fan Ni's DCD patch set to understand
+the QMP Add/Remove logic for DCD capacity.  This patch set just enables
+you to manage 2+ QEMU Guests sharing a DCD State in shared memory.
+
+So you'll have to send DCD commands individual guest QEMU via QMP, but
+the underlying logic manages the shared state via locks to emulate real
+MHSLD behavior.
+                     QMP|---> Host 1 --------v
+               [FM]-----|              [Shared State]
+	             QMP|---> Host 2 --------^
+
+This differs from a real DCD in that a real DCD is a single endpoint for
+management, rather than N endpoints (1 per vm).
+
+                                  |---> Host 1
+                [FM] ---> [DCD] --|
+		                  |---> Host 2
+
+However this is an implementation detail on the FM side, so I chose to
+do it this way to simplify the QEMU MHSLD implementation.  There's far
+fewer interactions this way - with the downside that having one of the
+hosts manage the shared state isn't possible via the current emulation.
+
+It could probably be done, but I'm not sure what value it has since the
+FM implementation difference is a matter a small amount of python.
+
+It's been a while since I played with this patch set and I do not have a
+reference pooling manager available to me any longer unfortunately. But
+I'm happy to provide some guidance where I can.
+
+~Gregory
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 300F07083C
+	for <linux-cxl@vger.kernel.org>; Wed, 12 Mar 2025 18:05:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741802756; cv=none; b=N4cXrbN4zq6zDXk8C8rP3CuDHUP1XErphM03p5MOQmARdoRoGG35qZ8usG2r2nti4XnJFgZlTUHktqONGt1YlEVzrYAjCbEDunKiFRN+aRAehPgUn0lZa4Byl0c/JpvLqWYDe62JMoKJvupyUuq6LZ6RqCkjWljOekIcXLDpCC0=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741802756; c=relaxed/simple;
+	bh=FzdCcwsmBnp/9cO/AcV+7P8yhjJP3N9NtZ7qFkiCTX4=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cWL5qBA4v75tjbfEbQzoTI5LrneY/LEP11PUJpn103yVXs5j3DUh48gY7EzFy3b1XZxvZCybjdSOBNvn470okTp1NPRruOloylaAAspQox5tFpqV+va9055EmWXwuSaQOdK5R0zRxPsBl/KJOBKO4a5lRMYUeVuqLf5UnbIDCFc=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.186.31])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4ZCdld42Pjz6J9mG;
+	Thu, 13 Mar 2025 02:03:09 +0800 (CST)
+Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
+	by mail.maildlp.com (Postfix) with ESMTPS id 73CDB1400D3;
+	Thu, 13 Mar 2025 02:05:45 +0800 (CST)
+Received: from localhost (10.203.177.66) by frapeml500008.china.huawei.com
+ (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Wed, 12 Mar
+ 2025 19:05:44 +0100
+Date: Wed, 12 Mar 2025 18:05:43 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: Junjie Fu <fujunjie1@qq.com>
+CC: <qemu-devel@nongnu.org>, <linux-cxl@vger.kernel.org>,
+	<viacheslav.dubeyko@bytedance.com>, <zhitingz@cs.utexas.edu>, Gregory Price
+	<gourry@gourry.net>, <svetly.todorov@memverge.com>
+Subject: Re: CXL memory pooling emulation inqury
+Message-ID: <20250312180543.00002132@huawei.com>
+In-Reply-To: <tencent_E9F3F01E0D2303378E16505CE4CF208AA908@qq.com>
+References: <20230215151854.00003e34@Huawei.com>
+	<tencent_E9F3F01E0D2303378E16505CE4CF208AA908@qq.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
+Precedence: bulk
+X-Mailing-List: linux-cxl@vger.kernel.org
+List-Id: <linux-cxl.vger.kernel.org>
+List-Subscribe: <mailto:linux-cxl+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-cxl+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: lhrpeml500010.china.huawei.com (7.191.174.240) To
+ frapeml500008.china.huawei.com (7.182.85.71)
+Status: O
+Content-Length: 1873
+Lines: 50
+
+On Mon, 10 Mar 2025 16:02:45 +0800
+Junjie Fu <fujunjie1@qq.com> wrote:
+
+> > Note though that there is a long way to go before we can do what you
+> > want.  The steps I'd expect to see along the way:
+> >
+> > 1) Emulate an Multi Headed Device.
+> >    Initially connect two heads to different host bridges on a single QEMU
+> >    machine.  That lets us test most of the code flows without needing
+> >    to handle tests that involve multiple machines.
+> >    Later, we could add a means to connect between two instances of QEMU.
+> > 2) Add DCD support (we'll need the kernel side of that as well)
+> > 3) Wire it all up.
+> > 4) Do the same for a Switch with MLDs behind it so we can poke the fun
+> >    corners.  
+> 
+> 
+> Hi,Jonathan
+> 
+> Given your previous exploration, I would like to ask the following questions:
+> 1.Does QEMU currently support simulating the above CXL memory pooling scenario?
+
+Not in upstream yet but Gregory posted emulation support last year.
+https://lore.kernel.org/qemu-devel/20241018161252.8896-1-gourry@gourry.net/
+I'm carrying the patches on my staging tree.
+
+https://gitlab.com/jic23/qemu/-/commits/cxl-2025-02-20?ref_type=heads
+
+Longer term I remain a little unconvinced by whether this is the best approach
+because I also want a single management path (so fake CCI etc) and that may
+need to be exposed to one of the hosts for tests purposes.  In the current
+approach commands are issued to each host directly to surface memory.
+
+> 
+> 2.If not fully supported yet, are there any available development branches 
+> or patches that implement this functionality?
+> 
+> 3.Are there any guidelines or considerations for configuring and testing CXL memory pooling in QEMU?
+
+There is some information in that patch series cover letter.
+
++CC Gregory and Svelty.
+> 
+> I sincerely appreciate your time and guidance on this topic!
+> 
+No problem.
+
+Jonathan
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Received: from out203-205-221-205.mail.qq.com (out203-205-221-205.mail.qq.com [203.205.221.205])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDBE2223308
+	for <linux-cxl@vger.kernel.org>; Mon, 10 Mar 2025 08:11:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.205.221.205
+ARC-Seal: i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1741594310; cv=none; b=ftWYyYJY1jMx3854oA/Rmdx3IOA2w6wk5ucJ0ukvmxbsMA8FR4yFEeieCNqyfPwLfQM6pcTd2RNgbjebugfKW82M/DFkMOyrwxLu9eU55VNv/ICYsZNUoPuHOkfYlAA4vKAGWvn7E/kc/5vO34HZPR1l0jqh12e8SwNa6d6fBj0=
+ARC-Message-Signature: i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1741594310; c=relaxed/simple;
+	bh=evZipJUd2k+N8QHCMIjDngVMRsYVv89bzSlXpKkK5uQ=;
+	h=Message-ID:From:To:Cc:Subject:Date:In-Reply-To:References:
+	 MIME-Version; b=imdBANWHgp9GBp3teez7SrxhfSCOGy+RSSKHSiBAltqrTbtpnD+RGSXAruU6MO/DmDjw/O7N9PcW3oL7hmMLQvnP4HwCjBV4Fvu+vdAWH5MsC+0Ywl4AOEbsvg8wVAX8/lrWk+ZG/1F6+SBt9Xzp+0zhvvDWQ3jtUNg1jwJIOdc=
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; spf=pass smtp.mailfrom=qq.com; dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b=Lr+kdzdA; arc=none smtp.client-ip=203.205.221.205
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b="Lr+kdzdA"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1741593997; bh=1m3NpkLP/3kCEEfq6yVIpcmTeGIdXnJV/p1gVEI3Baw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Lr+kdzdAwSolZjPMmgDA3ZWPUJzbKFWfeOUN5ufNg2OG9Xsc5etqcM8MDogoRQuHW
+	 eQvzdWhh3p6hG08n23igfpYieecJz3ipPVuLBdw7TZk4uAmrRB4o5AQpRGx51+wqFH
+	 LGaP5auHh1TQZQSXOZBa4SU3qoi7oIGyZBa7slRw=
+Received: from localhost.localdomain ([2408:8409:1921:9c88:8c6b:6c8:9ab7:c93e])
+	by newxmesmtplogicsvrsza36-0.qq.com (NewEsmtp) with SMTP
+	id 1469C4ED; Mon, 10 Mar 2025 16:05:06 +0800
+X-QQ-mid: xmsmtpt1741593906tf5rqj6n6
+Message-ID: <tencent_E9F3F01E0D2303378E16505CE4CF208AA908@qq.com>
+X-QQ-XMAILINFO: NzOHSugmTg7X1YVOCHdceq8Z1QLyi0d59A5grrf3cTfFXKpskIKhksx1fYvO3I
+	 ij/gK6eaWDYGapxhRzn/UpsIxMAqrFgAT9Fq7ULEZ5RW1POj5fRgfT6onhddhwoV1Qb80+1pKXmk
+	 mFGn/Uw/OgmgEpQeEZ76wkv22amBskHid/yKTYB40o89ypuWtQlkkkB8H66cBFxY+G4NxPaCzgv9
+	 pvwcCp7lwP/B9ISvisSCnZoRkIPog6M87djiXH/Qvdr97FqO/V9YUcP4KhIjyfNUWfzIYxHqQ/TJ
+	 H9JK66RVr3wYBxd0qnl9ip9gehTeW5P/1V0nY28iS4rBXjydCnlC3YpEAqpx9bl96gJJEk5xY3An
+	 dCOvxnFK/2BSKepkhb1hOi0DYiOQmJPiMGlFEmCRvUSJD4sFPaV1lkEKlOBscYazKTt04PnkYtHf
+	 j8JzaU0DBQ1r62gADqsXqEkAalPIvvZBpwyXxZ3ChE+udTHibw+YfwD7+y1uZvjl8f7jL6/LdpAg
+	 7dscFvLVZpiXpYCj2yOcDYy+OJYmPb/rPFl04u9kXNVUQpTO8C3SN0pYa2yVLQt/pKCyZ4ivk4E/
+	 f+LfYtQW8JU0ON3nOkq9I5e4rDRETnHDcJdaObKUeBiWq1+ANUjgo1LsH00lq02UxfSi/dGc0RaD
+	 Kl5M+gUcb8gY0VI7UPmbQ2kuJ/IjD86Y7/KNzUCWx94LdZbU4jRFK1f86iJo331MApHse0DU3Efz
+	 uZ6Ul2Du27vLEPLq1IHz+qeGaJzdnqmGMkqZaBAH663pIxZwjlEW07w41bcprFqJQxEBcs1wpDOn
+	 NoeWiZTijdwdcpa3S6TJPl4TRUWVk5bG/QAEEKisqEt+fDk8qZ0iWDmt6rICPnIG/jvj66EmVal1
+	 GGZaHa7DL88FFsaUPOpJalyqxN5YpH9q8ZRmoSxStQ9IvSzhojNs7j84fDvHdTWXSVdMGUHHr//t
+	 cyASLnTU0=
+X-QQ-XMRINFO: MPJ6Tf5t3I/ycC2BItcBVIA=
+From: Junjie Fu <fujunjie1@qq.com>
+To: qemu-devel@nongnu.org
+Cc: Jonathan.Cameron@Huawei.com,
+	linux-cxl@vger.kernel.org,
+	viacheslav.dubeyko@bytedance.com,
+	zhitingz@cs.utexas.edu
+Subject: CXL memory pooling emulation inqury
+Date: Mon, 10 Mar 2025 16:02:45 +0800
+X-OQ-MSGID: <20250310080245.291632-1-fujunjie1@qq.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230215151854.00003e34@Huawei.com>
+References: <20230215151854.00003e34@Huawei.com>
+Precedence: bulk
+X-Mailing-List: linux-cxl@vger.kernel.org
+List-Id: <linux-cxl.vger.kernel.org>
+List-Subscribe: <mailto:linux-cxl+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-cxl+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Status: O
+Content-Length: 1073
+Lines: 26
+
+> Note though that there is a long way to go before we can do what you
+> want.  The steps I'd expect to see along the way:
+>
+> 1) Emulate an Multi Headed Device.
+>    Initially connect two heads to different host bridges on a single QEMU
+>    machine.  That lets us test most of the code flows without needing
+>    to handle tests that involve multiple machines.
+>    Later, we could add a means to connect between two instances of QEMU.
+> 2) Add DCD support (we'll need the kernel side of that as well)
+> 3) Wire it all up.
+> 4) Do the same for a Switch with MLDs behind it so we can poke the fun
+>    corners.
+
+
+Hi,Jonathan
+
+Given your previous exploration, I would like to ask the following questions:
+1.Does QEMU currently support simulating the above CXL memory pooling scenario?
+
+2.If not fully supported yet, are there any available development branches 
+or patches that implement this functionality?
+
+3.Are there any guidelines or considerations for configuring and testing CXL memory pooling in QEMU?
+
+I sincerely appreciate your time and guidance on this topic!
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A802C636CC
+	for <linux-cxl@archiver.kernel.org>; Wed, 15 Feb 2023 17:14:36 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229596AbjBOROf (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Wed, 15 Feb 2023 12:14:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51436 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229545AbjBOROe (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Wed, 15 Feb 2023 12:14:34 -0500
+Received: from NAM02-DM3-obe.outbound.protection.outlook.com (mail-dm3nam02on2077.outbound.protection.outlook.com [40.107.95.77])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF3681A677
+        for <linux-cxl@vger.kernel.org>; Wed, 15 Feb 2023 09:14:33 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=iCSvLUS0tw6xpdESFi1KjhYVZpZlNIvZVSVYKmCaWZOtPXymnt6GbyY1VffTFqb73/xGCaiGwOMNYD7qaTxeg9jKYIO1ym3X6c0IPvL8NhcqXNgov+WrNttX3gw4fzh2s78wL/i1Nj/HQ/fA3BgaysVdeiIw08sFpjPuioochjwxGYByauPc4XA/mptMB4tF9Sojb9IiFNMfz5F7D8PAasfCmKSrZBx/2OL18oe83r0jwyS0Pwh6nVd9MoEfiKI80JhPI1BNzKx8+gyAVr76sM+BSiypQ2PeFGR8XmRn0Ldw7VDYj+1NoAqXDu+hfCC5BhL9NYTILJ/VaZdlR0AKBg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=NogQqx3ICd3jwp6xpOt6UODiW9p/SjESeYjQdxWhYpg=;
+ b=KZsQVEbSsZXIO05ka5AlXA397Pv0UVfN/QPMqa5y4gJ6jQ5BJNPrDg20ngXq5Wb9bfGT9aaQzlysRLw3WQnfBZ/ZCsQeh9KO91f8BgAREJVRZBg1uWW1WlFIcUtxf7IV2W6nXVeG6P+VIKGknEdABW1ohrYDRfIrtnS+Hi0SK8pwO7Ah6++7HvAReLr3p+sn2whRdihe+DqBNwfwBaRRAB/e0mIRBdaHq03wgK5hX5wdrNSAIum2Ovk4DSsfV3dJVjhlL94iz160/St1vRUVysNnjszWFz5jhoWSvMapZGsNmfs83e1cuoFz8UljYLbCgxuY6eafffm2ucu4qyoL5w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=NogQqx3ICd3jwp6xpOt6UODiW9p/SjESeYjQdxWhYpg=;
+ b=pX6L0rkPoo1JAkhOL3h3QrfhNsqsb9xJ/B8Zgmof/M7TkxCOZA7adKUymBhmnZOrP90tJVoQ3k4lXCh10pHqvJ0n0QI/lYWRztexNLehpRly7ckOder1auwO7nPoQA30zB3V3ndQb0jmI0hg0M66/oNnfmyLNsHCvL838ILMlyE=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by CH0PR17MB6915.namprd17.prod.outlook.com (2603:10b6:610:18a::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6086.22; Wed, 15 Feb
+ 2023 17:14:30 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%3]) with mapi id 15.20.6086.026; Wed, 15 Feb 2023
+ 17:14:30 +0000
+Date: Wed, 15 Feb 2023 04:10:20 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: zhiting zhu <zhitingz@cs.utexas.edu>, qemu-devel@nongnu.org,
+        linux-cxl@vger.kernel.org,
+        "Viacheslav A.Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: Re: CXL 2.0 memory pooling emulation
+Message-ID: <Y+yhfFaQ4Kky93mc@memverge.com>
+References: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+ <20230215151854.00003e34@Huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230215151854.00003e34@Huawei.com>
+X-ClientProxiedBy: BY5PR03CA0030.namprd03.prod.outlook.com
+ (2603:10b6:a03:1e0::40) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|CH0PR17MB6915:EE_
+X-MS-Office365-Filtering-Correlation-Id: 65e41558-2531-437c-9d53-08db0f78192a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 0P1DR2CKrWwUiEbqUF3yCIBYbYet9DtJ9YMmjrQgWK0KQLSOlhJ+vV+NOIKnIpQiI+Y3Iom02r+B0AoW6BzMxa7qfFXIbgZP8BTRIcUuSanpgjHwnpYRMXOWcFkepHCKVtCec1T5Ny14jYZMOHEPGMnGJo6ifdhHPEY26oPzSesy5xaQeK5U0yoJ7EAMM6PDqnqcwOeCXTRDqVqZ9laxjJeN+Ig06KRkjG8gM46t9H2WkI9piIHQEm0sF9f/tOTbyXmWVczW4PtLFSzxAhr957jX5Fyrstn36uLSnfdjvPNS3Fz8ZVQZ+saHKBM07Sl2Y7CqPrTe2CI2UneTeCM+xgcEyJx7L27JQ2MbZnegDrziltMWmfjFNgCJV7WWqel2NNPhmZPKsHaBsm2NSj5vMY7hSHOcsdolwMLpmLrZj2pjH6lLUSgS5fmp9t9nu2KtDLosnPxF9hDMaDiBUWuXdec2c79qlaVss/chaNFxq87TW8ShTLgz0oNJ36weGrzpH5kL88DCZh7O/eLp1cu4cgnbTIADep64NiEaQywzm7p4IwE3CAC8+sP9X6pEEjx9yDo2OXclazec+0uPtZj0YH4U77c3jJbYys85qpgo7BrGPWKuGfsPX//7/AT98KEN9UkgZbUfXALN2e9FbvlECTSJQVUl2iecNDhmNdPe7muGDaAy9a2EJ4eULBHA3nUF
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(396003)(376002)(136003)(39830400003)(366004)(346002)(451199018)(186003)(6666004)(6506007)(26005)(5660300002)(86362001)(478600001)(38100700002)(6486002)(966005)(2906002)(2616005)(8936002)(6512007)(36756003)(44832011)(83380400001)(66946007)(8676002)(4326008)(316002)(66476007)(6916009)(66556008)(41300700001)(54906003)(67856001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?Hdxzy+sKZTVQEg9rhCZKI+uat407ioa/XpgjFpL83L6bA5v3wOOyXTAKGjKO?=
+ =?us-ascii?Q?J6PEDpMR/gdXKaEB2jcuWVQhnKkVynUsH9QVrGvyM/nJFZ55pD73DlCDootm?=
+ =?us-ascii?Q?OgKFwQswnrd4O/MfZODTx070y2NLMroOKr9eBP1xgeC+IE0NIcovodKS5gsg?=
+ =?us-ascii?Q?/5TqX4KLXhco2qyyPb7nBUbaG/snz0OJkXtOwDsbHTM6/nskPwfPKXq91Ebr?=
+ =?us-ascii?Q?R1H1WWkmGndBHAWtKsZ/eXzzIU5RNdwATD8oh88bA4E+lrTYTb19khs8qubA?=
+ =?us-ascii?Q?YcwLeG+wDDelFXlBcf9Czo6+MooxoT/BcxtCS5NAAZ5jTf8hStJ3Myo7GW0Y?=
+ =?us-ascii?Q?b92EolnEVpzlzI0LJEDG/LhV42J4JuMhulGrk3vj1NAbibkfESu1ktt1bZ3T?=
+ =?us-ascii?Q?Hm7p4KoYlPRSDxJKjocaX2PQEpeHhI+cLzuRcGk27JUzCetCn10pmrM2vcsy?=
+ =?us-ascii?Q?w7FGt9zTtvjzAa+woFgu+AR6rUYBTst+LRK/AL98tdADCGOUjy9mm56sBgLc?=
+ =?us-ascii?Q?X23mcxVmxwGbJR1YtJUJ/jave+uPGpJnF9BuVcRymf/TuCprtSvrtdjR0JA4?=
+ =?us-ascii?Q?5BIxup7nMWrqHGgmo5wM+VRbNIzn8DuJ3tx3YQ0mVUDT0HI+ROIsW+jrXJFj?=
+ =?us-ascii?Q?sTTM2hQmS0Odk0Vs6fBPSY46+vDt4vVtOdGKR1OK8DsuS1V6prR0H+GZTpSq?=
+ =?us-ascii?Q?LVe01XnJZvUDkmlIiqyKF7DDxU4acRb8DmrR80ARZmsuAIkJzoh3nHSiTYbc?=
+ =?us-ascii?Q?n1YlaDfkrxE4n2PKgXpKkG66OOp15EOtr5R9xfc2Mvucyw0j9eBa115ipF/l?=
+ =?us-ascii?Q?YrTZhnzfrWiJo9xlICB3vPvCdoKWjMa6akZksdHMGqp5hI/u4JktFtY4CYpQ?=
+ =?us-ascii?Q?WhPRRChxl+bPxPtVRLPypXgxMoZvSeqpdHMVBV0sgVs8wiHvEUhUm7Ci32tg?=
+ =?us-ascii?Q?ICTouZFVC5j8DD7ep/IOQMmyqIbs990BWBK66ZG7dltacTuIM4h6Ori1E1+N?=
+ =?us-ascii?Q?KtKbOS21Qh+75Rr5tvSd4yOAvNrYt4vS25uEaznMtZcjtcAEVk/uUUTky500?=
+ =?us-ascii?Q?26Rnde71ie8CtFN4OVrHHjAWEyc8lJE5els39lgMOK5sg7dKNE5ljr097J8z?=
+ =?us-ascii?Q?oPHWQz55ZxVjeTj7FRKnIs193d5vckCgyuNvviZD/CKCweskcpHgL9GqTgDK?=
+ =?us-ascii?Q?OQUK5pngL03FtJhSaRlRPe0oWdd5gfJK+cUn3u4bnq8i6k1hHzl4NdfuWHWN?=
+ =?us-ascii?Q?kFrIGEp/sRCfluWE+ZtI88A0RMpBsvLHG9eN0jk+zZviMYcmNeNDyFThbMVK?=
+ =?us-ascii?Q?1bO6XbBDEqqBCAVJcwzKhAHO0SzFF4iUB/nAQFJUL6aj7YgmPZU80PXQkzcm?=
+ =?us-ascii?Q?lkv6LOIB81JoULyxn/LOIhCdVO1pGZ2lsiP2HQfVby1iQ/vhT067yfhYt4Kf?=
+ =?us-ascii?Q?ldaBCbydF4K/vS61m0OMTr4MQ6P9fYsNRJzwKYQas1ZcS8meZs0q8srSG7XE?=
+ =?us-ascii?Q?teVAv4EERd7kroI29RaJuQUHDe5bGommM9rEGtCQ68/sCB+Ann4fT3Y3msib?=
+ =?us-ascii?Q?TOEzn5/eflvcCFQKX3z8xx8VF14zmc8LjZcZUCA+HXomFVj6aX7feZFrj1UO?=
+ =?us-ascii?Q?iA=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 65e41558-2531-437c-9d53-08db0f78192a
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Feb 2023 17:14:29.8116
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: tG1tZBcp1d3vVOI1cRd1G/7R+dttJx2NAUqiqQHkoLF/6NCc06dZp2U6Z9YnePYlzjBCUXHx1XToYVl3LgyXjX8zBj1NeyfXDedKAUiPh1o=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH0PR17MB6915
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 2186
+Lines: 55
+
+On Wed, Feb 15, 2023 at 03:18:54PM +0000, Jonathan Cameron via wrote:
+> On Wed, 8 Feb 2023 16:28:44 -0600
+> zhiting zhu <zhitingz@cs.utexas.edu> wrote:
+> 
+> > Hi,
+> > 
+> > I saw a PoC:
+> > https://lore.kernel.org/qemu-devel/20220525121422.00003a84@Huawei.com/T/ to
+> > implement memory pooling and fabric manager on qemu. Is there any further
+> > development on this? Can qemu emulate a memory pooling on a simple case
+> > that two virtual machines connected to a CXL switch where some memory
+> > devices are attached to?
+> > 
+> > Best,
+> > Zhiting
+> [... snip ...]
+> 
+> Note though that there is a long way to go before we can do what you
+> want.  The steps I'd expect to see along the way:
+> 
+> 1) Emulate an Multi Headed Device.
+>    Initially connect two heads to different host bridges on a single QEMU
+>    machine.  That lets us test most of the code flows without needing
+>    to handle tests that involve multiple machines.
+>    Later, we could add a means to connect between two instances of QEMU.
+
+I've been playing with this a bit.
+
+Hackiest way to do this is to connect the same memory backend to two
+type-3 devices, with the obvious caveat that the device state will not
+be consistent between views.
+
+But we could, for example, just put the relevant shared state into an
+optional shared memory area instead of a normally allocated region.
+
+i can imagine this looking something like
+
+memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=4G,share=true
+cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0,shm_token=mytoken
+
+then you can have multiple qemu instances hook their relevant devices up
+to a a backend that points to the same file, and instantiate their
+shared state in the region shmget(mytoken).
+
+Additionally, these devices will require a set of what amounts to
+vendor-specific mailbox commands - since the spec doesn't really define
+what multi-headed devices "should do" to manage exclusivity.
+
+Not sure if this would be upstream-worthy, or if we'd want to fork
+mem/cxl-type3.c into like mem/cxl-type3-multihead.c or something.
+
+The base type3 device is going to end up overloaded at some point i
+think, and we'll want to look at trying to abstract it.
+
+~Gregory
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95227C636D4
+	for <linux-cxl@archiver.kernel.org>; Fri, 17 Feb 2023 06:27:00 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229599AbjBQG1A (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 17 Feb 2023 01:27:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40870 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229477AbjBQG07 (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 17 Feb 2023 01:26:59 -0500
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com (mail-sn1nam02on2078.outbound.protection.outlook.com [40.107.96.78])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B13BB59B44
+        for <linux-cxl@vger.kernel.org>; Thu, 16 Feb 2023 22:26:57 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=AoyTEec3z6YDGZK7ithawGFHzF/G99Vp7yc6OHxjeXpqw9cueJaxmxF+uJeUQvY7TG32tFHkpCjR7zc6at829aiqzZeEuOSbOc8Kl071TimCuP1eohiz/L5mUgbG1/wCZy+Wh8rX/vn0qvrbR19eZcNTEHCSSb4LiDGtDAX6o06/Utl4UM8cBkC29QpvwfEfcjgDpC8NpRoad/QNYH2gRJw5HdjzX2UrIFFcLO+3TWCJMRhT7g/1R+wSeU8nxML95eI2b3Pp8NjaX75BDVL+kmEuJO51YF2vmXedAQxZQQls7wVvX01n4pcSA3b6VxT6/tWyKsnCEmkDlFkxDNRy6g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=TKiZfaz4847OyWylB4xD1sEBCjoizgXaSCvNDES1R90=;
+ b=aC3rmrMJqDrgEMPwVk7LXN9TpLfE3rXJj7jxrEIj0QihsEuQj9Ugc+YG8NaVcB+vZfPWys5qnP83OJ3moQdNJ5qvIGCC1HGbKXnD78UUuJsy4p46Tj8v79DfFzQZODBgxY0YzhAbdN5oElYa9wScdVhFHNl7hPlAJuY8k21l0X35HXLJTwjOos3Kwg87ayDIlxi6qn/rs6Z9M/nCAhLCMZUgTmLGlsCaGJZ+k263wrxK8zqwyd/AxtuphYT3WzIYqeCGPb5Lr0KzW41v4B0YO0GBX20SOosaggrac+2OyWLaHzGgCipA2qnUUVWoQaVNFel5Q14ZB7gSr/aucXn8Xw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=TKiZfaz4847OyWylB4xD1sEBCjoizgXaSCvNDES1R90=;
+ b=CAcPe5w+aC+LFNqHW/zmdL0KJw56C55De6QvYfo/JnkB2ULQzNZpQ6nbM37KtpxZPxyrk1y8C/oK6s/n58+h52FQEOKapGvzPBs+idIEo1cgTIyYBsoMi1NIa81ju8B+QoTwqvTeXMpmPX2E78Rwenk+v86SrldXaAHuGfUiuJU=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by SJ0PR17MB4597.namprd17.prod.outlook.com (2603:10b6:a03:35a::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6111.15; Fri, 17 Feb
+ 2023 06:26:54 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%3]) with mapi id 15.20.6086.026; Fri, 17 Feb 2023
+ 06:26:53 +0000
+Date: Thu, 16 Feb 2023 15:52:31 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: zhiting zhu <zhitingz@cs.utexas.edu>, qemu-devel@nongnu.org,
+        linux-cxl@vger.kernel.org,
+        "Viacheslav A.Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: Re: CXL 2.0 memory pooling emulation
+Message-ID: <Y+6Xj39d2rxnowRx@memverge.com>
+References: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+ <20230215151854.00003e34@Huawei.com>
+ <Y+yhfFaQ4Kky93mc@memverge.com>
+ <20230216180057.00006c49@huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230216180057.00006c49@huawei.com>
+X-ClientProxiedBy: BY3PR04CA0004.namprd04.prod.outlook.com
+ (2603:10b6:a03:217::9) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|SJ0PR17MB4597:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7d0df6aa-1837-4a02-35b3-08db10aff5fe
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: nrN1841WKqffuNqFWw1PFyUVTkVNH9hnDxABWkIO2V2pAqPOl0qxeGCPDfI3QJ0DQNT1y8frrfWx+guYGJjQkNvpVPb5C6ZrCADDyakoAJkR5qqLtdo4ObjXoWeqK4qbngg0bwy8kb63DqQDpGNcEhym51sVcN821Vpf7EQTe1zHMlWA9BxlHPFuHR3DP+HQD16g5UuM54fAexvsWCRUbhcUvEfX1zBYW3NEnLV33LBo3u0ekXx4NMw5pRWeoePz44JFjiAllJgfhZM9fAFICC+TZM423ZFTwQPTTtjR6HKzE2Pnva8NHFWl+tHLl2MWf5/9Z++ORkoDJhZbdWx4rFCnLCFVhAkluFX5UBApFKfCJceIEiT3TZlQcUtvKoj//NsI+yp2y/uYqlpkMDzL8+WQOdR+YxnpE6ttPWIoDnv5nQwfxkObnkZs8SUG2NxixiRVrJmYSdglx6OvN5OGvDxYAawB4MOK1rh5JMOh3mSLMBR36eNls4PpuXW1BzG8bbOLBQINwjxceogi14L05NIjfbIMMfSPFwhep2Ic4CJQNkROHSy9kSUtlsgCvj8vv1dzJKKws634LjUN27+iFFpM4bpqX9yK2eIsTEZ0hRzD8k5eAL0eXKUV0cohASHceKQENa9hP0cs7R/XUM0lBBD3NznMyGPXkw6+wNEh/vtzdkPDPvejt6o8t16B5K7L
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(39840400004)(376002)(366004)(346002)(136003)(396003)(451199018)(6916009)(66476007)(66556008)(66946007)(8676002)(83380400001)(316002)(4326008)(8936002)(5660300002)(6666004)(2616005)(41300700001)(6506007)(6512007)(26005)(186003)(478600001)(54906003)(6486002)(36756003)(86362001)(2906002)(44832011)(38100700002)(67856001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?r54xhZjctDA4Ie4ozDVJd4qLWZgolqXCfKUl6iqV+Rfw7hmdD24RGyzIQiK5?=
+ =?us-ascii?Q?4njOFZyT6FLd8fIRKsaqeMzv6fmCa7lGA4bh1qAhYpxqDPFEP8L3H4CUgPXS?=
+ =?us-ascii?Q?2xyvyxTgpBjwizle4Ci/Yj6TIYqAGFYVgfur40i2DIymhNSHiMZ615f1rXYH?=
+ =?us-ascii?Q?Q+o/UiPsEOQQcHuansVAFNvGgaAsRFScLFrpA6Tz8HeuAXnBd0H8APnAUNGk?=
+ =?us-ascii?Q?QgMJD7El7DiXB9vLnthUOJKWkWGx2y2+mVM0TeKe8RV9BDDK6BIzFQWBxuu8?=
+ =?us-ascii?Q?+gFE1c0NFBE51F0Chq/oa4U/Ut6l3FiRljMTeA2fKtJk7a876VcUaQnXWV/l?=
+ =?us-ascii?Q?fM6YRSrledGNgCaxbWQt41+Je6NvBshCOM3v1TG2fpbmQ2zcT9/33Z9Kpoo+?=
+ =?us-ascii?Q?UcisoYCjNbh9xJU9/TaMT19i5TQ4/thW5pdHnYbXogyZGxTTVSMDxWnoKhDw?=
+ =?us-ascii?Q?Ceobh+nSar90eBTjcr+Nr8mtVlzVFWgBRcTLy2kAKFP1PtWmzqLcpFtA1H61?=
+ =?us-ascii?Q?PxUCArvEaKFqfvT5qCixP4VrihaC8O3TJ88c1GQKuriY3zr+RJJdmp6KlHyT?=
+ =?us-ascii?Q?TEy8g/t1bsy8lFnAT9Ln9Zc1dKyWDyYi1s3qtMqPGqcYQHJKHaQetGCLvhyC?=
+ =?us-ascii?Q?hso2d9VB/MTcO743yJWko5JoDoWScqOxPe8ot3xz1bujSSrU3QEoAs2P9rII?=
+ =?us-ascii?Q?TCL691GDeGnI+v1cFmCikCDFN77q0W5wvrxgAjdZ1AASfJP+UL89io7N9XK8?=
+ =?us-ascii?Q?f2sWDfcoaGXBufIYSueSFK9ma3cqEvt/Z0gfmFVVyq+CiC/fbxOCUXiWpmXB?=
+ =?us-ascii?Q?b9+TjL79cwEJ1YkuRzvZMey+VPHIHPL++gHEpMmLA0oQ3quH/ZDUWoJqJvII?=
+ =?us-ascii?Q?aZoMh7NtHUuDNvCNNYNRDsXikpoNdL+jsPJhzOmDJ71wPPBJWqlyfms7FFID?=
+ =?us-ascii?Q?fW9UPyy9i/XhXAdIADLolENh4EJF/s8lw+/Pdvct40v3x2JfFHEdRzVPFpAO?=
+ =?us-ascii?Q?ktNKmXZ4cqVcUW1Sp5dwb+3YyY7tbN8uvvmmLOW97Ff/nyGvmcXspyhdEGZQ?=
+ =?us-ascii?Q?GZbDf9Zo2kFGlnB2mUVT/IUTBetUp4EW7EVcPqNWO2VRjpVdAeRFVBlOcXy8?=
+ =?us-ascii?Q?D289HS5xMf3EmMVhM6UdrHezpPPMFS5s4BNrL5Dj5TYKte6QZWp1FCgptQ67?=
+ =?us-ascii?Q?oTTVLsVyPlUfcGul4UxzIgOxh2tmj+KR0uwYXSIne53MRp60hRM2y2F3/F8k?=
+ =?us-ascii?Q?YMkPgo1R1w2iVuzvz+puHXhQDyud0hW8jayRfMAkyT4HQI1TJgHXNHO0zSkP?=
+ =?us-ascii?Q?fJIGlYLnFsKjZ5UIrWXmeqESsrGeLOTIR20nBsnoIE5NGeEUDuEomShXnU32?=
+ =?us-ascii?Q?FYOvpEUD59YOM+I7afp+8lFnf8RV1iQ1X3DQY8dydTEieh4avg/6Kkzn8WmI?=
+ =?us-ascii?Q?9aCEpHqCk5VBsoOU+Re2fkNmulRt/XBo/uA/C3pK8pnF8A4HOV3TNz+WGfpw?=
+ =?us-ascii?Q?LxmWq0PlE+1cbl9yqIkW8WPcI9qRIwGkFDsYOIbcYz8OdeKZVt7bFYnkWxKD?=
+ =?us-ascii?Q?7tKj2Rb4+s3nYtkCXkYin9t8juX84SZevgkxwlFU/9sgHzwUjuen3YTjFm3S?=
+ =?us-ascii?Q?Gg=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7d0df6aa-1837-4a02-35b3-08db10aff5fe
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Feb 2023 06:26:53.8737
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: GYEmxoNpkWB6ZEAz0E39ohyUBLZrUZoff24hMovvTKy2T4lsNtq07C0LmzzWav7uc9eUuXWvCNPCJ2Oh4o5YWXZI2cxhHVEzYRHBFDi7+BQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR17MB4597
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 2855
+Lines: 60
+
+On Thu, Feb 16, 2023 at 06:00:57PM +0000, Jonathan Cameron wrote:
+> On Wed, 15 Feb 2023 04:10:20 -0500
+> Gregory Price <gregory.price@memverge.com> wrote:
+> 
+> > On Wed, Feb 15, 2023 at 03:18:54PM +0000, Jonathan Cameron via wrote:
+> > > On Wed, 8 Feb 2023 16:28:44 -0600
+> > > zhiting zhu <zhitingz@cs.utexas.edu> wrote:
+> > >   
+> > > 1) Emulate an Multi Headed Device.
+> > >    Initially connect two heads to different host bridges on a single QEMU
+> > >    machine.  That lets us test most of the code flows without needing
+> > >    to handle tests that involve multiple machines.
+> > >    Later, we could add a means to connect between two instances of QEMU.  
+> > 
+> > Hackiest way to do this is to connect the same memory backend to two
+> > type-3 devices, with the obvious caveat that the device state will not
+> > be consistent between views.
+> > 
+> > But we could, for example, just put the relevant shared state into an
+> > optional shared memory area instead of a normally allocated region.
+> > 
+> > i can imagine this looking something like
+> > 
+> > memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=4G,share=true
+> > cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0,shm_token=mytoken
+> > 
+> > then you can have multiple qemu instances hook their relevant devices up
+> > to a a backend that points to the same file, and instantiate their
+> > shared state in the region shmget(mytoken).
+> 
+> That's not pretty.  For local instance I was thinking a primary device
+> which also has the FM-API tunneled access via mailbox, and secondary devices
+> that don't.  That would also apply to remote. The secondary device would
+> then just receive some control commands on what to expose up to it's host.
+> Not sure what convention on how to do that is in QEMU. Maybe a socket
+> interface like is done for swtpm? With some ordering constraints on startup.
+> 
+
+I agree, it's certainly "not pretty".
+
+I'd go so far as to call the baby ugly :].  Like i said: "The Hackiest way"
+
+My understanding from looking around at some road shows is that some
+of these early multi-headed devices are basically just SLD's with multiple
+heads. Most of these devices had to be developed well before DCD's and
+therefore the FM-API were placed in the spec, and we haven't seen or
+heard of any of these early devices having any form of switch yet.
+
+I don't see how this type of device is feasible unless it's either statically
+provisioned (change firmware settings from bios on reboot) or implements
+custom firmware commands to implement some form of exclusivity controls over
+memory regions.
+
+The former makes it not really a useful pooling device, so I'm sorta guessing
+we'll see most of these early devices implement custom commands.
+
+I'm just not sure these early MHD's are going to have any real form of
+FM-API, but it would still be nice to emulate them.
+
+~Gregory
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA4E8C636D6
+	for <linux-cxl@archiver.kernel.org>; Fri, 17 Feb 2023 19:31:27 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229825AbjBQTb1 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 17 Feb 2023 14:31:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50524 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229819AbjBQTbY (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 17 Feb 2023 14:31:24 -0500
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2058.outbound.protection.outlook.com [40.107.237.58])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB61A2FCFE
+        for <linux-cxl@vger.kernel.org>; Fri, 17 Feb 2023 11:31:14 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=LTZXDsha+4XZhmJwUZo+FLaeV16OPFPFtnWq4M/JisHC1knJJ+OI45jgqS5cQFn1um6+ZICOhXID9vqL4fmbzpzO+wPTZU7O/5sKDB3YqiyXoNrqlfnP+OLZE5Z6wGACAvr7G/sOJjjtdHQSQmyRuOrYOCmL7D+gnIAcTRujdf3WrWP8UXbpaP55H7rehbulz0AkfZyTJuoqslE83tBQshZaFMijuD3H75nBVM0xe3oxcoQxNBLOKNYvK68x3/cYo5Y03hY9zwoDJQjIYZ1Tn1Okfrd/knVNi7mqkO6J3k6St/A+IFpt1MbfBpuP/EQc/t7Wg+4dth1QfU4ytWacFA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=m5wnAMcqaE0UVCMxAsMIUviZBeMW+kPEvTwYIV9XiuQ=;
+ b=a8AzDQo8RGAzC64YE3D/Tl5J/ULrOK1OBR/WdeuDRiz/shnEKODHuD+D5bl0byr1tIfogA6ttGK3+9jmYXupeiXXzuxX4CCIOUzaMUpUvibyXV1cXQPoVCrsW/jkD3mF6DjXPtTUF6KpIMNfvBH/3fHL7mSNOBc5aluDnU+CsVQsZ0E5BNSXoKrC7rW0jg8iGnGuLWHHGY8BS/Mwew9VJy3LobuKmcZ6OymmgLXnJ+0rMTDF1oSspN8+2gfkMUO1xKN+HlhBwCPq4/UsDQtwfBnWh+1xcSlIQkhohy19K1Oloprg9Ms3oDEPwJ8Ntj+oK3ND/9/f/xoiB1UOU5o1RQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=memverge.com; dmarc=pass action=none header.from=memverge.com;
+ dkim=pass header.d=memverge.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=memverge.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=m5wnAMcqaE0UVCMxAsMIUviZBeMW+kPEvTwYIV9XiuQ=;
+ b=Nha/s5N+6MM0dXbLxGiy4MC6z+PrNtteUiuMNBtE7D8TjyQqZvaWzTWkUTTtz8SXj4t8mytCLsEsZR1imiRAvLgXcGGQ97+JaK1req03f2W97hahAL1yC4pECyLkxBlnJw/39ovDiVAueUANZLviJ3AFghF44FuzBtjlg3AEgnU=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=memverge.com;
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com (2603:10b6:405:7c::19)
+ by PH0PR17MB5214.namprd17.prod.outlook.com (2603:10b6:510:ac::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6111.13; Fri, 17 Feb
+ 2023 19:31:11 +0000
+Received: from BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660]) by BN6PR17MB3121.namprd17.prod.outlook.com
+ ([fe80::d253:1eb3:9347:c660%3]) with mapi id 15.20.6086.026; Fri, 17 Feb 2023
+ 19:31:11 +0000
+Date: Fri, 17 Feb 2023 06:02:12 -0500
+From: Gregory Price <gregory.price@memverge.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: zhiting zhu <zhitingz@cs.utexas.edu>, qemu-devel@nongnu.org,
+        linux-cxl@vger.kernel.org,
+        "Viacheslav A.Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: Re: CXL 2.0 memory pooling emulation
+Message-ID: <Y+9etH9Y3B0zfviT@memverge.com>
+References: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+ <20230215151854.00003e34@Huawei.com>
+ <Y+yhfFaQ4Kky93mc@memverge.com>
+ <20230216180057.00006c49@huawei.com>
+ <Y+6Xj39d2rxnowRx@memverge.com>
+ <20230217111418.000014d2@Huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230217111418.000014d2@Huawei.com>
+X-ClientProxiedBy: BYAPR11CA0101.namprd11.prod.outlook.com
+ (2603:10b6:a03:f4::42) To BN6PR17MB3121.namprd17.prod.outlook.com
+ (2603:10b6:405:7c::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN6PR17MB3121:EE_|PH0PR17MB5214:EE_
+X-MS-Office365-Filtering-Correlation-Id: feb0ec5e-fc63-4119-7a94-08db111d86b7
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: hwcZwXaAcoFIRY+0zNfVCInt+oP4erYNnf9jDb8JTkGiNN3Xbf5iRUzm8z3Weloswg4vmJMLT74/QaAZMUFBdRa+/saaJl6vO4kIHuE6Gc2PUNkhSYN6XWsQTT5dj3WIuZCng8k/5WP5CXNaV5dBBaUQBmsnMlf5zRd3iPXXj/3ukwJWToEO7MDMSgusOeXwc+F9yJfMT80TGwZRWUVyHd6x4gBJ/ReDzmx1f5yJ2hy8cOOcY4itelbDZG1NxZpXxTHJwr7Azr3qd+6suQpVojk6vIDzlPDXhqn1mzJ/Zfjg2eEgDRHhHEZMdvgWcdgzExi3BLetmI55c4gyrSbAn+7prhojF1Ydv9kTOqIoJS8Ho3BhJZpZ7a0rlYLB48waH7TnzXgy4lUlb6EHIoc1DxavkPN818RSKi2eZLeSHbRv5XzdD+MvwnN069KTu6pNG6TGV0Gre+Pv9QHTQb8hBg/Qe3ALlFEloxucne+KEb6jSyvgTPLR0CSfEx4opIa/2v8MzkrYqHlc4AnZgX3VaOXg73OnnPlm92TMyoP7/U2Gy0rVuO1qjTt0NU/Zsa5QEghgJFMjsoq40fRmNdx/bDTjjrcvne2QAsMrbVmTG6o9X73Lgdk9u7eK8CmOhhJXfAorQZcjElPnbYx27f8Dhh9ZFdfegS4TtTzmTZBwdXggzF+an3zPJi87nFfB/GuB
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN6PR17MB3121.namprd17.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(346002)(136003)(366004)(39840400004)(396003)(376002)(451199018)(5660300002)(8936002)(44832011)(66556008)(2906002)(54906003)(4326008)(6916009)(8676002)(41300700001)(478600001)(66476007)(316002)(66946007)(36756003)(6506007)(38100700002)(83380400001)(2616005)(86362001)(186003)(6512007)(6486002)(26005)(67856001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?8ktT8FMNuUT3cwlyO6hrNO8UqyjbmVfJfA81CFYCXzfYv8lKt1sXYecBLLI9?=
+ =?us-ascii?Q?fwG12Zgd3uBbddDHtpdfFBfh8LxeS5n1VbyaCNupkukRNx+5EQjtYKGOjV47?=
+ =?us-ascii?Q?AXXUg7DxFXQjuPUJefn0v9lgqxINKU0f9PibZwYkUj+wZRDF4fMEVM2gmMuq?=
+ =?us-ascii?Q?SJ9y2NktgEe1crb/DTRbnQC7X8JDnYPrW81fRKVAJag1VIStiEeuuqaIQXk5?=
+ =?us-ascii?Q?V6RtChz+9GCUu85GdNL5ObnQnQVBp6huvPnwgEW+wZ3R8/9/06yNQq6Z8jz9?=
+ =?us-ascii?Q?3IIN+NVsqXv2AeZlDkykACQlasFIQNywILpsD9n4QuGaiLOJWlv9UkYRvJSe?=
+ =?us-ascii?Q?l51wSdKoY+vKbiHAkxelMPu8T6/rAYcrLcVw0ZTwIuVJdfwNz5vemhQ4fe+T?=
+ =?us-ascii?Q?v4QkWYaJWPfaaQ9NdhLF5GUmjFwI5YWBeUBaaCtD3p4O4TeFr41E1H0qMH+j?=
+ =?us-ascii?Q?MyT2/0AzFSR+gBj1BqXt85e3da+rvNkF6KA2QcG+VU/Zm+drLwUDhm3+ZJff?=
+ =?us-ascii?Q?ssIr3wjOe35i1bz1blRdULCde2JWzKPshlolVh6V2WibTc6onqTurJ1+A7zt?=
+ =?us-ascii?Q?p6Hhpa8vetxXh8iXXS+nUJ3edkMq5kvzODFM6wKJRT/x/A5Q7BrILViCH3c3?=
+ =?us-ascii?Q?Tg6+hCjE7e2ck9eDFrKT9h0wh41MA4C11ummQsgzQNQyaeM+Q2Z11tFeZG3x?=
+ =?us-ascii?Q?2trhym1MGUj4keURLdWHirANtcGGexbebtAQl9J7L9rUT723FrwKHe1nYV/8?=
+ =?us-ascii?Q?D033lQhHe4j3gC239CKsvBEaL+O2T9HrD4LN8YYLvKoI6j5o5kNsqgP3tp4e?=
+ =?us-ascii?Q?U3RH693BSy4CV1s6NM69z+U/PcQ5MeKjW9ceNTUdxxgVsm/awvzOSU3FPhl5?=
+ =?us-ascii?Q?Se+/WNZv4QmRjIm6vZ5PeL5zsLyE5BCRQ01JgcuUzcGXiEFKHRUgbDWuXqT9?=
+ =?us-ascii?Q?Eh3ZwQwkTR8UrNltsGAO/cGKDg2VPJ+xxxeFhT7un9trBAfA25ffKoZ0Le8s?=
+ =?us-ascii?Q?OQsHAeqksBCjugXN8UEavfhGTPLnib1NDy4P8qo6mwIHAJYXiSBw9tkvSSuz?=
+ =?us-ascii?Q?5+RicqvsR5Q4rhhkOyW2PknxaSDduEgdEKt4DqmfzhgzeQMsYMIClqvv6/Nj?=
+ =?us-ascii?Q?q1yvsWCTr55+RNweUFcnOQudgOp/cXwDYCU5BLiZJet5sDi+rk5DGgTQS3jl?=
+ =?us-ascii?Q?UPz2uujRiI9rtz/00CZC98WOYXNozpr1rhDNmZ2Vs+4uVcVCi0vCPWykUjhF?=
+ =?us-ascii?Q?mhIP9lkE0vYo95SPn6a0YqLL0nAS90hHUbohK3M1mZ+QZNM/IZHB9KypMvKn?=
+ =?us-ascii?Q?lEks7cXgn9myKzax4xg5+sCYKDnR/dJyfUt3rvTo6ASWsTSp0OXwgQzKEhid?=
+ =?us-ascii?Q?g2FJoZgEyhehJwKGKBSlzGkOwVuLKpRsJBIsQydIUlF1ZrERJys7vNRSxeIx?=
+ =?us-ascii?Q?N0xTGitvf/HnT7cCl5uB2lAq8SnRzQMo/XFJRgrrcMNsFEjsI3jDvkMGhbM2?=
+ =?us-ascii?Q?Q1eROzCnjcJ6FFFaz57s5lDDc/YvBQTkjUX6NXXYP2X3PNim6OhYN0GZIJ+m?=
+ =?us-ascii?Q?FySx8WmfFlGMYbameCxuKIjfaveD0KvOTln2dFVgUuwrKfFkmegXAcnOIB6E?=
+ =?us-ascii?Q?gw=3D=3D?=
+X-OriginatorOrg: memverge.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: feb0ec5e-fc63-4119-7a94-08db111d86b7
+X-MS-Exchange-CrossTenant-AuthSource: BN6PR17MB3121.namprd17.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Feb 2023 19:31:11.7452
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 5c90cb59-37e7-4c81-9c07-00473d5fb682
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: xQd5V9p8yI7l4c4nBuirk2+9RIwtPTF/ias1/9WZReJ74AfmaAyCAW6g2wwYAmBnjprWWtkARrAItvy68Y3k/e4FjqB7ndcygxj6DcRcWw4=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR17MB5214
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+Status: O
+Content-Length: 1929
+Lines: 45
+
+On Fri, Feb 17, 2023 at 11:14:18AM +0000, Jonathan Cameron wrote:
+> On Thu, 16 Feb 2023 15:52:31 -0500
+> Gregory Price <gregory.price@memverge.com> wrote:
+> 
+> > 
+> > I agree, it's certainly "not pretty".
+> > 
+> > I'd go so far as to call the baby ugly :].  Like i said: "The Hackiest way"
+> > 
+> > My understanding from looking around at some road shows is that some
+> > of these early multi-headed devices are basically just SLD's with multiple
+> > heads. Most of these devices had to be developed well before DCD's and
+> > therefore the FM-API were placed in the spec, and we haven't seen or
+> > heard of any of these early devices having any form of switch yet.
+> > 
+> > I don't see how this type of device is feasible unless it's either statically
+> > provisioned (change firmware settings from bios on reboot) or implements
+> > custom firmware commands to implement some form of exclusivity controls over
+> > memory regions.
+> > 
+> > The former makes it not really a useful pooling device, so I'm sorta guessing
+> > we'll see most of these early devices implement custom commands.
+> > 
+> > I'm just not sure these early MHD's are going to have any real form of
+> > FM-API, but it would still be nice to emulate them.
+> > 
+> Makes sense.  I'd be fine with adding any necessary hooks to allow that
+> in the QEMU emulation, but probably not upstreaming the custom stuff.
+> 
+> Jonathan
+> 
+
+I'll have to give it some thought.  The "custom stuff" is mostly init
+code, mailbox commands, and the fields those mailbox commands twiddle.
+
+I guess we could create a wrapper-device that hooks raw commands?  Is
+that what raw commands are intended for? Notably the kernel has to be
+compiled with raw command support, which is disabled by default, but
+that's fine.
+
+Dunno, spitballing, but i'm a couple days away from a first pass at a
+MHD, though I'll need to spend quite a bit of time cleaning it up before
+i can push an RFC.
+
+~Gregory
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91F62C636D7
+	for <qemu-devel@archiver.kernel.org>; Wed, 15 Feb 2023 15:19:43 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1pSJYp-00033E-8V; Wed, 15 Feb 2023 10:19:08 -0500
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1pSJYn-00030s-Ju
+ for qemu-devel@nongnu.org; Wed, 15 Feb 2023 10:19:05 -0500
+Received: from frasgout.his.huawei.com ([185.176.79.56])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1pSJYi-00058F-35
+ for qemu-devel@nongnu.org; Wed, 15 Feb 2023 10:19:05 -0500
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+ by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PH1ny3MnWz6J6G2;
+ Wed, 15 Feb 2023 23:14:30 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.17; Wed, 15 Feb
+ 2023 15:18:55 +0000
+Date: Wed, 15 Feb 2023 15:18:54 +0000
+To: zhiting zhu <zhitingz@cs.utexas.edu>
+CC: <qemu-devel@nongnu.org>, <linux-cxl@vger.kernel.org>, Viacheslav A.Dubeyko
+ <viacheslav.dubeyko@bytedance.com>
+Subject: Re: CXL 2.0 memory pooling emulation
+Message-ID: <20230215151854.00003e34@Huawei.com>
+In-Reply-To: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+References: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500006.china.huawei.com (7.191.161.198) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Received-SPF: pass client-ip=185.176.79.56;
+ envelope-from=jonathan.cameron@huawei.com; helo=frasgout.his.huawei.com
+X-Spam_score_int: -41
+X-Spam_score: -4.2
+X-Spam_bar: ----
+X-Spam_report: (-4.2 / 5.0 requ) BAYES_00=-1.9, RCVD_IN_DNSWL_MED=-2.3,
+ RCVD_IN_MSPIKE_H2=-0.001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Reply-to: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+From: Jonathan Cameron via <qemu-devel@nongnu.org>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: O
+Content-Length: 3547
+Lines: 81
+
+On Wed, 8 Feb 2023 16:28:44 -0600
+zhiting zhu <zhitingz@cs.utexas.edu> wrote:
+
+> Hi,
+> 
+> I saw a PoC:
+> https://lore.kernel.org/qemu-devel/20220525121422.00003a84@Huawei.com/T/ to
+> implement memory pooling and fabric manager on qemu. Is there any further
+> development on this? Can qemu emulate a memory pooling on a simple case
+> that two virtual machines connected to a CXL switch where some memory
+> devices are attached to?
+> 
+> Best,
+> Zhiting
+
+Hi Zhiting,
+
++CC linux-cxl as it's not as much of a firehose as qemu-devel
++CC Slava who has been driving discussion around fabric management.
+> 
+
+No progress on that particular approach though some discussion on
+what the FM architecture itself might look like.
+
+https://lore.kernel.org/linux-cxl/7F001EAF-C512-436A-A9DD-E08730C91214@bytedance.com/
+
+There was a sticky problem with doing MCTP over I2C which is that
+there are very few I2C controllers that support the combination of
+master and subordinate needed to do MCTP.  The one that was used for
+that (aspeed) doesn't have ACPI bindings (and they are non trivial to
+add due to clocks etc and likely to be controversial on kernel side
+given I just want it for emulation!).  So far we don't have DT bindings for CXL
+(either the CFMWS - CXL fixed memory windows or pxb-cxl - the host bridge)
+I'll be sending out one of the precursors for that as an RFC soon.
+
+So we are in the fun position that we can either emulate the comms path
+to the devices, or we can emulate the host actually using the devices.
+I was planning to get back to that eventually but we have other options
+now CXL 3.0 has been published.
+
+CXL 3.0 provides two paths forwards that let us test the equivalent
+functionality with fewer moving parts.
+1) CXL SWCCI which is an extra PCI function next to the switch upstream port
+   that provides a mailbox that takes FM-API commands.
+PoC Kernel code at:
+https://lore.kernel.org/linux-cxl/20221025104243.20836-1-Jonathan.Cameron@huawei.com/
+Latest branch in 
+gitlab.com/jic23/qemu should have switch CCI emulation support. (branches
+are dated) Note we have a lot of stuff outstanding, either out for review
+or backed up behind things that are.
+2) Multi Headed Devices.  These allow FM-API commands over the normal CXL
+   mailbox.
+
+I did a very basic PoC to see how this would fit in with the kernel side
+of things but recently there has been far too much we need to enable in
+the shorter term. 
+
+Note though that there is a long way to go before we can do what you
+want.  The steps I'd expect to see along the way:
+
+1) Emulate an Multi Headed Device.
+   Initially connect two heads to different host bridges on a single QEMU
+   machine.  That lets us test most of the code flows without needing
+   to handle tests that involve multiple machines.
+   Later, we could add a means to connect between two instances of QEMU.
+2) Add DCD support (we'll need the kernel side of that as well)
+3) Wire it all up.
+4) Do the same for a Switch with MLDs behind it so we can poke the fun
+   corners.
+
+Note that in common with memory emulation in general for CXL on QEMU
+the need to do live address decoding will make performance terrible.
+There are probably ways to improve that, but whilst we are at the stage
+of trying to get as much functional as possible for testing purposes,
+I'm not sure anyone will pursue those options.  May not make sense in
+the longer term either.  I'm more than happy to offer suggestions
+/ feedback on approaches to this and will get back to it myself
+once some more pressing requirements are dealt with.
+
+Jonathan
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8894C636D7
+	for <qemu-devel@archiver.kernel.org>; Thu, 16 Feb 2023 18:02:08 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1pSiZX-0005ci-28; Thu, 16 Feb 2023 13:01:31 -0500
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1pSiZE-0005Sm-4m
+ for qemu-devel@nongnu.org; Thu, 16 Feb 2023 13:01:15 -0500
+Received: from frasgout.his.huawei.com ([185.176.79.56])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1pSiZA-0005Ot-IW
+ for qemu-devel@nongnu.org; Thu, 16 Feb 2023 13:01:11 -0500
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+ by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PHjLF2J3cz67xgN;
+ Fri, 17 Feb 2023 01:56:21 +0800 (CST)
+Received: from localhost (10.122.247.231) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.17; Thu, 16 Feb
+ 2023 18:00:58 +0000
+Date: Thu, 16 Feb 2023 18:00:57 +0000
+To: Gregory Price <gregory.price@memverge.com>
+CC: zhiting zhu <zhitingz@cs.utexas.edu>, <qemu-devel@nongnu.org>,
+ <linux-cxl@vger.kernel.org>, Viacheslav A.Dubeyko
+ <viacheslav.dubeyko@bytedance.com>
+Subject: Re: CXL 2.0 memory pooling emulation
+Message-ID: <20230216180057.00006c49@huawei.com>
+In-Reply-To: <Y+yhfFaQ4Kky93mc@memverge.com>
+References: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+ <20230215151854.00003e34@Huawei.com>
+ <Y+yhfFaQ4Kky93mc@memverge.com>
+Organization: Huawei Technologies R&D (UK) Ltd.
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.29; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Received-SPF: pass client-ip=185.176.79.56;
+ envelope-from=jonathan.cameron@huawei.com; helo=frasgout.his.huawei.com
+X-Spam_score_int: -41
+X-Spam_score: -4.2
+X-Spam_bar: ----
+X-Spam_report: (-4.2 / 5.0 requ) BAYES_00=-1.9, RCVD_IN_DNSWL_MED=-2.3,
+ RCVD_IN_MSPIKE_H2=-0.001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Reply-to: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+From: Jonathan Cameron via <qemu-devel@nongnu.org>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: O
+Content-Length: 3531
+Lines: 85
+
+On Wed, 15 Feb 2023 04:10:20 -0500
+Gregory Price <gregory.price@memverge.com> wrote:
+
+> On Wed, Feb 15, 2023 at 03:18:54PM +0000, Jonathan Cameron via wrote:
+> > On Wed, 8 Feb 2023 16:28:44 -0600
+> > zhiting zhu <zhitingz@cs.utexas.edu> wrote:
+> >   
+> > > Hi,
+> > > 
+> > > I saw a PoC:
+> > > https://lore.kernel.org/qemu-devel/20220525121422.00003a84@Huawei.com/T/ to
+> > > implement memory pooling and fabric manager on qemu. Is there any further
+> > > development on this? Can qemu emulate a memory pooling on a simple case
+> > > that two virtual machines connected to a CXL switch where some memory
+> > > devices are attached to?
+> > > 
+> > > Best,
+> > > Zhiting  
+> > [... snip ...]
+> > 
+> > Note though that there is a long way to go before we can do what you
+> > want.  The steps I'd expect to see along the way:
+> > 
+> > 1) Emulate an Multi Headed Device.
+> >    Initially connect two heads to different host bridges on a single QEMU
+> >    machine.  That lets us test most of the code flows without needing
+> >    to handle tests that involve multiple machines.
+> >    Later, we could add a means to connect between two instances of QEMU.  
+> 
+> I've been playing with this a bit.
+> 
+> Hackiest way to do this is to connect the same memory backend to two
+> type-3 devices, with the obvious caveat that the device state will not
+> be consistent between views.
+> 
+> But we could, for example, just put the relevant shared state into an
+> optional shared memory area instead of a normally allocated region.
+> 
+> i can imagine this looking something like
+> 
+> memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=4G,share=true
+> cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0,shm_token=mytoken
+> 
+> then you can have multiple qemu instances hook their relevant devices up
+> to a a backend that points to the same file, and instantiate their
+> shared state in the region shmget(mytoken).
+
+That's not pretty.  For local instance I was thinking a primary device
+which also has the FM-API tunneled access via mailbox, and secondary devices
+that don't.  That would also apply to remote. The secondary device would
+then just receive some control commands on what to expose up to it's host.
+Not sure what convention on how to do that is in QEMU. Maybe a socket
+interface like is done for swtpm? With some ordering constraints on startup.
+
+> 
+> Additionally, these devices will require a set of what amounts to
+> vendor-specific mailbox commands - since the spec doesn't really define
+> what multi-headed devices "should do" to manage exclusivity.
+
+The device shouldn't manage exclusivity.  That's a job for the fabric
+manager + DCD presentation of the memory with device enforcing some rules
++ if it supports some of the capacity adding types, it might need a
+simple allocator.
+If we need vendor specific commands then we need to take that to the
+relevant body. I'm not sure what they would be though.
+
+> 
+> Not sure if this would be upstream-worthy, or if we'd want to fork
+> mem/cxl-type3.c into like mem/cxl-type3-multihead.c or something.
+> 
+> The base type3 device is going to end up overloaded at some point i
+> think, and we'll want to look at trying to abstract it.
+
+Sure.  Though we might end up with the normal type3 implementation being
+(optionally) the primary device for a MHD (the one with the FM-API
+tunneling available on it's mailbox).  Would need a secondary
+device though which you instantiate with a link to the primary one
+or with a socket. (assuming primary opens socket as well).
+
+Jonathan
+
+> 
+> ~Gregory
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F3A7C05027
+	for <qemu-devel@archiver.kernel.org>; Fri, 17 Feb 2023 11:15:15 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1pSyhC-0001NE-O8; Fri, 17 Feb 2023 06:14:31 -0500
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1pSyhA-0001Ja-LD
+ for qemu-devel@nongnu.org; Fri, 17 Feb 2023 06:14:28 -0500
+Received: from frasgout.his.huawei.com ([185.176.79.56])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <jonathan.cameron@huawei.com>)
+ id 1pSyh8-0002Fl-Be
+ for qemu-devel@nongnu.org; Fri, 17 Feb 2023 06:14:28 -0500
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+ by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PJ8Gh5TH9z67Kj3;
+ Fri, 17 Feb 2023 19:09:48 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.17; Fri, 17 Feb
+ 2023 11:14:19 +0000
+Date: Fri, 17 Feb 2023 11:14:18 +0000
+To: Gregory Price <gregory.price@memverge.com>
+CC: zhiting zhu <zhitingz@cs.utexas.edu>, <qemu-devel@nongnu.org>,
+ <linux-cxl@vger.kernel.org>, Viacheslav A.Dubeyko
+ <viacheslav.dubeyko@bytedance.com>
+Subject: Re: CXL 2.0 memory pooling emulation
+Message-ID: <20230217111418.000014d2@Huawei.com>
+In-Reply-To: <Y+6Xj39d2rxnowRx@memverge.com>
+References: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+ <20230215151854.00003e34@Huawei.com>
+ <Y+yhfFaQ4Kky93mc@memverge.com>
+ <20230216180057.00006c49@huawei.com>
+ <Y+6Xj39d2rxnowRx@memverge.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500005.china.huawei.com (7.191.163.240) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Received-SPF: pass client-ip=185.176.79.56;
+ envelope-from=jonathan.cameron@huawei.com; helo=frasgout.his.huawei.com
+X-Spam_score_int: -41
+X-Spam_score: -4.2
+X-Spam_bar: ----
+X-Spam_report: (-4.2 / 5.0 requ) BAYES_00=-1.9, RCVD_IN_DNSWL_MED=-2.3,
+ RCVD_IN_MSPIKE_H2=-0.001, SPF_HELO_NONE=0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Reply-to: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+From: Jonathan Cameron via <qemu-devel@nongnu.org>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: O
+Content-Length: 3226
+Lines: 70
+
+On Thu, 16 Feb 2023 15:52:31 -0500
+Gregory Price <gregory.price@memverge.com> wrote:
+
+> On Thu, Feb 16, 2023 at 06:00:57PM +0000, Jonathan Cameron wrote:
+> > On Wed, 15 Feb 2023 04:10:20 -0500
+> > Gregory Price <gregory.price@memverge.com> wrote:
+> >   
+> > > On Wed, Feb 15, 2023 at 03:18:54PM +0000, Jonathan Cameron via wrote:  
+> > > > On Wed, 8 Feb 2023 16:28:44 -0600
+> > > > zhiting zhu <zhitingz@cs.utexas.edu> wrote:
+> > > >   
+> > > > 1) Emulate an Multi Headed Device.
+> > > >    Initially connect two heads to different host bridges on a single QEMU
+> > > >    machine.  That lets us test most of the code flows without needing
+> > > >    to handle tests that involve multiple machines.
+> > > >    Later, we could add a means to connect between two instances of QEMU.    
+> > > 
+> > > Hackiest way to do this is to connect the same memory backend to two
+> > > type-3 devices, with the obvious caveat that the device state will not
+> > > be consistent between views.
+> > > 
+> > > But we could, for example, just put the relevant shared state into an
+> > > optional shared memory area instead of a normally allocated region.
+> > > 
+> > > i can imagine this looking something like
+> > > 
+> > > memory-backend-file,id=mem0,mem-path=/tmp/mem0,size=4G,share=true
+> > > cxl-type3,bus=rp0,volatile-memdev=mem0,id=cxl-mem0,shm_token=mytoken
+> > > 
+> > > then you can have multiple qemu instances hook their relevant devices up
+> > > to a a backend that points to the same file, and instantiate their
+> > > shared state in the region shmget(mytoken).  
+> > 
+> > That's not pretty.  For local instance I was thinking a primary device
+> > which also has the FM-API tunneled access via mailbox, and secondary devices
+> > that don't.  That would also apply to remote. The secondary device would
+> > then just receive some control commands on what to expose up to it's host.
+> > Not sure what convention on how to do that is in QEMU. Maybe a socket
+> > interface like is done for swtpm? With some ordering constraints on startup.
+> >   
+> 
+> I agree, it's certainly "not pretty".
+> 
+> I'd go so far as to call the baby ugly :].  Like i said: "The Hackiest way"
+> 
+> My understanding from looking around at some road shows is that some
+> of these early multi-headed devices are basically just SLD's with multiple
+> heads. Most of these devices had to be developed well before DCD's and
+> therefore the FM-API were placed in the spec, and we haven't seen or
+> heard of any of these early devices having any form of switch yet.
+> 
+> I don't see how this type of device is feasible unless it's either statically
+> provisioned (change firmware settings from bios on reboot) or implements
+> custom firmware commands to implement some form of exclusivity controls over
+> memory regions.
+> 
+> The former makes it not really a useful pooling device, so I'm sorta guessing
+> we'll see most of these early devices implement custom commands.
+> 
+> I'm just not sure these early MHD's are going to have any real form of
+> FM-API, but it would still be nice to emulate them.
+> 
+Makes sense.  I'd be fine with adding any necessary hooks to allow that
+in the QEMU emulation, but probably not upstreaming the custom stuff.
+
+Jonathan
+
+> ~Gregory
+
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from lists.gnu.org (lists.gnu.org [209.51.188.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7813C05027
+	for <qemu-devel@archiver.kernel.org>; Thu,  9 Feb 2023 01:24:56 +0000 (UTC)
+Received: from localhost ([::1] helo=lists1p.gnu.org)
+	by lists.gnu.org with esmtp (Exim 4.90_1)
+	(envelope-from <qemu-devel-bounces@nongnu.org>)
+	id 1pPvfL-00072o-Sh; Wed, 08 Feb 2023 20:23:59 -0500
+Received: from eggs.gnu.org ([2001:470:142:3::10])
+ by lists.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <zhitingz@cs.utexas.edu>)
+ id 1pPswD-00021H-7q
+ for qemu-devel@nongnu.org; Wed, 08 Feb 2023 17:29:18 -0500
+Received: from newman.cs.utexas.edu ([128.83.139.110])
+ by eggs.gnu.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.90_1) (envelope-from <zhitingz@cs.utexas.edu>)
+ id 1pPsw7-0006OU-5F
+ for qemu-devel@nongnu.org; Wed, 08 Feb 2023 17:29:08 -0500
+Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com
+ [209.85.221.45]) (authenticated bits=0)
+ by newman.cs.utexas.edu (8.14.4/8.14.4/Debian-4.1ubuntu1.1) with ESMTP id
+ 318MSukf023806
+ (version=TLSv1/SSLv3 cipher=AES128-GCM-SHA256 bits=128 verify=NOT)
+ for <qemu-devel@nongnu.org>; Wed, 8 Feb 2023 16:28:57 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=cs.utexas.edu;
+ s=default; t=1675895337;
+ bh=XRKxOHs5s/9/lLHEg5JWBwVXbijH5Tus2qCHtS+18VA=;
+ h=From:Date:Subject:To:From;
+ b=RuKbRodyB8FxdNkgjyTlam/rlCwXpfghDPLB2FShAncYsr2UbNT/tjrCUkWx4han6
+ qmbTnZVv7La2ng1ye7sy+sK5OHfbkLr6deulE7q7VGJyoiT+WIzMUK8G+qhV9NI3Kc
+ aNeJmpaVnh2II8N65JtvK0y/F5Y9DNRi97GTRL+c=
+Received: by mail-wr1-f45.google.com with SMTP id a2so31025wrd.6
+ for <qemu-devel@nongnu.org>; Wed, 08 Feb 2023 14:28:57 -0800 (PST)
+X-Gm-Message-State: AO0yUKVBZ3RHO3stchLxSYWIMH7eTsccUNAm5i4fxZcwPNSNBBcbZAL3
+ T8vH7Ve6quTUZUvbDIaooC0v5ei6WQ5Avph6/Hs=
+X-Google-Smtp-Source: AK7set8mbGoRXCwl1SgpskSAkK60+Qa11w0K1p8bMYiXiEydLXQZtmyIAC19GURKN1w3a8xjs4+g33vnI+RBdviFOpQ=
+X-Received: by 2002:a05:6000:50a:b0:2c3:efe7:a19e with SMTP id
+ a10-20020a056000050a00b002c3efe7a19emr229343wrf.201.1675895335827; Wed, 08
+ Feb 2023 14:28:55 -0800 (PST)
+MIME-Version: 1.0
+From: zhiting zhu <zhitingz@cs.utexas.edu>
+Date: Wed, 8 Feb 2023 16:28:44 -0600
+X-Gmail-Original-Message-ID: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+Message-ID: <CA+3q14z5pa1RPQuMB=6foVGcwgCHE+GME+zMES_adpVoDYCsvw@mail.gmail.com>
+Subject: CXL 2.0 memory pooling emulation
+To: qemu-devel@nongnu.org
+Content-Type: multipart/alternative; boundary="0000000000002c3afc05f437cae2"
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.9
+ (newman.cs.utexas.edu [128.83.139.110]); Wed, 08 Feb 2023 16:28:57 -0600 (CST)
+X-Virus-Scanned: clamav-milter 0.103.6 at newman
+X-Virus-Status: Clean
+Received-SPF: pass client-ip=128.83.139.110;
+ envelope-from=zhitingz@cs.utexas.edu; helo=newman.cs.utexas.edu
+X-Spam_score_int: -42
+X-Spam_score: -4.3
+X-Spam_bar: ----
+X-Spam_report: (-4.3 / 5.0 requ) BAYES_00=-1.9, DKIM_SIGNED=0.1,
+ DKIM_VALID=-0.1, DKIM_VALID_AU=-0.1, HTML_MESSAGE=0.001,
+ RCVD_IN_DNSWL_MED=-2.3, SPF_HELO_PASS=-0.001,
+ SPF_PASS=-0.001 autolearn=ham autolearn_force=no
+X-Spam_action: no action
+X-Mailman-Approved-At: Wed, 08 Feb 2023 20:23:58 -0500
+X-BeenThere: qemu-devel@nongnu.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: <qemu-devel.nongnu.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <https://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+ <mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Sender: qemu-devel-bounces+qemu-devel=archiver.kernel.org@nongnu.org
+Status: O
+Content-Length: 1150
+Lines: 30
+
+--0000000000002c3afc05f437cae2
+Content-Type: text/plain; charset="UTF-8"
+
+Hi,
+
+I saw a PoC:
+https://lore.kernel.org/qemu-devel/20220525121422.00003a84@Huawei.com/T/ to
+implement memory pooling and fabric manager on qemu. Is there any further
+development on this? Can qemu emulate a memory pooling on a simple case
+that two virtual machines connected to a CXL switch where some memory
+devices are attached to?
+
+Best,
+Zhiting
+
+--0000000000002c3afc05f437cae2
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi,<div><br></div><div>I saw a PoC:=C2=A0<a href=3D"https:=
+//lore.kernel.org/qemu-devel/20220525121422.00003a84@Huawei.com/T/" target=
+=3D"_blank">https://lore.kernel.org/qemu-devel/20220525121422.00003a84@Huaw=
+ei.com/T/</a>=C2=A0to implement memory pooling and fabric manager on qemu. =
+Is there any further development on this? Can qemu emulate a memory pooling=
+ on a simple case that two virtual machines connected to a CXL switch where=
+ some memory devices=C2=A0are attached to?=C2=A0</div><div><br></div><div>B=
+est,</div><div>Zhiting</div></div>
+
+--0000000000002c3afc05f437cae2--
+
+
