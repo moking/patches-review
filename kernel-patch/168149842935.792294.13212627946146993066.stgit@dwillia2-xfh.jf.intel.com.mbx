@@ -3,560 +3,6 @@ Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77B71C77B71
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 18:53:52 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229514AbjDNSxv (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 14:53:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37710 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229464AbjDNSxv (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 14:53:51 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 812668A62;
-        Fri, 14 Apr 2023 11:53:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681498430; x=1713034430;
-  h=subject:from:to:cc:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=nfMyxQWFmA0UP0QEI4guCa5Nv+/6g1D3v2ozF7ucCHw=;
-  b=jkDkz8E86nKBPlzaRO9qJkZGgDLTgAVeAoRAlD/zJrutQdpDlwvFFnst
-   /gjXO3vtUc6SQpsehX0vPVeIHbAZ2MisCcg17tlNw0HOXTaDjRhs7bF7B
-   jGobvuLc01oH9wHnswZPWW2FZPQSI71esau4ohRGpG5NamKuT3MeGhrdj
-   fRY2hv8DbSxLakzhwyQssEv3dp4QEweMcqIqcsAEacgRKlIntjvz+pqFB
-   DMtL4jnxOdibHU99Yip1FZbKhwitsATLTxMCwXaUIHXovr5yfpiKbh++y
-   TDXO8gf+jehxFB/S0rPHRZj/JtA4z1JrJYwE+AwSQip+VR/DG27T4HD6q
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270233"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="347270233"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:53:50 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437671"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="683437671"
-Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:53:49 -0700
-Subject: [PATCH 0/5] cxl/hdm: Decoder enumeration fixes
-From: Dan Williams <dan.j.williams@intel.com>
-To: linux-cxl@vger.kernel.org
-Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        stable@vger.kernel.org
-Date: Fri, 14 Apr 2023 11:53:49 -0700
-Message-ID: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-User-Agent: StGit/0.18-3-g996c
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-While testing region autodetect with physical hardware a few fixes fell
-out. The most interesting being evidence that a device is sensitive to
-8-byte reads of 2 consecutive 4-byte registers. The other is a long
-reported issue by Jonathan on how "passthrough" decoders are detected,
-and having an example with physical hardware to reinforce the
-observation from QEMU.
-
-The rest are ancillary fixes and new debug messages.
-
----
-
-Dan Williams (5):
-      cxl/hdm: Fail upon detecting 0-sized decoders
-      cxl/hdm: Use 4-byte reads to retrieve HDM decoder base+limit
-      cxl/core: Drop unused io-64-nonatomic-lo-hi.h
-      cxl/port: Scan single-target ports for decoders
-      cxl/hdm: Add more HDM decoder debug messages at startup
-
-
- drivers/cxl/core/hdm.c  |   52 ++++++++++++++++++++++++++++++++++++-----------
- drivers/cxl/core/mbox.c |    1 -
- drivers/cxl/core/port.c |    1 -
- drivers/cxl/port.c      |   18 ++++++++++++----
- 4 files changed, 53 insertions(+), 19 deletions(-)
-
-base-commit: 24b18197184ac39bb8566fb82c0bf788bcd0d45b
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E832C77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 18:53:58 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229650AbjDNSx5 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 14:53:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37744 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229464AbjDNSx4 (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 14:53:56 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2B40900B;
-        Fri, 14 Apr 2023 11:53:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681498435; x=1713034435;
-  h=subject:from:to:cc:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=jkZRto+6A4BtIkT/zvg0a1aOJMB5oaVVUHzEWvb8qps=;
-  b=NgUUyT3KvkV7wugBnaM3htwUhl0bOMlt0iN7ZwnhWewWLTDD7PzMv/AU
-   eHnINttkEpZ1LqwPdJQF5oXj7rqcI836qJbcqYWkk1EYSLWq+TmO6+McO
-   4BA1YmpYzX79DyA0dTZyPE0R2jOw3XcjqxnpK4OqTx3M8qP0M2pVTt4+3
-   mpPFqqX75lBtLdm05pGJVn4DzsEMd7M1WaQST05LyY64Tc5KfZu8dx4lp
-   rtgNQ5OP0dZ3G+fJ4FbYDKb1Q7mqnECwmVEmpdjSDYG1y1EhM4QKpdtEh
-   m3JI3vqial5f9VejlXTUewYyr6ALWPVYKpAY6au3NVBnpwbQVbJt1aDkr
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270250"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="347270250"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:53:55 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437683"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="683437683"
-Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:53:55 -0700
-Subject: [PATCH 1/5] cxl/hdm: Fail upon detecting 0-sized decoders
-From: Dan Williams <dan.j.williams@intel.com>
-To: linux-cxl@vger.kernel.org
-Cc: stable@vger.kernel.org
-Date: Fri, 14 Apr 2023 11:53:55 -0700
-Message-ID: <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
-In-Reply-To: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-User-Agent: StGit/0.18-3-g996c
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-Decoders committed with 0-size lead to later crashes on shutdown as
-__cxl_dpa_release() assumes a 'struct resource' has been established in
-the in 'cxlds->dpa_res'. Just fail the driver load in this instance
-since there are deeper problems with the enumeration or the setup when
-this happens.
-
-Fixes: 9c57cde0dcbd ("cxl/hdm: Enumerate allocated DPA")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- drivers/cxl/core/hdm.c |   15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-index 02cc2c38b44b..35b338b716fe 100644
---- a/drivers/cxl/core/hdm.c
-+++ b/drivers/cxl/core/hdm.c
-@@ -269,8 +269,11 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
- 
- 	lockdep_assert_held_write(&cxl_dpa_rwsem);
- 
--	if (!len)
--		goto success;
-+	if (!len) {
-+		dev_warn(dev, "decoder%d.%d: empty reservation attempted\n",
-+			 port->id, cxled->cxld.id);
-+		return -EINVAL;
-+	}
- 
- 	if (cxled->dpa_res) {
- 		dev_dbg(dev, "decoder%d.%d: existing allocation %pr assigned\n",
-@@ -323,7 +326,6 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
- 		cxled->mode = CXL_DECODER_MIXED;
- 	}
- 
--success:
- 	port->hdm_end++;
- 	get_device(&cxled->cxld.dev);
- 	return 0;
-@@ -833,6 +835,13 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
- 				 port->id, cxld->id);
- 			return -ENXIO;
- 		}
-+
-+		if (size == 0) {
-+			dev_warn(&port->dev,
-+				 "decoder%d.%d: Committed with zero size\n",
-+				 port->id, cxld->id);
-+			return -ENXIO;
-+		}
- 		port->commit_end = cxld->id;
- 	} else {
- 		/* unless / until type-2 drivers arrive, assume type-3 */
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB9DCC77B73
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 18:54:04 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229786AbjDNSyD (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 14:54:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37794 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229764AbjDNSyC (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 14:54:02 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 679948A62;
-        Fri, 14 Apr 2023 11:54:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681498441; x=1713034441;
-  h=subject:from:to:cc:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=tUqGHrY80SJ2eUDfu+8kOstL9TQ9mFA3t45VKnZoLr8=;
-  b=QjJJov44flkTuyVKG43bS4DgctaPElJY3jUaJFclkWM5Sm/em/M2iNX3
-   9W7h+9rUyp1MuHNxCL8kqk+uHrajMPdMRNZdOXhswdGCUhVZk/BdlB7Fg
-   Thgpe8aAPGTUsHiH+zrhjg2MT2L+Dv8v45A/5I1y4ewdN6iaHTeB9/Im0
-   UyYF35NFbydUN+66IsJ6CHKLT0gFNCzB9X2uSIfOIR45rGyakBhbasqLL
-   ejMKO98u6lzRg3k+pyh7elN398NbcKWMN/Hc8EKjViHck+lLBZDqKw8ck
-   DxSv9oq1J/DrhuAqhLIJEU7nkbTuFGl+5279FISnWt4O4QhUc47OWrLMC
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270265"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="347270265"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:01 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437693"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="683437693"
-Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:00 -0700
-Subject: [PATCH 2/5] cxl/hdm: Use 4-byte reads to retrieve HDM decoder
- base+limit
-From: Dan Williams <dan.j.williams@intel.com>
-To: linux-cxl@vger.kernel.org
-Cc: stable@vger.kernel.org
-Date: Fri, 14 Apr 2023 11:54:00 -0700
-Message-ID: <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
-In-Reply-To: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-User-Agent: StGit/0.18-3-g996c
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-The CXL specification mandates that 4-byte registers must be accessed
-with 4-byte access cycles. CXL 3.0 8.2.3 "Component Register Layout and
-Definition" states that the behavior is undefined if (2) 32-bit
-registers are accessed as an 8-byte quantity. It turns out that at least
-one hardware implementation is sensitive to this in practice. The @size
-variable results in zero with:
-
-    size = readq(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-
-...and the correct size with:
-
-    lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-    hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
-    size = (hi << 32) + lo;
-
-Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- drivers/cxl/core/hdm.c |   20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-index 35b338b716fe..6fdf7981ddc7 100644
---- a/drivers/cxl/core/hdm.c
-+++ b/drivers/cxl/core/hdm.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /* Copyright(c) 2022 Intel Corporation. All rights reserved. */
--#include <linux/io-64-nonatomic-hi-lo.h>
- #include <linux/seq_file.h>
- #include <linux/device.h>
- #include <linux/delay.h>
-@@ -785,8 +784,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
- 			    int *target_map, void __iomem *hdm, int which,
- 			    u64 *dpa_base, struct cxl_endpoint_dvsec_info *info)
- {
-+	u64 size, base, skip, dpa_size, lo, hi;
- 	struct cxl_endpoint_decoder *cxled;
--	u64 size, base, skip, dpa_size;
- 	bool committed;
- 	u32 remainder;
- 	int i, rc;
-@@ -801,8 +800,12 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
- 							which, info);
- 
- 	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
--	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
--	size = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-+	lo = readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
-+	hi = readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(which));
-+	base = (hi << 32) + lo;
-+	lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-+	hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
-+	size = (hi << 32) + lo;
- 	committed = !!(ctrl & CXL_HDM_DECODER0_CTRL_COMMITTED);
- 	cxld->commit = cxl_decoder_commit;
- 	cxld->reset = cxl_decoder_reset;
-@@ -865,8 +868,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
- 		return rc;
- 
- 	if (!info) {
--		target_list.value =
--			ioread64_hi_lo(hdm + CXL_HDM_DECODER0_TL_LOW(which));
-+		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
-+		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
-+		target_list.value = (hi << 32) + lo;
- 		for (i = 0; i < cxld->interleave_ways; i++)
- 			target_map[i] = target_list.target_id[i];
- 
-@@ -883,7 +887,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
- 			port->id, cxld->id, size, cxld->interleave_ways);
- 		return -ENXIO;
- 	}
--	skip = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
-+	lo = readl(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
-+	hi = readl(hdm + CXL_HDM_DECODER0_SKIP_HIGH(which));
-+	skip = (hi << 32) + lo;
- 	cxled = to_cxl_endpoint_decoder(&cxld->dev);
- 	rc = devm_cxl_dpa_reserve(cxled, *dpa_base + skip, dpa_size, skip);
- 	if (rc) {
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F725C77B71
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 18:54:13 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229744AbjDNSyM (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 14:54:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37944 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229704AbjDNSyI (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 14:54:08 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7820A93C5
-        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 11:54:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681498446; x=1713034446;
-  h=subject:from:to:date:message-id:in-reply-to:references:
-   mime-version:content-transfer-encoding;
-  bh=9WofR5/mLDZj6ZsgW6wP7+ESFmi/OjokxKRJmaWJyFo=;
-  b=m+XZaFBVr/xRWW6AjC5vrGiEQ/xyFU9iiy2t0aW7IF0JZL14fRypzwRN
-   5qxAn5uikAIGyDoM7LvkCkWDUvmcx4oVzyMQf+pPvHK1s/OfPLtlA5dCl
-   8H6cUCb/c6PnmfPCLaKW/64dOB02UkgW+JziZjcN+WEtkGn92OjHQKYxA
-   GMXfuUiYlKYYbwQq0beEhSEEzmYCV9P2JnpcgZvnEU/i0wrusnF9upXv8
-   JoAO8A/Pr6m7oc5xaZT0cJ/OridW7B5Z+ZJU46+t9xf/mtsH5NsM/WqeS
-   HxTidckB+5YmKdYeExhQKEwyNXytK9Q99C9CehFvsWD1W+E/jq/dY4CVN
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270278"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="347270278"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:06 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437720"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="683437720"
-Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:06 -0700
-Subject: [PATCH 3/5] cxl/core: Drop unused io-64-nonatomic-lo-hi.h
-From: Dan Williams <dan.j.williams@intel.com>
-To: linux-cxl@vger.kernel.org
-Date: Fri, 14 Apr 2023 11:54:06 -0700
-Message-ID: <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
-In-Reply-To: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-User-Agent: StGit/0.18-3-g996c
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-After the discovery of a case where an implementation misbehaves with
-register reads larger than the definition of the register the other
-usages of readq() were audited and found to be correct, but some cases
-where the io-64-nonatomic-lo-hi.h include is not needed were discovered,
-delete them.
-
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- drivers/cxl/core/mbox.c |    1 -
- drivers/cxl/core/port.c |    1 -
- 2 files changed, 2 deletions(-)
-
-diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
-index f2addb457172..6198637cb0bb 100644
---- a/drivers/cxl/core/mbox.c
-+++ b/drivers/cxl/core/mbox.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
--#include <linux/io-64-nonatomic-lo-hi.h>
- #include <linux/security.h>
- #include <linux/debugfs.h>
- #include <linux/ktime.h>
-diff --git a/drivers/cxl/core/port.c b/drivers/cxl/core/port.c
-index 4d1f9c5b5029..b060757c4000 100644
---- a/drivers/cxl/core/port.c
-+++ b/drivers/cxl/core/port.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
--#include <linux/io-64-nonatomic-lo-hi.h>
- #include <linux/memregion.h>
- #include <linux/workqueue.h>
- #include <linux/debugfs.h>
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A6E8C77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 18:54:15 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229874AbjDNSyO (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 14:54:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38006 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229911AbjDNSyN (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 14:54:13 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5C9493C5;
-        Fri, 14 Apr 2023 11:54:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681498451; x=1713034451;
-  h=subject:from:to:cc:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=2tCSj7igG3BleFoSj2JuUFpahXZH2jJ5DmqMSrBNMJk=;
-  b=Ctq+3IxIklSz1pgulmGlvqNnY2AazT90npf+uZGbJ4yTINfK8CSeEhj4
-   Pmekno5wVJlkILJmqX74n0DkSN8TYVOY5WFpWPB05uVlqS8Lg18V0vPi2
-   o7B74/IMcZhP91nLo7AFZBsR4aokgT86wxbHlxKwXnJ5mH3ggBuug2JoX
-   btN2569kVx9qoNRqF/OQIvrUO4kaFlfnoprWBX1QQrth+HBqH0pcQghWB
-   B5kgdvWV7va+t8UaRExZ7y6buVxjMJTybw+XfK/zgfe5NA3L1Aqas8Zy4
-   Jh0V5WsJ179sWDW/GMYv1sd4MUeVvWhOwqFoOkP8BNGzakU6u+H2nLID+
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270285"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="347270285"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:11 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437746"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="683437746"
-Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:11 -0700
-Subject: [PATCH 4/5] cxl/port: Scan single-target ports for decoders
-From: Dan Williams <dan.j.williams@intel.com>
-To: linux-cxl@vger.kernel.org
-Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        stable@vger.kernel.org
-Date: Fri, 14 Apr 2023 11:54:11 -0700
-Message-ID: <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
-In-Reply-To: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-User-Agent: StGit/0.18-3-g996c
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-Do not assume that a single-target port falls back to a passthrough
-decoder configuration. Scan for decoders and only fallback after probing
-that the HDM decoder capability is not present.
-
-One user visible affect of this bug is the inability to enumerate
-present CXL regions as the decoder settings for the present decoders are
-skipped.
-
-Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
-Reported-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Link: http://lore.kernel.org/r/20230227153128.8164-1-Jonathan.Cameron@huawei.com
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- drivers/cxl/core/hdm.c |    5 +++--
- drivers/cxl/port.c     |   18 +++++++++++++-----
- 2 files changed, 16 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-index 6fdf7981ddc7..abe3877cfa63 100644
---- a/drivers/cxl/core/hdm.c
-+++ b/drivers/cxl/core/hdm.c
-@@ -92,8 +92,9 @@ static int map_hdm_decoder_regs(struct cxl_port *port, void __iomem *crb,
- 
- 	cxl_probe_component_regs(&port->dev, crb, &map.component_map);
- 	if (!map.component_map.hdm_decoder.valid) {
--		dev_err(&port->dev, "HDM decoder registers invalid\n");
--		return -ENXIO;
-+		dev_dbg(&port->dev, "HDM decoder registers not implemented\n");
-+		/* unique error code to indicate no HDM decoder capability */
-+		return -ENODEV;
- 	}
- 
- 	return cxl_map_component_regs(&port->dev, regs, &map,
-diff --git a/drivers/cxl/port.c b/drivers/cxl/port.c
-index 22a7ab2bae7c..eb57324c4ad4 100644
---- a/drivers/cxl/port.c
-+++ b/drivers/cxl/port.c
-@@ -66,14 +66,22 @@ static int cxl_switch_port_probe(struct cxl_port *port)
- 	if (rc < 0)
- 		return rc;
- 
--	if (rc == 1)
--		return devm_cxl_add_passthrough_decoder(port);
--
- 	cxlhdm = devm_cxl_setup_hdm(port, NULL);
--	if (IS_ERR(cxlhdm))
-+	if (!IS_ERR(cxlhdm))
-+		return devm_cxl_enumerate_decoders(cxlhdm, NULL);
-+
-+	if (PTR_ERR(cxlhdm) != -ENODEV) {
-+		dev_err(&port->dev, "Failed to map HDM decoder capability\n");
- 		return PTR_ERR(cxlhdm);
-+	}
-+
-+	if (rc == 1) {
-+		dev_dbg(&port->dev, "Fallback to passthrough decoder\n");
-+		return devm_cxl_add_passthrough_decoder(port);
-+	}
- 
--	return devm_cxl_enumerate_decoders(cxlhdm, NULL);
-+	dev_err(&port->dev, "HDM decoder capability not found\n");
-+	return -ENXIO;
- }
- 
- static int cxl_endpoint_port_probe(struct cxl_port *port)
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
 	by smtp.lore.kernel.org (Postfix) with ESMTP id E25A5C77B73
 	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 18:54:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
@@ -655,75 +101,649 @@ Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6912C77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 20:12:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F725C77B71
+	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 18:54:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229629AbjDNUMA (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 16:12:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34432 "EHLO
+        id S229744AbjDNSyM (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 14 Apr 2023 14:54:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37944 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229468AbjDNUL7 (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 16:11:59 -0400
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A9EC86AC;
-        Fri, 14 Apr 2023 13:11:27 -0700 (PDT)
+        with ESMTP id S229704AbjDNSyI (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 14:54:08 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7820A93C5
+        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 11:54:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681503087; x=1713039087;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=txQBj+uPv9CCQ0lRxOJiNx7JcuLzKrZA9FMcmU4aqsc=;
-  b=k3NTlKdXdHYYpd8tyVy5CS63h43tnnwnyVszcMYdfKZMBVTzYM8f0FXj
-   F8kOivotSmq23Qdtr8vlIKvz3ED8Dqe1eelUfTE2A4IlU4q5319TsG9VZ
-   JDYCdh0G6sWRA4lRD0dZvbJVROD2Wd2FP5x5pQDuz+fgwdn/JSjEpo3qI
-   fiz4Ea3CuhADxpxZLMDSHChsOyltnoAjAa7FHKSIOum3wfNGaJ66O6XGm
-   p6okHWMHxhJcEzkjHqJJrgHU2uCSYIuaD2UpiXAO0+ycdr8ErekfWEWxU
-   2z3ANMD9u9odAQmluq5SYfmxVed3N2L9DX7iEukTGzNY42G0vAj2zZKsO
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="409769095"
+  t=1681498446; x=1713034446;
+  h=subject:from:to:date:message-id:in-reply-to:references:
+   mime-version:content-transfer-encoding;
+  bh=9WofR5/mLDZj6ZsgW6wP7+ESFmi/OjokxKRJmaWJyFo=;
+  b=m+XZaFBVr/xRWW6AjC5vrGiEQ/xyFU9iiy2t0aW7IF0JZL14fRypzwRN
+   5qxAn5uikAIGyDoM7LvkCkWDUvmcx4oVzyMQf+pPvHK1s/OfPLtlA5dCl
+   8H6cUCb/c6PnmfPCLaKW/64dOB02UkgW+JziZjcN+WEtkGn92OjHQKYxA
+   GMXfuUiYlKYYbwQq0beEhSEEzmYCV9P2JnpcgZvnEU/i0wrusnF9upXv8
+   JoAO8A/Pr6m7oc5xaZT0cJ/OridW7B5Z+ZJU46+t9xf/mtsH5NsM/WqeS
+   HxTidckB+5YmKdYeExhQKEwyNXytK9Q99C9CehFvsWD1W+E/jq/dY4CVN
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270278"
 X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="409769095"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:11:16 -0700
+   d="scan'208";a="347270278"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:06 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="833680251"
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437720"
 X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="833680251"
-Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.22.80])
-  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:11:15 -0700
-Date: Fri, 14 Apr 2023 13:11:13 -0700
-From: Alison Schofield <alison.schofield@intel.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-cxl@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH 1/5] cxl/hdm: Fail upon detecting 0-sized decoders
-Message-ID: <ZDmzYe1MAr2yC/GB@aschofie-mobl2>
+   d="scan'208";a="683437720"
+Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:06 -0700
+Subject: [PATCH 3/5] cxl/core: Drop unused io-64-nonatomic-lo-hi.h
+From: Dan Williams <dan.j.williams@intel.com>
+To: linux-cxl@vger.kernel.org
+Date: Fri, 14 Apr 2023 11:54:06 -0700
+Message-ID: <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
+In-Reply-To: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
 References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
- <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
+User-Agent: StGit/0.18-3-g996c
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
 
-On Fri, Apr 14, 2023 at 11:53:55AM -0700, Dan Williams wrote:
-> Decoders committed with 0-size lead to later crashes on shutdown as
-> __cxl_dpa_release() assumes a 'struct resource' has been established in
-> the in 'cxlds->dpa_res'. Just fail the driver load in this instance
-> since there are deeper problems with the enumeration or the setup when
-> this happens.
+After the discovery of a case where an implementation misbehaves with
+register reads larger than the definition of the register the other
+usages of readq() were audited and found to be correct, but some cases
+where the io-64-nonatomic-lo-hi.h include is not needed were discovered,
+delete them.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/cxl/core/mbox.c |    1 -
+ drivers/cxl/core/port.c |    1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+index f2addb457172..6198637cb0bb 100644
+--- a/drivers/cxl/core/mbox.c
++++ b/drivers/cxl/core/mbox.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
+-#include <linux/io-64-nonatomic-lo-hi.h>
+ #include <linux/security.h>
+ #include <linux/debugfs.h>
+ #include <linux/ktime.h>
+diff --git a/drivers/cxl/core/port.c b/drivers/cxl/core/port.c
+index 4d1f9c5b5029..b060757c4000 100644
+--- a/drivers/cxl/core/port.c
++++ b/drivers/cxl/core/port.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
+-#include <linux/io-64-nonatomic-lo-hi.h>
+ #include <linux/memregion.h>
+ #include <linux/workqueue.h>
+ #include <linux/debugfs.h>
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97A07C77B78
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 18:54:15 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229828AbjDNSyO (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 14:54:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38006 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229911AbjDNSyN (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 14:54:13 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5C9493C5;
+        Fri, 14 Apr 2023 11:54:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681498451; x=1713034451;
+  h=subject:from:to:cc:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=2tCSj7igG3BleFoSj2JuUFpahXZH2jJ5DmqMSrBNMJk=;
+  b=Ctq+3IxIklSz1pgulmGlvqNnY2AazT90npf+uZGbJ4yTINfK8CSeEhj4
+   Pmekno5wVJlkILJmqX74n0DkSN8TYVOY5WFpWPB05uVlqS8Lg18V0vPi2
+   o7B74/IMcZhP91nLo7AFZBsR4aokgT86wxbHlxKwXnJ5mH3ggBuug2JoX
+   btN2569kVx9qoNRqF/OQIvrUO4kaFlfnoprWBX1QQrth+HBqH0pcQghWB
+   B5kgdvWV7va+t8UaRExZ7y6buVxjMJTybw+XfK/zgfe5NA3L1Aqas8Zy4
+   Jh0V5WsJ179sWDW/GMYv1sd4MUeVvWhOwqFoOkP8BNGzakU6u+H2nLID+
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270285"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="347270285"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:11 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437746"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="683437746"
+Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:11 -0700
+Subject: [PATCH 4/5] cxl/port: Scan single-target ports for decoders
+From: Dan Williams <dan.j.williams@intel.com>
+To: linux-cxl@vger.kernel.org
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        stable@vger.kernel.org
+Date: Fri, 14 Apr 2023 11:54:11 -0700
+Message-ID: <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
+In-Reply-To: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+User-Agent: StGit/0.18-3-g996c
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+Do not assume that a single-target port falls back to a passthrough
+decoder configuration. Scan for decoders and only fallback after probing
+that the HDM decoder capability is not present.
+
+One user visible affect of this bug is the inability to enumerate
+present CXL regions as the decoder settings for the present decoders are
+skipped.
+
+Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
+Reported-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Link: http://lore.kernel.org/r/20230227153128.8164-1-Jonathan.Cameron@huawei.com
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/cxl/core/hdm.c |    5 +++--
+ drivers/cxl/port.c     |   18 +++++++++++++-----
+ 2 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+index 6fdf7981ddc7..abe3877cfa63 100644
+--- a/drivers/cxl/core/hdm.c
++++ b/drivers/cxl/core/hdm.c
+@@ -92,8 +92,9 @@ static int map_hdm_decoder_regs(struct cxl_port *port, void __iomem *crb,
+ 
+ 	cxl_probe_component_regs(&port->dev, crb, &map.component_map);
+ 	if (!map.component_map.hdm_decoder.valid) {
+-		dev_err(&port->dev, "HDM decoder registers invalid\n");
+-		return -ENXIO;
++		dev_dbg(&port->dev, "HDM decoder registers not implemented\n");
++		/* unique error code to indicate no HDM decoder capability */
++		return -ENODEV;
+ 	}
+ 
+ 	return cxl_map_component_regs(&port->dev, regs, &map,
+diff --git a/drivers/cxl/port.c b/drivers/cxl/port.c
+index 22a7ab2bae7c..eb57324c4ad4 100644
+--- a/drivers/cxl/port.c
++++ b/drivers/cxl/port.c
+@@ -66,14 +66,22 @@ static int cxl_switch_port_probe(struct cxl_port *port)
+ 	if (rc < 0)
+ 		return rc;
+ 
+-	if (rc == 1)
+-		return devm_cxl_add_passthrough_decoder(port);
+-
+ 	cxlhdm = devm_cxl_setup_hdm(port, NULL);
+-	if (IS_ERR(cxlhdm))
++	if (!IS_ERR(cxlhdm))
++		return devm_cxl_enumerate_decoders(cxlhdm, NULL);
++
++	if (PTR_ERR(cxlhdm) != -ENODEV) {
++		dev_err(&port->dev, "Failed to map HDM decoder capability\n");
+ 		return PTR_ERR(cxlhdm);
++	}
++
++	if (rc == 1) {
++		dev_dbg(&port->dev, "Fallback to passthrough decoder\n");
++		return devm_cxl_add_passthrough_decoder(port);
++	}
+ 
+-	return devm_cxl_enumerate_decoders(cxlhdm, NULL);
++	dev_err(&port->dev, "HDM decoder capability not found\n");
++	return -ENXIO;
+ }
+ 
+ static int cxl_endpoint_port_probe(struct cxl_port *port)
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07646C77B71
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 18:54:05 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229793AbjDNSyD (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 14:54:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37794 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229764AbjDNSyC (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 14:54:02 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 679948A62;
+        Fri, 14 Apr 2023 11:54:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681498441; x=1713034441;
+  h=subject:from:to:cc:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=tUqGHrY80SJ2eUDfu+8kOstL9TQ9mFA3t45VKnZoLr8=;
+  b=QjJJov44flkTuyVKG43bS4DgctaPElJY3jUaJFclkWM5Sm/em/M2iNX3
+   9W7h+9rUyp1MuHNxCL8kqk+uHrajMPdMRNZdOXhswdGCUhVZk/BdlB7Fg
+   Thgpe8aAPGTUsHiH+zrhjg2MT2L+Dv8v45A/5I1y4ewdN6iaHTeB9/Im0
+   UyYF35NFbydUN+66IsJ6CHKLT0gFNCzB9X2uSIfOIR45rGyakBhbasqLL
+   ejMKO98u6lzRg3k+pyh7elN398NbcKWMN/Hc8EKjViHck+lLBZDqKw8ck
+   DxSv9oq1J/DrhuAqhLIJEU7nkbTuFGl+5279FISnWt4O4QhUc47OWrLMC
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270265"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="347270265"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:01 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437693"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="683437693"
+Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:54:00 -0700
+Subject: [PATCH 2/5] cxl/hdm: Use 4-byte reads to retrieve HDM decoder
+ base+limit
+From: Dan Williams <dan.j.williams@intel.com>
+To: linux-cxl@vger.kernel.org
+Cc: stable@vger.kernel.org
+Date: Fri, 14 Apr 2023 11:54:00 -0700
+Message-ID: <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
+In-Reply-To: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+User-Agent: StGit/0.18-3-g996c
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+The CXL specification mandates that 4-byte registers must be accessed
+with 4-byte access cycles. CXL 3.0 8.2.3 "Component Register Layout and
+Definition" states that the behavior is undefined if (2) 32-bit
+registers are accessed as an 8-byte quantity. It turns out that at least
+one hardware implementation is sensitive to this in practice. The @size
+variable results in zero with:
+
+    size = readq(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+
+...and the correct size with:
+
+    lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+    hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
+    size = (hi << 32) + lo;
+
+Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/cxl/core/hdm.c |   20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+index 35b338b716fe..6fdf7981ddc7 100644
+--- a/drivers/cxl/core/hdm.c
++++ b/drivers/cxl/core/hdm.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /* Copyright(c) 2022 Intel Corporation. All rights reserved. */
+-#include <linux/io-64-nonatomic-hi-lo.h>
+ #include <linux/seq_file.h>
+ #include <linux/device.h>
+ #include <linux/delay.h>
+@@ -785,8 +784,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+ 			    int *target_map, void __iomem *hdm, int which,
+ 			    u64 *dpa_base, struct cxl_endpoint_dvsec_info *info)
+ {
++	u64 size, base, skip, dpa_size, lo, hi;
+ 	struct cxl_endpoint_decoder *cxled;
+-	u64 size, base, skip, dpa_size;
+ 	bool committed;
+ 	u32 remainder;
+ 	int i, rc;
+@@ -801,8 +800,12 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+ 							which, info);
+ 
+ 	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
+-	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+-	size = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
++	lo = readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
++	hi = readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(which));
++	base = (hi << 32) + lo;
++	lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
++	hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
++	size = (hi << 32) + lo;
+ 	committed = !!(ctrl & CXL_HDM_DECODER0_CTRL_COMMITTED);
+ 	cxld->commit = cxl_decoder_commit;
+ 	cxld->reset = cxl_decoder_reset;
+@@ -865,8 +868,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+ 		return rc;
+ 
+ 	if (!info) {
+-		target_list.value =
+-			ioread64_hi_lo(hdm + CXL_HDM_DECODER0_TL_LOW(which));
++		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
++		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
++		target_list.value = (hi << 32) + lo;
+ 		for (i = 0; i < cxld->interleave_ways; i++)
+ 			target_map[i] = target_list.target_id[i];
+ 
+@@ -883,7 +887,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+ 			port->id, cxld->id, size, cxld->interleave_ways);
+ 		return -ENXIO;
+ 	}
+-	skip = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
++	lo = readl(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
++	hi = readl(hdm + CXL_HDM_DECODER0_SKIP_HIGH(which));
++	skip = (hi << 32) + lo;
+ 	cxled = to_cxl_endpoint_decoder(&cxld->dev);
+ 	rc = devm_cxl_dpa_reserve(cxled, *dpa_base + skip, dpa_size, skip);
+ 	if (rc) {
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 738CFC77B71
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 18:53:58 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229649AbjDNSx5 (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 14:53:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37744 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229464AbjDNSx4 (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 14:53:56 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2B40900B;
+        Fri, 14 Apr 2023 11:53:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681498435; x=1713034435;
+  h=subject:from:to:cc:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=jkZRto+6A4BtIkT/zvg0a1aOJMB5oaVVUHzEWvb8qps=;
+  b=NgUUyT3KvkV7wugBnaM3htwUhl0bOMlt0iN7ZwnhWewWLTDD7PzMv/AU
+   eHnINttkEpZ1LqwPdJQF5oXj7rqcI836qJbcqYWkk1EYSLWq+TmO6+McO
+   4BA1YmpYzX79DyA0dTZyPE0R2jOw3XcjqxnpK4OqTx3M8qP0M2pVTt4+3
+   mpPFqqX75lBtLdm05pGJVn4DzsEMd7M1WaQST05LyY64Tc5KfZu8dx4lp
+   rtgNQ5OP0dZ3G+fJ4FbYDKb1Q7mqnECwmVEmpdjSDYG1y1EhM4QKpdtEh
+   m3JI3vqial5f9VejlXTUewYyr6ALWPVYKpAY6au3NVBnpwbQVbJt1aDkr
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270250"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="347270250"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:53:55 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437683"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="683437683"
+Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:53:55 -0700
+Subject: [PATCH 1/5] cxl/hdm: Fail upon detecting 0-sized decoders
+From: Dan Williams <dan.j.williams@intel.com>
+To: linux-cxl@vger.kernel.org
+Cc: stable@vger.kernel.org
+Date: Fri, 14 Apr 2023 11:53:55 -0700
+Message-ID: <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
+In-Reply-To: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+User-Agent: StGit/0.18-3-g996c
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+Decoders committed with 0-size lead to later crashes on shutdown as
+__cxl_dpa_release() assumes a 'struct resource' has been established in
+the in 'cxlds->dpa_res'. Just fail the driver load in this instance
+since there are deeper problems with the enumeration or the setup when
+this happens.
+
+Fixes: 9c57cde0dcbd ("cxl/hdm: Enumerate allocated DPA")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/cxl/core/hdm.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+index 02cc2c38b44b..35b338b716fe 100644
+--- a/drivers/cxl/core/hdm.c
++++ b/drivers/cxl/core/hdm.c
+@@ -269,8 +269,11 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
+ 
+ 	lockdep_assert_held_write(&cxl_dpa_rwsem);
+ 
+-	if (!len)
+-		goto success;
++	if (!len) {
++		dev_warn(dev, "decoder%d.%d: empty reservation attempted\n",
++			 port->id, cxled->cxld.id);
++		return -EINVAL;
++	}
+ 
+ 	if (cxled->dpa_res) {
+ 		dev_dbg(dev, "decoder%d.%d: existing allocation %pr assigned\n",
+@@ -323,7 +326,6 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
+ 		cxled->mode = CXL_DECODER_MIXED;
+ 	}
+ 
+-success:
+ 	port->hdm_end++;
+ 	get_device(&cxled->cxld.dev);
+ 	return 0;
+@@ -833,6 +835,13 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+ 				 port->id, cxld->id);
+ 			return -ENXIO;
+ 		}
++
++		if (size == 0) {
++			dev_warn(&port->dev,
++				 "decoder%d.%d: Committed with zero size\n",
++				 port->id, cxld->id);
++			return -ENXIO;
++		}
+ 		port->commit_end = cxld->id;
+ 	} else {
+ 		/* unless / until type-2 drivers arrive, assume type-3 */
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 972DFC77B73
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 18:53:52 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229479AbjDNSxv (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 14:53:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37710 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229464AbjDNSxv (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 14:53:51 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 812668A62;
+        Fri, 14 Apr 2023 11:53:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681498430; x=1713034430;
+  h=subject:from:to:cc:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=nfMyxQWFmA0UP0QEI4guCa5Nv+/6g1D3v2ozF7ucCHw=;
+  b=jkDkz8E86nKBPlzaRO9qJkZGgDLTgAVeAoRAlD/zJrutQdpDlwvFFnst
+   /gjXO3vtUc6SQpsehX0vPVeIHbAZ2MisCcg17tlNw0HOXTaDjRhs7bF7B
+   jGobvuLc01oH9wHnswZPWW2FZPQSI71esau4ohRGpG5NamKuT3MeGhrdj
+   fRY2hv8DbSxLakzhwyQssEv3dp4QEweMcqIqcsAEacgRKlIntjvz+pqFB
+   DMtL4jnxOdibHU99Yip1FZbKhwitsATLTxMCwXaUIHXovr5yfpiKbh++y
+   TDXO8gf+jehxFB/S0rPHRZj/JtA4z1JrJYwE+AwSQip+VR/DG27T4HD6q
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347270233"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="347270233"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:53:50 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="683437671"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="683437671"
+Received: from rkulesho-mobl1.amr.corp.intel.com (HELO dwillia2-xfh.jf.intel.com) ([10.209.41.243])
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 11:53:49 -0700
+Subject: [PATCH 0/5] cxl/hdm: Decoder enumeration fixes
+From: Dan Williams <dan.j.williams@intel.com>
+To: linux-cxl@vger.kernel.org
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        stable@vger.kernel.org
+Date: Fri, 14 Apr 2023 11:53:49 -0700
+Message-ID: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+User-Agent: StGit/0.18-3-g996c
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+While testing region autodetect with physical hardware a few fixes fell
+out. The most interesting being evidence that a device is sensitive to
+8-byte reads of 2 consecutive 4-byte registers. The other is a long
+reported issue by Jonathan on how "passthrough" decoders are detected,
+and having an example with physical hardware to reinforce the
+observation from QEMU.
+
+The rest are ancillary fixes and new debug messages.
+
+---
+
+Dan Williams (5):
+      cxl/hdm: Fail upon detecting 0-sized decoders
+      cxl/hdm: Use 4-byte reads to retrieve HDM decoder base+limit
+      cxl/core: Drop unused io-64-nonatomic-lo-hi.h
+      cxl/port: Scan single-target ports for decoders
+      cxl/hdm: Add more HDM decoder debug messages at startup
+
+
+ drivers/cxl/core/hdm.c  |   52 ++++++++++++++++++++++++++++++++++++-----------
+ drivers/cxl/core/mbox.c |    1 -
+ drivers/cxl/core/port.c |    1 -
+ drivers/cxl/port.c      |   18 ++++++++++++----
+ 4 files changed, 53 insertions(+), 19 deletions(-)
+
+base-commit: 24b18197184ac39bb8566fb82c0bf788bcd0d45b
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B9CBC77B7D
+	for <linux-cxl@archiver.kernel.org>; Mon, 15 May 2023 10:52:55 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S240682AbjEOKwy (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 15 May 2023 06:52:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42618 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S240747AbjEOKwx (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 15 May 2023 06:52:53 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 266B710F3
+        for <linux-cxl@vger.kernel.org>; Mon, 15 May 2023 03:52:50 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QKblr0LLnz67qBF;
+        Mon, 15 May 2023 18:51:52 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 15 May
+ 2023 11:52:48 +0100
+Date: Mon, 15 May 2023 11:52:47 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Dan Williams <dan.j.williams@intel.com>
+CC: <linux-cxl@vger.kernel.org>
+Subject: Re: [PATCH 5/5] cxl/hdm: Add more HDM decoder debug messages at
+ startup
+Message-ID: <20230515115247.00002e45@Huawei.com>
+In-Reply-To: <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+        <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, 14 Apr 2023 11:54:16 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
+
+> A recent debug session yielded a couple debug messages that were useful
+> for determining the reason why the driver was or was not falling back
+> to CXL range register emulation, and for identifying decoder setting
+> enumeration problems.
 > 
-> Fixes: 9c57cde0dcbd ("cxl/hdm: Enumerate allocated DPA")
-> Cc: <stable@vger.kernel.org>
 > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+FWIW makes sense.
 
-
-Reviewed-by: Alison Schofield <alison.schofield@intel.com>
-
-
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> ---
+>  drivers/cxl/core/hdm.c |   12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 > 
-snip
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index abe3877cfa63..7889ff203a34 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -130,6 +130,14 @@ static bool should_emulate_decoders(struct cxl_endpoint_dvsec_info *info)
+>  	 */
+>  	for (i = 0; i < cxlhdm->decoder_count; i++) {
+>  		ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(i));
+> +		dev_dbg(&info->port->dev,
+> +			"decoder%d.%d: committed: %ld base: %#x_%.8x size: %#x_%.8x\n",
+> +			info->port->id, i,
+> +			FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl),
+> +			readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(i)));
+>  		if (FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl))
+>  			return false;
+>  	}
+> @@ -868,6 +876,10 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  	if (rc)
+>  		return rc;
+>  
+> +	dev_dbg(&port->dev, "decoder%d.%d: range: %#llx-%#llx iw: %d ig: %d\n",
+> +		port->id, cxld->id, cxld->hpa_range.start, cxld->hpa_range.end,
+> +		cxld->interleave_ways, cxld->interleave_granularity);
+> +
+>  	if (!info) {
+>  		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
+>  		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
+> 
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
@@ -731,150 +751,405 @@ Return-Path: <linux-cxl-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58C33C77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 20:32:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26706C7EE22
+	for <linux-cxl@archiver.kernel.org>; Mon, 15 May 2023 10:49:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229528AbjDNUcs (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 16:32:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41302 "EHLO
+        id S240807AbjEOKtF (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Mon, 15 May 2023 06:49:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39540 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229830AbjDNUcr (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 16:32:47 -0400
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 167CF8A5A;
-        Fri, 14 Apr 2023 13:32:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681504359; x=1713040359;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=GqJYbdZM7uH2OZYGFBf+0Bp8T7h2XOaSCphj9PDCYEA=;
-  b=HJ4N3EfS0siebyyBbMvQNC3VBOWhSfnpy0lU1JQ+FKKvw/PcYBispRXX
-   EzM4SgPFVTtR7Mm5fwX17SlOVdXNJviPjdcwKxG//V9z00878EDqcrE21
-   DqnEEEFFNBH+HTRisdmCt7MJt70Qd++LCyvp0mojTHxyXGUJ+dgWnuRVd
-   Z02xlxiVnadefKdDhSuxjPquJ7aQlK9Kr/oCToLC2Sw5zIhJf+LpwBnH8
-   n8QQ++ateJoxoVFP2xw8qhl4riJ21iOOVTWb7yoHUeJcwX6CZbjiY1636
-   Hc5Pqz5sbL7aD8TjEGIDI46uyO5irEVhYHLyciRx2NamY0Q081OWuIdZc
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="346407505"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="346407505"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:32:17 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="722579928"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
-   d="scan'208";a="722579928"
-Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.22.80])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:32:16 -0700
-Date: Fri, 14 Apr 2023 13:32:14 -0700
-From: Alison Schofield <alison.schofield@intel.com>
+        with ESMTP id S240871AbjEOKtC (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Mon, 15 May 2023 06:49:02 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8010210DF
+        for <linux-cxl@vger.kernel.org>; Mon, 15 May 2023 03:49:01 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QKbgR0zNvz688Wb;
+        Mon, 15 May 2023 18:48:03 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 15 May
+ 2023 11:48:56 +0100
+Date: Mon, 15 May 2023 11:48:55 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
 To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-cxl@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH 2/5] cxl/hdm: Use 4-byte reads to retrieve HDM decoder
- base+limit
-Message-ID: <ZDm4TqspwS3AAQSr@aschofie-mobl2>
+CC: <linux-cxl@vger.kernel.org>
+Subject: Re: [PATCH 3/5] cxl/core: Drop unused io-64-nonatomic-lo-hi.h
+Message-ID: <20230515114855.0000771e@Huawei.com>
+In-Reply-To: <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
 References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
- <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
+        <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-cxl.vger.kernel.org>
 X-Mailing-List: linux-cxl@vger.kernel.org
 
-On Fri, Apr 14, 2023 at 11:54:00AM -0700, Dan Williams wrote:
-> The CXL specification mandates that 4-byte registers must be accessed
-> with 4-byte access cycles. CXL 3.0 8.2.3 "Component Register Layout and
-> Definition" states that the behavior is undefined if (2) 32-bit
-> registers are accessed as an 8-byte quantity. It turns out that at least
-> one hardware implementation is sensitive to this in practice. The @size
-> variable results in zero with:
+On Fri, 14 Apr 2023 11:54:06 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
+
+> After the discovery of a case where an implementation misbehaves with
+> register reads larger than the definition of the register the other
+> usages of readq() were audited and found to be correct, but some cases
+> where the io-64-nonatomic-lo-hi.h include is not needed were discovered,
+> delete them.
 > 
->     size = readq(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-> 
-> ...and the correct size with:
-> 
->     lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
->     hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
->     size = (hi << 32) + lo;
-> 
-> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
-> Cc: <stable@vger.kernel.org>
 > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 
-I see you got rid of ioread64_hi_lo(), so this can't be
-happening anywhere else. Are all the other readl, writel
-usages known to be OK, or do you need review help against
-the spec?
+Fair enough if this passes 0-day.  Everytime I try to drop
+io-64-nonatomic-lo-hi.h or similar I find some weird arch choice that
+needs it (mostly 32 bit arches, so maybe we don't care here).
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+> ---
+>  drivers/cxl/core/mbox.c |    1 -
+>  drivers/cxl/core/port.c |    1 -
+>  2 files changed, 2 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+> index f2addb457172..6198637cb0bb 100644
+> --- a/drivers/cxl/core/mbox.c
+> +++ b/drivers/cxl/core/mbox.c
+> @@ -1,6 +1,5 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
+>  /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
+> -#include <linux/io-64-nonatomic-lo-hi.h>
+>  #include <linux/security.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/ktime.h>
+> diff --git a/drivers/cxl/core/port.c b/drivers/cxl/core/port.c
+> index 4d1f9c5b5029..b060757c4000 100644
+> --- a/drivers/cxl/core/port.c
+> +++ b/drivers/cxl/core/port.c
+> @@ -1,6 +1,5 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
+>  /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
+> -#include <linux/io-64-nonatomic-lo-hi.h>
+>  #include <linux/memregion.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/debugfs.h>
+> 
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3397BC77B72
+	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:26:13 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230134AbjDNV0M (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 14 Apr 2023 17:26:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36584 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229954AbjDNV0E (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:26:04 -0400
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E3FB92
+        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 14:25:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681507548; x=1713043548;
+  h=message-id:date:mime-version:subject:to:references:from:
+   in-reply-to:content-transfer-encoding;
+  bh=2A1jlpB013w03MJkHh4Zh78JTTQ/39jEsxGdGDvODRU=;
+  b=WeoL4s0BXNwIcNKn9jlNUMf9w/f9K1QXor7E3CHPaRxnU1Jr/x1hFVdh
+   R2OcIBstMWsN+Pts+Ev0Pr82uWmFxBk/Fhbc/X1+R1nkYZepgJM5oMq+8
+   fpwwBP0IA4XvMYMuxQxpqtjvBMqfvu9bdlLLoSbLvy6IMJIiCjySIAw2X
+   6KCGE05dHsmr9Z7ymbwzsw7PofvNaPg6yPlnGd9mAYmm98ohnjWpq4mFE
+   2Aq0Ou+osZhnnvatBPlRrj+jhri8HiQARgpP6danNCqoDcjP6zM3wTTZR
+   tnL9LGUbGpzrbLPvJ0cTHNFXPniZGNIoq0UcXVWp5V8HPzLVHAR+wUJDX
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="342067385"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="342067385"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:25:48 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="779335926"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="779335926"
+Received: from djiang5-mobl3.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:25:48 -0700
+Message-ID: <f573b441-17ac-add9-c154-ebbb794bfc4d@intel.com>
+Date: Fri, 14 Apr 2023 14:25:47 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.9.0
+Subject: Re: [PATCH 5/5] cxl/hdm: Add more HDM decoder debug messages at
+ startup
+Content-Language: en-US
+To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+ <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+
+
+On 4/14/23 11:54 AM, Dan Williams wrote:
+> A recent debug session yielded a couple debug messages that were useful
+> for determining the reason why the driver was or was not falling back
+> to CXL range register emulation, and for identifying decoder setting
+> enumeration problems.
+> 
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+
+> ---
+>   drivers/cxl/core/hdm.c |   12 ++++++++++++
+>   1 file changed, 12 insertions(+)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index abe3877cfa63..7889ff203a34 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -130,6 +130,14 @@ static bool should_emulate_decoders(struct cxl_endpoint_dvsec_info *info)
+>   	 */
+>   	for (i = 0; i < cxlhdm->decoder_count; i++) {
+>   		ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(i));
+> +		dev_dbg(&info->port->dev,
+> +			"decoder%d.%d: committed: %ld base: %#x_%.8x size: %#x_%.8x\n",
+> +			info->port->id, i,
+> +			FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl),
+> +			readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(i)));
+>   		if (FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl))
+>   			return false;
+>   	}
+> @@ -868,6 +876,10 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>   	if (rc)
+>   		return rc;
+>   
+> +	dev_dbg(&port->dev, "decoder%d.%d: range: %#llx-%#llx iw: %d ig: %d\n",
+> +		port->id, cxld->id, cxld->hpa_range.start, cxld->hpa_range.end,
+> +		cxld->interleave_ways, cxld->interleave_granularity);
+> +
+>   	if (!info) {
+>   		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
+>   		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
+> 
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0CDFC77B71
+	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:22:39 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229941AbjDNVWi (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 14 Apr 2023 17:22:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34178 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229773AbjDNVWh (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:22:37 -0400
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E221092
+        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 14:22:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681507356; x=1713043356;
+  h=message-id:date:mime-version:subject:to:references:from:
+   in-reply-to:content-transfer-encoding;
+  bh=eiTxzzFPE1Q5FDN18H3CIWrUBWJ3pLeFgjVPdOvUzno=;
+  b=QocUHAG0P+e6AlR3JEVog4/jzuVfoutD3Ep6kekaUNg/XgORDxiIo5Ad
+   Gu1KenPWgZ2fDAaRI1mdEHbdqh8mclQNS6cVjZdn8zYbYMAD+gwOQDwuc
+   a1su4fr1mtWPyss8UaWhYVyOQ6IDKTD402a9bMVcx2XV040KAinvzzffi
+   bLKDCSf3zztVeq9G9yeQINFXjC6c7Jls5siLMZOnA7yGPM7kQqaQiGl60
+   DMKTqHPLoNUskmcMB68VScYqYrC3UGHQNxqqILsUC/h/e63K98YvIIU9i
+   o1e3BgePUYiKsvA/v+jQgtjcc1/FAXYg0poTvhYEjFFD/dtxN7+QI2w2E
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="346416202"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="346416202"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:22:36 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="689963394"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="689963394"
+Received: from tpattadx-mobl1.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:22:36 -0700
+Message-ID: <4f9f0682-fa8a-3491-5ee8-3b375585837f@intel.com>
+Date: Fri, 14 Apr 2023 14:22:35 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.9.0
+Subject: Re: [PATCH 3/5] cxl/core: Drop unused io-64-nonatomic-lo-hi.h
+Content-Language: en-US
+To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+ <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+
+
+On 4/14/23 11:54 AM, Dan Williams wrote:
+> After the discovery of a case where an implementation misbehaves with
+> register reads larger than the definition of the register the other
+> usages of readq() were audited and found to be correct, but some cases
+> where the io-64-nonatomic-lo-hi.h include is not needed were discovered,
+> delete them.
+> 
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+
+> ---
+>   drivers/cxl/core/mbox.c |    1 -
+>   drivers/cxl/core/port.c |    1 -
+>   2 files changed, 2 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
+> index f2addb457172..6198637cb0bb 100644
+> --- a/drivers/cxl/core/mbox.c
+> +++ b/drivers/cxl/core/mbox.c
+> @@ -1,6 +1,5 @@
+>   // SPDX-License-Identifier: GPL-2.0-only
+>   /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
+> -#include <linux/io-64-nonatomic-lo-hi.h>
+>   #include <linux/security.h>
+>   #include <linux/debugfs.h>
+>   #include <linux/ktime.h>
+> diff --git a/drivers/cxl/core/port.c b/drivers/cxl/core/port.c
+> index 4d1f9c5b5029..b060757c4000 100644
+> --- a/drivers/cxl/core/port.c
+> +++ b/drivers/cxl/core/port.c
+> @@ -1,6 +1,5 @@
+>   // SPDX-License-Identifier: GPL-2.0-only
+>   /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
+> -#include <linux/io-64-nonatomic-lo-hi.h>
+>   #include <linux/memregion.h>
+>   #include <linux/workqueue.h>
+>   #include <linux/debugfs.h>
+> 
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-cxl-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8920C77B71
+	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:06:26 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229773AbjDNVG0 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        Fri, 14 Apr 2023 17:06:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55242 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229703AbjDNVGZ (ORCPT
+        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:06:25 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A543E9B
+        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 14:06:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681506384; x=1713042384;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=MtjAxowinXr/JwD9NIaly7DXRcQy3rIQuZ4PQcHh2Vg=;
+  b=chv8YhdltMcpSZ/9vx4PTH7JPzodPleCt6uGQmTQGBp+vUHXKrdKJb+a
+   Eul1fiK9/0wEUvSqGThdrZvlC1mtNIuih3JnpFhA/a8HPJV2stL0ilzcz
+   0dKR0bLppFPxfs7xToZ726KX6OfwWBNMWkUVONzHuzqH9lV8PGvv5AQZ6
+   PlsIawcq1/LTWrNLtcWWXaLdmeHB4q1U95MvIjlD7fLopRW/ihXBB7JdN
+   Fsv5D8LKBLVf3dy9qz4ENfmv0A1xQsZDgK+qnn+jDTTwcFrohOnexUSUB
+   Wm1mG727bhzoBRUVrkmoJhjsUbBqQtin/b9C45a1HX/w/BGGW2ea12Wmb
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347298132"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="347298132"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:06:24 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="692561508"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="692561508"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.22.80])
+  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:06:23 -0700
+Date: Fri, 14 Apr 2023 14:06:21 -0700
+From: Alison Schofield <alison.schofield@intel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-cxl@vger.kernel.org
+Subject: Re: [PATCH 5/5] cxl/hdm: Add more HDM decoder debug messages at
+ startup
+Message-ID: <ZDnATXnWEG9FSpQb@aschofie-mobl2>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+ <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
+Precedence: bulk
+List-ID: <linux-cxl.vger.kernel.org>
+X-Mailing-List: linux-cxl@vger.kernel.org
+
+On Fri, Apr 14, 2023 at 11:54:16AM -0700, Dan Williams wrote:
+> A recent debug session yielded a couple debug messages that were useful
+> for determining the reason why the driver was or was not falling back
+> to CXL range register emulation, and for identifying decoder setting
+> enumeration problems.
+> 
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 
 Reviewed-by: Alison Schofield <alison.schofield@intel.com>
 
-
 > ---
->  drivers/cxl/core/hdm.c |   20 +++++++++++++-------
->  1 file changed, 13 insertions(+), 7 deletions(-)
+>  drivers/cxl/core/hdm.c |   12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 > 
 > diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index 35b338b716fe..6fdf7981ddc7 100644
+> index abe3877cfa63..7889ff203a34 100644
 > --- a/drivers/cxl/core/hdm.c
 > +++ b/drivers/cxl/core/hdm.c
-> @@ -1,6 +1,5 @@
->  // SPDX-License-Identifier: GPL-2.0-only
->  /* Copyright(c) 2022 Intel Corporation. All rights reserved. */
-> -#include <linux/io-64-nonatomic-hi-lo.h>
->  #include <linux/seq_file.h>
->  #include <linux/device.h>
->  #include <linux/delay.h>
-> @@ -785,8 +784,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->  			    int *target_map, void __iomem *hdm, int which,
->  			    u64 *dpa_base, struct cxl_endpoint_dvsec_info *info)
->  {
-> +	u64 size, base, skip, dpa_size, lo, hi;
->  	struct cxl_endpoint_decoder *cxled;
-> -	u64 size, base, skip, dpa_size;
->  	bool committed;
->  	u32 remainder;
->  	int i, rc;
-> @@ -801,8 +800,12 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->  							which, info);
->  
->  	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
-> -	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
-> -	size = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-> +	lo = readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
-> +	hi = readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(which));
-> +	base = (hi << 32) + lo;
-> +	lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-> +	hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
-> +	size = (hi << 32) + lo;
->  	committed = !!(ctrl & CXL_HDM_DECODER0_CTRL_COMMITTED);
->  	cxld->commit = cxl_decoder_commit;
->  	cxld->reset = cxl_decoder_reset;
-> @@ -865,8 +868,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+> @@ -130,6 +130,14 @@ static bool should_emulate_decoders(struct cxl_endpoint_dvsec_info *info)
+>  	 */
+>  	for (i = 0; i < cxlhdm->decoder_count; i++) {
+>  		ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(i));
+> +		dev_dbg(&info->port->dev,
+> +			"decoder%d.%d: committed: %ld base: %#x_%.8x size: %#x_%.8x\n",
+> +			info->port->id, i,
+> +			FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl),
+> +			readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(i)),
+> +			readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(i)));
+>  		if (FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl))
+>  			return false;
+>  	}
+> @@ -868,6 +876,10 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  	if (rc)
 >  		return rc;
 >  
+> +	dev_dbg(&port->dev, "decoder%d.%d: range: %#llx-%#llx iw: %d ig: %d\n",
+> +		port->id, cxld->id, cxld->hpa_range.start, cxld->hpa_range.end,
+> +		cxld->interleave_ways, cxld->interleave_granularity);
+> +
 >  	if (!info) {
-> -		target_list.value =
-> -			ioread64_hi_lo(hdm + CXL_HDM_DECODER0_TL_LOW(which));
-> +		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
-> +		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
-> +		target_list.value = (hi << 32) + lo;
->  		for (i = 0; i < cxld->interleave_ways; i++)
->  			target_map[i] = target_list.target_id[i];
->  
-> @@ -883,7 +887,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->  			port->id, cxld->id, size, cxld->interleave_ways);
->  		return -ENXIO;
->  	}
-> -	skip = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
-> +	lo = readl(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
-> +	hi = readl(hdm + CXL_HDM_DECODER0_SKIP_HIGH(which));
-> +	skip = (hi << 32) + lo;
->  	cxled = to_cxl_endpoint_decoder(&cxld->dev);
->  	rc = devm_cxl_dpa_reserve(cxled, *dpa_base + skip, dpa_size, skip);
->  	if (rc) {
+>  		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
+>  		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
@@ -975,19 +1250,940 @@ Reviewed-by: Alison Schofield <alison.schofield@intel.com>
 > 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <stable-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 196C7C77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 20:44:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4B7DC7EE22
+	for <stable@archiver.kernel.org>; Mon, 15 May 2023 10:46:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229965AbjDNUok (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        id S240446AbjEOKqO (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Mon, 15 May 2023 06:46:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38416 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229582AbjEOKqN (ORCPT
+        <rfc822;stable@vger.kernel.org>); Mon, 15 May 2023 06:46:13 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BED1B8;
+        Mon, 15 May 2023 03:46:11 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QKbXT5xcdz6J6k4;
+        Mon, 15 May 2023 18:42:01 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 15 May
+ 2023 11:46:08 +0100
+Date: Mon, 15 May 2023 11:46:07 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Dan Williams <dan.j.williams@intel.com>
+CC: <linux-cxl@vger.kernel.org>, <stable@vger.kernel.org>
+Subject: Re: [PATCH 2/5] cxl/hdm: Use 4-byte reads to retrieve HDM decoder
+ base+limit
+Message-ID: <20230515114607.00004647@Huawei.com>
+In-Reply-To: <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+        <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+On Fri, 14 Apr 2023 11:54:00 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
+
+> The CXL specification mandates that 4-byte registers must be accessed
+> with 4-byte access cycles. CXL 3.0 8.2.3 "Component Register Layout and
+> Definition" states that the behavior is undefined if (2) 32-bit
+> registers are accessed as an 8-byte quantity. It turns out that at least
+> one hardware implementation is sensitive to this in practice. The @size
+> variable results in zero with:
+> 
+>     size = readq(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+> 
+> ...and the correct size with:
+> 
+>     lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+>     hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
+>     size = (hi << 32) + lo;
+
+Hmm. Annoying that there isn't an always present split version of the
+ioread64_hi_lo like there effectively is for hi_low_readq()
+
+Mind you, why was this using the ioread64_hi_lo() variant rather
+than hi_lo_readq()?  Far as I can tell that wouldn't have suffered
+from this problem in the first place.
+
+There is at least one other direct user of that function, so maybe
+we should just use it here as well?
+
+Jonathan
+
+> 
+> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
+>  drivers/cxl/core/hdm.c |   20 +++++++++++++-------
+>  1 file changed, 13 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 35b338b716fe..6fdf7981ddc7 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -1,6 +1,5 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
+>  /* Copyright(c) 2022 Intel Corporation. All rights reserved. */
+> -#include <linux/io-64-nonatomic-hi-lo.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/device.h>
+>  #include <linux/delay.h>
+> @@ -785,8 +784,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  			    int *target_map, void __iomem *hdm, int which,
+>  			    u64 *dpa_base, struct cxl_endpoint_dvsec_info *info)
+>  {
+> +	u64 size, base, skip, dpa_size, lo, hi;
+>  	struct cxl_endpoint_decoder *cxled;
+> -	u64 size, base, skip, dpa_size;
+>  	bool committed;
+>  	u32 remainder;
+>  	int i, rc;
+> @@ -801,8 +800,12 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  							which, info);
+>  
+>  	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
+> -	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+> -	size = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+> +	lo = readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+> +	hi = readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(which));
+> +	base = (hi << 32) + lo;
+> +	lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+> +	hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
+> +	size = (hi << 32) + lo;
+>  	committed = !!(ctrl & CXL_HDM_DECODER0_CTRL_COMMITTED);
+>  	cxld->commit = cxl_decoder_commit;
+>  	cxld->reset = cxl_decoder_reset;
+> @@ -865,8 +868,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  		return rc;
+>  
+>  	if (!info) {
+> -		target_list.value =
+> -			ioread64_hi_lo(hdm + CXL_HDM_DECODER0_TL_LOW(which));
+> +		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
+> +		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
+> +		target_list.value = (hi << 32) + lo;
+>  		for (i = 0; i < cxld->interleave_ways; i++)
+>  			target_map[i] = target_list.target_id[i];
+>  
+> @@ -883,7 +887,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  			port->id, cxld->id, size, cxld->interleave_ways);
+>  		return -ENXIO;
+>  	}
+> -	skip = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
+> +	lo = readl(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
+> +	hi = readl(hdm + CXL_HDM_DECODER0_SKIP_HIGH(which));
+> +	skip = (hi << 32) + lo;
+>  	cxled = to_cxl_endpoint_decoder(&cxld->dev);
+>  	rc = devm_cxl_dpa_reserve(cxled, *dpa_base + skip, dpa_size, skip);
+>  	if (rc) {
+> 
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59C19C77B7D
+	for <stable@archiver.kernel.org>; Mon, 15 May 2023 10:38:19 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S238179AbjEOKiS (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Mon, 15 May 2023 06:38:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34498 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229582AbjEOKiR (ORCPT
+        <rfc822;stable@vger.kernel.org>); Mon, 15 May 2023 06:38:17 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76AD219D;
+        Mon, 15 May 2023 03:38:16 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QKbQ510GYz67lhG;
+        Mon, 15 May 2023 18:36:29 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 15 May
+ 2023 11:38:14 +0100
+Date: Mon, 15 May 2023 11:38:13 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Dan Williams <dan.j.williams@intel.com>
+CC: <linux-cxl@vger.kernel.org>, <stable@vger.kernel.org>
+Subject: Re: [PATCH 1/5] cxl/hdm: Fail upon detecting 0-sized decoders
+Message-ID: <20230515113813.00003eb1@Huawei.com>
+In-Reply-To: <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+        <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500003.china.huawei.com (7.191.162.67) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+On Fri, 14 Apr 2023 11:53:55 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
+
+> Decoders committed with 0-size lead to later crashes on shutdown as
+> __cxl_dpa_release() assumes a 'struct resource' has been established in
+> the in 'cxlds->dpa_res'. Just fail the driver load in this instance
+> since there are deeper problems with the enumeration or the setup when
+> this happens.
+> 
+> Fixes: 9c57cde0dcbd ("cxl/hdm: Enumerate allocated DPA")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+What happened to these?  Seem not to have gone upstream yet.
+
+This seems reasonable to me as well
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+> ---
+>  drivers/cxl/core/hdm.c |   15 ++++++++++++---
+>  1 file changed, 12 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 02cc2c38b44b..35b338b716fe 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -269,8 +269,11 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
+>  
+>  	lockdep_assert_held_write(&cxl_dpa_rwsem);
+>  
+> -	if (!len)
+> -		goto success;
+> +	if (!len) {
+> +		dev_warn(dev, "decoder%d.%d: empty reservation attempted\n",
+> +			 port->id, cxled->cxld.id);
+> +		return -EINVAL;
+> +	}
+>  
+>  	if (cxled->dpa_res) {
+>  		dev_dbg(dev, "decoder%d.%d: existing allocation %pr assigned\n",
+> @@ -323,7 +326,6 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
+>  		cxled->mode = CXL_DECODER_MIXED;
+>  	}
+>  
+> -success:
+>  	port->hdm_end++;
+>  	get_device(&cxled->cxld.dev);
+>  	return 0;
+> @@ -833,6 +835,13 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>  				 port->id, cxld->id);
+>  			return -ENXIO;
+>  		}
+> +
+> +		if (size == 0) {
+> +			dev_warn(&port->dev,
+> +				 "decoder%d.%d: Committed with zero size\n",
+> +				 port->id, cxld->id);
+> +			return -ENXIO;
+> +		}
+>  		port->commit_end = cxld->id;
+>  	} else {
+>  		/* unless / until type-2 drivers arrive, assume type-3 */
+> 
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02BBEC77B7C
+	for <stable@archiver.kernel.org>; Mon, 17 Apr 2023 16:48:11 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229548AbjDQQsL (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Mon, 17 Apr 2023 12:48:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58068 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229547AbjDQQsK (ORCPT
+        <rfc822;stable@vger.kernel.org>); Mon, 17 Apr 2023 12:48:10 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B88CC526A;
+        Mon, 17 Apr 2023 09:48:06 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Q0XyV6DTBz6D9h3;
+        Tue, 18 Apr 2023 00:46:58 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 17 Apr
+ 2023 17:48:03 +0100
+Date: Mon, 17 Apr 2023 17:48:02 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Dan Williams <dan.j.williams@intel.com>
+CC: <linux-cxl@vger.kernel.org>, <stable@vger.kernel.org>
+Subject: Re: [PATCH 4/5] cxl/port: Scan single-target ports for decoders
+Message-ID: <20230417174802.00005427@Huawei.com>
+In-Reply-To: <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+        <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500006.china.huawei.com (7.191.161.198) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+On Fri, 14 Apr 2023 11:54:11 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
+
+> Do not assume that a single-target port falls back to a passthrough
+> decoder configuration. Scan for decoders and only fallback after probing
+> that the HDM decoder capability is not present.
+> 
+> One user visible affect of this bug is the inability to enumerate
+> present CXL regions as the decoder settings for the present decoders are
+> skipped.
+> 
+> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
+> Reported-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Link: http://lore.kernel.org/r/20230227153128.8164-1-Jonathan.Cameron@huawei.com
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+*Happy face*
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+
+> ---
+>  drivers/cxl/core/hdm.c |    5 +++--
+>  drivers/cxl/port.c     |   18 +++++++++++++-----
+>  2 files changed, 16 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 6fdf7981ddc7..abe3877cfa63 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -92,8 +92,9 @@ static int map_hdm_decoder_regs(struct cxl_port *port, void __iomem *crb,
+>  
+>  	cxl_probe_component_regs(&port->dev, crb, &map.component_map);
+>  	if (!map.component_map.hdm_decoder.valid) {
+> -		dev_err(&port->dev, "HDM decoder registers invalid\n");
+> -		return -ENXIO;
+> +		dev_dbg(&port->dev, "HDM decoder registers not implemented\n");
+> +		/* unique error code to indicate no HDM decoder capability */
+> +		return -ENODEV;
+>  	}
+>  
+>  	return cxl_map_component_regs(&port->dev, regs, &map,
+> diff --git a/drivers/cxl/port.c b/drivers/cxl/port.c
+> index 22a7ab2bae7c..eb57324c4ad4 100644
+> --- a/drivers/cxl/port.c
+> +++ b/drivers/cxl/port.c
+> @@ -66,14 +66,22 @@ static int cxl_switch_port_probe(struct cxl_port *port)
+>  	if (rc < 0)
+>  		return rc;
+>  
+> -	if (rc == 1)
+> -		return devm_cxl_add_passthrough_decoder(port);
+> -
+>  	cxlhdm = devm_cxl_setup_hdm(port, NULL);
+> -	if (IS_ERR(cxlhdm))
+> +	if (!IS_ERR(cxlhdm))
+> +		return devm_cxl_enumerate_decoders(cxlhdm, NULL);
+> +
+> +	if (PTR_ERR(cxlhdm) != -ENODEV) {
+> +		dev_err(&port->dev, "Failed to map HDM decoder capability\n");
+>  		return PTR_ERR(cxlhdm);
+> +	}
+> +
+> +	if (rc == 1) {
+> +		dev_dbg(&port->dev, "Fallback to passthrough decoder\n");
+> +		return devm_cxl_add_passthrough_decoder(port);
+> +	}
+>  
+> -	return devm_cxl_enumerate_decoders(cxlhdm, NULL);
+> +	dev_err(&port->dev, "HDM decoder capability not found\n");
+> +	return -ENXIO;
+>  }
+>  
+>  static int cxl_endpoint_port_probe(struct cxl_port *port)
+> 
+> 
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70C0BC77B71
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 21:25:44 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229713AbjDNVZn (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 17:25:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36382 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229651AbjDNVZm (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 17:25:42 -0400
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1615A249;
+        Fri, 14 Apr 2023 14:25:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681507516; x=1713043516;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=S8yTcSG44gsgm1lfz6qJPly3etIpP7fg89Z+p3On3Vs=;
+  b=TJ92r1/10hR5CpJTHdjfIsxX8PcLY23JRMGhPv+uhUqeapBfCI5LQelA
+   v2MtFxkuiONEFavvtcMXdl2qKZ1OFA2bVV2Y8HFfQnd46myT5Uu0H2mll
+   8JdoWe6JVJlqXGbUHOpewtOLrmUde2Ym4hg1J6Yq9sAKSSRy18iRBB4J6
+   /62MQIIM+xMKX8v6/orCPNl4fjI/RhQ5WxFkgpjNUiPRU36loXoaV0EiU
+   i2G8Y9hHr/Ax4ClOcmM0AhH8Ntc4tGtYn51B9NSEaa1347UCtxccXacIE
+   k+SMHNvfWU5vtACZoB1JXk9Y/ynBq/p7M3TKla5XnkbZgMmMVPYzxYA2n
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="342067274"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="342067274"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:24:47 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="779335815"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="779335815"
+Received: from djiang5-mobl3.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:24:47 -0700
+Message-ID: <e8537f40-8a2c-4fc1-0c4d-c771c12b4386@intel.com>
+Date: Fri, 14 Apr 2023 14:24:46 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.9.0
+Subject: Re: [PATCH 4/5] cxl/port: Scan single-target ports for decoders
+Content-Language: en-US
+To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        stable@vger.kernel.org
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+ <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+
+
+On 4/14/23 11:54 AM, Dan Williams wrote:
+> Do not assume that a single-target port falls back to a passthrough
+> decoder configuration. Scan for decoders and only fallback after probing
+> that the HDM decoder capability is not present.
+> 
+> One user visible affect of this bug is the inability to enumerate
+> present CXL regions as the decoder settings for the present decoders are
+> skipped.
+> 
+> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
+> Reported-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Link: http://lore.kernel.org/r/20230227153128.8164-1-Jonathan.Cameron@huawei.com
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+
+> ---
+>   drivers/cxl/core/hdm.c |    5 +++--
+>   drivers/cxl/port.c     |   18 +++++++++++++-----
+>   2 files changed, 16 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 6fdf7981ddc7..abe3877cfa63 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -92,8 +92,9 @@ static int map_hdm_decoder_regs(struct cxl_port *port, void __iomem *crb,
+>   
+>   	cxl_probe_component_regs(&port->dev, crb, &map.component_map);
+>   	if (!map.component_map.hdm_decoder.valid) {
+> -		dev_err(&port->dev, "HDM decoder registers invalid\n");
+> -		return -ENXIO;
+> +		dev_dbg(&port->dev, "HDM decoder registers not implemented\n");
+> +		/* unique error code to indicate no HDM decoder capability */
+> +		return -ENODEV;
+>   	}
+>   
+>   	return cxl_map_component_regs(&port->dev, regs, &map,
+> diff --git a/drivers/cxl/port.c b/drivers/cxl/port.c
+> index 22a7ab2bae7c..eb57324c4ad4 100644
+> --- a/drivers/cxl/port.c
+> +++ b/drivers/cxl/port.c
+> @@ -66,14 +66,22 @@ static int cxl_switch_port_probe(struct cxl_port *port)
+>   	if (rc < 0)
+>   		return rc;
+>   
+> -	if (rc == 1)
+> -		return devm_cxl_add_passthrough_decoder(port);
+> -
+>   	cxlhdm = devm_cxl_setup_hdm(port, NULL);
+> -	if (IS_ERR(cxlhdm))
+> +	if (!IS_ERR(cxlhdm))
+> +		return devm_cxl_enumerate_decoders(cxlhdm, NULL);
+> +
+> +	if (PTR_ERR(cxlhdm) != -ENODEV) {
+> +		dev_err(&port->dev, "Failed to map HDM decoder capability\n");
+>   		return PTR_ERR(cxlhdm);
+> +	}
+> +
+> +	if (rc == 1) {
+> +		dev_dbg(&port->dev, "Fallback to passthrough decoder\n");
+> +		return devm_cxl_add_passthrough_decoder(port);
+> +	}
+>   
+> -	return devm_cxl_enumerate_decoders(cxlhdm, NULL);
+> +	dev_err(&port->dev, "HDM decoder capability not found\n");
+> +	return -ENXIO;
+>   }
+>   
+>   static int cxl_endpoint_port_probe(struct cxl_port *port)
+> 
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 714C2C77B72
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 21:22:07 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230096AbjDNVWF (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 17:22:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33810 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230063AbjDNVWE (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 17:22:04 -0400
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9994E7DAF;
+        Fri, 14 Apr 2023 14:22:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681507323; x=1713043323;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=h4QT2TCucN3DcvYd9iVAV4FdFkHnHklt2ir45vfPYAQ=;
+  b=GENkCXlxLo7+iOmaZfCcwvTy6Xoh5a4FpcJ/S+Vm18vjWIvoC9Svs4op
+   H8bDQJxYt0J3tcphqI9KERrKwh8eNfNadniAQ/vxi3zzH9CN4Dmw/oAhl
+   EYn9AO0n4ppmKaVPv2AE9FmYu1y/jm25pl+WV+2NlABWOOngWIAVPVCl3
+   bBdGD0mABgTf/eSp52UNg6xVgZ5zIsAEVNQcj5/THJn1GjzWCfzUPw4CT
+   zXhZXeyHl+k2LSAR5IKgSdVofffsoadn9LHf7OyhYEB1PcCKV+VrOf+Ri
+   WzGiSiKVy+kprC1njt/et48qWR5rI96wYodBxUlE1xHLGT8syitJQhyVW
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="346416104"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="346416104"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:22:03 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="689963192"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="689963192"
+Received: from tpattadx-mobl1.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:22:02 -0700
+Message-ID: <eec990c8-7996-9fd9-5a16-4cde97961ce0@intel.com>
+Date: Fri, 14 Apr 2023 14:22:02 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.9.0
+Subject: Re: [PATCH 2/5] cxl/hdm: Use 4-byte reads to retrieve HDM decoder
+ base+limit
+Content-Language: en-US
+To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
+Cc: stable@vger.kernel.org
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+ <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+
+
+On 4/14/23 11:54 AM, Dan Williams wrote:
+> The CXL specification mandates that 4-byte registers must be accessed
+> with 4-byte access cycles. CXL 3.0 8.2.3 "Component Register Layout and
+> Definition" states that the behavior is undefined if (2) 32-bit
+> registers are accessed as an 8-byte quantity. It turns out that at least
+> one hardware implementation is sensitive to this in practice. The @size
+> variable results in zero with:
+> 
+>      size = readq(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+> 
+> ...and the correct size with:
+> 
+>      lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+>      hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
+>      size = (hi << 32) + lo;
+> 
+> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+
+> ---
+>   drivers/cxl/core/hdm.c |   20 +++++++++++++-------
+>   1 file changed, 13 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 35b338b716fe..6fdf7981ddc7 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -1,6 +1,5 @@
+>   // SPDX-License-Identifier: GPL-2.0-only
+>   /* Copyright(c) 2022 Intel Corporation. All rights reserved. */
+> -#include <linux/io-64-nonatomic-hi-lo.h>
+>   #include <linux/seq_file.h>
+>   #include <linux/device.h>
+>   #include <linux/delay.h>
+> @@ -785,8 +784,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>   			    int *target_map, void __iomem *hdm, int which,
+>   			    u64 *dpa_base, struct cxl_endpoint_dvsec_info *info)
+>   {
+> +	u64 size, base, skip, dpa_size, lo, hi;
+>   	struct cxl_endpoint_decoder *cxled;
+> -	u64 size, base, skip, dpa_size;
+>   	bool committed;
+>   	u32 remainder;
+>   	int i, rc;
+> @@ -801,8 +800,12 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>   							which, info);
+>   
+>   	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
+> -	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+> -	size = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+> +	lo = readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
+> +	hi = readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(which));
+> +	base = (hi << 32) + lo;
+> +	lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
+> +	hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
+> +	size = (hi << 32) + lo;
+>   	committed = !!(ctrl & CXL_HDM_DECODER0_CTRL_COMMITTED);
+>   	cxld->commit = cxl_decoder_commit;
+>   	cxld->reset = cxl_decoder_reset;
+> @@ -865,8 +868,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>   		return rc;
+>   
+>   	if (!info) {
+> -		target_list.value =
+> -			ioread64_hi_lo(hdm + CXL_HDM_DECODER0_TL_LOW(which));
+> +		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
+> +		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
+> +		target_list.value = (hi << 32) + lo;
+>   		for (i = 0; i < cxld->interleave_ways; i++)
+>   			target_map[i] = target_list.target_id[i];
+>   
+> @@ -883,7 +887,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>   			port->id, cxld->id, size, cxld->interleave_ways);
+>   		return -ENXIO;
+>   	}
+> -	skip = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
+> +	lo = readl(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
+> +	hi = readl(hdm + CXL_HDM_DECODER0_SKIP_HIGH(which));
+> +	skip = (hi << 32) + lo;
+>   	cxled = to_cxl_endpoint_decoder(&cxld->dev);
+>   	rc = devm_cxl_dpa_reserve(cxled, *dpa_base + skip, dpa_size, skip);
+>   	if (rc) {
+> 
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85F35C77B71
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 21:20:11 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229468AbjDNVUK (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 17:20:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60808 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229704AbjDNVUJ (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 17:20:09 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D4A01725;
+        Fri, 14 Apr 2023 14:20:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681507205; x=1713043205;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=gYgpMiJnMxZhUNwNzX8IbaRazzg3EoAnMxnRPSdSyvA=;
+  b=RGOA/MnBCMpOo2CCojSmkCO2jBQuZAibUpN5sUUTtSuBWCnAw7hm0UWk
+   Vmr5NtEEnmLcJaq5uErTPXjKQcDT1sec2xMkZvE700gkP2G1ddWy9aGc8
+   Y015Qra9tnxxGYN5AdBXH5YpIzyJZn82XVfACda9LEB9MASsb2adJcpmg
+   7C+PxTDPx91e62FUBPKyOLq/bAedjBJoXuOCPXl+RTb3KWlIan6ANHn/f
+   nbwPOC91bGDpABIzSpDKMURhPOWhMS4tC/cbTtdXPGln1VspaABB8xGcc
+   s3e2qPPHHepkCwKvDo6CTLN+XpyebqdT8cUsYAcTJsbtVrqjIDLnq0uqQ
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="407458570"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="407458570"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:20:05 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="754591514"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="754591514"
+Received: from djiang5-mobl3.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:20:04 -0700
+Message-ID: <7e4223af-ecdf-9677-9682-7519bb15e9a1@intel.com>
+Date: Fri, 14 Apr 2023 14:19:50 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.9.0
+Subject: Re: [PATCH 1/5] cxl/hdm: Fail upon detecting 0-sized decoders
+To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
+Cc: stable@vger.kernel.org
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+ <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
+Content-Language: en-US
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+
+
+On 4/14/23 11:53 AM, Dan Williams wrote:
+> Decoders committed with 0-size lead to later crashes on shutdown as
+> __cxl_dpa_release() assumes a 'struct resource' has been established in
+> the in 'cxlds->dpa_res'. Just fail the driver load in this instance
+> since there are deeper problems with the enumeration or the setup when
+> this happens.
+> 
+> Fixes: 9c57cde0dcbd ("cxl/hdm: Enumerate allocated DPA")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+
+> ---
+>   drivers/cxl/core/hdm.c |   15 ++++++++++++---
+>   1 file changed, 12 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 02cc2c38b44b..35b338b716fe 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -269,8 +269,11 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
+>   
+>   	lockdep_assert_held_write(&cxl_dpa_rwsem);
+>   
+> -	if (!len)
+> -		goto success;
+> +	if (!len) {
+> +		dev_warn(dev, "decoder%d.%d: empty reservation attempted\n",
+> +			 port->id, cxled->cxld.id);
+> +		return -EINVAL;
+> +	}
+>   
+>   	if (cxled->dpa_res) {
+>   		dev_dbg(dev, "decoder%d.%d: existing allocation %pr assigned\n",
+> @@ -323,7 +326,6 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
+>   		cxled->mode = CXL_DECODER_MIXED;
+>   	}
+>   
+> -success:
+>   	port->hdm_end++;
+>   	get_device(&cxled->cxld.dev);
+>   	return 0;
+> @@ -833,6 +835,13 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
+>   				 port->id, cxld->id);
+>   			return -ENXIO;
+>   		}
+> +
+> +		if (size == 0) {
+> +			dev_warn(&port->dev,
+> +				 "decoder%d.%d: Committed with zero size\n",
+> +				 port->id, cxld->id);
+> +			return -ENXIO;
+> +		}
+>   		port->commit_end = cxld->id;
+>   	} else {
+>   		/* unless / until type-2 drivers arrive, assume type-3 */
+> 
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BBD4C77B71
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 20:55:44 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229911AbjDNUzn (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 16:55:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50084 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229568AbjDNUzm (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 16:55:42 -0400
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FAF64227;
+        Fri, 14 Apr 2023 13:55:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681505742; x=1713041742;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=ceC8rrUoQfXie/VLB99NgF8wEEsEU0H0l+IPJPr37gk=;
+  b=H1ToALZyiuFdtLRmRxzF96C+0UVWlPjtRBnVhc5fCtAxMW95AYtpDFEQ
+   QtbEgXKWqoD9nnWX84P6yKsKstH+tjPozAjmexP7bFPwx7jLO/XioJ9JT
+   shTl853PD2CWGyeHVydW/ERT3Af3Aq/9ZKquwqCZFeHVio6it2l4Na/Mi
+   icXX+0Rp+MUXIM0vkq88LdxAqJSax+JDmJ+2/Gw4jh5mbT1O4BY/eKR1R
+   7Tn0LOER9e+yDMnYaKOwRZok1ATWspaDfCiKLA6jtAjPvYEAq/c9vNe6H
+   CZx88bwpDhNZpbGYvYznxPaJY0cLnjvmPzC10Xo49xzHoISTcvHKE+sY3
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="342061811"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="342061811"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:55:41 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="864336773"
+X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
+   d="scan'208";a="864336773"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.22.80])
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:55:41 -0700
+Date: Fri, 14 Apr 2023 13:55:39 -0700
+From: Alison Schofield <alison.schofield@intel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-cxl@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        stable@vger.kernel.org
+Subject: Re: [PATCH 4/5] cxl/port: Scan single-target ports for decoders
+Message-ID: <ZDm9yzuLbPqUaOwW@aschofie-mobl2>
+References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
+ <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
+Precedence: bulk
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
+
+On Fri, Apr 14, 2023 at 11:54:11AM -0700, Dan Williams wrote:
+> Do not assume that a single-target port falls back to a passthrough
+> decoder configuration. Scan for decoders and only fallback after probing
+> that the HDM decoder capability is not present.
+> 
+> One user visible affect of this bug is the inability to enumerate
+> present CXL regions as the decoder settings for the present decoders are
+> skipped.
+> 
+> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
+> Reported-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Link: http://lore.kernel.org/r/20230227153128.8164-1-Jonathan.Cameron@huawei.com
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+Reviewed-by: Alison Schofield <alison.schofield@intel.com>
+
+> ---
+>  drivers/cxl/core/hdm.c |    5 +++--
+>  drivers/cxl/port.c     |   18 +++++++++++++-----
+>  2 files changed, 16 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
+> index 6fdf7981ddc7..abe3877cfa63 100644
+> --- a/drivers/cxl/core/hdm.c
+> +++ b/drivers/cxl/core/hdm.c
+> @@ -92,8 +92,9 @@ static int map_hdm_decoder_regs(struct cxl_port *port, void __iomem *crb,
+>  
+>  	cxl_probe_component_regs(&port->dev, crb, &map.component_map);
+>  	if (!map.component_map.hdm_decoder.valid) {
+> -		dev_err(&port->dev, "HDM decoder registers invalid\n");
+> -		return -ENXIO;
+> +		dev_dbg(&port->dev, "HDM decoder registers not implemented\n");
+> +		/* unique error code to indicate no HDM decoder capability */
+> +		return -ENODEV;
+>  	}
+>  
+>  	return cxl_map_component_regs(&port->dev, regs, &map,
+> diff --git a/drivers/cxl/port.c b/drivers/cxl/port.c
+> index 22a7ab2bae7c..eb57324c4ad4 100644
+> --- a/drivers/cxl/port.c
+> +++ b/drivers/cxl/port.c
+> @@ -66,14 +66,22 @@ static int cxl_switch_port_probe(struct cxl_port *port)
+>  	if (rc < 0)
+>  		return rc;
+>  
+> -	if (rc == 1)
+> -		return devm_cxl_add_passthrough_decoder(port);
+> -
+>  	cxlhdm = devm_cxl_setup_hdm(port, NULL);
+> -	if (IS_ERR(cxlhdm))
+> +	if (!IS_ERR(cxlhdm))
+> +		return devm_cxl_enumerate_decoders(cxlhdm, NULL);
+> +
+> +	if (PTR_ERR(cxlhdm) != -ENODEV) {
+> +		dev_err(&port->dev, "Failed to map HDM decoder capability\n");
+>  		return PTR_ERR(cxlhdm);
+> +	}
+> +
+> +	if (rc == 1) {
+> +		dev_dbg(&port->dev, "Fallback to passthrough decoder\n");
+> +		return devm_cxl_add_passthrough_decoder(port);
+> +	}
+>  
+> -	return devm_cxl_enumerate_decoders(cxlhdm, NULL);
+> +	dev_err(&port->dev, "HDM decoder capability not found\n");
+> +	return -ENXIO;
+>  }
+>  
+>  static int cxl_endpoint_port_probe(struct cxl_port *port)
+> 
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <stable-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 235B8C77B71
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 20:44:43 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229826AbjDNUok (ORCPT <rfc822;stable@archiver.kernel.org>);
         Fri, 14 Apr 2023 16:44:40 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229615AbjDNUoh (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 16:44:37 -0400
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 16:44:37 -0400
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0FEE72AA;
         Fri, 14 Apr 2023 13:44:26 -0700 (PDT)
@@ -1120,8 +2316,8 @@ X-MS-Exchange-CrossTenant-UserPrincipalName: oBfAn4YAspQ1ErDEYQ69HKXFew+/pkniyfF
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR11MB5967
 X-OriginatorOrg: intel.com
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
 
 Alison Schofield wrote:
 > On Fri, Apr 14, 2023 at 11:54:00AM -0700, Dan Williams wrote:
@@ -1155,1142 +2351,64 @@ as 64-bit, so that patch ended up only being a deletion of unneeded
 includes.
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <stable-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CDF3C77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 20:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AA75C77B71
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 20:32:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229958AbjDNUzn (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 16:55:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50084 "EHLO
+        id S229902AbjDNUcs (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 16:32:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41302 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229568AbjDNUzm (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 16:55:42 -0400
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FAF64227;
-        Fri, 14 Apr 2023 13:55:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681505742; x=1713041742;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=ceC8rrUoQfXie/VLB99NgF8wEEsEU0H0l+IPJPr37gk=;
-  b=H1ToALZyiuFdtLRmRxzF96C+0UVWlPjtRBnVhc5fCtAxMW95AYtpDFEQ
-   QtbEgXKWqoD9nnWX84P6yKsKstH+tjPozAjmexP7bFPwx7jLO/XioJ9JT
-   shTl853PD2CWGyeHVydW/ERT3Af3Aq/9ZKquwqCZFeHVio6it2l4Na/Mi
-   icXX+0Rp+MUXIM0vkq88LdxAqJSax+JDmJ+2/Gw4jh5mbT1O4BY/eKR1R
-   7Tn0LOER9e+yDMnYaKOwRZok1ATWspaDfCiKLA6jtAjPvYEAq/c9vNe6H
-   CZx88bwpDhNZpbGYvYznxPaJY0cLnjvmPzC10Xo49xzHoISTcvHKE+sY3
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="342061811"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="342061811"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:55:41 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="864336773"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="864336773"
-Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.22.80])
-  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:55:41 -0700
-Date: Fri, 14 Apr 2023 13:55:39 -0700
-From: Alison Schofield <alison.schofield@intel.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-cxl@vger.kernel.org,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        stable@vger.kernel.org
-Subject: Re: [PATCH 4/5] cxl/port: Scan single-target ports for decoders
-Message-ID: <ZDm9yzuLbPqUaOwW@aschofie-mobl2>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
- <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Fri, Apr 14, 2023 at 11:54:11AM -0700, Dan Williams wrote:
-> Do not assume that a single-target port falls back to a passthrough
-> decoder configuration. Scan for decoders and only fallback after probing
-> that the HDM decoder capability is not present.
-> 
-> One user visible affect of this bug is the inability to enumerate
-> present CXL regions as the decoder settings for the present decoders are
-> skipped.
-> 
-> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
-> Reported-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Link: http://lore.kernel.org/r/20230227153128.8164-1-Jonathan.Cameron@huawei.com
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-Reviewed-by: Alison Schofield <alison.schofield@intel.com>
-
-> ---
->  drivers/cxl/core/hdm.c |    5 +++--
->  drivers/cxl/port.c     |   18 +++++++++++++-----
->  2 files changed, 16 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index 6fdf7981ddc7..abe3877cfa63 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -92,8 +92,9 @@ static int map_hdm_decoder_regs(struct cxl_port *port, void __iomem *crb,
->  
->  	cxl_probe_component_regs(&port->dev, crb, &map.component_map);
->  	if (!map.component_map.hdm_decoder.valid) {
-> -		dev_err(&port->dev, "HDM decoder registers invalid\n");
-> -		return -ENXIO;
-> +		dev_dbg(&port->dev, "HDM decoder registers not implemented\n");
-> +		/* unique error code to indicate no HDM decoder capability */
-> +		return -ENODEV;
->  	}
->  
->  	return cxl_map_component_regs(&port->dev, regs, &map,
-> diff --git a/drivers/cxl/port.c b/drivers/cxl/port.c
-> index 22a7ab2bae7c..eb57324c4ad4 100644
-> --- a/drivers/cxl/port.c
-> +++ b/drivers/cxl/port.c
-> @@ -66,14 +66,22 @@ static int cxl_switch_port_probe(struct cxl_port *port)
->  	if (rc < 0)
->  		return rc;
->  
-> -	if (rc == 1)
-> -		return devm_cxl_add_passthrough_decoder(port);
-> -
->  	cxlhdm = devm_cxl_setup_hdm(port, NULL);
-> -	if (IS_ERR(cxlhdm))
-> +	if (!IS_ERR(cxlhdm))
-> +		return devm_cxl_enumerate_decoders(cxlhdm, NULL);
-> +
-> +	if (PTR_ERR(cxlhdm) != -ENODEV) {
-> +		dev_err(&port->dev, "Failed to map HDM decoder capability\n");
->  		return PTR_ERR(cxlhdm);
-> +	}
-> +
-> +	if (rc == 1) {
-> +		dev_dbg(&port->dev, "Fallback to passthrough decoder\n");
-> +		return devm_cxl_add_passthrough_decoder(port);
-> +	}
->  
-> -	return devm_cxl_enumerate_decoders(cxlhdm, NULL);
-> +	dev_err(&port->dev, "HDM decoder capability not found\n");
-> +	return -ENXIO;
->  }
->  
->  static int cxl_endpoint_port_probe(struct cxl_port *port)
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8920C77B71
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:06:26 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229773AbjDNVG0 (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 17:06:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55242 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229703AbjDNVGZ (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:06:25 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A543E9B
-        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 14:06:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681506384; x=1713042384;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=MtjAxowinXr/JwD9NIaly7DXRcQy3rIQuZ4PQcHh2Vg=;
-  b=chv8YhdltMcpSZ/9vx4PTH7JPzodPleCt6uGQmTQGBp+vUHXKrdKJb+a
-   Eul1fiK9/0wEUvSqGThdrZvlC1mtNIuih3JnpFhA/a8HPJV2stL0ilzcz
-   0dKR0bLppFPxfs7xToZ726KX6OfwWBNMWkUVONzHuzqH9lV8PGvv5AQZ6
-   PlsIawcq1/LTWrNLtcWWXaLdmeHB4q1U95MvIjlD7fLopRW/ihXBB7JdN
-   Fsv5D8LKBLVf3dy9qz4ENfmv0A1xQsZDgK+qnn+jDTTwcFrohOnexUSUB
-   Wm1mG727bhzoBRUVrkmoJhjsUbBqQtin/b9C45a1HX/w/BGGW2ea12Wmb
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="347298132"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="347298132"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:06:24 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="692561508"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="692561508"
-Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.22.80])
-  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:06:23 -0700
-Date: Fri, 14 Apr 2023 14:06:21 -0700
-From: Alison Schofield <alison.schofield@intel.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-cxl@vger.kernel.org
-Subject: Re: [PATCH 5/5] cxl/hdm: Add more HDM decoder debug messages at
- startup
-Message-ID: <ZDnATXnWEG9FSpQb@aschofie-mobl2>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
- <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Fri, Apr 14, 2023 at 11:54:16AM -0700, Dan Williams wrote:
-> A recent debug session yielded a couple debug messages that were useful
-> for determining the reason why the driver was or was not falling back
-> to CXL range register emulation, and for identifying decoder setting
-> enumeration problems.
-> 
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-Reviewed-by: Alison Schofield <alison.schofield@intel.com>
-
-> ---
->  drivers/cxl/core/hdm.c |   12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index abe3877cfa63..7889ff203a34 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -130,6 +130,14 @@ static bool should_emulate_decoders(struct cxl_endpoint_dvsec_info *info)
->  	 */
->  	for (i = 0; i < cxlhdm->decoder_count; i++) {
->  		ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(i));
-> +		dev_dbg(&info->port->dev,
-> +			"decoder%d.%d: committed: %ld base: %#x_%.8x size: %#x_%.8x\n",
-> +			info->port->id, i,
-> +			FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl),
-> +			readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(i)));
->  		if (FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl))
->  			return false;
->  	}
-> @@ -868,6 +876,10 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->  	if (rc)
->  		return rc;
->  
-> +	dev_dbg(&port->dev, "decoder%d.%d: range: %#llx-%#llx iw: %d ig: %d\n",
-> +		port->id, cxld->id, cxld->hpa_range.start, cxld->hpa_range.end,
-> +		cxld->interleave_ways, cxld->interleave_granularity);
-> +
->  	if (!info) {
->  		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
->  		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CF82C77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:20:11 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229462AbjDNVUK (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 17:20:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60808 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229704AbjDNVUJ (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:20:09 -0400
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D4A01725;
-        Fri, 14 Apr 2023 14:20:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681507205; x=1713043205;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=gYgpMiJnMxZhUNwNzX8IbaRazzg3EoAnMxnRPSdSyvA=;
-  b=RGOA/MnBCMpOo2CCojSmkCO2jBQuZAibUpN5sUUTtSuBWCnAw7hm0UWk
-   Vmr5NtEEnmLcJaq5uErTPXjKQcDT1sec2xMkZvE700gkP2G1ddWy9aGc8
-   Y015Qra9tnxxGYN5AdBXH5YpIzyJZn82XVfACda9LEB9MASsb2adJcpmg
-   7C+PxTDPx91e62FUBPKyOLq/bAedjBJoXuOCPXl+RTb3KWlIan6ANHn/f
-   nbwPOC91bGDpABIzSpDKMURhPOWhMS4tC/cbTtdXPGln1VspaABB8xGcc
-   s3e2qPPHHepkCwKvDo6CTLN+XpyebqdT8cUsYAcTJsbtVrqjIDLnq0uqQ
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="407458570"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="407458570"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:20:05 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="754591514"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="754591514"
-Received: from djiang5-mobl3.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
-  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:20:04 -0700
-Message-ID: <7e4223af-ecdf-9677-9682-7519bb15e9a1@intel.com>
-Date: Fri, 14 Apr 2023 14:19:50 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Firefox/102.0 Thunderbird/102.9.0
-Subject: Re: [PATCH 1/5] cxl/hdm: Fail upon detecting 0-sized decoders
-To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
-Cc: stable@vger.kernel.org
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
- <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
-Content-Language: en-US
-From: Dave Jiang <dave.jiang@intel.com>
-In-Reply-To: <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-
-
-On 4/14/23 11:53 AM, Dan Williams wrote:
-> Decoders committed with 0-size lead to later crashes on shutdown as
-> __cxl_dpa_release() assumes a 'struct resource' has been established in
-> the in 'cxlds->dpa_res'. Just fail the driver load in this instance
-> since there are deeper problems with the enumeration or the setup when
-> this happens.
-> 
-> Fixes: 9c57cde0dcbd ("cxl/hdm: Enumerate allocated DPA")
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-
-> ---
->   drivers/cxl/core/hdm.c |   15 ++++++++++++---
->   1 file changed, 12 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index 02cc2c38b44b..35b338b716fe 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -269,8 +269,11 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
->   
->   	lockdep_assert_held_write(&cxl_dpa_rwsem);
->   
-> -	if (!len)
-> -		goto success;
-> +	if (!len) {
-> +		dev_warn(dev, "decoder%d.%d: empty reservation attempted\n",
-> +			 port->id, cxled->cxld.id);
-> +		return -EINVAL;
-> +	}
->   
->   	if (cxled->dpa_res) {
->   		dev_dbg(dev, "decoder%d.%d: existing allocation %pr assigned\n",
-> @@ -323,7 +326,6 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
->   		cxled->mode = CXL_DECODER_MIXED;
->   	}
->   
-> -success:
->   	port->hdm_end++;
->   	get_device(&cxled->cxld.dev);
->   	return 0;
-> @@ -833,6 +835,13 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->   				 port->id, cxld->id);
->   			return -ENXIO;
->   		}
-> +
-> +		if (size == 0) {
-> +			dev_warn(&port->dev,
-> +				 "decoder%d.%d: Committed with zero size\n",
-> +				 port->id, cxld->id);
-> +			return -ENXIO;
-> +		}
->   		port->commit_end = cxld->id;
->   	} else {
->   		/* unless / until type-2 drivers arrive, assume type-3 */
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92B0FC77B71
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:22:07 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230071AbjDNVWF (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 17:22:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33810 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230063AbjDNVWE (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:22:04 -0400
+        with ESMTP id S229830AbjDNUcr (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 16:32:47 -0400
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9994E7DAF;
-        Fri, 14 Apr 2023 14:22:03 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 167CF8A5A;
+        Fri, 14 Apr 2023 13:32:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681507323; x=1713043323;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=h4QT2TCucN3DcvYd9iVAV4FdFkHnHklt2ir45vfPYAQ=;
-  b=GENkCXlxLo7+iOmaZfCcwvTy6Xoh5a4FpcJ/S+Vm18vjWIvoC9Svs4op
-   H8bDQJxYt0J3tcphqI9KERrKwh8eNfNadniAQ/vxi3zzH9CN4Dmw/oAhl
-   EYn9AO0n4ppmKaVPv2AE9FmYu1y/jm25pl+WV+2NlABWOOngWIAVPVCl3
-   bBdGD0mABgTf/eSp52UNg6xVgZ5zIsAEVNQcj5/THJn1GjzWCfzUPw4CT
-   zXhZXeyHl+k2LSAR5IKgSdVofffsoadn9LHf7OyhYEB1PcCKV+VrOf+Ri
-   WzGiSiKVy+kprC1njt/et48qWR5rI96wYodBxUlE1xHLGT8syitJQhyVW
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="346416104"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="346416104"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:22:03 -0700
+  t=1681504359; x=1713040359;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=GqJYbdZM7uH2OZYGFBf+0Bp8T7h2XOaSCphj9PDCYEA=;
+  b=HJ4N3EfS0siebyyBbMvQNC3VBOWhSfnpy0lU1JQ+FKKvw/PcYBispRXX
+   EzM4SgPFVTtR7Mm5fwX17SlOVdXNJviPjdcwKxG//V9z00878EDqcrE21
+   DqnEEEFFNBH+HTRisdmCt7MJt70Qd++LCyvp0mojTHxyXGUJ+dgWnuRVd
+   Z02xlxiVnadefKdDhSuxjPquJ7aQlK9Kr/oCToLC2Sw5zIhJf+LpwBnH8
+   n8QQ++ateJoxoVFP2xw8qhl4riJ21iOOVTWb7yoHUeJcwX6CZbjiY1636
+   Hc5Pqz5sbL7aD8TjEGIDI46uyO5irEVhYHLyciRx2NamY0Q081OWuIdZc
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="346407505"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="346407505"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:32:17 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="689963192"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="689963192"
-Received: from tpattadx-mobl1.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
-  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:22:02 -0700
-Message-ID: <eec990c8-7996-9fd9-5a16-4cde97961ce0@intel.com>
-Date: Fri, 14 Apr 2023 14:22:02 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Firefox/102.0 Thunderbird/102.9.0
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="722579928"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="722579928"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.22.80])
+  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:32:16 -0700
+Date: Fri, 14 Apr 2023 13:32:14 -0700
+From: Alison Schofield <alison.schofield@intel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-cxl@vger.kernel.org, stable@vger.kernel.org
 Subject: Re: [PATCH 2/5] cxl/hdm: Use 4-byte reads to retrieve HDM decoder
  base+limit
-Content-Language: en-US
-To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
-Cc: stable@vger.kernel.org
+Message-ID: <ZDm4TqspwS3AAQSr@aschofie-mobl2>
 References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
  <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
-From: Dave Jiang <dave.jiang@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
 
-
-
-On 4/14/23 11:54 AM, Dan Williams wrote:
-> The CXL specification mandates that 4-byte registers must be accessed
-> with 4-byte access cycles. CXL 3.0 8.2.3 "Component Register Layout and
-> Definition" states that the behavior is undefined if (2) 32-bit
-> registers are accessed as an 8-byte quantity. It turns out that at least
-> one hardware implementation is sensitive to this in practice. The @size
-> variable results in zero with:
-> 
->      size = readq(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-> 
-> ...and the correct size with:
-> 
->      lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
->      hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
->      size = (hi << 32) + lo;
-> 
-> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-
-> ---
->   drivers/cxl/core/hdm.c |   20 +++++++++++++-------
->   1 file changed, 13 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index 35b338b716fe..6fdf7981ddc7 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -1,6 +1,5 @@
->   // SPDX-License-Identifier: GPL-2.0-only
->   /* Copyright(c) 2022 Intel Corporation. All rights reserved. */
-> -#include <linux/io-64-nonatomic-hi-lo.h>
->   #include <linux/seq_file.h>
->   #include <linux/device.h>
->   #include <linux/delay.h>
-> @@ -785,8 +784,8 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->   			    int *target_map, void __iomem *hdm, int which,
->   			    u64 *dpa_base, struct cxl_endpoint_dvsec_info *info)
->   {
-> +	u64 size, base, skip, dpa_size, lo, hi;
->   	struct cxl_endpoint_decoder *cxled;
-> -	u64 size, base, skip, dpa_size;
->   	bool committed;
->   	u32 remainder;
->   	int i, rc;
-> @@ -801,8 +800,12 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->   							which, info);
->   
->   	ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(which));
-> -	base = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
-> -	size = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-> +	lo = readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(which));
-> +	hi = readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(which));
-> +	base = (hi << 32) + lo;
-> +	lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
-> +	hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
-> +	size = (hi << 32) + lo;
->   	committed = !!(ctrl & CXL_HDM_DECODER0_CTRL_COMMITTED);
->   	cxld->commit = cxl_decoder_commit;
->   	cxld->reset = cxl_decoder_reset;
-> @@ -865,8 +868,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->   		return rc;
->   
->   	if (!info) {
-> -		target_list.value =
-> -			ioread64_hi_lo(hdm + CXL_HDM_DECODER0_TL_LOW(which));
-> +		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
-> +		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
-> +		target_list.value = (hi << 32) + lo;
->   		for (i = 0; i < cxld->interleave_ways; i++)
->   			target_map[i] = target_list.target_id[i];
->   
-> @@ -883,7 +887,9 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->   			port->id, cxld->id, size, cxld->interleave_ways);
->   		return -ENXIO;
->   	}
-> -	skip = ioread64_hi_lo(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
-> +	lo = readl(hdm + CXL_HDM_DECODER0_SKIP_LOW(which));
-> +	hi = readl(hdm + CXL_HDM_DECODER0_SKIP_HIGH(which));
-> +	skip = (hi << 32) + lo;
->   	cxled = to_cxl_endpoint_decoder(&cxld->dev);
->   	rc = devm_cxl_dpa_reserve(cxled, *dpa_base + skip, dpa_size, skip);
->   	if (rc) {
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0CDFC77B71
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:22:39 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229941AbjDNVWi (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 17:22:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34178 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229773AbjDNVWh (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:22:37 -0400
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E221092
-        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 14:22:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681507356; x=1713043356;
-  h=message-id:date:mime-version:subject:to:references:from:
-   in-reply-to:content-transfer-encoding;
-  bh=eiTxzzFPE1Q5FDN18H3CIWrUBWJ3pLeFgjVPdOvUzno=;
-  b=QocUHAG0P+e6AlR3JEVog4/jzuVfoutD3Ep6kekaUNg/XgORDxiIo5Ad
-   Gu1KenPWgZ2fDAaRI1mdEHbdqh8mclQNS6cVjZdn8zYbYMAD+gwOQDwuc
-   a1su4fr1mtWPyss8UaWhYVyOQ6IDKTD402a9bMVcx2XV040KAinvzzffi
-   bLKDCSf3zztVeq9G9yeQINFXjC6c7Jls5siLMZOnA7yGPM7kQqaQiGl60
-   DMKTqHPLoNUskmcMB68VScYqYrC3UGHQNxqqILsUC/h/e63K98YvIIU9i
-   o1e3BgePUYiKsvA/v+jQgtjcc1/FAXYg0poTvhYEjFFD/dtxN7+QI2w2E
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="346416202"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="346416202"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:22:36 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="689963394"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="689963394"
-Received: from tpattadx-mobl1.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
-  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:22:36 -0700
-Message-ID: <4f9f0682-fa8a-3491-5ee8-3b375585837f@intel.com>
-Date: Fri, 14 Apr 2023 14:22:35 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Firefox/102.0 Thunderbird/102.9.0
-Subject: Re: [PATCH 3/5] cxl/core: Drop unused io-64-nonatomic-lo-hi.h
-Content-Language: en-US
-To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
- <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
-From: Dave Jiang <dave.jiang@intel.com>
-In-Reply-To: <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-
-
-On 4/14/23 11:54 AM, Dan Williams wrote:
-> After the discovery of a case where an implementation misbehaves with
-> register reads larger than the definition of the register the other
-> usages of readq() were audited and found to be correct, but some cases
-> where the io-64-nonatomic-lo-hi.h include is not needed were discovered,
-> delete them.
-> 
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-
-> ---
->   drivers/cxl/core/mbox.c |    1 -
->   drivers/cxl/core/port.c |    1 -
->   2 files changed, 2 deletions(-)
-> 
-> diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
-> index f2addb457172..6198637cb0bb 100644
-> --- a/drivers/cxl/core/mbox.c
-> +++ b/drivers/cxl/core/mbox.c
-> @@ -1,6 +1,5 @@
->   // SPDX-License-Identifier: GPL-2.0-only
->   /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
-> -#include <linux/io-64-nonatomic-lo-hi.h>
->   #include <linux/security.h>
->   #include <linux/debugfs.h>
->   #include <linux/ktime.h>
-> diff --git a/drivers/cxl/core/port.c b/drivers/cxl/core/port.c
-> index 4d1f9c5b5029..b060757c4000 100644
-> --- a/drivers/cxl/core/port.c
-> +++ b/drivers/cxl/core/port.c
-> @@ -1,6 +1,5 @@
->   // SPDX-License-Identifier: GPL-2.0-only
->   /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
-> -#include <linux/io-64-nonatomic-lo-hi.h>
->   #include <linux/memregion.h>
->   #include <linux/workqueue.h>
->   #include <linux/debugfs.h>
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50573C77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:25:44 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229586AbjDNVZn (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 17:25:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36382 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229651AbjDNVZm (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:25:42 -0400
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1615A249;
-        Fri, 14 Apr 2023 14:25:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681507516; x=1713043516;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=S8yTcSG44gsgm1lfz6qJPly3etIpP7fg89Z+p3On3Vs=;
-  b=TJ92r1/10hR5CpJTHdjfIsxX8PcLY23JRMGhPv+uhUqeapBfCI5LQelA
-   v2MtFxkuiONEFavvtcMXdl2qKZ1OFA2bVV2Y8HFfQnd46myT5Uu0H2mll
-   8JdoWe6JVJlqXGbUHOpewtOLrmUde2Ym4hg1J6Yq9sAKSSRy18iRBB4J6
-   /62MQIIM+xMKX8v6/orCPNl4fjI/RhQ5WxFkgpjNUiPRU36loXoaV0EiU
-   i2G8Y9hHr/Ax4ClOcmM0AhH8Ntc4tGtYn51B9NSEaa1347UCtxccXacIE
-   k+SMHNvfWU5vtACZoB1JXk9Y/ynBq/p7M3TKla5XnkbZgMmMVPYzxYA2n
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="342067274"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="342067274"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:24:47 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="779335815"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="779335815"
-Received: from djiang5-mobl3.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:24:47 -0700
-Message-ID: <e8537f40-8a2c-4fc1-0c4d-c771c12b4386@intel.com>
-Date: Fri, 14 Apr 2023 14:24:46 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Firefox/102.0 Thunderbird/102.9.0
-Subject: Re: [PATCH 4/5] cxl/port: Scan single-target ports for decoders
-Content-Language: en-US
-To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
-Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        stable@vger.kernel.org
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
- <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
-From: Dave Jiang <dave.jiang@intel.com>
-In-Reply-To: <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-
-
-On 4/14/23 11:54 AM, Dan Williams wrote:
-> Do not assume that a single-target port falls back to a passthrough
-> decoder configuration. Scan for decoders and only fallback after probing
-> that the HDM decoder capability is not present.
-> 
-> One user visible affect of this bug is the inability to enumerate
-> present CXL regions as the decoder settings for the present decoders are
-> skipped.
-> 
-> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
-> Reported-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Link: http://lore.kernel.org/r/20230227153128.8164-1-Jonathan.Cameron@huawei.com
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-
-> ---
->   drivers/cxl/core/hdm.c |    5 +++--
->   drivers/cxl/port.c     |   18 +++++++++++++-----
->   2 files changed, 16 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index 6fdf7981ddc7..abe3877cfa63 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -92,8 +92,9 @@ static int map_hdm_decoder_regs(struct cxl_port *port, void __iomem *crb,
->   
->   	cxl_probe_component_regs(&port->dev, crb, &map.component_map);
->   	if (!map.component_map.hdm_decoder.valid) {
-> -		dev_err(&port->dev, "HDM decoder registers invalid\n");
-> -		return -ENXIO;
-> +		dev_dbg(&port->dev, "HDM decoder registers not implemented\n");
-> +		/* unique error code to indicate no HDM decoder capability */
-> +		return -ENODEV;
->   	}
->   
->   	return cxl_map_component_regs(&port->dev, regs, &map,
-> diff --git a/drivers/cxl/port.c b/drivers/cxl/port.c
-> index 22a7ab2bae7c..eb57324c4ad4 100644
-> --- a/drivers/cxl/port.c
-> +++ b/drivers/cxl/port.c
-> @@ -66,14 +66,22 @@ static int cxl_switch_port_probe(struct cxl_port *port)
->   	if (rc < 0)
->   		return rc;
->   
-> -	if (rc == 1)
-> -		return devm_cxl_add_passthrough_decoder(port);
-> -
->   	cxlhdm = devm_cxl_setup_hdm(port, NULL);
-> -	if (IS_ERR(cxlhdm))
-> +	if (!IS_ERR(cxlhdm))
-> +		return devm_cxl_enumerate_decoders(cxlhdm, NULL);
-> +
-> +	if (PTR_ERR(cxlhdm) != -ENODEV) {
-> +		dev_err(&port->dev, "Failed to map HDM decoder capability\n");
->   		return PTR_ERR(cxlhdm);
-> +	}
-> +
-> +	if (rc == 1) {
-> +		dev_dbg(&port->dev, "Fallback to passthrough decoder\n");
-> +		return devm_cxl_add_passthrough_decoder(port);
-> +	}
->   
-> -	return devm_cxl_enumerate_decoders(cxlhdm, NULL);
-> +	dev_err(&port->dev, "HDM decoder capability not found\n");
-> +	return -ENXIO;
->   }
->   
->   static int cxl_endpoint_port_probe(struct cxl_port *port)
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3397BC77B72
-	for <linux-cxl@archiver.kernel.org>; Fri, 14 Apr 2023 21:26:13 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230134AbjDNV0M (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Fri, 14 Apr 2023 17:26:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36584 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229954AbjDNV0E (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Fri, 14 Apr 2023 17:26:04 -0400
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E3FB92
-        for <linux-cxl@vger.kernel.org>; Fri, 14 Apr 2023 14:25:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681507548; x=1713043548;
-  h=message-id:date:mime-version:subject:to:references:from:
-   in-reply-to:content-transfer-encoding;
-  bh=2A1jlpB013w03MJkHh4Zh78JTTQ/39jEsxGdGDvODRU=;
-  b=WeoL4s0BXNwIcNKn9jlNUMf9w/f9K1QXor7E3CHPaRxnU1Jr/x1hFVdh
-   R2OcIBstMWsN+Pts+Ev0Pr82uWmFxBk/Fhbc/X1+R1nkYZepgJM5oMq+8
-   fpwwBP0IA4XvMYMuxQxpqtjvBMqfvu9bdlLLoSbLvy6IMJIiCjySIAw2X
-   6KCGE05dHsmr9Z7ymbwzsw7PofvNaPg6yPlnGd9mAYmm98ohnjWpq4mFE
-   2Aq0Ou+osZhnnvatBPlRrj+jhri8HiQARgpP6danNCqoDcjP6zM3wTTZR
-   tnL9LGUbGpzrbLPvJ0cTHNFXPniZGNIoq0UcXVWp5V8HPzLVHAR+wUJDX
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="342067385"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="342067385"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:25:48 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="779335926"
-X-IronPort-AV: E=Sophos;i="5.99,198,1677571200"; 
-   d="scan'208";a="779335926"
-Received: from djiang5-mobl3.amr.corp.intel.com (HELO [10.212.122.87]) ([10.212.122.87])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 14:25:48 -0700
-Message-ID: <f573b441-17ac-add9-c154-ebbb794bfc4d@intel.com>
-Date: Fri, 14 Apr 2023 14:25:47 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Firefox/102.0 Thunderbird/102.9.0
-Subject: Re: [PATCH 5/5] cxl/hdm: Add more HDM decoder debug messages at
- startup
-Content-Language: en-US
-To: Dan Williams <dan.j.williams@intel.com>, linux-cxl@vger.kernel.org
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
- <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
-From: Dave Jiang <dave.jiang@intel.com>
-In-Reply-To: <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-
-
-On 4/14/23 11:54 AM, Dan Williams wrote:
-> A recent debug session yielded a couple debug messages that were useful
-> for determining the reason why the driver was or was not falling back
-> to CXL range register emulation, and for identifying decoder setting
-> enumeration problems.
-> 
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-
-> ---
->   drivers/cxl/core/hdm.c |   12 ++++++++++++
->   1 file changed, 12 insertions(+)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index abe3877cfa63..7889ff203a34 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -130,6 +130,14 @@ static bool should_emulate_decoders(struct cxl_endpoint_dvsec_info *info)
->   	 */
->   	for (i = 0; i < cxlhdm->decoder_count; i++) {
->   		ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(i));
-> +		dev_dbg(&info->port->dev,
-> +			"decoder%d.%d: committed: %ld base: %#x_%.8x size: %#x_%.8x\n",
-> +			info->port->id, i,
-> +			FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl),
-> +			readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(i)));
->   		if (FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl))
->   			return false;
->   	}
-> @@ -868,6 +876,10 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->   	if (rc)
->   		return rc;
->   
-> +	dev_dbg(&port->dev, "decoder%d.%d: range: %#llx-%#llx iw: %d ig: %d\n",
-> +		port->id, cxld->id, cxld->hpa_range.start, cxld->hpa_range.end,
-> +		cxld->interleave_ways, cxld->interleave_granularity);
-> +
->   	if (!info) {
->   		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
->   		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
-> 
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFB25C77B7A
-	for <linux-cxl@archiver.kernel.org>; Mon, 17 Apr 2023 16:48:11 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229559AbjDQQsL (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Mon, 17 Apr 2023 12:48:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58068 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229547AbjDQQsK (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Mon, 17 Apr 2023 12:48:10 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B88CC526A;
-        Mon, 17 Apr 2023 09:48:06 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Q0XyV6DTBz6D9h3;
-        Tue, 18 Apr 2023 00:46:58 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 17 Apr
- 2023 17:48:03 +0100
-Date: Mon, 17 Apr 2023 17:48:02 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Dan Williams <dan.j.williams@intel.com>
-CC: <linux-cxl@vger.kernel.org>, <stable@vger.kernel.org>
-Subject: Re: [PATCH 4/5] cxl/port: Scan single-target ports for decoders
-Message-ID: <20230417174802.00005427@Huawei.com>
-In-Reply-To: <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-        <168149845130.792294.3210421233937427962.stgit@dwillia2-xfh.jf.intel.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml500006.china.huawei.com (7.191.161.198) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Fri, 14 Apr 2023 11:54:11 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
-
-> Do not assume that a single-target port falls back to a passthrough
-> decoder configuration. Scan for decoders and only fallback after probing
-> that the HDM decoder capability is not present.
-> 
-> One user visible affect of this bug is the inability to enumerate
-> present CXL regions as the decoder settings for the present decoders are
-> skipped.
-> 
-> Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
-> Reported-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Link: http://lore.kernel.org/r/20230227153128.8164-1-Jonathan.Cameron@huawei.com
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-*Happy face*
-
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-
-
-> ---
->  drivers/cxl/core/hdm.c |    5 +++--
->  drivers/cxl/port.c     |   18 +++++++++++++-----
->  2 files changed, 16 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index 6fdf7981ddc7..abe3877cfa63 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -92,8 +92,9 @@ static int map_hdm_decoder_regs(struct cxl_port *port, void __iomem *crb,
->  
->  	cxl_probe_component_regs(&port->dev, crb, &map.component_map);
->  	if (!map.component_map.hdm_decoder.valid) {
-> -		dev_err(&port->dev, "HDM decoder registers invalid\n");
-> -		return -ENXIO;
-> +		dev_dbg(&port->dev, "HDM decoder registers not implemented\n");
-> +		/* unique error code to indicate no HDM decoder capability */
-> +		return -ENODEV;
->  	}
->  
->  	return cxl_map_component_regs(&port->dev, regs, &map,
-> diff --git a/drivers/cxl/port.c b/drivers/cxl/port.c
-> index 22a7ab2bae7c..eb57324c4ad4 100644
-> --- a/drivers/cxl/port.c
-> +++ b/drivers/cxl/port.c
-> @@ -66,14 +66,22 @@ static int cxl_switch_port_probe(struct cxl_port *port)
->  	if (rc < 0)
->  		return rc;
->  
-> -	if (rc == 1)
-> -		return devm_cxl_add_passthrough_decoder(port);
-> -
->  	cxlhdm = devm_cxl_setup_hdm(port, NULL);
-> -	if (IS_ERR(cxlhdm))
-> +	if (!IS_ERR(cxlhdm))
-> +		return devm_cxl_enumerate_decoders(cxlhdm, NULL);
-> +
-> +	if (PTR_ERR(cxlhdm) != -ENODEV) {
-> +		dev_err(&port->dev, "Failed to map HDM decoder capability\n");
->  		return PTR_ERR(cxlhdm);
-> +	}
-> +
-> +	if (rc == 1) {
-> +		dev_dbg(&port->dev, "Fallback to passthrough decoder\n");
-> +		return devm_cxl_add_passthrough_decoder(port);
-> +	}
->  
-> -	return devm_cxl_enumerate_decoders(cxlhdm, NULL);
-> +	dev_err(&port->dev, "HDM decoder capability not found\n");
-> +	return -ENXIO;
->  }
->  
->  static int cxl_endpoint_port_probe(struct cxl_port *port)
-> 
-> 
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43E36C7EE22
-	for <linux-cxl@archiver.kernel.org>; Mon, 15 May 2023 10:38:19 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237651AbjEOKiS (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Mon, 15 May 2023 06:38:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34498 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229582AbjEOKiR (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Mon, 15 May 2023 06:38:17 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76AD219D;
-        Mon, 15 May 2023 03:38:16 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QKbQ510GYz67lhG;
-        Mon, 15 May 2023 18:36:29 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 15 May
- 2023 11:38:14 +0100
-Date: Mon, 15 May 2023 11:38:13 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Dan Williams <dan.j.williams@intel.com>
-CC: <linux-cxl@vger.kernel.org>, <stable@vger.kernel.org>
-Subject: Re: [PATCH 1/5] cxl/hdm: Fail upon detecting 0-sized decoders
-Message-ID: <20230515113813.00003eb1@Huawei.com>
-In-Reply-To: <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-        <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml500003.china.huawei.com (7.191.162.67) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Fri, 14 Apr 2023 11:53:55 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
-
-> Decoders committed with 0-size lead to later crashes on shutdown as
-> __cxl_dpa_release() assumes a 'struct resource' has been established in
-> the in 'cxlds->dpa_res'. Just fail the driver load in this instance
-> since there are deeper problems with the enumeration or the setup when
-> this happens.
-> 
-> Fixes: 9c57cde0dcbd ("cxl/hdm: Enumerate allocated DPA")
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-What happened to these?  Seem not to have gone upstream yet.
-
-This seems reasonable to me as well
-
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-
-> ---
->  drivers/cxl/core/hdm.c |   15 ++++++++++++---
->  1 file changed, 12 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index 02cc2c38b44b..35b338b716fe 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -269,8 +269,11 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
->  
->  	lockdep_assert_held_write(&cxl_dpa_rwsem);
->  
-> -	if (!len)
-> -		goto success;
-> +	if (!len) {
-> +		dev_warn(dev, "decoder%d.%d: empty reservation attempted\n",
-> +			 port->id, cxled->cxld.id);
-> +		return -EINVAL;
-> +	}
->  
->  	if (cxled->dpa_res) {
->  		dev_dbg(dev, "decoder%d.%d: existing allocation %pr assigned\n",
-> @@ -323,7 +326,6 @@ static int __cxl_dpa_reserve(struct cxl_endpoint_decoder *cxled,
->  		cxled->mode = CXL_DECODER_MIXED;
->  	}
->  
-> -success:
->  	port->hdm_end++;
->  	get_device(&cxled->cxld.dev);
->  	return 0;
-> @@ -833,6 +835,13 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->  				 port->id, cxld->id);
->  			return -ENXIO;
->  		}
-> +
-> +		if (size == 0) {
-> +			dev_warn(&port->dev,
-> +				 "decoder%d.%d: Committed with zero size\n",
-> +				 port->id, cxld->id);
-> +			return -ENXIO;
-> +		}
->  		port->commit_end = cxld->id;
->  	} else {
->  		/* unless / until type-2 drivers arrive, assume type-3 */
-> 
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B2CAC77B7D
-	for <linux-cxl@archiver.kernel.org>; Mon, 15 May 2023 10:46:14 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239655AbjEOKqO (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Mon, 15 May 2023 06:46:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38416 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229582AbjEOKqN (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Mon, 15 May 2023 06:46:13 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BED1B8;
-        Mon, 15 May 2023 03:46:11 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QKbXT5xcdz6J6k4;
-        Mon, 15 May 2023 18:42:01 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 15 May
- 2023 11:46:08 +0100
-Date: Mon, 15 May 2023 11:46:07 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Dan Williams <dan.j.williams@intel.com>
-CC: <linux-cxl@vger.kernel.org>, <stable@vger.kernel.org>
-Subject: Re: [PATCH 2/5] cxl/hdm: Use 4-byte reads to retrieve HDM decoder
- base+limit
-Message-ID: <20230515114607.00004647@Huawei.com>
-In-Reply-To: <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-        <168149844056.792294.8224490474529733736.stgit@dwillia2-xfh.jf.intel.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Fri, 14 Apr 2023 11:54:00 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
-
+On Fri, Apr 14, 2023 at 11:54:00AM -0700, Dan Williams wrote:
 > The CXL specification mandates that 4-byte registers must be accessed
 > with 4-byte access cycles. CXL 3.0 8.2.3 "Component Register Layout and
 > Definition" states that the behavior is undefined if (2) 32-bit
@@ -2305,23 +2423,19 @@ Dan Williams <dan.j.williams@intel.com> wrote:
 >     lo = readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(which));
 >     hi = readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(which));
 >     size = (hi << 32) + lo;
-
-Hmm. Annoying that there isn't an always present split version of the
-ioread64_hi_lo like there effectively is for hi_low_readq()
-
-Mind you, why was this using the ioread64_hi_lo() variant rather
-than hi_lo_readq()?  Far as I can tell that wouldn't have suffered
-from this problem in the first place.
-
-There is at least one other direct user of that function, so maybe
-we should just use it here as well?
-
-Jonathan
-
 > 
 > Fixes: d17d0540a0db ("cxl/core/hdm: Add CXL standard decoder enumeration to the core")
 > Cc: <stable@vger.kernel.org>
 > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+I see you got rid of ioread64_hi_lo(), so this can't be
+happening anywhere else. Are all the other readl, writel
+usages known to be OK, or do you need review help against
+the spec?
+
+Reviewed-by: Alison Schofield <alison.schofield@intel.com>
+
+
 > ---
 >  drivers/cxl/core/hdm.c |   20 +++++++++++++-------
 >  1 file changed, 13 insertions(+), 7 deletions(-)
@@ -2387,193 +2501,79 @@ Jonathan
 >  	if (rc) {
 > 
 
-
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <stable-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26706C7EE22
-	for <linux-cxl@archiver.kernel.org>; Mon, 15 May 2023 10:49:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2536FC77B71
+	for <stable@archiver.kernel.org>; Fri, 14 Apr 2023 20:12:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240807AbjEOKtF (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Mon, 15 May 2023 06:49:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39540 "EHLO
+        id S229548AbjDNUMA (ORCPT <rfc822;stable@archiver.kernel.org>);
+        Fri, 14 Apr 2023 16:12:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240871AbjEOKtC (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Mon, 15 May 2023 06:49:02 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8010210DF
-        for <linux-cxl@vger.kernel.org>; Mon, 15 May 2023 03:49:01 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QKbgR0zNvz688Wb;
-        Mon, 15 May 2023 18:48:03 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 15 May
- 2023 11:48:56 +0100
-Date: Mon, 15 May 2023 11:48:55 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+        with ESMTP id S229468AbjDNUL7 (ORCPT
+        <rfc822;stable@vger.kernel.org>); Fri, 14 Apr 2023 16:11:59 -0400
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A9EC86AC;
+        Fri, 14 Apr 2023 13:11:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681503087; x=1713039087;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=txQBj+uPv9CCQ0lRxOJiNx7JcuLzKrZA9FMcmU4aqsc=;
+  b=k3NTlKdXdHYYpd8tyVy5CS63h43tnnwnyVszcMYdfKZMBVTzYM8f0FXj
+   F8kOivotSmq23Qdtr8vlIKvz3ED8Dqe1eelUfTE2A4IlU4q5319TsG9VZ
+   JDYCdh0G6sWRA4lRD0dZvbJVROD2Wd2FP5x5pQDuz+fgwdn/JSjEpo3qI
+   fiz4Ea3CuhADxpxZLMDSHChsOyltnoAjAa7FHKSIOum3wfNGaJ66O6XGm
+   p6okHWMHxhJcEzkjHqJJrgHU2uCSYIuaD2UpiXAO0+ycdr8ErekfWEWxU
+   2z3ANMD9u9odAQmluq5SYfmxVed3N2L9DX7iEukTGzNY42G0vAj2zZKsO
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="409769095"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="409769095"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:11:16 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="833680251"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; 
+   d="scan'208";a="833680251"
+Received: from aschofie-mobl2.amr.corp.intel.com (HELO aschofie-mobl2) ([10.209.22.80])
+  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2023 13:11:15 -0700
+Date: Fri, 14 Apr 2023 13:11:13 -0700
+From: Alison Schofield <alison.schofield@intel.com>
 To: Dan Williams <dan.j.williams@intel.com>
-CC: <linux-cxl@vger.kernel.org>
-Subject: Re: [PATCH 3/5] cxl/core: Drop unused io-64-nonatomic-lo-hi.h
-Message-ID: <20230515114855.0000771e@Huawei.com>
-In-Reply-To: <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
+Cc: linux-cxl@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH 1/5] cxl/hdm: Fail upon detecting 0-sized decoders
+Message-ID: <ZDmzYe1MAr2yC/GB@aschofie-mobl2>
 References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-        <168149844596.792294.8273108394688012953.stgit@dwillia2-xfh.jf.intel.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
+ <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <168149843516.792294.11872242648319572632.stgit@dwillia2-xfh.jf.intel.com>
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <stable.vger.kernel.org>
+X-Mailing-List: stable@vger.kernel.org
 
-On Fri, 14 Apr 2023 11:54:06 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
-
-> After the discovery of a case where an implementation misbehaves with
-> register reads larger than the definition of the register the other
-> usages of readq() were audited and found to be correct, but some cases
-> where the io-64-nonatomic-lo-hi.h include is not needed were discovered,
-> delete them.
+On Fri, Apr 14, 2023 at 11:53:55AM -0700, Dan Williams wrote:
+> Decoders committed with 0-size lead to later crashes on shutdown as
+> __cxl_dpa_release() assumes a 'struct resource' has been established in
+> the in 'cxlds->dpa_res'. Just fail the driver load in this instance
+> since there are deeper problems with the enumeration or the setup when
+> this happens.
 > 
+> Fixes: 9c57cde0dcbd ("cxl/hdm: Enumerate allocated DPA")
+> Cc: <stable@vger.kernel.org>
 > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 
-Fair enough if this passes 0-day.  Everytime I try to drop
-io-64-nonatomic-lo-hi.h or similar I find some weird arch choice that
-needs it (mostly 32 bit arches, so maybe we don't care here).
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Alison Schofield <alison.schofield@intel.com>
 
-> ---
->  drivers/cxl/core/mbox.c |    1 -
->  drivers/cxl/core/port.c |    1 -
->  2 files changed, 2 deletions(-)
+
 > 
-> diff --git a/drivers/cxl/core/mbox.c b/drivers/cxl/core/mbox.c
-> index f2addb457172..6198637cb0bb 100644
-> --- a/drivers/cxl/core/mbox.c
-> +++ b/drivers/cxl/core/mbox.c
-> @@ -1,6 +1,5 @@
->  // SPDX-License-Identifier: GPL-2.0-only
->  /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
-> -#include <linux/io-64-nonatomic-lo-hi.h>
->  #include <linux/security.h>
->  #include <linux/debugfs.h>
->  #include <linux/ktime.h>
-> diff --git a/drivers/cxl/core/port.c b/drivers/cxl/core/port.c
-> index 4d1f9c5b5029..b060757c4000 100644
-> --- a/drivers/cxl/core/port.c
-> +++ b/drivers/cxl/core/port.c
-> @@ -1,6 +1,5 @@
->  // SPDX-License-Identifier: GPL-2.0-only
->  /* Copyright(c) 2020 Intel Corporation. All rights reserved. */
-> -#include <linux/io-64-nonatomic-lo-hi.h>
->  #include <linux/memregion.h>
->  #include <linux/workqueue.h>
->  #include <linux/debugfs.h>
-> 
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B9CBC77B7D
-	for <linux-cxl@archiver.kernel.org>; Mon, 15 May 2023 10:52:55 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240682AbjEOKwy (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Mon, 15 May 2023 06:52:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42618 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240747AbjEOKwx (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Mon, 15 May 2023 06:52:53 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 266B710F3
-        for <linux-cxl@vger.kernel.org>; Mon, 15 May 2023 03:52:50 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QKblr0LLnz67qBF;
-        Mon, 15 May 2023 18:51:52 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 15 May
- 2023 11:52:48 +0100
-Date: Mon, 15 May 2023 11:52:47 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Dan Williams <dan.j.williams@intel.com>
-CC: <linux-cxl@vger.kernel.org>
-Subject: Re: [PATCH 5/5] cxl/hdm: Add more HDM decoder debug messages at
- startup
-Message-ID: <20230515115247.00002e45@Huawei.com>
-In-Reply-To: <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
-References: <168149842935.792294.13212627946146993066.stgit@dwillia2-xfh.jf.intel.com>
-        <168149845668.792294.11814353796371419167.stgit@dwillia2-xfh.jf.intel.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Fri, 14 Apr 2023 11:54:16 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
-
-> A recent debug session yielded a couple debug messages that were useful
-> for determining the reason why the driver was or was not falling back
-> to CXL range register emulation, and for identifying decoder setting
-> enumeration problems.
-> 
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-FWIW makes sense.
-
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> ---
->  drivers/cxl/core/hdm.c |   12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> diff --git a/drivers/cxl/core/hdm.c b/drivers/cxl/core/hdm.c
-> index abe3877cfa63..7889ff203a34 100644
-> --- a/drivers/cxl/core/hdm.c
-> +++ b/drivers/cxl/core/hdm.c
-> @@ -130,6 +130,14 @@ static bool should_emulate_decoders(struct cxl_endpoint_dvsec_info *info)
->  	 */
->  	for (i = 0; i < cxlhdm->decoder_count; i++) {
->  		ctrl = readl(hdm + CXL_HDM_DECODER0_CTRL_OFFSET(i));
-> +		dev_dbg(&info->port->dev,
-> +			"decoder%d.%d: committed: %ld base: %#x_%.8x size: %#x_%.8x\n",
-> +			info->port->id, i,
-> +			FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl),
-> +			readl(hdm + CXL_HDM_DECODER0_BASE_HIGH_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_BASE_LOW_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_SIZE_HIGH_OFFSET(i)),
-> +			readl(hdm + CXL_HDM_DECODER0_SIZE_LOW_OFFSET(i)));
->  		if (FIELD_GET(CXL_HDM_DECODER0_CTRL_COMMITTED, ctrl))
->  			return false;
->  	}
-> @@ -868,6 +876,10 @@ static int init_hdm_decoder(struct cxl_port *port, struct cxl_decoder *cxld,
->  	if (rc)
->  		return rc;
->  
-> +	dev_dbg(&port->dev, "decoder%d.%d: range: %#llx-%#llx iw: %d ig: %d\n",
-> +		port->id, cxld->id, cxld->hpa_range.start, cxld->hpa_range.end,
-> +		cxld->interleave_ways, cxld->interleave_granularity);
-> +
->  	if (!info) {
->  		lo = readl(hdm + CXL_HDM_DECODER0_TL_LOW(which));
->  		hi = readl(hdm + CXL_HDM_DECODER0_TL_HIGH(which));
-> 
+snip
 
 

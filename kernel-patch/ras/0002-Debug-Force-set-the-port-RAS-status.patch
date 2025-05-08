@@ -1,0 +1,65 @@
+From 070a46a5043011e6e60331cc80817c738303b5ae Mon Sep 17 00:00:00 2001
+From: Terry Bowman <terry.bowman@amd.com>
+Date: Fri, 18 Oct 2024 14:17:44 -0500
+Subject: [PATCH 2/2] Debug: Force set the port RAS status
+Status: RO
+Content-Length: 1691
+Lines: 56
+
+---
+ drivers/cxl/core/pci.c | 16 ++++++++++++++++
+ drivers/pci/pcie/aer.c |  4 ++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/drivers/cxl/core/pci.c b/drivers/cxl/core/pci.c
+index 848f1cbfe858..1a916e702da8 100644
+--- a/drivers/cxl/core/pci.c
++++ b/drivers/cxl/core/pci.c
+@@ -829,6 +829,14 @@ static void cxl_port_cor_error_detected(struct pci_dev *pdev)
+ {
+ 	void __iomem *ras_base = cxl_pci_port_ras(pdev);
+ 
++	if ((pdev->bus->number == 0xc) ||
++	    (pdev->bus->number == 0xd) ||
++	    (pdev->bus->number == 0xe) ||
++	    (pdev->bus->number == 0xe0)) {
++		void __iomem *addr = ras_base + CXL_RAS_CORRECTABLE_STATUS_OFFSET;
++		writel(0x40, addr);
++	}
++
+ 	__cxl_handle_cor_ras(&pdev->dev, ras_base);
+ }
+ 
+@@ -837,6 +845,14 @@ static bool cxl_port_error_detected(struct pci_dev *pdev)
+ 	void __iomem *ras_base = cxl_pci_port_ras(pdev);
+ 	bool ue;
+ 
++	if ((pdev->bus->number == 0xc) ||
++	    (pdev->bus->number == 0xd) ||
++	    (pdev->bus->number == 0xe) ||
++	    (pdev->bus->number == 0xe0)) {
++		void __iomem *addr = ras_base + CXL_RAS_UNCORRECTABLE_STATUS_OFFSET;
++		writel(0x20, addr);
++	}
++
+ 	ue = __cxl_handle_ras(&pdev->dev, ras_base);
+ 
+ 	return ue;
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index b50d3ccb6c56..64853052a306 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -1387,6 +1387,10 @@ static irqreturn_t aer_irq(int irq, void *context)
+ 	pci_read_config_dword(rp, aer + PCI_ERR_ROOT_ERR_SRC, &e_src.id);
+ 	pci_write_config_dword(rp, aer + PCI_ERR_ROOT_STATUS, e_src.status);
+ 
++
++	if (rp->bus->number == 0xd)
++		e_src.status = PCI_ERR_ROOT_UNCOR_RCV;
++
+ 	if (!kfifo_put(&rpc->aer_fifo, e_src))
+ 		return IRQ_HANDLED;
+ 
+-- 
+2.34.1
+

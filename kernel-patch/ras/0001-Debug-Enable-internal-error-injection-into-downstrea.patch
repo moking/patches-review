@@ -1,0 +1,81 @@
+From 0d1a26726024c0c824e0f895a83a3dd13d6c1189 Mon Sep 17 00:00:00 2001
+From: Terry Bowman <terry.bowman@amd.com>
+Date: Tue, 15 Oct 2024 16:14:18 -0500
+Subject: [PATCH 1/2] Debug: Enable internal error injection into downstream
+ ports/devices
+Status: RO
+Content-Length: 2537
+Lines: 71
+
+---
+ drivers/cxl/core/pci.c | 2 ++
+ drivers/pci/pcie/aer.c | 5 +++--
+ include/linux/aer.h    | 2 ++
+ 3 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cxl/core/pci.c b/drivers/cxl/core/pci.c
+index 75364ffff95b..848f1cbfe858 100644
+--- a/drivers/cxl/core/pci.c
++++ b/drivers/cxl/core/pci.c
+@@ -885,6 +885,7 @@ void cxl_uport_init_ras_reporting(struct cxl_port *port)
+ 
+ 	cxl_assign_port_error_handlers(pdev);
+ 	devm_add_action_or_reset(port->uport_dev, cxl_clear_port_error_handlers, pdev);
++	pci_aer_unmask_internal_errors(pdev);
+ }
+ EXPORT_SYMBOL_NS_GPL(cxl_uport_init_ras_reporting, CXL);
+ 
+@@ -917,6 +918,7 @@ void cxl_dport_init_ras_reporting(struct cxl_dport *dport)
+ 
+ 	cxl_assign_port_error_handlers(pdev);
+ 	devm_add_action_or_reset(dport_dev, cxl_clear_port_error_handlers, pdev);
++	pci_aer_unmask_internal_errors(pdev);
+ }
+ EXPORT_SYMBOL_NS_GPL(cxl_dport_init_ras_reporting, CXL);
+ 
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index 19432ab2cfb6..b50d3ccb6c56 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -949,7 +949,6 @@ static bool is_internal_error(struct aer_err_info *info)
+ 	return info->status & PCI_ERR_UNC_INTN;
+ }
+ 
+-#ifdef CONFIG_PCIEAER_CXL
+ /**
+  * pci_aer_unmask_internal_errors - unmask internal errors
+  * @dev: pointer to the pcie_dev data structure
+@@ -960,7 +959,7 @@ static bool is_internal_error(struct aer_err_info *info)
+  * Note: AER must be enabled and supported by the device which must be
+  * checked in advance, e.g. with pcie_aer_is_native().
+  */
+-static void pci_aer_unmask_internal_errors(struct pci_dev *dev)
++void pci_aer_unmask_internal_errors(struct pci_dev *dev)
+ {
+ 	int aer = dev->aer_cap;
+ 	u32 mask;
+@@ -973,7 +972,9 @@ static void pci_aer_unmask_internal_errors(struct pci_dev *dev)
+ 	mask &= ~PCI_ERR_COR_INTERNAL;
+ 	pci_write_config_dword(dev, aer + PCI_ERR_COR_MASK, mask);
+ }
++EXPORT_SYMBOL_NS_GPL(pci_aer_unmask_internal_errors, CXL);
+ 
++#ifdef CONFIG_PCIEAER_CXL
+ static bool is_cxl_mem_dev(struct pci_dev *dev)
+ {
+ 	/*
+diff --git a/include/linux/aer.h b/include/linux/aer.h
+index 4b97f38f3fcf..e9d04306c2d5 100644
+--- a/include/linux/aer.h
++++ b/include/linux/aer.h
+@@ -55,5 +55,7 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
+ int cper_severity_to_aer(int cper_severity);
+ void aer_recover_queue(int domain, unsigned int bus, unsigned int devfn,
+ 		       int severity, struct aer_capability_regs *aer_regs);
++
++void pci_aer_unmask_internal_errors(struct pci_dev *dev);
+ #endif //_AER_H_
+ 
+-- 
+2.34.1
+

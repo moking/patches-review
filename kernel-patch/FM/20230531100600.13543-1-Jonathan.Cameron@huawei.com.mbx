@@ -1,17 +1,676 @@
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <linux-i2c-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04E8AC7EE24
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:06:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DBF5C77B7C
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 10:09:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235182AbjEaKGH (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
+        id S235102AbjEaKJg (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 06:09:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33096 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229748AbjEaKJg (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 06:09:36 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36192E2;
+        Wed, 31 May 2023 03:09:35 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWQ1g5Czcz67N2W;
+        Wed, 31 May 2023 18:07:51 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 31 May 2023 11:09:32 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <linux-i2c@vger.kernel.org>
+CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>,
+        <linux-acpi@vger.kernel.org>,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: [RFC PATCH v3 7/7] HACK: i2c: aspeed: Comment clock out and make reset optional
+Date: Wed, 31 May 2023 11:06:00 +0100
+Message-ID: <20230531100600.13543-8-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+Needs tidying up - hopefully can do clock right
+using on going work from Niyas
+https://linaro.atlassian.net/wiki/spaces/CLIENTPC/pages/28832333867/ACPI+Clock+Management
+
+ACPI does not provide an equivalent reset deassert / assert. _RST
+doesn't fit that model, so for now make the reset optional.
+
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+v3: Keeping this as an obvious hack rather than moving to something
+    that works in the interest of not putting a stop gap solution in
+    place.
+---
+ drivers/i2c/busses/i2c-aspeed.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index e262b06e224b..e29e7effd911 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -987,14 +987,14 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	if (IS_ERR(bus->base))
+ 		return PTR_ERR(bus->base);
+ 
+-	parent_clk = devm_clk_get(&pdev->dev, NULL);
+-	if (IS_ERR(parent_clk))
+-		return PTR_ERR(parent_clk);
+-	bus->parent_clk_frequency = clk_get_rate(parent_clk);
++	//	parent_clk = devm_clk_get(&pdev->dev, NULL);
++	//	if (IS_ERR(parent_clk))//
++	//		return PTR_ERR(parent_clk);
++	bus->parent_clk_frequency = 1000000;//clk_get_rate(parent_clk);
+ 	/* We just need the clock rate, we don't actually use the clk object. */
+-	devm_clk_put(&pdev->dev, parent_clk);
++	//devm_clk_put(&pdev->dev, parent_clk);
+ 
+-	bus->rst = devm_reset_control_get_shared(&pdev->dev, NULL);
++	bus->rst = devm_reset_control_get_optional_shared(&pdev->dev, NULL);
+ 	if (IS_ERR(bus->rst)) {
+ 		dev_err(&pdev->dev,
+ 			"missing or invalid reset controller device tree entry\n");
+-- 
+2.39.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67D33C77B7A
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 10:09:10 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S235014AbjEaKJJ (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 06:09:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32946 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235831AbjEaKJI (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 06:09:08 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 419F9E2;
+        Wed, 31 May 2023 03:09:05 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWQ161SjFz67lSR;
+        Wed, 31 May 2023 18:07:22 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 31 May 2023 11:09:02 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <linux-i2c@vger.kernel.org>
+CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>,
+        <linux-acpi@vger.kernel.org>,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: [RFC PATCH v3 6/7] i2c: aspeed: Set the fwnode for the adap->dev
+Date: Wed, 31 May 2023 11:05:59 +0100
+Message-ID: <20230531100600.13543-7-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+This is needed for the bus matching used for ACPI based
+i2c client registration.
+
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 992d64acd38d..e262b06e224b 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -1018,7 +1018,6 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	bus->adap.retries = 0;
+ 	bus->adap.algo = &aspeed_i2c_algo;
+ 	bus->adap.dev.parent = &pdev->dev;
+-	bus->adap.dev.of_node = pdev->dev.of_node;
+ 	strscpy(bus->adap.name, pdev->name, sizeof(bus->adap.name));
+ 	i2c_set_adapdata(&bus->adap, bus);
+ 
+@@ -1044,6 +1043,8 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	device_set_node(&bus->adap.dev, dev_fwnode(&pdev->dev));
++
+ 	ret = i2c_add_adapter(&bus->adap);
+ 	if (ret < 0)
+ 		return ret;
+-- 
+2.39.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A3D7C77B7C
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 10:08:36 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S235826AbjEaKIf (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 06:08:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60934 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235819AbjEaKIe (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 06:08:34 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96A97E2;
+        Wed, 31 May 2023 03:08:33 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWQ0V3mM6z67hPh;
+        Wed, 31 May 2023 18:06:50 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 31 May 2023 11:08:31 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <linux-i2c@vger.kernel.org>
+CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>,
+        <linux-acpi@vger.kernel.org>,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: [RFC PATCH v3 5/7] i2c: aspeed: switch to generic fw properties.
+Date: Wed, 31 May 2023 11:05:58 +0100
+Message-ID: <20230531100600.13543-6-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+Moving over to generic firmware properties allows this driver to
+get closer to working out of the box with both device tree and
+other firmware options, such as ACPI via PRP0001.
+
+Tested only via QEMU emulation.
+
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+v3:
+- Use a typedef for the function pointer type as introduced in precusor
+  patch
+---
+ drivers/i2c/busses/i2c-aspeed.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index be93de56f7e4..992d64acd38d 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -18,9 +18,8 @@
+ #include <linux/irq.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/of_address.h>
+-#include <linux/of_platform.h>
+ #include <linux/platform_device.h>
++#include <linux/property.h>
+ #include <linux/reset.h>
+ #include <linux/slab.h>
+ 
+@@ -976,7 +975,6 @@ MODULE_DEVICE_TABLE(of, aspeed_i2c_bus_of_table);
+ 
+ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ {
+-	const struct of_device_id *match;
+ 	struct aspeed_i2c_bus *bus;
+ 	struct clk *parent_clk;
+ 	int irq, ret;
+@@ -1005,14 +1003,13 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	reset_control_deassert(bus->rst);
+ 
+ 	bus->bus_frequency = I2C_MAX_STANDARD_MODE_FREQ;
+-	of_property_read_u32(pdev->dev.of_node,
+-			     "bus-frequency", &bus->bus_frequency);
++	device_property_read_u32(&pdev->dev,
++				 "bus-frequency", &bus->bus_frequency);
+ 
+-	match = of_match_node(aspeed_i2c_bus_of_table, pdev->dev.of_node);
+-	if (!match)
++	bus->get_clk_reg_val =
++		(aspeed_get_clk_reg_val_cb)device_get_match_data(&pdev->dev);
++	if (!bus->get_clk_reg_val)
+ 		bus->get_clk_reg_val = aspeed_i2c_24xx_get_clk_reg_val;
+-	else
+-		bus->get_clk_reg_val = (aspeed_get_clk_reg_val_cb)(match->data);
+ 
+ 	/* Initialize the I2C adapter */
+ 	spin_lock_init(&bus->lock);
+-- 
+2.39.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 668EFC77B73
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 10:08:07 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S235823AbjEaKIG (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 06:08:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60748 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235819AbjEaKIE (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 06:08:04 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B9A111D;
+        Wed, 31 May 2023 03:08:03 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWPzw09Lkz6D8yj;
+        Wed, 31 May 2023 18:06:20 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 31 May 2023 11:08:00 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <linux-i2c@vger.kernel.org>
+CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>,
+        <linux-acpi@vger.kernel.org>,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: [RFC PATCH v3 4/7] i2c: aspeed: use a function pointer type def for clk_reg_val callback
+Date: Wed, 31 May 2023 11:05:57 +0100
+Message-ID: <20230531100600.13543-5-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+Rather than having to define the parameter types of this function
+in multiple places, use a single typedef.
+
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+v3: New patch to switch to a function pointer as suggested by Andy.
+---
+ drivers/i2c/busses/i2c-aspeed.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 4363bfe06f9b..be93de56f7e4 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -137,6 +137,8 @@ enum aspeed_i2c_slave_state {
+ 	ASPEED_I2C_SLAVE_STOP,
+ };
+ 
++typedef u32 (*aspeed_get_clk_reg_val_cb)(struct device *dev, u32 divisor);
++
+ struct aspeed_i2c_bus {
+ 	struct i2c_adapter		adap;
+ 	struct device			*dev;
+@@ -145,8 +147,7 @@ struct aspeed_i2c_bus {
+ 	/* Synchronizes I/O mem access to base. */
+ 	spinlock_t			lock;
+ 	struct completion		cmd_complete;
+-	u32				(*get_clk_reg_val)(struct device *dev,
+-							   u32 divisor);
++	aspeed_get_clk_reg_val_cb	get_clk_reg_val;
+ 	unsigned long			parent_clk_frequency;
+ 	u32				bus_frequency;
+ 	/* Transaction state. */
+@@ -1011,8 +1012,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	if (!match)
+ 		bus->get_clk_reg_val = aspeed_i2c_24xx_get_clk_reg_val;
+ 	else
+-		bus->get_clk_reg_val = (u32 (*)(struct device *, u32))
+-				match->data;
++		bus->get_clk_reg_val = (aspeed_get_clk_reg_val_cb)(match->data);
+ 
+ 	/* Initialize the I2C adapter */
+ 	spin_lock_init(&bus->lock);
+-- 
+2.39.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08964C77B73
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 10:07:36 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S235811AbjEaKHf (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 06:07:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60482 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233058AbjEaKHe (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 06:07:34 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ABADE5;
+        Wed, 31 May 2023 03:07:33 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWPvY5yYsz6J7g1;
+        Wed, 31 May 2023 18:02:33 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 31 May 2023 11:07:30 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <linux-i2c@vger.kernel.org>
+CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>,
+        <linux-acpi@vger.kernel.org>,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: [RFC PATCH v3 3/7] i2c: aspeed: Don't report error when optional dt bus-frequency not supplied
+Date: Wed, 31 May 2023 11:05:56 +0100
+Message-ID: <20230531100600.13543-4-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+The bindings have this property as optional with a default of 100kHz.
+As such the driver should not be printing an error message if it is not
+supplied.
+
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 21a2f139f445..4363bfe06f9b 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -1003,13 +1003,9 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	}
+ 	reset_control_deassert(bus->rst);
+ 
+-	ret = of_property_read_u32(pdev->dev.of_node,
+-				   "bus-frequency", &bus->bus_frequency);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev,
+-			"Could not read bus-frequency property\n");
+-		bus->bus_frequency = I2C_MAX_STANDARD_MODE_FREQ;
+-	}
++	bus->bus_frequency = I2C_MAX_STANDARD_MODE_FREQ;
++	of_property_read_u32(pdev->dev.of_node,
++			     "bus-frequency", &bus->bus_frequency);
+ 
+ 	match = of_match_node(aspeed_i2c_bus_of_table, pdev->dev.of_node);
+ 	if (!match)
+-- 
+2.39.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6003FC7EE24
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 10:07:18 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S235797AbjEaKHR (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 06:07:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60408 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233058AbjEaKHQ (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 06:07:16 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90F60E5;
+        Wed, 31 May 2023 03:07:15 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWPty2FP3z6J7jf;
+        Wed, 31 May 2023 18:02:02 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 31 May 2023 11:06:59 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <linux-i2c@vger.kernel.org>
+CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>,
+        <linux-acpi@vger.kernel.org>,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: [RFC PATCH v3 2/7] i2c: aspeed: Use platform_get_irq() instead of opencoding
+Date: Wed, 31 May 2023 11:05:55 +0100
+Message-ID: <20230531100600.13543-3-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+A cleanup in its own right.
+This has the handy side effect of working for ACPI FW as well
+(unlike fwnode_irq_get() which works for ARM64 but not x86 ACPI)
+
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+v3: Fix it's -> its in description.
+---
+ drivers/i2c/busses/i2c-aspeed.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index d3c99c5b3247..21a2f139f445 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -19,7 +19,6 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of_address.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+ #include <linux/platform_device.h>
+ #include <linux/reset.h>
+@@ -1043,7 +1042,10 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	irq = irq_of_parse_and_map(pdev->dev.of_node, 0);
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0)
++		return irq;
++
+ 	ret = devm_request_irq(&pdev->dev, irq, aspeed_i2c_bus_irq,
+ 			       0, dev_name(&pdev->dev), bus);
+ 	if (ret < 0)
+-- 
+2.39.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16ED1C77B73
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 10:06:34 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S235723AbjEaKGd (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 06:06:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60154 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235094AbjEaKGc (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 06:06:32 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46CB29F;
+        Wed, 31 May 2023 03:06:31 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWPxd1QrQz67xNS;
+        Wed, 31 May 2023 18:04:21 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 31 May 2023 11:06:29 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: <linux-i2c@vger.kernel.org>
+CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>,
+        <linux-acpi@vger.kernel.org>,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Subject: [RFC PATCH v3 1/7] i2c: acpi: set slave mode flag
+Date: Wed, 31 May 2023 11:05:54 +0100
+Message-ID: <20230531100600.13543-2-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+If the GenericSerialBusConnection includes the General Flag
+for slave mode set it during parsing.
+
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+---
+v2: Picked up tag.
+---
+ drivers/i2c/i2c-core-acpi.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/i2c/i2c-core-acpi.c b/drivers/i2c/i2c-core-acpi.c
+index d6037a328669..7dda5eab9645 100644
+--- a/drivers/i2c/i2c-core-acpi.c
++++ b/drivers/i2c/i2c-core-acpi.c
+@@ -125,6 +125,9 @@ static int i2c_acpi_fill_info(struct acpi_resource *ares, void *data)
+ 	if (sb->access_mode == ACPI_I2C_10BIT_MODE)
+ 		info->flags |= I2C_CLIENT_TEN;
+ 
++	if (sb->slave_mode)
++		info->flags |= I2C_CLIENT_SLAVE;
++
+ 	return 1;
+ }
+ 
+-- 
+2.39.2
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 161EBC77B7C
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 10:06:08 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S234291AbjEaKGH (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
         Wed, 31 May 2023 06:06:07 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59858 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S234859AbjEaKGG (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:06:06 -0400
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 06:06:06 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E72110B;
         Wed, 31 May 2023 03:06:01 -0700 (PDT)
@@ -45,8 +704,8 @@ X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
 
 v3:
  - More improvements from Andy, called out in the individual patches.
@@ -191,32 +850,35 @@ Jonathan Cameron (7):
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <linux-i2c-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42EBFC7EE2F
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:06:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82EFFC77B7E
+	for <linux-i2c@archiver.kernel.org>; Thu,  1 Jun 2023 09:11:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234859AbjEaKGd (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 06:06:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60154 "EHLO
+        id S232363AbjFAJLD convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-i2c@archiver.kernel.org>);
+        Thu, 1 Jun 2023 05:11:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35910 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235094AbjEaKGc (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:06:32 -0400
+        with ESMTP id S232661AbjFAJK6 (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Thu, 1 Jun 2023 05:10:58 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46CB29F;
-        Wed, 31 May 2023 03:06:31 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.226])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWPxd1QrQz67xNS;
-        Wed, 31 May 2023 18:04:21 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 11:06:29 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <linux-i2c@vger.kernel.org>
-CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E55E9123;
+        Thu,  1 Jun 2023 02:10:52 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QX0jP3q1Sz6J7QZ;
+        Thu,  1 Jun 2023 17:10:49 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Thu, 1 Jun
+ 2023 10:10:50 +0100
+Date: Thu, 1 Jun 2023 10:10:49 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+CC: <linux-i2c@vger.kernel.org>, Wolfram Sang <wsa@kernel.org>,
+        Niyas Sait <niyas.sait@linaro.org>,
         Klaus Jensen <its@irrelevant.dk>,
         Andy Shevchenko <andy@kernel.org>,
         <linux-acpi@vger.kernel.org>,
@@ -225,560 +887,76 @@ CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
         Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
         <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
         "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: [RFC PATCH v3 1/7] i2c: acpi: set slave mode flag
-Date: Wed, 31 May 2023 11:05:54 +0100
-Message-ID: <20230531100600.13543-2-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+Subject: Re: [RFC PATCH v3 6/7] i2c: aspeed: Set the fwnode for the
+ adap->dev
+Message-ID: <20230601101049.00003662@Huawei.com>
+In-Reply-To: <CAHp75Vctpy_4yoaCWETxF_Ui7uVLzgUkfL_WqEgZdh=baYX5Uw@mail.gmail.com>
 References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+        <20230531100600.13543-7-Jonathan.Cameron@huawei.com>
+        <CAHp75Vctpy_4yoaCWETxF_Ui7uVLzgUkfL_WqEgZdh=baYX5Uw@mail.gmail.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml500005.china.huawei.com (7.191.163.240) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
 
-If the GenericSerialBusConnection includes the General Flag
-for slave mode set it during parsing.
+On Wed, 31 May 2023 20:46:42 +0300
+Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
 
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> On Wed, May 31, 2023 at 1:09 PM Jonathan Cameron
+> <Jonathan.Cameron@huawei.com> wrote:
+> >
+> > This is needed for the bus matching used for ACPI based
+> > i2c client registration.  
+> 
+> Btw, this patch like maybe others (e.g., patch 1) can be sent already
+> as non-RFC and applied independently on the goal of the entire series.
+> 
 
----
-v2: Picked up tag.
----
- drivers/i2c/i2c-core-acpi.c | 3 +++
- 1 file changed, 3 insertions(+)
+True but then I have to reference two sets of precursors for
+what I care about for now.  Now this is fairly stable, I'll circle
+back to post these as a separate set - I can carry on referencing the
+RFC from the QEMU side of things (and blog post etc I should write on this...)
 
-diff --git a/drivers/i2c/i2c-core-acpi.c b/drivers/i2c/i2c-core-acpi.c
-index d6037a328669..7dda5eab9645 100644
---- a/drivers/i2c/i2c-core-acpi.c
-+++ b/drivers/i2c/i2c-core-acpi.c
-@@ -125,6 +125,9 @@ static int i2c_acpi_fill_info(struct acpi_resource *ares, void *data)
- 	if (sb->access_mode == ACPI_I2C_10BIT_MODE)
- 		info->flags |= I2C_CLIENT_TEN;
- 
-+	if (sb->slave_mode)
-+		info->flags |= I2C_CLIENT_SLAVE;
-+
- 	return 1;
- }
- 
--- 
-2.39.2
-
+Jonathan
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <linux-i2c-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8125DC77B7C
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:07:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B4E5C7EE23
+	for <linux-i2c@archiver.kernel.org>; Thu,  1 Jun 2023 09:08:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235792AbjEaKHR (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 06:07:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60408 "EHLO
+        id S232294AbjFAJIf convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-i2c@archiver.kernel.org>);
+        Thu, 1 Jun 2023 05:08:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233058AbjEaKHQ (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:07:16 -0400
+        with ESMTP id S231910AbjFAJIe (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Thu, 1 Jun 2023 05:08:34 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90F60E5;
-        Wed, 31 May 2023 03:07:15 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWPty2FP3z6J7jf;
-        Wed, 31 May 2023 18:02:02 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 11:06:59 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <linux-i2c@vger.kernel.org>
-CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>,
-        <linux-acpi@vger.kernel.org>,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: [RFC PATCH v3 2/7] i2c: aspeed: Use platform_get_irq() instead of opencoding
-Date: Wed, 31 May 2023 11:05:55 +0100
-Message-ID: <20230531100600.13543-3-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-A cleanup in its own right.
-This has the handy side effect of working for ACPI FW as well
-(unlike fwnode_irq_get() which works for ARM64 but not x86 ACPI)
-
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-
----
-v3: Fix it's -> its in description.
----
- drivers/i2c/busses/i2c-aspeed.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index d3c99c5b3247..21a2f139f445 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -19,7 +19,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
--#include <linux/of_irq.h>
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/reset.h>
-@@ -1043,7 +1042,10 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- 	if (ret < 0)
- 		return ret;
- 
--	irq = irq_of_parse_and_map(pdev->dev.of_node, 0);
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+
- 	ret = devm_request_irq(&pdev->dev, irq, aspeed_i2c_bus_irq,
- 			       0, dev_name(&pdev->dev), bus);
- 	if (ret < 0)
--- 
-2.39.2
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1CFFC77B7C
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:07:35 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234934AbjEaKHf (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 06:07:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60482 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233058AbjEaKHe (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:07:34 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ABADE5;
-        Wed, 31 May 2023 03:07:33 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWPvY5yYsz6J7g1;
-        Wed, 31 May 2023 18:02:33 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 11:07:30 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <linux-i2c@vger.kernel.org>
-CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>,
-        <linux-acpi@vger.kernel.org>,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: [RFC PATCH v3 3/7] i2c: aspeed: Don't report error when optional dt bus-frequency not supplied
-Date: Wed, 31 May 2023 11:05:56 +0100
-Message-ID: <20230531100600.13543-4-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-The bindings have this property as optional with a default of 100kHz.
-As such the driver should not be printing an error message if it is not
-supplied.
-
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 21a2f139f445..4363bfe06f9b 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -1003,13 +1003,9 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- 	}
- 	reset_control_deassert(bus->rst);
- 
--	ret = of_property_read_u32(pdev->dev.of_node,
--				   "bus-frequency", &bus->bus_frequency);
--	if (ret < 0) {
--		dev_err(&pdev->dev,
--			"Could not read bus-frequency property\n");
--		bus->bus_frequency = I2C_MAX_STANDARD_MODE_FREQ;
--	}
-+	bus->bus_frequency = I2C_MAX_STANDARD_MODE_FREQ;
-+	of_property_read_u32(pdev->dev.of_node,
-+			     "bus-frequency", &bus->bus_frequency);
- 
- 	match = of_match_node(aspeed_i2c_bus_of_table, pdev->dev.of_node);
- 	if (!match)
--- 
-2.39.2
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36FA1C77B7C
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:08:07 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235824AbjEaKIG (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 06:08:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60748 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235819AbjEaKIE (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:08:04 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B9A111D;
-        Wed, 31 May 2023 03:08:03 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWPzw09Lkz6D8yj;
-        Wed, 31 May 2023 18:06:20 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 11:08:00 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <linux-i2c@vger.kernel.org>
-CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>,
-        <linux-acpi@vger.kernel.org>,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: [RFC PATCH v3 4/7] i2c: aspeed: use a function pointer type def for clk_reg_val callback
-Date: Wed, 31 May 2023 11:05:57 +0100
-Message-ID: <20230531100600.13543-5-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-Rather than having to define the parameter types of this function
-in multiple places, use a single typedef.
-
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-
----
-v3: New patch to switch to a function pointer as suggested by Andy.
----
- drivers/i2c/busses/i2c-aspeed.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 4363bfe06f9b..be93de56f7e4 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -137,6 +137,8 @@ enum aspeed_i2c_slave_state {
- 	ASPEED_I2C_SLAVE_STOP,
- };
- 
-+typedef u32 (*aspeed_get_clk_reg_val_cb)(struct device *dev, u32 divisor);
-+
- struct aspeed_i2c_bus {
- 	struct i2c_adapter		adap;
- 	struct device			*dev;
-@@ -145,8 +147,7 @@ struct aspeed_i2c_bus {
- 	/* Synchronizes I/O mem access to base. */
- 	spinlock_t			lock;
- 	struct completion		cmd_complete;
--	u32				(*get_clk_reg_val)(struct device *dev,
--							   u32 divisor);
-+	aspeed_get_clk_reg_val_cb	get_clk_reg_val;
- 	unsigned long			parent_clk_frequency;
- 	u32				bus_frequency;
- 	/* Transaction state. */
-@@ -1011,8 +1012,7 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- 	if (!match)
- 		bus->get_clk_reg_val = aspeed_i2c_24xx_get_clk_reg_val;
- 	else
--		bus->get_clk_reg_val = (u32 (*)(struct device *, u32))
--				match->data;
-+		bus->get_clk_reg_val = (aspeed_get_clk_reg_val_cb)(match->data);
- 
- 	/* Initialize the I2C adapter */
- 	spin_lock_init(&bus->lock);
--- 
-2.39.2
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ABB3C77B7A
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:08:36 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235825AbjEaKIf (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 06:08:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60934 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235819AbjEaKIe (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:08:34 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96A97E2;
-        Wed, 31 May 2023 03:08:33 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWQ0V3mM6z67hPh;
-        Wed, 31 May 2023 18:06:50 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 11:08:31 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <linux-i2c@vger.kernel.org>
-CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>,
-        <linux-acpi@vger.kernel.org>,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: [RFC PATCH v3 5/7] i2c: aspeed: switch to generic fw properties.
-Date: Wed, 31 May 2023 11:05:58 +0100
-Message-ID: <20230531100600.13543-6-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-Moving over to generic firmware properties allows this driver to
-get closer to working out of the box with both device tree and
-other firmware options, such as ACPI via PRP0001.
-
-Tested only via QEMU emulation.
-
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-
----
-v3:
-- Use a typedef for the function pointer type as introduced in precusor
-  patch
----
- drivers/i2c/busses/i2c-aspeed.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index be93de56f7e4..992d64acd38d 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -18,9 +18,8 @@
- #include <linux/irq.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/of_address.h>
--#include <linux/of_platform.h>
- #include <linux/platform_device.h>
-+#include <linux/property.h>
- #include <linux/reset.h>
- #include <linux/slab.h>
- 
-@@ -976,7 +975,6 @@ MODULE_DEVICE_TABLE(of, aspeed_i2c_bus_of_table);
- 
- static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- {
--	const struct of_device_id *match;
- 	struct aspeed_i2c_bus *bus;
- 	struct clk *parent_clk;
- 	int irq, ret;
-@@ -1005,14 +1003,13 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- 	reset_control_deassert(bus->rst);
- 
- 	bus->bus_frequency = I2C_MAX_STANDARD_MODE_FREQ;
--	of_property_read_u32(pdev->dev.of_node,
--			     "bus-frequency", &bus->bus_frequency);
-+	device_property_read_u32(&pdev->dev,
-+				 "bus-frequency", &bus->bus_frequency);
- 
--	match = of_match_node(aspeed_i2c_bus_of_table, pdev->dev.of_node);
--	if (!match)
-+	bus->get_clk_reg_val =
-+		(aspeed_get_clk_reg_val_cb)device_get_match_data(&pdev->dev);
-+	if (!bus->get_clk_reg_val)
- 		bus->get_clk_reg_val = aspeed_i2c_24xx_get_clk_reg_val;
--	else
--		bus->get_clk_reg_val = (aspeed_get_clk_reg_val_cb)(match->data);
- 
- 	/* Initialize the I2C adapter */
- 	spin_lock_init(&bus->lock);
--- 
-2.39.2
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B772C77B7C
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:09:10 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235830AbjEaKJJ (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 06:09:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32946 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235831AbjEaKJI (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:09:08 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 419F9E2;
-        Wed, 31 May 2023 03:09:05 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWQ161SjFz67lSR;
-        Wed, 31 May 2023 18:07:22 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 11:09:02 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <linux-i2c@vger.kernel.org>
-CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>,
-        <linux-acpi@vger.kernel.org>,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: [RFC PATCH v3 6/7] i2c: aspeed: Set the fwnode for the adap->dev
-Date: Wed, 31 May 2023 11:05:59 +0100
-Message-ID: <20230531100600.13543-7-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-This is needed for the bus matching used for ACPI based
-i2c client registration.
-
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 992d64acd38d..e262b06e224b 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -1018,7 +1018,6 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- 	bus->adap.retries = 0;
- 	bus->adap.algo = &aspeed_i2c_algo;
- 	bus->adap.dev.parent = &pdev->dev;
--	bus->adap.dev.of_node = pdev->dev.of_node;
- 	strscpy(bus->adap.name, pdev->name, sizeof(bus->adap.name));
- 	i2c_set_adapdata(&bus->adap, bus);
- 
-@@ -1044,6 +1043,8 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- 	if (ret < 0)
- 		return ret;
- 
-+	device_set_node(&bus->adap.dev, dev_fwnode(&pdev->dev));
-+
- 	ret = i2c_add_adapter(&bus->adap);
- 	if (ret < 0)
- 		return ret;
--- 
-2.39.2
-
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4CDFC7EE24
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 10:09:37 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235831AbjEaKJg (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 06:09:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33096 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229748AbjEaKJg (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 06:09:36 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36192E2;
-        Wed, 31 May 2023 03:09:35 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D6AE128;
+        Thu,  1 Jun 2023 02:08:33 -0700 (PDT)
 Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QWQ1g5Czcz67N2W;
-        Wed, 31 May 2023 18:07:51 +0800 (CST)
-Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
- lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 11:09:32 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: <linux-i2c@vger.kernel.org>
-CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QX0fk3wqxz6J7S8;
+        Thu,  1 Jun 2023 17:08:30 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Thu, 1 Jun
+ 2023 10:08:31 +0100
+Date: Thu, 1 Jun 2023 10:08:30 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+CC: <linux-i2c@vger.kernel.org>, Wolfram Sang <wsa@kernel.org>,
+        Niyas Sait <niyas.sait@linaro.org>,
         Klaus Jensen <its@irrelevant.dk>,
         Andy Shevchenko <andy@kernel.org>,
         <linux-acpi@vger.kernel.org>,
@@ -787,544 +965,87 @@ CC: Wolfram Sang <wsa@kernel.org>, Niyas Sait <niyas.sait@linaro.org>,
         Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
         <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
         "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: [RFC PATCH v3 7/7] HACK: i2c: aspeed: Comment clock out and make reset optional
-Date: Wed, 31 May 2023 11:06:00 +0100
-Message-ID: <20230531100600.13543-8-Jonathan.Cameron@huawei.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+Subject: Re: [RFC PATCH v3 5/7] i2c: aspeed: switch to generic fw
+ properties.
+Message-ID: <20230601100830.000036d7@Huawei.com>
+In-Reply-To: <CAHp75Vd-4p=3QvCPpzUpZt_sAWfFS4r93aqDLAjHqZguhn3NSQ@mail.gmail.com>
 References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
+        <20230531100600.13543-6-Jonathan.Cameron@huawei.com>
+        <CAHp75Vd-4p=3QvCPpzUpZt_sAWfFS4r93aqDLAjHqZguhn3NSQ@mail.gmail.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml100001.china.huawei.com (7.191.160.183) To
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
 
-Needs tidying up - hopefully can do clock right
-using on going work from Niyas
-https://linaro.atlassian.net/wiki/spaces/CLIENTPC/pages/28832333867/ACPI+Clock+Management
+On Wed, 31 May 2023 20:45:08 +0300
+Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
 
-ACPI does not provide an equivalent reset deassert / assert. _RST
-doesn't fit that model, so for now make the reset optional.
+> On Wed, May 31, 2023 at 1:08 PM Jonathan Cameron
+> <Jonathan.Cameron@huawei.com> wrote:
+> >
+> > Moving over to generic firmware properties allows this driver to
+> > get closer to working out of the box with both device tree and
+> > other firmware options, such as ACPI via PRP0001.
+> >
+> > Tested only via QEMU emulation.  
+> 
+> ...
+> 
+> >  static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+> >  {
+> > -       const struct of_device_id *match;  
+> 
+> With
+> 
+>   struct device *dev = &pdev->dev;
+> 
+> ...
+> 
+> > +       device_property_read_u32(&pdev->dev,
+> > +                                "bus-frequency", &bus->bus_frequency);  
+> 
+> This can take one or both parameters on one line.
+> 
+> ...
+> 
+> > +       bus->get_clk_reg_val =
+> > +               (aspeed_get_clk_reg_val_cb)device_get_match_data(&pdev->dev);  
+> 
+> This one as well I believe.
+> 
+> Also others, but it can be done in a separate patch.
+> 
 
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
-v3: Keeping this as an obvious hack rather than moving to something
-    that works in the interest of not putting a stop gap solution in
-    place.
----
- drivers/i2c/busses/i2c-aspeed.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+I thought about it, but decided out of scope for this set.
+I'm not aiming for too much general tidying!
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index e262b06e224b..e29e7effd911 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -987,14 +987,14 @@ static int aspeed_i2c_probe_bus(struct platform_device *pdev)
- 	if (IS_ERR(bus->base))
- 		return PTR_ERR(bus->base);
- 
--	parent_clk = devm_clk_get(&pdev->dev, NULL);
--	if (IS_ERR(parent_clk))
--		return PTR_ERR(parent_clk);
--	bus->parent_clk_frequency = clk_get_rate(parent_clk);
-+	//	parent_clk = devm_clk_get(&pdev->dev, NULL);
-+	//	if (IS_ERR(parent_clk))//
-+	//		return PTR_ERR(parent_clk);
-+	bus->parent_clk_frequency = 1000000;//clk_get_rate(parent_clk);
- 	/* We just need the clock rate, we don't actually use the clk object. */
--	devm_clk_put(&pdev->dev, parent_clk);
-+	//devm_clk_put(&pdev->dev, parent_clk);
- 
--	bus->rst = devm_reset_control_get_shared(&pdev->dev, NULL);
-+	bus->rst = devm_reset_control_get_optional_shared(&pdev->dev, NULL);
- 	if (IS_ERR(bus->rst)) {
- 		dev_err(&pdev->dev,
- 			"missing or invalid reset controller device tree entry\n");
--- 
-2.39.2
+Jonathan
+
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <linux-i2c-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC542C77B73
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 17:42:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FA61C7EE23
+	for <linux-i2c@archiver.kernel.org>; Thu,  1 Jun 2023 09:07:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230101AbjEaRmE (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 13:42:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38018 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230270AbjEaRl7 (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 13:41:59 -0400
-Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F392126;
-        Wed, 31 May 2023 10:41:47 -0700 (PDT)
-Received: by mail-qk1-x735.google.com with SMTP id af79cd13be357-75b0b2d0341so630207485a.3;
-        Wed, 31 May 2023 10:41:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1685554907; x=1688146907;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=NFEbaRLOuKH45m1LdnRI2++6MRQ0qqCzEQLABracwpw=;
-        b=b1Put0JPUZ59/6HrSHF2hjXLUr2Gew8+ePL2lAXIIJM0XVtrc4n21M1erbnasaguiv
-         EF0521yFKyg9m9CQp6viH2ZCMw/dDN/r35w6gt+u8yQFSOOfLQ+Q+5HAngTOHYk8sU9Q
-         gZ2vNAYhckqecQBy1svMzJFhIh6ZJqtQ9GT6k375U8und5dtf5dcqUx6S2LZKib09bAg
-         bU1H5N9pgAhqPsSGly/USHjg6h2oxshWsJKzbM7y/Hm88kR3xpigZlrXkVhVShIlGAlU
-         BjGG8Zsjv9tkRRuXYlgZCex8FZ919WD8U7ROMSWPiLJgBOiIDIZAzQD2iYfF7EWB6exQ
-         26cQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685554907; x=1688146907;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=NFEbaRLOuKH45m1LdnRI2++6MRQ0qqCzEQLABracwpw=;
-        b=aeDj0ew7inbHAV6tvnjjR67Tbbcl9oqslXhEaO/rwjVVBxUUsy9swu5JBd3AeVZOCP
-         rvB0tqE+V5nfGEZl5JCBcrRj5p4EllEP9SM8XCHfMN9wpbIyEvGGgbiAiy/WkjXHZ+hv
-         L7q1y/xqx1+yqFqSWpoNGxlYsJoJ58LHSREOnB9Dz5RYWs1DzXNP36OjaoXRiWNV88T/
-         lBIdfZ/UZ0dF76QrO9yM07WAp07uEcyn1ZKA5aINUyXbNmC6GPX3wPRZpMCuSnzrGkWE
-         RysEQwTMaLgHKR6iauWM58/pQbbjWUPPr887XUtC8PcZ1eao66UoXFmY19rlhGYxTvvb
-         iv1Q==
-X-Gm-Message-State: AC+VfDyuQbTXcigbmSQi0i9R0otCI+NEzSJZwnuEGAXwWA0SiD11MBfB
-        +WyYv4q0J872qpQKp8DF3Ua8IV2EDvNznpogx7Q=
-X-Google-Smtp-Source: ACHHUZ4fyKkFH6ppzSOivcIAqgw/Vi5LQOCYLq9j7pXN6GqTWnvXCjxVrfrPfq1Sm3EFdZi42TiszHpcsJFmgJiYnRU=
-X-Received: by 2002:a05:6214:48a:b0:625:b1f3:69c8 with SMTP id
- pt10-20020a056214048a00b00625b1f369c8mr8784749qvb.49.1685554906436; Wed, 31
- May 2023 10:41:46 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com> <20230531100600.13543-3-Jonathan.Cameron@huawei.com>
-In-Reply-To: <20230531100600.13543-3-Jonathan.Cameron@huawei.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 31 May 2023 20:41:09 +0300
-Message-ID: <CAHp75VdtPrjcJgo7=BYfCWqMpHgH7iThymtFd3_oSKkU8jk_7w@mail.gmail.com>
-Subject: Re: [RFC PATCH v3 2/7] i2c: aspeed: Use platform_get_irq() instead of opencoding
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
-        Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>, linux-acpi@vger.kernel.org,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Wed, May 31, 2023 at 1:07=E2=80=AFPM Jonathan Cameron
-<Jonathan.Cameron@huawei.com> wrote:
->
-> A cleanup in its own right.
-> This has the handy side effect of working for ACPI FW as well
-> (unlike fwnode_irq_get() which works for ARM64 but not x86 ACPI)
-
-Hadn't I provided a tag?
-Anyway,
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
->
-> ---
-> v3: Fix it's -> its in description.
-> ---
->  drivers/i2c/busses/i2c-aspeed.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-asp=
-eed.c
-> index d3c99c5b3247..21a2f139f445 100644
-> --- a/drivers/i2c/busses/i2c-aspeed.c
-> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> @@ -19,7 +19,6 @@
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/of_address.h>
-> -#include <linux/of_irq.h>
->  #include <linux/of_platform.h>
->  #include <linux/platform_device.h>
->  #include <linux/reset.h>
-> @@ -1043,7 +1042,10 @@ static int aspeed_i2c_probe_bus(struct platform_de=
-vice *pdev)
->         if (ret < 0)
->                 return ret;
->
-> -       irq =3D irq_of_parse_and_map(pdev->dev.of_node, 0);
-> +       irq =3D platform_get_irq(pdev, 0);
-> +       if (irq < 0)
-> +               return irq;
-> +
->         ret =3D devm_request_irq(&pdev->dev, irq, aspeed_i2c_bus_irq,
->                                0, dev_name(&pdev->dev), bus);
->         if (ret < 0)
-> --
-> 2.39.2
->
-
-
---=20
-With Best Regards,
-Andy Shevchenko
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3F63C7EE31
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 17:42:55 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229646AbjEaRmy (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 13:42:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39140 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229562AbjEaRmx (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 13:42:53 -0400
-Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com [IPv6:2607:f8b0:4864:20::f29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0D9811D;
-        Wed, 31 May 2023 10:42:52 -0700 (PDT)
-Received: by mail-qv1-xf29.google.com with SMTP id 6a1803df08f44-6261367d2f1so88006d6.3;
-        Wed, 31 May 2023 10:42:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1685554972; x=1688146972;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=c3pm500vXOc/RVSNbRJPtEDoR0bC3zLx8XjEklhpJIM=;
-        b=GvKFXHiiI0VML1xozWOFbLjSZHBTIkt+pQbZljLn8juUa9lfym1T4iHj1TH1BleVt8
-         9wSEREc1Tf478uu/UiVQI99ingpNqIMoXL09Unk+NWSYEVQ/KGMMi8k7OseLGXJdZXl6
-         TKlXs5Es7Ko1KQIBucXz25iiA4u9tAIaovGNaACEKWZd9ujPa+I2Mp6DN4JvbZc9nOSX
-         mZtImByLUqZC/rC5TAwXWOA+D/bSu9ulDrR0GWHMOOEE7KxDmaCGYvk6DAQ+ue3PSI+w
-         p3NzUhHUsGWJf7u7AUQRm9wrMjgaCfenRLLjvLRz+PqBpwKsW2PyU0jjIubvQyeY8ccx
-         xyjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685554972; x=1688146972;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=c3pm500vXOc/RVSNbRJPtEDoR0bC3zLx8XjEklhpJIM=;
-        b=OaW/Jyfb9oMRI4eFr7BuObqbSMUK4Hg4B36jyyt96X4BQlbum2/gYCnWGSQAs3TDhZ
-         AVIvQ7x7k+GLibtFGe0EDsVcdYbUQGAvEw6YbiwcKbBMq0iLiEzu6mQfh/9bDbNCHxGc
-         2xR2zgbFJhdoj6PVTJgaWI90HVuGLqMBEl9CfLw2GuN99lsuFFptUFnUWTBEcIOXP7z6
-         09sk0vguzmN3YkyYMo/psm5OE8wd4nwOzquBkhgMSHvXnScULxyyZ3nZC9SlLy/U+B62
-         zjPwyWibOHE2ccd02XZS6yrRS2TkNqRwuSvKG5JdD6r9IjdOIhHKTAHJmgrKN42NtS3R
-         fQ5Q==
-X-Gm-Message-State: AC+VfDx8xF1xuFWwjidEXx8WKCXpRCPTUh1tHkZzy9zHaq2crB3+1+52
-        u6g6Rz8T4710wAIiY535nKUcpIqVldDGa9MzwQw=
-X-Google-Smtp-Source: ACHHUZ6hjHVilVHtAFbvEfNmRWFevxD9R0sP6qLPjKXupnqVNaSJO1qVmd/UsvT8uYZM18Zl+xDT2Q3Sg3X2UF4sHzU=
-X-Received: by 2002:a05:6214:c61:b0:625:aa48:fb6c with SMTP id
- t1-20020a0562140c6100b00625aa48fb6cmr5384849qvj.54.1685554971911; Wed, 31 May
- 2023 10:42:51 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com> <20230531100600.13543-5-Jonathan.Cameron@huawei.com>
-In-Reply-To: <20230531100600.13543-5-Jonathan.Cameron@huawei.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 31 May 2023 20:42:15 +0300
-Message-ID: <CAHp75Ve2mpPPoRG6SQ3nT1uE-y35+-sMDMPQSu97i9_5SDCYZQ@mail.gmail.com>
-Subject: Re: [RFC PATCH v3 4/7] i2c: aspeed: use a function pointer type def
- for clk_reg_val callback
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
-        Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>, linux-acpi@vger.kernel.org,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Wed, May 31, 2023 at 1:08=E2=80=AFPM Jonathan Cameron
-<Jonathan.Cameron@huawei.com> wrote:
->
-> Rather than having to define the parameter types of this function
-> in multiple places, use a single typedef.
-
-Suggested-by then?
-
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
->
-> ---
-> v3: New patch to switch to a function pointer as suggested by Andy.
-> ---
->  drivers/i2c/busses/i2c-aspeed.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-asp=
-eed.c
-> index 4363bfe06f9b..be93de56f7e4 100644
-> --- a/drivers/i2c/busses/i2c-aspeed.c
-> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> @@ -137,6 +137,8 @@ enum aspeed_i2c_slave_state {
->         ASPEED_I2C_SLAVE_STOP,
->  };
->
-> +typedef u32 (*aspeed_get_clk_reg_val_cb)(struct device *dev, u32 divisor=
-);
-> +
->  struct aspeed_i2c_bus {
->         struct i2c_adapter              adap;
->         struct device                   *dev;
-> @@ -145,8 +147,7 @@ struct aspeed_i2c_bus {
->         /* Synchronizes I/O mem access to base. */
->         spinlock_t                      lock;
->         struct completion               cmd_complete;
-> -       u32                             (*get_clk_reg_val)(struct device =
-*dev,
-> -                                                          u32 divisor);
-> +       aspeed_get_clk_reg_val_cb       get_clk_reg_val;
->         unsigned long                   parent_clk_frequency;
->         u32                             bus_frequency;
->         /* Transaction state. */
-> @@ -1011,8 +1012,7 @@ static int aspeed_i2c_probe_bus(struct platform_dev=
-ice *pdev)
->         if (!match)
->                 bus->get_clk_reg_val =3D aspeed_i2c_24xx_get_clk_reg_val;
->         else
-> -               bus->get_clk_reg_val =3D (u32 (*)(struct device *, u32))
-> -                               match->data;
-> +               bus->get_clk_reg_val =3D (aspeed_get_clk_reg_val_cb)(matc=
-h->data);
->
->         /* Initialize the I2C adapter */
->         spin_lock_init(&bus->lock);
-> --
-> 2.39.2
->
-
-
---=20
-With Best Regards,
-Andy Shevchenko
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 407CEC77B73
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 17:45:49 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229547AbjEaRps (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 13:45:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40348 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229744AbjEaRpq (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 13:45:46 -0400
-Received: from mail-qv1-xf2f.google.com (mail-qv1-xf2f.google.com [IPv6:2607:f8b0:4864:20::f2f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD9A311D;
-        Wed, 31 May 2023 10:45:45 -0700 (PDT)
-Received: by mail-qv1-xf2f.google.com with SMTP id 6a1803df08f44-6260a2522d9so106326d6.3;
-        Wed, 31 May 2023 10:45:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1685555145; x=1688147145;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=SgdrMHRhBrj2w4gP3hdil2jrvh2YEv+fg9Bd69AbBr8=;
-        b=sq61hvZD7ONYPl668kNlgfz0nU3btZwfU/ppsIxRDfQ1NiiL6zcXYXmDYckR7bl4Z4
-         +0V0Yjt/roQIX3g+c4PEKphlqw2U8X4rYinuFazTOer9srX1cFxYaxCM0cwOXFtj3UdO
-         4hquCHvyKd9g3RpgNah9G7A/gUQG23WC7a8ZMYq9lR/NnhihxeblAg9s7l0id4DI1tkB
-         //tRH85X/+SpF9UlTBH/IBsBCVZogS3ztAFM5hOS0VCQW2zLPE9dFzywE0ifkOw5L32v
-         3hCSEJpDTfUZJ4zQthgS3C+W0n33uvSUrMVxhsAlSf7+8OmgpIXSJKjXQ6i1yeV0BglT
-         6OMA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685555145; x=1688147145;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=SgdrMHRhBrj2w4gP3hdil2jrvh2YEv+fg9Bd69AbBr8=;
-        b=F+Yts+XebqEMpK688hzPJ9siNRlrb0lyhoc7LrZoNZwvy4rBo3uNvl9BtPviMdLNqU
-         PWQf36Dq29Bw3qrzudFHTszwIZ+9qlScIimvP89NmVxMylFBlIiJUZKZk/czuAZbBe12
-         xYOxdjjwYrr/LvVbZcyzLtc2xW71kVwZ+Xnlu1ShvgGZyPX6dCgGUTdLSyZ+We2oMUuV
-         XGegnp1knMOxGChNnY7QzpqDp3BIeljIjlSPQqQJ7eqUK9Mlwm/zFhKyrjYRZsuxN15W
-         882YNn+2ZPcMu3sM6bN0tJxRamKOgbYH95eTf3AK9A56XNEn40InBpZMPxuotvkxPRng
-         YAVQ==
-X-Gm-Message-State: AC+VfDx7qgO3WnNFeHieCxcHqFS8ELZyudoO52X5aAjZCnMbdl5v829d
-        /MLF5Qx5nd2NyvFyViBNX/+s0h6CDWT4R7wFqXc=
-X-Google-Smtp-Source: ACHHUZ761XRvGAWhW/x9ZVHBTgQ/MTswm6CBNiBhJaYKf237FhzXJqSR/7jc9ituvdnRM92I1ej4quMmJ/+d2gxnDWI=
-X-Received: by 2002:ad4:596f:0:b0:626:1db8:de49 with SMTP id
- eq15-20020ad4596f000000b006261db8de49mr5874702qvb.32.1685555144887; Wed, 31
- May 2023 10:45:44 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com> <20230531100600.13543-6-Jonathan.Cameron@huawei.com>
-In-Reply-To: <20230531100600.13543-6-Jonathan.Cameron@huawei.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 31 May 2023 20:45:08 +0300
-Message-ID: <CAHp75Vd-4p=3QvCPpzUpZt_sAWfFS4r93aqDLAjHqZguhn3NSQ@mail.gmail.com>
-Subject: Re: [RFC PATCH v3 5/7] i2c: aspeed: switch to generic fw properties.
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
-        Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>, linux-acpi@vger.kernel.org,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Wed, May 31, 2023 at 1:08=E2=80=AFPM Jonathan Cameron
-<Jonathan.Cameron@huawei.com> wrote:
->
-> Moving over to generic firmware properties allows this driver to
-> get closer to working out of the box with both device tree and
-> other firmware options, such as ACPI via PRP0001.
->
-> Tested only via QEMU emulation.
-
-...
-
->  static int aspeed_i2c_probe_bus(struct platform_device *pdev)
->  {
-> -       const struct of_device_id *match;
-
-With
-
-  struct device *dev =3D &pdev->dev;
-
-...
-
-> +       device_property_read_u32(&pdev->dev,
-> +                                "bus-frequency", &bus->bus_frequency);
-
-This can take one or both parameters on one line.
-
-...
-
-> +       bus->get_clk_reg_val =3D
-> +               (aspeed_get_clk_reg_val_cb)device_get_match_data(&pdev->d=
-ev);
-
-This one as well I believe.
-
-Also others, but it can be done in a separate patch.
-
---=20
-With Best Regards,
-Andy Shevchenko
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFC45C7EE24
-	for <linux-cxl@archiver.kernel.org>; Wed, 31 May 2023 17:47:22 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230007AbjEaRrV (ORCPT <rfc822;linux-cxl@archiver.kernel.org>);
-        Wed, 31 May 2023 13:47:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41230 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230061AbjEaRrU (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Wed, 31 May 2023 13:47:20 -0400
-Received: from mail-qv1-xf2b.google.com (mail-qv1-xf2b.google.com [IPv6:2607:f8b0:4864:20::f2b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44EB2136;
-        Wed, 31 May 2023 10:47:19 -0700 (PDT)
-Received: by mail-qv1-xf2b.google.com with SMTP id 6a1803df08f44-6262d8688baso312266d6.1;
-        Wed, 31 May 2023 10:47:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1685555238; x=1688147238;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=J5tZ4/mNa6d+ma98/1tPD3ntqg9GXUy7bJJNj95+GwY=;
-        b=abMT0/cSeFGxJ65TCxQiqQMmfEu9heDFlQ3o+BPk3ohi6UwNpIZeOTbkHi40ftX/K4
-         Furw3H1RPRiIthoi90tiArM2uXqG8wfZg33tgZ49Hb5ibNm94W4O+JQsVsmzMCU7gyEM
-         /ENIYpB45jqyTxx0IAgPEwA3rI5Zwi5Tc4W8KRzcaUJxsapAb0ZEk8dBLIlwo3PPfXPS
-         /AG6qGEQqBbUY/LFvuI2R1QjELnO0ivge4fGdBK+YjtTaYlwGbPebtrOzvavJ94mzxGj
-         SG9OWRCkW9L2UVTQbEpWfjZqTSSYs1icAA+VVG8I6km6ObjAtXZ8+8ONoJUyr+pNJa8B
-         EYCQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685555238; x=1688147238;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=J5tZ4/mNa6d+ma98/1tPD3ntqg9GXUy7bJJNj95+GwY=;
-        b=gz/lC4/KnvR1WhjJm4ojT256/MAbq5zkvcQ5X9uvyrhu6M5joG9JvTeCY23OEkGYMm
-         9Ay1YgsrBNiXq3t9tf+Yj2Fon4Yi1U+fOx9X0hxNjjnUjZW05Unkw3ppIdVXhUZvfv3F
-         V2nFdmpCrcBpxevxAAsQ4knYBq5cNCFhs2LOKTqFrsWGipbEb0DBAdDRi9fAavBhxuz5
-         zAGq6rI8DGPPgsZNsySflCTOE4NAhzhqu8pVzufRtMO8lylwzDQjOXRjnCVlZOAJjCj4
-         yfqAYIctBm7Gv1Thfe0rv1Qj+qIP9YSHNBj0F5ZPMijucBQSSnGTVIhJEfvoBTZeYMJH
-         7oSg==
-X-Gm-Message-State: AC+VfDyYgORwgJWIKuiloht8Mj2QTIO84A0x3WErSSHaw39UJE8rl9es
-        8IPS2eOMb/cSYW3UyAq/LvuWoeXFN5f90vfcxWoLqZVH
-X-Google-Smtp-Source: ACHHUZ4KnDs+7tv5NjnsuBFAy8ROCocNzgZTMjlPNW2WUNcG627cRoeIaGpeVUJRHbJgPBKvEuvqWKvV+IjbhZSAQbM=
-X-Received: by 2002:ad4:5c88:0:b0:626:3a98:968 with SMTP id
- o8-20020ad45c88000000b006263a980968mr7205511qvh.32.1685555238311; Wed, 31 May
- 2023 10:47:18 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com> <20230531100600.13543-7-Jonathan.Cameron@huawei.com>
-In-Reply-To: <20230531100600.13543-7-Jonathan.Cameron@huawei.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 31 May 2023 20:46:42 +0300
-Message-ID: <CAHp75Vctpy_4yoaCWETxF_Ui7uVLzgUkfL_WqEgZdh=baYX5Uw@mail.gmail.com>
-Subject: Re: [RFC PATCH v3 6/7] i2c: aspeed: Set the fwnode for the adap->dev
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
-        Niyas Sait <niyas.sait@linaro.org>,
-        Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>, linux-acpi@vger.kernel.org,
-        Jeremy Kerr <jk@codeconstruct.com.au>,
-        Matt Johnston <matt@codeconstruct.com.au>,
-        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
-        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
-
-On Wed, May 31, 2023 at 1:09=E2=80=AFPM Jonathan Cameron
-<Jonathan.Cameron@huawei.com> wrote:
->
-> This is needed for the bus matching used for ACPI based
-> i2c client registration.
-
-Btw, this patch like maybe others (e.g., patch 1) can be sent already
-as non-RFC and applied independently on the goal of the entire series.
-
---=20
-With Best Regards,
-Andy Shevchenko
-
-From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
-	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AEA7C77B7E
-	for <linux-cxl@archiver.kernel.org>; Thu,  1 Jun 2023 09:07:47 +0000 (UTC)
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231737AbjFAJHq convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-cxl@archiver.kernel.org>);
+        id S231901AbjFAJHq convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-i2c@archiver.kernel.org>);
         Thu, 1 Jun 2023 05:07:46 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S231910AbjFAJHP (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Thu, 1 Jun 2023 05:07:15 -0400
+        <rfc822;linux-i2c@vger.kernel.org>); Thu, 1 Jun 2023 05:07:15 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
         by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FBBDB3;
         Thu,  1 Jun 2023 02:07:14 -0700 (PDT)
@@ -1365,8 +1086,8 @@ X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
 
 On Wed, 31 May 2023 20:42:15 +0300
 Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
@@ -1436,184 +1157,463 @@ Hopefully Wolfram uses b4 and that will get picked up automatically.
 
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <linux-i2c-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CC91C77B7E
-	for <linux-cxl@archiver.kernel.org>; Thu,  1 Jun 2023 09:08:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A2B5C77B73
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 17:47:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232548AbjFAJIf convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-cxl@archiver.kernel.org>);
-        Thu, 1 Jun 2023 05:08:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34432 "EHLO
+        id S230060AbjEaRrW (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 13:47:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231910AbjFAJIe (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Thu, 1 Jun 2023 05:08:34 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D6AE128;
-        Thu,  1 Jun 2023 02:08:33 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QX0fk3wqxz6J7S8;
-        Thu,  1 Jun 2023 17:08:30 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Thu, 1 Jun
- 2023 10:08:31 +0100
-Date: Thu, 1 Jun 2023 10:08:30 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-CC: <linux-i2c@vger.kernel.org>, Wolfram Sang <wsa@kernel.org>,
+        with ESMTP id S230061AbjEaRrU (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 13:47:20 -0400
+Received: from mail-qv1-xf2b.google.com (mail-qv1-xf2b.google.com [IPv6:2607:f8b0:4864:20::f2b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44EB2136;
+        Wed, 31 May 2023 10:47:19 -0700 (PDT)
+Received: by mail-qv1-xf2b.google.com with SMTP id 6a1803df08f44-6262d8688baso312266d6.1;
+        Wed, 31 May 2023 10:47:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1685555238; x=1688147238;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=J5tZ4/mNa6d+ma98/1tPD3ntqg9GXUy7bJJNj95+GwY=;
+        b=abMT0/cSeFGxJ65TCxQiqQMmfEu9heDFlQ3o+BPk3ohi6UwNpIZeOTbkHi40ftX/K4
+         Furw3H1RPRiIthoi90tiArM2uXqG8wfZg33tgZ49Hb5ibNm94W4O+JQsVsmzMCU7gyEM
+         /ENIYpB45jqyTxx0IAgPEwA3rI5Zwi5Tc4W8KRzcaUJxsapAb0ZEk8dBLIlwo3PPfXPS
+         /AG6qGEQqBbUY/LFvuI2R1QjELnO0ivge4fGdBK+YjtTaYlwGbPebtrOzvavJ94mzxGj
+         SG9OWRCkW9L2UVTQbEpWfjZqTSSYs1icAA+VVG8I6km6ObjAtXZ8+8ONoJUyr+pNJa8B
+         EYCQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685555238; x=1688147238;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=J5tZ4/mNa6d+ma98/1tPD3ntqg9GXUy7bJJNj95+GwY=;
+        b=gz/lC4/KnvR1WhjJm4ojT256/MAbq5zkvcQ5X9uvyrhu6M5joG9JvTeCY23OEkGYMm
+         9Ay1YgsrBNiXq3t9tf+Yj2Fon4Yi1U+fOx9X0hxNjjnUjZW05Unkw3ppIdVXhUZvfv3F
+         V2nFdmpCrcBpxevxAAsQ4knYBq5cNCFhs2LOKTqFrsWGipbEb0DBAdDRi9fAavBhxuz5
+         zAGq6rI8DGPPgsZNsySflCTOE4NAhzhqu8pVzufRtMO8lylwzDQjOXRjnCVlZOAJjCj4
+         yfqAYIctBm7Gv1Thfe0rv1Qj+qIP9YSHNBj0F5ZPMijucBQSSnGTVIhJEfvoBTZeYMJH
+         7oSg==
+X-Gm-Message-State: AC+VfDyYgORwgJWIKuiloht8Mj2QTIO84A0x3WErSSHaw39UJE8rl9es
+        8IPS2eOMb/cSYW3UyAq/LvuWoeXFN5f90vfcxWoLqZVH
+X-Google-Smtp-Source: ACHHUZ4KnDs+7tv5NjnsuBFAy8ROCocNzgZTMjlPNW2WUNcG627cRoeIaGpeVUJRHbJgPBKvEuvqWKvV+IjbhZSAQbM=
+X-Received: by 2002:ad4:5c88:0:b0:626:3a98:968 with SMTP id
+ o8-20020ad45c88000000b006263a980968mr7205511qvh.32.1685555238311; Wed, 31 May
+ 2023 10:47:18 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com> <20230531100600.13543-7-Jonathan.Cameron@huawei.com>
+In-Reply-To: <20230531100600.13543-7-Jonathan.Cameron@huawei.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Wed, 31 May 2023 20:46:42 +0300
+Message-ID: <CAHp75Vctpy_4yoaCWETxF_Ui7uVLzgUkfL_WqEgZdh=baYX5Uw@mail.gmail.com>
+Subject: Re: [RFC PATCH v3 6/7] i2c: aspeed: Set the fwnode for the adap->dev
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
         Niyas Sait <niyas.sait@linaro.org>,
         Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>,
-        <linux-acpi@vger.kernel.org>,
+        Andy Shevchenko <andy@kernel.org>, linux-acpi@vger.kernel.org,
         Jeremy Kerr <jk@codeconstruct.com.au>,
         Matt Johnston <matt@codeconstruct.com.au>,
         Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
         "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: Re: [RFC PATCH v3 5/7] i2c: aspeed: switch to generic fw
- properties.
-Message-ID: <20230601100830.000036d7@Huawei.com>
-In-Reply-To: <CAHp75Vd-4p=3QvCPpzUpZt_sAWfFS4r93aqDLAjHqZguhn3NSQ@mail.gmail.com>
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-        <20230531100600.13543-6-Jonathan.Cameron@huawei.com>
-        <CAHp75Vd-4p=3QvCPpzUpZt_sAWfFS4r93aqDLAjHqZguhn3NSQ@mail.gmail.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
-MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
 
-On Wed, 31 May 2023 20:45:08 +0300
-Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
+On Wed, May 31, 2023 at 1:09=E2=80=AFPM Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
+>
+> This is needed for the bus matching used for ACPI based
+> i2c client registration.
 
-> On Wed, May 31, 2023 at 1:08 PM Jonathan Cameron
-> <Jonathan.Cameron@huawei.com> wrote:
-> >
-> > Moving over to generic firmware properties allows this driver to
-> > get closer to working out of the box with both device tree and
-> > other firmware options, such as ACPI via PRP0001.
-> >
-> > Tested only via QEMU emulation.  
-> 
-> ...
-> 
-> >  static int aspeed_i2c_probe_bus(struct platform_device *pdev)
-> >  {
-> > -       const struct of_device_id *match;  
-> 
-> With
-> 
->   struct device *dev = &pdev->dev;
-> 
-> ...
-> 
-> > +       device_property_read_u32(&pdev->dev,
-> > +                                "bus-frequency", &bus->bus_frequency);  
-> 
-> This can take one or both parameters on one line.
-> 
-> ...
-> 
-> > +       bus->get_clk_reg_val =
-> > +               (aspeed_get_clk_reg_val_cb)device_get_match_data(&pdev->dev);  
-> 
-> This one as well I believe.
-> 
-> Also others, but it can be done in a separate patch.
-> 
+Btw, this patch like maybe others (e.g., patch 1) can be sent already
+as non-RFC and applied independently on the goal of the entire series.
 
-I thought about it, but decided out of scope for this set.
-I'm not aiming for too much general tidying!
-
-Jonathan
-
-
+--=20
+With Best Regards,
+Andy Shevchenko
 
 From mboxrd@z Thu Jan  1 00:00:00 1970
-Return-Path: <linux-cxl-owner@vger.kernel.org>
+Return-Path: <linux-i2c-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CA1FC7EE23
-	for <linux-cxl@archiver.kernel.org>; Thu,  1 Jun 2023 09:11:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53790C7EE2E
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 17:45:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232046AbjFAJLD convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-cxl@archiver.kernel.org>);
-        Thu, 1 Jun 2023 05:11:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35910 "EHLO
+        id S229643AbjEaRps (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 13:45:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40348 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232661AbjFAJK6 (ORCPT
-        <rfc822;linux-cxl@vger.kernel.org>); Thu, 1 Jun 2023 05:10:58 -0400
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E55E9123;
-        Thu,  1 Jun 2023 02:10:52 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4QX0jP3q1Sz6J7QZ;
-        Thu,  1 Jun 2023 17:10:49 +0800 (CST)
-Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
- (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Thu, 1 Jun
- 2023 10:10:50 +0100
-Date: Thu, 1 Jun 2023 10:10:49 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-CC: <linux-i2c@vger.kernel.org>, Wolfram Sang <wsa@kernel.org>,
+        with ESMTP id S229744AbjEaRpq (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 13:45:46 -0400
+Received: from mail-qv1-xf2f.google.com (mail-qv1-xf2f.google.com [IPv6:2607:f8b0:4864:20::f2f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD9A311D;
+        Wed, 31 May 2023 10:45:45 -0700 (PDT)
+Received: by mail-qv1-xf2f.google.com with SMTP id 6a1803df08f44-6260a2522d9so106326d6.3;
+        Wed, 31 May 2023 10:45:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1685555145; x=1688147145;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=SgdrMHRhBrj2w4gP3hdil2jrvh2YEv+fg9Bd69AbBr8=;
+        b=sq61hvZD7ONYPl668kNlgfz0nU3btZwfU/ppsIxRDfQ1NiiL6zcXYXmDYckR7bl4Z4
+         +0V0Yjt/roQIX3g+c4PEKphlqw2U8X4rYinuFazTOer9srX1cFxYaxCM0cwOXFtj3UdO
+         4hquCHvyKd9g3RpgNah9G7A/gUQG23WC7a8ZMYq9lR/NnhihxeblAg9s7l0id4DI1tkB
+         //tRH85X/+SpF9UlTBH/IBsBCVZogS3ztAFM5hOS0VCQW2zLPE9dFzywE0ifkOw5L32v
+         3hCSEJpDTfUZJ4zQthgS3C+W0n33uvSUrMVxhsAlSf7+8OmgpIXSJKjXQ6i1yeV0BglT
+         6OMA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685555145; x=1688147145;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=SgdrMHRhBrj2w4gP3hdil2jrvh2YEv+fg9Bd69AbBr8=;
+        b=F+Yts+XebqEMpK688hzPJ9siNRlrb0lyhoc7LrZoNZwvy4rBo3uNvl9BtPviMdLNqU
+         PWQf36Dq29Bw3qrzudFHTszwIZ+9qlScIimvP89NmVxMylFBlIiJUZKZk/czuAZbBe12
+         xYOxdjjwYrr/LvVbZcyzLtc2xW71kVwZ+Xnlu1ShvgGZyPX6dCgGUTdLSyZ+We2oMUuV
+         XGegnp1knMOxGChNnY7QzpqDp3BIeljIjlSPQqQJ7eqUK9Mlwm/zFhKyrjYRZsuxN15W
+         882YNn+2ZPcMu3sM6bN0tJxRamKOgbYH95eTf3AK9A56XNEn40InBpZMPxuotvkxPRng
+         YAVQ==
+X-Gm-Message-State: AC+VfDx7qgO3WnNFeHieCxcHqFS8ELZyudoO52X5aAjZCnMbdl5v829d
+        /MLF5Qx5nd2NyvFyViBNX/+s0h6CDWT4R7wFqXc=
+X-Google-Smtp-Source: ACHHUZ761XRvGAWhW/x9ZVHBTgQ/MTswm6CBNiBhJaYKf237FhzXJqSR/7jc9ituvdnRM92I1ej4quMmJ/+d2gxnDWI=
+X-Received: by 2002:ad4:596f:0:b0:626:1db8:de49 with SMTP id
+ eq15-20020ad4596f000000b006261db8de49mr5874702qvb.32.1685555144887; Wed, 31
+ May 2023 10:45:44 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com> <20230531100600.13543-6-Jonathan.Cameron@huawei.com>
+In-Reply-To: <20230531100600.13543-6-Jonathan.Cameron@huawei.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Wed, 31 May 2023 20:45:08 +0300
+Message-ID: <CAHp75Vd-4p=3QvCPpzUpZt_sAWfFS4r93aqDLAjHqZguhn3NSQ@mail.gmail.com>
+Subject: Re: [RFC PATCH v3 5/7] i2c: aspeed: switch to generic fw properties.
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
         Niyas Sait <niyas.sait@linaro.org>,
         Klaus Jensen <its@irrelevant.dk>,
-        Andy Shevchenko <andy@kernel.org>,
-        <linux-acpi@vger.kernel.org>,
+        Andy Shevchenko <andy@kernel.org>, linux-acpi@vger.kernel.org,
         Jeremy Kerr <jk@codeconstruct.com.au>,
         Matt Johnston <matt@codeconstruct.com.au>,
         Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
-        <linux-cxl@vger.kernel.org>, <linuxarm@huawei.com>,
+        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
         "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
-Subject: Re: [RFC PATCH v3 6/7] i2c: aspeed: Set the fwnode for the
- adap->dev
-Message-ID: <20230601101049.00003662@Huawei.com>
-In-Reply-To: <CAHp75Vctpy_4yoaCWETxF_Ui7uVLzgUkfL_WqEgZdh=baYX5Uw@mail.gmail.com>
-References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com>
-        <20230531100600.13543-7-Jonathan.Cameron@huawei.com>
-        <CAHp75Vctpy_4yoaCWETxF_Ui7uVLzgUkfL_WqEgZdh=baYX5Uw@mail.gmail.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
-MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-X-Originating-IP: [10.202.227.76]
-X-ClientProxiedBy: lhrpeml500005.china.huawei.com (7.191.163.240) To
- lhrpeml500005.china.huawei.com (7.191.163.240)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
-List-ID: <linux-cxl.vger.kernel.org>
-X-Mailing-List: linux-cxl@vger.kernel.org
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
 
-On Wed, 31 May 2023 20:46:42 +0300
-Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
+On Wed, May 31, 2023 at 1:08=E2=80=AFPM Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
+>
+> Moving over to generic firmware properties allows this driver to
+> get closer to working out of the box with both device tree and
+> other firmware options, such as ACPI via PRP0001.
+>
+> Tested only via QEMU emulation.
 
-> On Wed, May 31, 2023 at 1:09 PM Jonathan Cameron
-> <Jonathan.Cameron@huawei.com> wrote:
-> >
-> > This is needed for the bus matching used for ACPI based
-> > i2c client registration.  
-> 
-> Btw, this patch like maybe others (e.g., patch 1) can be sent already
-> as non-RFC and applied independently on the goal of the entire series.
-> 
+...
 
-True but then I have to reference two sets of precursors for
-what I care about for now.  Now this is fairly stable, I'll circle
-back to post these as a separate set - I can carry on referencing the
-RFC from the QEMU side of things (and blog post etc I should write on this...)
+>  static int aspeed_i2c_probe_bus(struct platform_device *pdev)
+>  {
+> -       const struct of_device_id *match;
 
-Jonathan
+With
+
+  struct device *dev =3D &pdev->dev;
+
+...
+
+> +       device_property_read_u32(&pdev->dev,
+> +                                "bus-frequency", &bus->bus_frequency);
+
+This can take one or both parameters on one line.
+
+...
+
+> +       bus->get_clk_reg_val =3D
+> +               (aspeed_get_clk_reg_val_cb)device_get_match_data(&pdev->d=
+ev);
+
+This one as well I believe.
+
+Also others, but it can be done in a separate patch.
+
+--=20
+With Best Regards,
+Andy Shevchenko
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4ACBC7EE2E
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 17:42:55 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229659AbjEaRmy (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 13:42:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39140 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229562AbjEaRmx (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 13:42:53 -0400
+Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com [IPv6:2607:f8b0:4864:20::f29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0D9811D;
+        Wed, 31 May 2023 10:42:52 -0700 (PDT)
+Received: by mail-qv1-xf29.google.com with SMTP id 6a1803df08f44-6261367d2f1so88006d6.3;
+        Wed, 31 May 2023 10:42:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1685554972; x=1688146972;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=c3pm500vXOc/RVSNbRJPtEDoR0bC3zLx8XjEklhpJIM=;
+        b=GvKFXHiiI0VML1xozWOFbLjSZHBTIkt+pQbZljLn8juUa9lfym1T4iHj1TH1BleVt8
+         9wSEREc1Tf478uu/UiVQI99ingpNqIMoXL09Unk+NWSYEVQ/KGMMi8k7OseLGXJdZXl6
+         TKlXs5Es7Ko1KQIBucXz25iiA4u9tAIaovGNaACEKWZd9ujPa+I2Mp6DN4JvbZc9nOSX
+         mZtImByLUqZC/rC5TAwXWOA+D/bSu9ulDrR0GWHMOOEE7KxDmaCGYvk6DAQ+ue3PSI+w
+         p3NzUhHUsGWJf7u7AUQRm9wrMjgaCfenRLLjvLRz+PqBpwKsW2PyU0jjIubvQyeY8ccx
+         xyjw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685554972; x=1688146972;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=c3pm500vXOc/RVSNbRJPtEDoR0bC3zLx8XjEklhpJIM=;
+        b=OaW/Jyfb9oMRI4eFr7BuObqbSMUK4Hg4B36jyyt96X4BQlbum2/gYCnWGSQAs3TDhZ
+         AVIvQ7x7k+GLibtFGe0EDsVcdYbUQGAvEw6YbiwcKbBMq0iLiEzu6mQfh/9bDbNCHxGc
+         2xR2zgbFJhdoj6PVTJgaWI90HVuGLqMBEl9CfLw2GuN99lsuFFptUFnUWTBEcIOXP7z6
+         09sk0vguzmN3YkyYMo/psm5OE8wd4nwOzquBkhgMSHvXnScULxyyZ3nZC9SlLy/U+B62
+         zjPwyWibOHE2ccd02XZS6yrRS2TkNqRwuSvKG5JdD6r9IjdOIhHKTAHJmgrKN42NtS3R
+         fQ5Q==
+X-Gm-Message-State: AC+VfDx8xF1xuFWwjidEXx8WKCXpRCPTUh1tHkZzy9zHaq2crB3+1+52
+        u6g6Rz8T4710wAIiY535nKUcpIqVldDGa9MzwQw=
+X-Google-Smtp-Source: ACHHUZ6hjHVilVHtAFbvEfNmRWFevxD9R0sP6qLPjKXupnqVNaSJO1qVmd/UsvT8uYZM18Zl+xDT2Q3Sg3X2UF4sHzU=
+X-Received: by 2002:a05:6214:c61:b0:625:aa48:fb6c with SMTP id
+ t1-20020a0562140c6100b00625aa48fb6cmr5384849qvj.54.1685554971911; Wed, 31 May
+ 2023 10:42:51 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com> <20230531100600.13543-5-Jonathan.Cameron@huawei.com>
+In-Reply-To: <20230531100600.13543-5-Jonathan.Cameron@huawei.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Wed, 31 May 2023 20:42:15 +0300
+Message-ID: <CAHp75Ve2mpPPoRG6SQ3nT1uE-y35+-sMDMPQSu97i9_5SDCYZQ@mail.gmail.com>
+Subject: Re: [RFC PATCH v3 4/7] i2c: aspeed: use a function pointer type def
+ for clk_reg_val callback
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
+        Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>, linux-acpi@vger.kernel.org,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+On Wed, May 31, 2023 at 1:08=E2=80=AFPM Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
+>
+> Rather than having to define the parameter types of this function
+> in multiple places, use a single typedef.
+
+Suggested-by then?
+
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+>
+> ---
+> v3: New patch to switch to a function pointer as suggested by Andy.
+> ---
+>  drivers/i2c/busses/i2c-aspeed.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-asp=
+eed.c
+> index 4363bfe06f9b..be93de56f7e4 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -137,6 +137,8 @@ enum aspeed_i2c_slave_state {
+>         ASPEED_I2C_SLAVE_STOP,
+>  };
+>
+> +typedef u32 (*aspeed_get_clk_reg_val_cb)(struct device *dev, u32 divisor=
+);
+> +
+>  struct aspeed_i2c_bus {
+>         struct i2c_adapter              adap;
+>         struct device                   *dev;
+> @@ -145,8 +147,7 @@ struct aspeed_i2c_bus {
+>         /* Synchronizes I/O mem access to base. */
+>         spinlock_t                      lock;
+>         struct completion               cmd_complete;
+> -       u32                             (*get_clk_reg_val)(struct device =
+*dev,
+> -                                                          u32 divisor);
+> +       aspeed_get_clk_reg_val_cb       get_clk_reg_val;
+>         unsigned long                   parent_clk_frequency;
+>         u32                             bus_frequency;
+>         /* Transaction state. */
+> @@ -1011,8 +1012,7 @@ static int aspeed_i2c_probe_bus(struct platform_dev=
+ice *pdev)
+>         if (!match)
+>                 bus->get_clk_reg_val =3D aspeed_i2c_24xx_get_clk_reg_val;
+>         else
+> -               bus->get_clk_reg_val =3D (u32 (*)(struct device *, u32))
+> -                               match->data;
+> +               bus->get_clk_reg_val =3D (aspeed_get_clk_reg_val_cb)(matc=
+h->data);
+>
+>         /* Initialize the I2C adapter */
+>         spin_lock_init(&bus->lock);
+> --
+> 2.39.2
+>
+
+
+--=20
+With Best Regards,
+Andy Shevchenko
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <linux-i2c-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10ECFC7EE2E
+	for <linux-i2c@archiver.kernel.org>; Wed, 31 May 2023 17:42:06 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S230198AbjEaRmE (ORCPT <rfc822;linux-i2c@archiver.kernel.org>);
+        Wed, 31 May 2023 13:42:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38018 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230270AbjEaRl7 (ORCPT
+        <rfc822;linux-i2c@vger.kernel.org>); Wed, 31 May 2023 13:41:59 -0400
+Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F392126;
+        Wed, 31 May 2023 10:41:47 -0700 (PDT)
+Received: by mail-qk1-x735.google.com with SMTP id af79cd13be357-75b0b2d0341so630207485a.3;
+        Wed, 31 May 2023 10:41:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1685554907; x=1688146907;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=NFEbaRLOuKH45m1LdnRI2++6MRQ0qqCzEQLABracwpw=;
+        b=b1Put0JPUZ59/6HrSHF2hjXLUr2Gew8+ePL2lAXIIJM0XVtrc4n21M1erbnasaguiv
+         EF0521yFKyg9m9CQp6viH2ZCMw/dDN/r35w6gt+u8yQFSOOfLQ+Q+5HAngTOHYk8sU9Q
+         gZ2vNAYhckqecQBy1svMzJFhIh6ZJqtQ9GT6k375U8und5dtf5dcqUx6S2LZKib09bAg
+         bU1H5N9pgAhqPsSGly/USHjg6h2oxshWsJKzbM7y/Hm88kR3xpigZlrXkVhVShIlGAlU
+         BjGG8Zsjv9tkRRuXYlgZCex8FZ919WD8U7ROMSWPiLJgBOiIDIZAzQD2iYfF7EWB6exQ
+         26cQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685554907; x=1688146907;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=NFEbaRLOuKH45m1LdnRI2++6MRQ0qqCzEQLABracwpw=;
+        b=aeDj0ew7inbHAV6tvnjjR67Tbbcl9oqslXhEaO/rwjVVBxUUsy9swu5JBd3AeVZOCP
+         rvB0tqE+V5nfGEZl5JCBcrRj5p4EllEP9SM8XCHfMN9wpbIyEvGGgbiAiy/WkjXHZ+hv
+         L7q1y/xqx1+yqFqSWpoNGxlYsJoJ58LHSREOnB9Dz5RYWs1DzXNP36OjaoXRiWNV88T/
+         lBIdfZ/UZ0dF76QrO9yM07WAp07uEcyn1ZKA5aINUyXbNmC6GPX3wPRZpMCuSnzrGkWE
+         RysEQwTMaLgHKR6iauWM58/pQbbjWUPPr887XUtC8PcZ1eao66UoXFmY19rlhGYxTvvb
+         iv1Q==
+X-Gm-Message-State: AC+VfDyuQbTXcigbmSQi0i9R0otCI+NEzSJZwnuEGAXwWA0SiD11MBfB
+        +WyYv4q0J872qpQKp8DF3Ua8IV2EDvNznpogx7Q=
+X-Google-Smtp-Source: ACHHUZ4fyKkFH6ppzSOivcIAqgw/Vi5LQOCYLq9j7pXN6GqTWnvXCjxVrfrPfq1Sm3EFdZi42TiszHpcsJFmgJiYnRU=
+X-Received: by 2002:a05:6214:48a:b0:625:b1f3:69c8 with SMTP id
+ pt10-20020a056214048a00b00625b1f369c8mr8784749qvb.49.1685554906436; Wed, 31
+ May 2023 10:41:46 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230531100600.13543-1-Jonathan.Cameron@huawei.com> <20230531100600.13543-3-Jonathan.Cameron@huawei.com>
+In-Reply-To: <20230531100600.13543-3-Jonathan.Cameron@huawei.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Wed, 31 May 2023 20:41:09 +0300
+Message-ID: <CAHp75VdtPrjcJgo7=BYfCWqMpHgH7iThymtFd3_oSKkU8jk_7w@mail.gmail.com>
+Subject: Re: [RFC PATCH v3 2/7] i2c: aspeed: Use platform_get_irq() instead of opencoding
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
+        Niyas Sait <niyas.sait@linaro.org>,
+        Klaus Jensen <its@irrelevant.dk>,
+        Andy Shevchenko <andy@kernel.org>, linux-acpi@vger.kernel.org,
+        Jeremy Kerr <jk@codeconstruct.com.au>,
+        Matt Johnston <matt@codeconstruct.com.au>,
+        Shesha Bhushan Sreenivasamurthy <sheshas@marvell.com>,
+        linux-cxl@vger.kernel.org, linuxarm@huawei.com,
+        "Viacheslav A . Dubeyko" <viacheslav.dubeyko@bytedance.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Precedence: bulk
+List-ID: <linux-i2c.vger.kernel.org>
+X-Mailing-List: linux-i2c@vger.kernel.org
+
+On Wed, May 31, 2023 at 1:07=E2=80=AFPM Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
+>
+> A cleanup in its own right.
+> This has the handy side effect of working for ACPI FW as well
+> (unlike fwnode_irq_get() which works for ARM64 but not x86 ACPI)
+
+Hadn't I provided a tag?
+Anyway,
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+>
+> ---
+> v3: Fix it's -> its in description.
+> ---
+>  drivers/i2c/busses/i2c-aspeed.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-asp=
+eed.c
+> index d3c99c5b3247..21a2f139f445 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -19,7 +19,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/of_address.h>
+> -#include <linux/of_irq.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/reset.h>
+> @@ -1043,7 +1042,10 @@ static int aspeed_i2c_probe_bus(struct platform_de=
+vice *pdev)
+>         if (ret < 0)
+>                 return ret;
+>
+> -       irq =3D irq_of_parse_and_map(pdev->dev.of_node, 0);
+> +       irq =3D platform_get_irq(pdev, 0);
+> +       if (irq < 0)
+> +               return irq;
+> +
+>         ret =3D devm_request_irq(&pdev->dev, irq, aspeed_i2c_bus_irq,
+>                                0, dev_name(&pdev->dev), bus);
+>         if (ret < 0)
+> --
+> 2.39.2
+>
+
+
+--=20
+With Best Regards,
+Andy Shevchenko
 
